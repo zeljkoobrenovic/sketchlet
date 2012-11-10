@@ -1,0 +1,7 @@
+process scripts
+pausecomm
+addfile filemanager restorebackup savehistory history projectsroot
+exportprocess
+addnote addscreenshot addimage viewnotebook noteorganizer importnotes editcategories
+aggregatevalue serialize countfilter
+screenscripts openexternaleditor imageeditor screenrecorder editconfig teammembers projectsettings systemsettings
