@@ -187,7 +187,7 @@ public class SketchletsSaxLoader extends DefaultHandler {
             return;
         }
 
-        if (strElem.equalsIgnoreCase("sketch")) {
+        if (strElem.equalsIgnoreCase("page") || strElem.equalsIgnoreCase("sketch")) {
             currentPage = new Page("", "");
             currentPage.title = "";
             currentPage.regions = new ActiveRegions(currentPage);
@@ -212,19 +212,19 @@ public class SketchletsSaxLoader extends DefaultHandler {
                 onExit.actions[i][2] = "";
             }
         } else if (strElem.equalsIgnoreCase("repeat")) {
-        } else if (strElem.equalsIgnoreCase("sketch-property")) {
+        } else if (strElem.equalsIgnoreCase("page-property") || strElem.equalsIgnoreCase("sketch-property")) {
             lastSketchProperty = atts.getValue("name");
         } else if (strElem.equalsIgnoreCase("page-variable")) {
             lastSketchVariable = atts.getValue("name");
             lastSketchFormat = atts.getValue("format");
-        } else if (strElem.equalsIgnoreCase("sketch-layer")) {
+        } else if (strElem.equalsIgnoreCase("page-layer") || strElem.equalsIgnoreCase("sketch-layer")) {
             layerIndex++;
             try {
                 currentPage.layerActive[layerIndex] = atts.getValue("active").equalsIgnoreCase("true");
             } catch (Exception e) {
                 log.error(e);
             }
-        } else if (strElem.equalsIgnoreCase("animate-sketch-property") && currentPage != null) {
+        } else if ((strElem.equalsIgnoreCase("animate-page-property") || strElem.equalsIgnoreCase("animate-sketch-property")) && currentPage != null) {
             try {
                 String property = atts.getValue("name");
                 String type = atts.getValue("type");
@@ -305,6 +305,9 @@ public class SketchletsSaxLoader extends DefaultHandler {
             }
         } else if (strElem.equalsIgnoreCase("connector-property")) {
             this.currentConnectorProperty = atts.getValue("name");
+        } else if (strElem.equalsIgnoreCase("active-region")) {
+            currentRegion = new ActiveRegion(currentPage.regions);
+            currentPage.regions.regions.add(currentRegion);
         } else if (strElem.equalsIgnoreCase("action")) {
             if (onEntry != null) {
                 onEntryActionIndex++;
@@ -489,7 +492,7 @@ public class SketchletsSaxLoader extends DefaultHandler {
                 return;
             }
 
-            if (strElem.equalsIgnoreCase("sketch")) {
+            if (strElem.equalsIgnoreCase("page") || strElem.equalsIgnoreCase("sketch")) {
                 currentPage.isChanged();
                 currentPage = null;
             } else if (strElem.equalsIgnoreCase("on-entry")) {
@@ -502,7 +505,7 @@ public class SketchletsSaxLoader extends DefaultHandler {
                 if (currentPage.notes.size() > 0) {
                     currentPage.notes.lastElement().noteTextArea.setText(strCharacters);
                 }
-            } else if (strElem.equalsIgnoreCase("sketch-property")) {
+            } else if (strElem.equalsIgnoreCase("page-property") || strElem.equalsIgnoreCase("sketch-property")) {
                 currentPage.setProperty(lastSketchProperty, strCharacters);
             } else if (strElem.equalsIgnoreCase("page-variable")) {
                 currentPage.localVariables.add(new LocalVariable(lastSketchVariable, strCharacters, lastSketchFormat));
@@ -513,6 +516,11 @@ public class SketchletsSaxLoader extends DefaultHandler {
                 }
             } else if (strElem.equalsIgnoreCase("connector")) {
                 this.currentConnector = null;
+            } else if (strElem.equalsIgnoreCase("active-region")) {
+                currentRegion = null;
+                interactionEventIndex = -1;
+                updateIndex = -1;
+                limitIndex = -1;
             } else if (strElem.equalsIgnoreCase("action")) {
                 if (onEntry != null) {
                 } else if (onExit != null) {
@@ -713,15 +721,6 @@ public class SketchletsSaxLoader extends DefaultHandler {
         }
         if (currentElement.equalsIgnoreCase("show-text") && currentRegion != null) {
             currentRegion.strTextField = strCharacters;
-        }
-        if (currentElement.equalsIgnoreCase("embedded-sketch") && currentRegion != null) {
-            currentRegion.strEmbeddedSketch = strCharacters;
-        }
-        if (currentElement.equalsIgnoreCase("embedded-sketch-var-prefix") && currentRegion != null) {
-            currentRegion.strEmbeddedSketchVarPrefix = strCharacters;
-        }
-        if (currentElement.equalsIgnoreCase("embedded-sketch-var-postfix") && currentRegion != null) {
-            currentRegion.strEmbeddedSketchVarPostfix = strCharacters;
         }
         if (currentElement.equalsIgnoreCase("capture-screen-x") && currentRegion != null) {
             currentRegion.strCaptureScreenX = strCharacters;

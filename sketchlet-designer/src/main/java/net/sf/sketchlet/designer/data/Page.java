@@ -880,20 +880,20 @@ public class Page implements PropertiesInterface {
     public void saveSketchFile(PrintWriter outSketch) {
         try {
             outSketch.println("<?xml version='1.0' encoding='UTF-8'?>");
-            outSketch.println("<sketch>");
+            outSketch.println("<page>");
             outSketch.println("<title>" + this.title + "</title>");
             outSketch.println("<id>" + this.getId() + "</id>");
             outSketch.println("<state-diagram-x>" + this.stateDiagramX + "</state-diagram-x>");
             outSketch.println("<state-diagram-y>" + this.stateDiagramY + "</state-diagram-y>");
             outSketch.println("<page-width>" + this.pageWidth + "</page-width>");
             outSketch.println("<page-height>" + this.pageHeight + "</page-height>");
-            outSketch.println("<sketch-layers>");
+            outSketch.println("<page-layers>");
 
             for (int i = 0; i < this.layerActive.length; i++) {
-                outSketch.println("    <sketch-layer active='" + layerActive[i] + "'/>");
+                outSketch.println("    <page-layer active='" + layerActive[i] + "'/>");
             }
 
-            outSketch.println("</sketch-layers>");
+            outSketch.println("</page-layers>");
 
             outSketch.println("<page-variables>");
 
@@ -903,7 +903,7 @@ public class Page implements PropertiesInterface {
 
             outSketch.println("</page-variables>");
 
-            outSketch.println("<sketch-parameters>");
+            outSketch.println("<page-parameters>");
 
             if (properties != null) {
                 for (int i = 0; i < this.properties.length; i++) {
@@ -911,12 +911,12 @@ public class Page implements PropertiesInterface {
                         continue;
                     }
 
-                    outSketch.println("    <sketch-property name='" + properties[i][0] + "'><![CDATA[" + properties[i][1] + "]]></sketch-property>");
+                    outSketch.println("    <page-property name='" + properties[i][0] + "'><![CDATA[" + properties[i][1] + "]]></page-property>");
                 }
             }
-            outSketch.println("</sketch-parameters>");
+            outSketch.println("</page-parameters>");
 
-            outSketch.println("<sketch-spreadsheet>");
+            outSketch.println("<page-spreadsheet>");
             if (!strSpreadsheetColumnWidths.isEmpty()) {
                 outSketch.println("    <spreadsheet-column-widths>" + XMLUtils.prepareForXML(strSpreadsheetColumnWidths) + "</spreadsheet-column-widths>");
             }
@@ -930,9 +930,9 @@ public class Page implements PropertiesInterface {
                     }
                 }
             }
-            outSketch.println("</sketch-spreadsheet>");
+            outSketch.println("</page-spreadsheet>");
 
-            outSketch.println("<animate-sketch-parameters>");
+            outSketch.println("<animate-page-parameters>");
 
             for (int i = 0; i < this.propertiesAnimation.length; i++) {
                 if (propertiesAnimation[i][1] == null) {
@@ -948,13 +948,15 @@ public class Page implements PropertiesInterface {
                 if (!bAdd) {
                     continue;
                 }
-                outSketch.println("    <animate-sketch-property name='" + propertiesAnimation[i][0] + "' type='" + propertiesAnimation[i][1] + "' start = '" + propertiesAnimation[i][2] + "' end = '" + propertiesAnimation[i][3] + "' duration='" + propertiesAnimation[i][4] + "' curve='" + propertiesAnimation[i][5] + "'/>");
+                outSketch.println("    <animate-page-property name='" + propertiesAnimation[i][0] + "' type='" + propertiesAnimation[i][1] + "' start = '" + propertiesAnimation[i][2] + "' end = '" + propertiesAnimation[i][3] + "' duration='" + propertiesAnimation[i][4] + "' curve='" + propertiesAnimation[i][5] + "'/>");
             }
 
-            outSketch.println("</animate-sketch-parameters>");
+            outSketch.println("</animate-page-parameters>");
 
             outSketch.println("<text-annotation>" + XMLUtils.prepareForXML(strTextAnnotation) + "</text-annotation>");
+
             regions.save(outSketch);
+
             this.onEntryMacro.save(outSketch, "on-entry");
             this.onExitMacro.save(outSketch, "on-exit");
             outSketch.println("<keyboard-event-actions>");
@@ -997,7 +999,7 @@ public class Page implements PropertiesInterface {
             }
             outSketch.println("</post-notes>");
 
-            outSketch.println("</sketch>");
+            outSketch.println("</page>");
             outSketch.flush();
             outSketch.close();
         } catch (Throwable e) {

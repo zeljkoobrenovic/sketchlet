@@ -1128,7 +1128,7 @@ public class ActiveRegion implements PropertiesInterface {
         } catch (Throwable e) {
         }
 
-        out.println("<action>");
+        out.println("<active-region>");
         out.println("    <region name='" + strName + "' x1='" + x1 + "' y1='" + y1 + "' x2='" + x2 + "' y2='" + y2 + "' shearX='" + shearX + "' shearY='" + shearY + "' rotation='" + rotation + "'/>");
         out.println("    <perspective p_x0='" + p_x0 + "' p_y0='" + p_y0 + "' p_x1='" + p_x1 + "' p_y1='" + p_y1 + "' p_x2='" + p_x2 + "' p_y2='" + p_y2 + "' p_x3='" + p_x3 + "' p_y3='" + p_y3 + "'/>");
         out.println("    <rotation_center x='" + center_rotation_x + "' y='" + center_rotation_y + "'/>");
@@ -1451,7 +1451,7 @@ public class ActiveRegion implements PropertiesInterface {
         }
         out.println("    </region-keyboard-event-actions>");
 
-        out.println("</action>");
+        out.println("</active-region>");
 
     }
 

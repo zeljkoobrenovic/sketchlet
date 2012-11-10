@@ -325,9 +325,11 @@ public class ActiveRegions {
     }
 
     public void save(PrintWriter out) {
+        out.println("<active-regions>");
         for (ActiveRegion a : regions) {
             a.save(out);
         }
+        out.println("</active-regions>");
     }
 
     public void changePerformed(final String triggerVariable, String varValue, boolean bPlayback) {
