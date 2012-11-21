@@ -11,7 +11,7 @@ package net.sf.sketchlet.designer.tools.vfs;
 import net.sf.sketchlet.common.context.SketchletContextUtils;
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
-import net.sf.sketchlet.designer.ui.desktop.Notepad;
+import net.sf.sketchlet.designer.editor.ui.desktop.Notepad;
 
 import javax.swing.*;
 import java.awt.*;
@@ -30,15 +30,15 @@ import java.util.Vector;
 /* RemoteLocationFrame.java requires no other files. */
 public class RestoreRemoteLocationFrame extends JFrame implements KeyListener, RemoteBackupProgressFeedback {
 
-    JLabel label1 = new JLabel(Language.translate("Remote location:  "));
-    JLabel label2 = new JLabel(Language.translate("Subdirectory:        "));
-    JLabel label3 = new JLabel(Language.translate("Remote folder:      "));
-    JComboBox remoteDirectoryCombobox = new JComboBox();
-    JTextField remoteSubdirectoryField = new JTextField(30);
-    JTextField remoteFolderField = new JTextField(30);
-    JProgressBar progressBar = new JProgressBar();
-    JButton createButton;
-    RestoreBackupThread thread;
+    private JLabel label1 = new JLabel(Language.translate("Remote location:  "));
+    private JLabel label2 = new JLabel(Language.translate("Subdirectory:        "));
+    private JLabel label3 = new JLabel(Language.translate("Remote folder:      "));
+    private JComboBox remoteDirectoryCombobox = new JComboBox();
+    private JTextField remoteSubdirectoryField = new JTextField(30);
+    private JTextField remoteFolderField = new JTextField(30);
+    private JProgressBar progressBar = new JProgressBar();
+    private JButton createButton;
+    private RestoreBackupThread thread;
 
     public RestoreRemoteLocationFrame() {
         super(Language.translate("Remote Location"));
@@ -88,7 +88,7 @@ public class RestoreRemoteLocationFrame extends JFrame implements KeyListener, R
                 int sel = remoteDirectoryCombobox.getSelectedIndex();
 
                 if (sel >= 0 && sel < locations.size()) {
-                    RemoteBackup.userInfo.username = locations.elementAt(sel).username;
+                    RemoteBackup.userInfo.setUsername(locations.elementAt(sel).getUsername());
                 }
 
                 setFolder();
@@ -139,7 +139,7 @@ public class RestoreRemoteLocationFrame extends JFrame implements KeyListener, R
 
             public void actionPerformed(ActionEvent event) {
                 if (thread != null) {
-                    thread.remoteBackup.stopped = true;
+                    thread.remoteBackup.setStopped(true);
                 }
                 setVisible(false);
             }
@@ -291,7 +291,7 @@ public class RestoreRemoteLocationFrame extends JFrame implements KeyListener, R
                 this.remoteDirectoryCombobox.removeAllItems();
 
                 for (RemoteLocationInfo info : locations) {
-                    this.remoteDirectoryCombobox.addItem(info.name);
+                    this.remoteDirectoryCombobox.addItem(info.getName());
                 }
 
             } else {
@@ -316,7 +316,7 @@ public class RestoreRemoteLocationFrame extends JFrame implements KeyListener, R
             return;
         }
 
-        String root = locations.elementAt(sel).uri;
+        String root = locations.elementAt(sel).getUri();
 
         if (root == null) {
             root = "";

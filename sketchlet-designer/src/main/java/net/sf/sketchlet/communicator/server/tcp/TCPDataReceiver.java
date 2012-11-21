@@ -44,7 +44,7 @@ class AcceptTCPDataReceiverConnections extends AcceptConnectionsThread {
     public ClientConnectionThread getClientConnectionThreadInstance(Socket socket, Vector clients) {
         return new ClientLineProcessingThread(socket, clients, false) {
             public void processLine(String line, BufferedReader in, PrintWriter out) throws IOException {
-                dataReceiver.updateVariable(line, this.encode);
+                dataReceiver.updateVariable(line, this.isEncode());
             }
         };
     }

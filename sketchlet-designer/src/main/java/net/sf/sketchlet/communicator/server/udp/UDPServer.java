@@ -83,7 +83,7 @@ class UDPCommandDataReceiverThread extends UDPDataReceiverThread {
                 } else if (command.startsWith("UPDATE") || command.startsWith("DELETE ")) {
                     dataReceiver.updateVariable(command, encode);
                 } else {
-                    if (DataServer.paused) {
+                    if (DataServer.isPaused()) {
                         return;
                     }
                     StandardNetInterfaces.processCommand(command);

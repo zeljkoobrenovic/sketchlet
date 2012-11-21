@@ -4,9 +4,9 @@
  */
 package net.sf.sketchlet.designer.eye.eye;
 
-import net.sf.sketchlet.designer.data.Page;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.designer.ui.page.SketchStatePanel;
+import net.sf.sketchlet.designer.editor.ui.page.PageDetailsPanel;
+import net.sf.sketchlet.model.Page;
 
 import java.awt.*;
 
@@ -25,7 +25,7 @@ public class VariablesEventsEyeSlot extends EyeSlot {
     }
 
     public String getLongName() {
-        return "on variable updates in sketch '" + page.title + "'";
+        return "on variable updates in sketch '" + page.getTitle() + "'";
     }
 
     public void addRelatedSlot(EyeSlot relatedSlot) {
@@ -51,6 +51,6 @@ public class VariablesEventsEyeSlot extends EyeSlot {
     }
 
     public void openItem() {
-        SketchletEditor.editorPanel.showStatePanel(SketchStatePanel.actionsTabIndex, SketchStatePanel.actionsVariablesSubtabIndex);
+        SketchletEditor.getInstance().showStatePanel(PageDetailsPanel.actionsTabIndex, PageDetailsPanel.actionsVariablesSubtabIndex);
     }
 }

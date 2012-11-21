@@ -6,26 +6,30 @@ package net.sf.sketchlet.designer.editor.tool;
 
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
-import net.sf.sketchlet.designer.data.ActiveRegion;
-import net.sf.sketchlet.designer.data.TrajectoryPoint;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.designer.help.TutorialPanel;
 import net.sf.sketchlet.designer.tools.log.ActivityLog;
+import net.sf.sketchlet.model.ActiveRegion;
+import net.sf.sketchlet.model.TrajectoryPoint;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.util.Vector;
+import java.util.List;
 
 /**
  * @author zobrenovic
  */
 public class TrajectoryPenTool extends Tool {
+    private Cursor cursor;
+    private int trajectory;
+    private long startTime = 0;
+    private int mouseX = -1;
+    private int mouseY = -1;
 
-    Cursor cursor;
-    int trajectory;
+    private final int squareSize = 7;
+    private List<TrajectoryPoint> tps = null;
 
-    public TrajectoryPenTool(SketchletEditor freeHand, int trajectory) {
-        super(freeHand);
+    public TrajectoryPenTool(SketchletEditor editor, int trajectory) {
+        super(editor);
         this.trajectory = trajectory;
         Toolkit toolkit = Toolkit.getDefaultToolkit();
         Point hotSpot = new Point(4, 23);
@@ -41,20 +45,15 @@ public class TrajectoryPenTool extends Tool {
         return cursor;
     }
 
-    public int mouseX = -1;
-    public int mouseY = -1;
-
     public void mouseMoved(int x, int y, int modifiers) {
         mouseX = x;
         mouseY = y;
         toolInterface.repaintImage();
     }
 
-    long startTime = 0;
-
     public void mousePressed(int x, int y, int modifiers) {
         startTime = System.currentTimeMillis();
-        SketchletEditor.editorPanel.saveRegionUndo();
+        SketchletEditor.getInstance().saveRegionUndo();
     }
 
     public void mouseReleased(int x, int y, int modifiers) {
@@ -62,7 +61,6 @@ public class TrajectoryPenTool extends Tool {
             addPoint(x, y);
         }
         ActivityLog.log("toolResult", "Add a trajectory point", "select.png", toolInterface.getPanel());
-        TutorialPanel.addLine("cmd", "Add a trajectory point", "", toolInterface.getPanel());
     }
 
     public void mouseDragged(int x, int y, int modifiers) {
@@ -71,22 +69,19 @@ public class TrajectoryPenTool extends Tool {
         addPoint(x, y);
     }
 
-    public void addPoint(int x, int y) {
+    private void addPoint(int x, int y) {
         ActiveRegion reg = this.getRegion();
         if (reg != null) {
             if (trajectory == 1) {
-                reg.strTrajectory1 += x + " " + y + " " + (System.currentTimeMillis() - startTime) + "\n";
+                reg.trajectory1 += x + " " + y + " " + (System.currentTimeMillis() - startTime) + "\n";
                 tps = reg.createTrajectoryVector();
             } else {
-                reg.strTrajectory2 += x + " " + y + " " + (System.currentTimeMillis() - startTime) + "\n";
+                reg.trajectory2 += x + " " + y + " " + (System.currentTimeMillis() - startTime) + "\n";
                 tps = reg.createTrajectory2Vector();
             }
             toolInterface.repaintImage();
         }
     }
-
-    final int squareSize = 7;
-    Vector<TrajectoryPoint> tps = null;
 
     public void draw(Graphics2D g2) {
         ActiveRegion reg = this.getRegion();
@@ -104,14 +99,14 @@ public class TrajectoryPenTool extends Tool {
                 g2.setColor(new Color(0, 0, 255));
             }
             for (TrajectoryPoint tp : tps) {
-                g2.fillOval(tp.x - squareSize / 2, tp.y - squareSize / 2, squareSize, squareSize);
+                g2.fillOval(tp.getX() - squareSize / 2, tp.getY() - squareSize / 2, squareSize, squareSize);
             }
             if (tps.size() > 0) {
-                TrajectoryPoint tp = tps.lastElement();
-                g2.fillOval(tp.x - squareSize, tp.y - squareSize, squareSize * 2, squareSize * 2);
+                TrajectoryPoint tp = tps.get(tps.size() - 1);
+                g2.fillOval(tp.getX() - squareSize, tp.getY() - squareSize, squareSize * 2, squareSize * 2);
 
                 if (mouseX >= 0) {
-                    g2.drawLine(mouseX, mouseY, tp.x, tp.y);
+                    g2.drawLine(mouseX, mouseY, tp.getX(), tp.getY());
                 }
             }
         }
@@ -138,20 +133,14 @@ public class TrajectoryPenTool extends Tool {
         activate();
     }
 
-    public void keyTyped(KeyEvent e) {
-    }
-
     public void keyPressed(KeyEvent e) {
         super.keyPressed(e);
     }
 
-    public void keyReleased(KeyEvent e) {
-    }
-
-    public ActiveRegion getRegion() {
-        if (freeHand.currentPage.regions.selectedRegions != null) {
-            if (freeHand.currentPage.regions.selectedRegions.size() > 0) {
-                return freeHand.currentPage.regions.selectedRegions.lastElement();
+    private ActiveRegion getRegion() {
+        if (editor.getCurrentPage().getRegions().getSelectedRegions() != null) {
+            if (editor.getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
+                return editor.getCurrentPage().getRegions().getSelectedRegions().lastElement();
             }
         }
         return null;

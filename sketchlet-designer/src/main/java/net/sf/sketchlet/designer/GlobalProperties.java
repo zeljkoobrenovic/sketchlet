@@ -6,7 +6,7 @@ package net.sf.sketchlet.designer;
 
 import net.sf.sketchlet.common.context.SketchletContextUtils;
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.pluginloader.CodeGenPluginFactory;
+import net.sf.sketchlet.loaders.pluginloader.CodeGenPluginFactory;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -20,19 +20,19 @@ import java.util.Properties;
 public class GlobalProperties {
     private static final Logger log = Logger.getLogger(GlobalProperties.class);
 
-    public static Properties properties;
+    private static Properties properties;
 
     public static void load() {
         properties = new Properties();
         try {
-            properties.loadFromXML(new FileInputStream(new File(SketchletContextUtils.getApplicationSettingsDir() + "parameters.xml")));
+            getProperties().loadFromXML(new FileInputStream(new File(SketchletContextUtils.getApplicationSettingsDir() + "parameters.xml")));
             String strLangFile = GlobalProperties.get("gui-lang-file");
             if (strLangFile != null && !strLangFile.isEmpty()) {
                 Language.loadTranslation(SketchletContextUtils.getSketchletDesignerConfDir() + "lang/" + strLangFile.trim());
             }
             String strPlatform = GlobalProperties.get("platform");
             if (strPlatform != null && !strPlatform.isEmpty()) {
-                CodeGenPluginFactory.platform = strPlatform;
+                CodeGenPluginFactory.setPlatform(strPlatform);
             }
         } catch (Exception e) {
         }
@@ -42,7 +42,7 @@ public class GlobalProperties {
     }
 
     public static void set(String key, String value) {
-        properties.setProperty(key, value);
+        getProperties().setProperty(key, value);
     }
 
     public static void setAndSave(String key, String value) {
@@ -51,25 +51,25 @@ public class GlobalProperties {
     }
 
     public static String get(String key) {
-        return properties.getProperty(key);
+        return getProperties().getProperty(key);
     }
 
     public static String get(String key, String defaultValue) {
-        if (properties == null || properties.size() == 0) {
+        if (getProperties() == null || getProperties().size() == 0) {
             return defaultValue;
         }
-        return properties.getProperty(key, defaultValue);
+        return getProperties().getProperty(key, defaultValue);
     }
 
     public static int get(String key, int defaultValue) {
-        if (properties == null || properties.size() == 0) {
+        if (getProperties() == null || getProperties().size() == 0) {
             return defaultValue;
         }
         return (int) get(key, (double) defaultValue);
     }
 
     public static double get(String key, double defaultValue) {
-        if (properties == null || properties.size() == 0) {
+        if (getProperties() == null || getProperties().size() == 0) {
             return defaultValue;
         }
         String str = get(key);
@@ -85,8 +85,12 @@ public class GlobalProperties {
 
     public static void save() {
         try {
-            properties.storeToXML(new FileOutputStream(new File(SketchletContextUtils.getApplicationSettingsDir() + "parameters.xml")), "sketchlet");
+            getProperties().storeToXML(new FileOutputStream(new File(SketchletContextUtils.getApplicationSettingsDir() + "parameters.xml")), "sketchlet");
         } catch (Exception e) {
         }
+    }
+
+    public static Properties getProperties() {
+        return properties;
     }
 }

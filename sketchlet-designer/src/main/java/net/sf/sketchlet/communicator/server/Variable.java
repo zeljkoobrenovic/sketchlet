@@ -18,21 +18,18 @@ import java.util.Locale;
  */
 public class Variable implements Comparator {
 
-    public String name = "";
-    public String value = "";
-    public String group = "";
-    public String description = "";
-    public String format = "";
-    public String min = "";
-    public String max = "";
-    public int count = 0;
-    public int countFilter = 1;
-    public int timeFilterMs = 0;
-    public long timestamp = System.currentTimeMillis();
+    private String name = "";
+    private String value = "";
+    private String group = "";
+    private String description = "";
+    private String format = "";
+    private String min = "";
+    private String max = "";
+    private int count = 0;
+    private int countFilter = 1;
+    private int timeFilterMs = 0;
+    private long timestamp = System.currentTimeMillis();
 
-    /**
-     * Creates a new instance of Variable
-     */
     public Variable() {
     }
 
@@ -41,7 +38,7 @@ public class Variable implements Comparator {
 
     public int compare(Object o1, Object o2) {
         if (o1 instanceof Variable && o2 instanceof Variable) {
-            return ((Variable) o1).name.compareTo(((Variable) o2).name);
+            return ((Variable) o1).getName().compareTo(((Variable) o2).getName());
         } else {
             return 0;
         }
@@ -49,29 +46,29 @@ public class Variable implements Comparator {
 
     public boolean equals(Object obj) {
         if (obj instanceof Variable) {
-            return ((Variable) obj).name.equalsIgnoreCase(this.name);
+            return ((Variable) obj).getName().equalsIgnoreCase(this.getName());
         } else {
             return false;
         }
     }
 
     public void boundValue() {
-        if (!this.format.isEmpty() || !this.min.isEmpty() || !this.max.isEmpty()) {
+        if (!this.getFormat().isEmpty() || !this.getMin().isEmpty() || !this.getMax().isEmpty()) {
             try {
-                DecimalFormat df = new DecimalFormat(this.format, new DecimalFormatSymbols(Locale.US));
-                double dv = Double.parseDouble(this.value);
-                if (!this.min.isEmpty()) {
+                DecimalFormat df = new DecimalFormat(this.getFormat(), new DecimalFormatSymbols(Locale.US));
+                double dv = Double.parseDouble(this.getValue());
+                if (!this.getMin().isEmpty()) {
                     try {
-                        double m = Double.parseDouble(this.min);
+                        double m = Double.parseDouble(this.getMin());
                         if (dv < m) {
                             dv = m;
                         }
                     } catch (Exception e2) {
                     }
                 }
-                if (!this.max.isEmpty()) {
+                if (!this.getMax().isEmpty()) {
                     try {
-                        double m = Double.parseDouble(this.max);
+                        double m = Double.parseDouble(this.getMax());
                         if (dv > m) {
                             dv = m;
                         }
@@ -79,12 +76,100 @@ public class Variable implements Comparator {
                     }
                 }
 
-                if (!this.format.isEmpty()) {
-                    this.value = df.format(dv);
+                if (!this.getFormat().isEmpty()) {
+                    this.setValue(df.format(dv));
                 }
             } catch (Exception e) {
             }
         }
 
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getFormat() {
+        return format;
+    }
+
+    public void setFormat(String format) {
+        this.format = format;
+    }
+
+    public String getMin() {
+        return min;
+    }
+
+    public void setMin(String min) {
+        this.min = min;
+    }
+
+    public String getMax() {
+        return max;
+    }
+
+    public void setMax(String max) {
+        this.max = max;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
+    }
+
+    public int getCountFilter() {
+        return countFilter;
+    }
+
+    public void setCountFilter(int countFilter) {
+        this.countFilter = countFilter;
+    }
+
+    public int getTimeFilterMs() {
+        return timeFilterMs;
+    }
+
+    public void setTimeFilterMs(int timeFilterMs) {
+        this.timeFilterMs = timeFilterMs;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
     }
 }

@@ -4,9 +4,9 @@
  */
 package net.sf.sketchlet.designer.eye.eye;
 
-import net.sf.sketchlet.designer.data.Page;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.designer.ui.page.SketchStatePanel;
+import net.sf.sketchlet.designer.editor.ui.page.PageDetailsPanel;
+import net.sf.sketchlet.model.Page;
 
 import java.awt.*;
 
@@ -25,13 +25,13 @@ public class KeyboardActionsEyeSlot extends EyeSlot {
     }
 
     public String getLongName() {
-        return "on keyboard events in sketch '" + page.title + "'";
+        return "on keyboard events in sketch '" + page.getTitle() + "'";
     }
 
     public void addRelatedSlot(EyeSlot relatedSlot) {
     }
 
     public void openItem() {
-        SketchletEditor.editorPanel.showStatePanel(SketchStatePanel.actionsTabIndex, SketchStatePanel.actionsKeyboardSubtabIndex);
+        SketchletEditor.getInstance().showStatePanel(PageDetailsPanel.actionsTabIndex, PageDetailsPanel.actionsKeyboardSubtabIndex);
     }
 }

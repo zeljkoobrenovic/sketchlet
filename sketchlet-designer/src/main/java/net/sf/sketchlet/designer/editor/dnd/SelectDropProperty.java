@@ -6,7 +6,7 @@ package net.sf.sketchlet.designer.editor.dnd;
 
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
-import net.sf.sketchlet.designer.data.Page;
+import net.sf.sketchlet.model.Page;
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,9 +18,9 @@ import java.awt.event.ActionListener;
  */
 public class SelectDropProperty extends JDialog {
 
-    JTextField textField = new JTextField(12);
-    JButton okButton = new JButton("OK", Workspace.createImageIcon("resources/ok.png"));
-    JButton cancelButton = new JButton("Cancel", Workspace.createImageIcon("resources/cancel.png"));
+    private JTextField textField = new JTextField(12);
+    private JButton okButton = new JButton("OK", Workspace.createImageIcon("resources/ok.png"));
+    private JButton cancelButton = new JButton("Cancel", Workspace.createImageIcon("resources/cancel.png"));
 
     public SelectDropProperty(JFrame frame, final String strText, final Page page) {
         super(frame);
@@ -28,9 +28,9 @@ public class SelectDropProperty extends JDialog {
         setTitle("Set Page Property");
 
         final JComboBox combo = new JComboBox();
-        for (int i = 0; i < page.properties.length; i++) {
-            if (page.properties[i][1] != null) {
-                combo.addItem(page.properties[i][0]);
+        for (int i = 0; i < page.getProperties().length; i++) {
+            if (page.getProperties()[i][1] != null) {
+                combo.addItem(page.getProperties()[i][0]);
             }
         }
 

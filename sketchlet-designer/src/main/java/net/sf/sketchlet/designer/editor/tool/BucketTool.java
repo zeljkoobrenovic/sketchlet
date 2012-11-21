@@ -6,7 +6,6 @@ package net.sf.sketchlet.designer.editor.tool;
 
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
-import net.sf.sketchlet.designer.help.TutorialPanel;
 import net.sf.sketchlet.designer.tools.log.ActivityLog;
 import org.apache.log4j.Logger;
 
@@ -20,19 +19,18 @@ import java.awt.image.WritableRaster;
  */
 public class BucketTool extends Tool {
     private static final Logger log = Logger.getLogger(BucketTool.class);
+    private Image cursorImage = Workspace.createImageIcon("resources/cursor_bucket.gif").getImage();
 
     public BucketTool(ToolInterface toolInterface) {
         super(toolInterface);
     }
 
-    public void mouseMoved(int x, int y, int modifiers) {
-    }
-
+    @Override
     public void mouseReleased(int x, int y, int modifiers) {
         ActivityLog.log("toolResult", "Fill the color with the bucket in " + toolInterface.getName(), "bucket.gif", toolInterface.getPanel());
-        TutorialPanel.addLine("cmd", "Fill the color with the bucket by clicking on the image in " + toolInterface.getName(), "", toolInterface.getPanel());
     }
 
+    @Override
     public void mousePressed(final int x, final int y, int modifiers) {
         new Thread(new Runnable() {
 
@@ -54,8 +52,7 @@ public class BucketTool extends Tool {
         }).start();
     }
 
-    Image cursorImage = Workspace.createImageIcon("resources/cursor_bucket.gif").getImage();
-
+    @Override
     public Cursor getCursor() {
         Toolkit toolkit = Toolkit.getDefaultToolkit();
         Point hotSpot = new Point(2, 22);
@@ -63,13 +60,22 @@ public class BucketTool extends Tool {
         return toolkit.createCustomCursor(cursorImage, hotSpot, "Bucket");
     }
 
-    public void mouseDragged(int x, int y, int modifiers) {
+    @Override
+    public ImageIcon getIcon() {
+        return Workspace.createImageIcon("resources/bucket.gif");
     }
 
-    public void draw(Point start, Point end) {
+    @Override
+    public String getIconFileName() {
+        return "bucket.gif";
     }
 
-    public static void floodFill(BufferedImage img, Color fillColor, Point loc) {
+    @Override
+    public String getName() {
+        return Language.translate("Bucket");
+    }
+
+    private static void floodFill(BufferedImage img, Color fillColor, Point loc) {
         if (loc.x < 0 || loc.x >= img.getWidth() || loc.y < 0 || loc.y >= img.getHeight()) {
             throw new IllegalArgumentException();
         }
@@ -118,8 +124,10 @@ public class BucketTool extends Tool {
         }
     }
 
-    // Returns true if RGBA arrays are equivalent, false otherwise
-// Could use Arrays.equals(int[], int[]), but this is probably a little faster...
+    /**
+     * Returns true if RGBA arrays are equivalent, false otherwise
+     * Could use Arrays.equals(int[], int[]), but this is probably a little faster...
+     */
     private static boolean isEqualRgba2(int[] pix1, int[] pix2) {
         return pix1[0] == pix2[0] && pix1[1] == pix2[1] && pix1[2] == pix2[2] && pix1[3] == pix2[3];
     }
@@ -133,17 +141,5 @@ public class BucketTool extends Tool {
         float hsv2[] = Color.RGBtoHSB(pix2[0], pix2[1], pix2[2], null);
 
         return Math.abs(hsv1[0] - hsv2[0]) < 0.02 && Math.abs(hsv1[1] - hsv2[1]) < 0.5 && Math.abs(hsv1[2] - hsv2[2]) < 0.5;
-    }
-
-    public ImageIcon getIcon() {
-        return Workspace.createImageIcon("resources/bucket.gif");
-    }
-
-    public String getIconFileName() {
-        return "bucket.gif";
-    }
-
-    public String getName() {
-        return Language.translate("Bucket");
     }
 }

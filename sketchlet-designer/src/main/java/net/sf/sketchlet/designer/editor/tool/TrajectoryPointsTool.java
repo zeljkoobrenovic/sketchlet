@@ -7,10 +7,9 @@ package net.sf.sketchlet.designer.editor.tool;
 import net.sf.sketchlet.common.geom.DistancePointSegment;
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
-import net.sf.sketchlet.designer.data.ActiveRegion;
-import net.sf.sketchlet.designer.data.TrajectoryPoint;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.designer.help.TutorialPanel;
+import net.sf.sketchlet.model.ActiveRegion;
+import net.sf.sketchlet.model.TrajectoryPoint;
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,17 +17,25 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.util.Vector;
+import java.util.List;
 
 /**
  * @author zobrenovic
  */
 public class TrajectoryPointsTool extends Tool {
 
-    Cursor cursor;
+    private Cursor cursor;
 
-    public TrajectoryPointsTool(SketchletEditor freeHand) {
-        super(freeHand);
+    private final int squareSize = 7;
+    private TrajectoryPoint selectedPoint;
+    protected List<TrajectoryPoint> tps1;
+    protected List<TrajectoryPoint> tps2;
+    protected boolean bDrawBorders = false;
+    protected boolean bDrawTrajectory1 = false, bDrawTrajectory2 = false;
+    protected double angle = 0;
+
+    public TrajectoryPointsTool(SketchletEditor editor) {
+        super(editor);
         Toolkit toolkit = Toolkit.getDefaultToolkit();
         Point hotSpot = new Point(9, 2);
         Image cursorImage = Workspace.createImageIcon("resources/cursor_hand.png").getImage();
@@ -43,14 +50,11 @@ public class TrajectoryPointsTool extends Tool {
         return cursor;
     }
 
-    public void mouseMoved(int x, int y, int modifiers) {
-    }
-
     public void mousePressed(int x, int y, int modifiers) {
         selectedPoint = null;
         ActiveRegion reg = this.getRegion();
         if (reg != null) {
-            SketchletEditor.editorPanel.saveRegionUndo();
+            SketchletEditor.getInstance().saveRegionUndo();
             if (tps1 == null) {
                 tps1 = reg.createTrajectoryVector();
             }
@@ -58,14 +62,14 @@ public class TrajectoryPointsTool extends Tool {
                 tps2 = reg.createTrajectory2Vector();
             }
             for (TrajectoryPoint tp : tps1) {
-                Rectangle rect1 = new Rectangle(tp.x - squareSize / 2, tp.y - squareSize / 2, squareSize, squareSize);
+                Rectangle rect1 = new Rectangle(tp.getX() - squareSize / 2, tp.getY() - squareSize / 2, squareSize, squareSize);
                 if (rect1.contains(new Point(x, y))) {
                     selectedPoint = tp;
                     return;
                 }
             }
             for (TrajectoryPoint tp : tps2) {
-                Rectangle rect2 = new Rectangle(tp.x - squareSize / 2, tp.y - squareSize / 2, squareSize, squareSize);
+                Rectangle rect2 = new Rectangle(tp.getX() - squareSize / 2, tp.getY() - squareSize / 2, squareSize, squareSize);
                 if (rect2.contains(new Point(x, y))) {
                     selectedPoint = tp;
                     return;
@@ -81,9 +85,9 @@ public class TrajectoryPointsTool extends Tool {
                         prevtp = tp;
                         continue;
                     }
-                    if (DistancePointSegment.distanceToSegment(x, y, prevtp.x, prevtp.y, tp.x, tp.y) <= squareSize / 2) {
-                        selectedPoint = new TrajectoryPoint(x, y, (prevtp.time + tp.time) / 2);
-                        tps1.insertElementAt(selectedPoint, i);
+                    if (DistancePointSegment.distanceToSegment(x, y, prevtp.getX(), prevtp.getY(), tp.getX(), tp.getY()) <= squareSize / 2) {
+                        selectedPoint = new TrajectoryPoint(x, y, (prevtp.getTime() + tp.getTime()) / 2);
+                        tps1.set(i, selectedPoint);
                         return;
                     }
                 }
@@ -97,9 +101,9 @@ public class TrajectoryPointsTool extends Tool {
                         prevtp = tp;
                         continue;
                     }
-                    if (DistancePointSegment.distanceToSegment(x, y, prevtp.x, prevtp.y, tp.x, tp.y) <= squareSize / 2) {
-                        selectedPoint = new TrajectoryPoint(x, y, (prevtp.time + tp.time) / 2);
-                        tps2.insertElementAt(selectedPoint, i);
+                    if (DistancePointSegment.distanceToSegment(x, y, prevtp.getX(), prevtp.getY(), tp.getX(), tp.getY()) <= squareSize / 2) {
+                        selectedPoint = new TrajectoryPoint(x, y, (prevtp.getTime() + tp.getTime()) / 2);
+                        tps2.set(i, selectedPoint);
                         return;
                     }
                 }
@@ -117,11 +121,10 @@ public class TrajectoryPointsTool extends Tool {
     }
 
     public void popupMenu(final int x, final int y) {
-        int _x = (int) (x * SketchletEditor.editorPanel.scale + SketchletEditor.marginX);
-        int _y = (int) (y * SketchletEditor.editorPanel.scale + SketchletEditor.marginY);
+        int _x = (int) (x * SketchletEditor.getInstance().getScale() + SketchletEditor.getInstance().getMarginX());
+        int _y = (int) (y * SketchletEditor.getInstance().getScale() + SketchletEditor.getInstance().getMarginY());
 
         JPopupMenu popup = new JPopupMenu();
-        TutorialPanel.prepare(popup, true);
 
         JMenuItem delete = new JMenuItem("Delete Point", net.sf.sketchlet.designer.Workspace.createImageIcon("resources/user-trash.png"));
         JMenuItem cut1 = new JMenuItem("Simplify Primary Curve...", net.sf.sketchlet.designer.Workspace.createImageIcon("resources/edit-cut.png"));
@@ -157,10 +160,10 @@ public class TrajectoryPointsTool extends Tool {
             popup.add(cut2);
         }
 
-        popup.show(SketchletEditor.editorPanel, _x, _y);
+        popup.show(SketchletEditor.getInstance(), _x, _y);
     }
 
-    public void simplifyCurve(Vector<TrajectoryPoint> tps) {
+    private void simplifyCurve(List<TrajectoryPoint> tps) {
         String inputValue = JOptionPane.showInputDialog("Minimal distance between points (pixels):", "10");
         if (inputValue != null) {
             try {
@@ -169,7 +172,7 @@ public class TrajectoryPointsTool extends Tool {
                     TrajectoryPoint points[] = new TrajectoryPoint[tps.size()];
                     points = tps.toArray(points);
                     TrajectoryPoint prevtp = null;
-                    SketchletEditor.editorPanel.saveRegionUndo();
+                    SketchletEditor.getInstance().saveRegionUndo();
                     for (int i = 0; i < points.length; i++) {
                         TrajectoryPoint tp = points[i];
                         if (prevtp == null) {
@@ -177,7 +180,7 @@ public class TrajectoryPointsTool extends Tool {
                             continue;
                         }
 
-                        if (Math.sqrt((tp.x - prevtp.x) * (tp.x - prevtp.x) + (tp.y - prevtp.y) * (tp.y - prevtp.y)) < dist) {
+                        if (Math.sqrt((tp.getX() - prevtp.getX()) * (tp.getX() - prevtp.getX()) + (tp.getY() - prevtp.getY()) * (tp.getY() - prevtp.getY())) < dist) {
                             tps.remove(tp);
                         } else {
                             prevtp = tp;
@@ -192,19 +195,19 @@ public class TrajectoryPointsTool extends Tool {
         toolInterface.repaintImage();
     }
 
-    public void saveTrajectory() {
+    protected void saveTrajectory() {
         ActiveRegion reg = this.getRegion();
         if (reg != null) {
             String strTrajectory1 = "";
             String strTrajectory2 = "";
             for (TrajectoryPoint tp : tps1) {
-                strTrajectory1 += tp.x + " " + tp.y + " " + tp.time + "\n";
+                strTrajectory1 += tp.getX() + " " + tp.getY() + " " + tp.getTime() + "\n";
             }
             for (TrajectoryPoint tp : tps2) {
-                strTrajectory2 += tp.x + " " + tp.y + " " + tp.time + "\n";
+                strTrajectory2 += tp.getX() + " " + tp.getY() + " " + tp.getTime() + "\n";
             }
-            reg.strTrajectory1 = strTrajectory1;
-            reg.strTrajectory2 = strTrajectory2;
+            reg.trajectory1 = strTrajectory1;
+            reg.trajectory2 = strTrajectory2;
             toolInterface.repaintImage();
         }
 
@@ -212,34 +215,26 @@ public class TrajectoryPointsTool extends Tool {
 
     public void mouseDragged(int x, int y, int modifiers) {
         if (selectedPoint != null) {
-            selectedPoint.x = x;
-            selectedPoint.y = y;
+            selectedPoint.setX(x);
+            selectedPoint.setY(y);
             toolInterface.repaintImage();
         }
     }
 
-    final int squareSize = 7;
-    TrajectoryPoint selectedPoint = null;
-    Vector<TrajectoryPoint> tps1 = null;
-    Vector<TrajectoryPoint> tps2 = null;
-    boolean bDrawBorders = false;
-    boolean bDraw1 = false, bDraw2 = false;
-    double angle = 0;
-
-    public Rectangle getRectangle(Vector<TrajectoryPoint> trajectory) {
+    public Rectangle getRectangle(List<TrajectoryPoint> trajectory) {
         int bx1 = Integer.MAX_VALUE, by1 = Integer.MAX_VALUE, bx2 = 0, by2 = 0;
         for (TrajectoryPoint tp : trajectory) {
-            if (tp.x < bx1) {
-                bx1 = tp.x;
+            if (tp.getX() < bx1) {
+                bx1 = tp.getX();
             }
-            if (tp.y < by1) {
-                by1 = tp.y;
+            if (tp.getY() < by1) {
+                by1 = tp.getY();
             }
-            if (tp.x > bx2) {
-                bx2 = tp.x;
+            if (tp.getX() > bx2) {
+                bx2 = tp.getX();
             }
-            if (tp.y > by2) {
-                by2 = tp.y;
+            if (tp.getY() > by2) {
+                by2 = tp.getY();
             }
         }
 
@@ -247,26 +242,26 @@ public class TrajectoryPointsTool extends Tool {
     }
 
     public void draw(Graphics2D g2) {
-        ActiveRegion reg = this.getRegion();
-        if (reg != null) {
+        ActiveRegion region = this.getRegion();
+        if (region != null) {
             if (tps1 == null) {
-                tps1 = reg.createTrajectoryVector();
+                tps1 = region.createTrajectoryVector();
             }
             if (tps2 == null) {
-                tps2 = reg.createTrajectory2Vector();
+                tps2 = region.createTrajectory2Vector();
             }
             g2.setColor(new Color(0, 0, 0, 150));
             for (TrajectoryPoint tp : tps1) {
                 if (tp == selectedPoint) {
                     g2.setColor(new Color(255, 0, 0));
-                    g2.fillOval(tp.x - squareSize / 2 - 2, tp.y - squareSize / 2 - 2, squareSize + 4, squareSize + 4);
+                    g2.fillOval(tp.getX() - squareSize / 2 - 2, tp.getY() - squareSize / 2 - 2, squareSize + 4, squareSize + 4);
                 } else {
                     g2.setColor(new Color(200, 0, 0, 220));
-                    g2.fillOval(tp.x - squareSize / 2, tp.y - squareSize / 2, squareSize, squareSize);
+                    g2.fillOval(tp.getX() - squareSize / 2, tp.getY() - squareSize / 2, squareSize, squareSize);
                 }
             }
 
-            if (bDrawBorders && bDraw1) {
+            if (bDrawBorders && bDrawTrajectory1) {
                 Rectangle r = this.getRectangle(tps1);
                 g2.setColor(Color.GRAY);
                 g2.rotate(angle, r.getCenterX(), r.getCenterY());
@@ -276,13 +271,13 @@ public class TrajectoryPointsTool extends Tool {
             for (TrajectoryPoint tp : tps2) {
                 if (tp == selectedPoint) {
                     g2.setColor(new Color(0, 0, 255));
-                    g2.fillOval(tp.x - squareSize / 2 - 2, tp.y - squareSize / 2 - 2, squareSize + 4, squareSize + 4);
+                    g2.fillOval(tp.getX() - squareSize / 2 - 2, tp.getY() - squareSize / 2 - 2, squareSize + 4, squareSize + 4);
                 } else {
                     g2.setColor(new Color(0, 0, 200, 220));
-                    g2.fillOval(tp.x - squareSize / 2, tp.y - squareSize / 2, squareSize, squareSize);
+                    g2.fillOval(tp.getX() - squareSize / 2, tp.getY() - squareSize / 2, squareSize, squareSize);
                 }
             }
-            if (bDrawBorders && bDraw2) {
+            if (bDrawBorders && bDrawTrajectory2) {
                 Rectangle r = this.getRectangle(tps1);
                 g2.setColor(Color.GRAY);
                 g2.rotate(angle, r.getCenterX(), r.getCenterY());
@@ -329,13 +324,10 @@ public class TrajectoryPointsTool extends Tool {
         }
     }
 
-    public void keyReleased(KeyEvent e) {
-    }
-
     public ActiveRegion getRegion() {
-        if (freeHand.currentPage.regions.selectedRegions != null) {
-            if (freeHand.currentPage.regions.selectedRegions.size() > 0) {
-                return freeHand.currentPage.regions.selectedRegions.lastElement();
+        if (editor.getCurrentPage().getRegions().getSelectedRegions() != null) {
+            if (editor.getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
+                return editor.getCurrentPage().getRegions().getSelectedRegions().lastElement();
             }
         }
 

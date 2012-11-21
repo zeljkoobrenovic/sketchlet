@@ -5,7 +5,7 @@
 package net.sf.sketchlet.designer.editor.tool.stroke;
 
 import net.sf.sketchlet.designer.Workspace;
-import net.sf.sketchlet.designer.ui.toolbars.ColorToolbar;
+import net.sf.sketchlet.designer.editor.ui.toolbars.ColorToolbar;
 
 import javax.swing.*;
 import java.awt.*;

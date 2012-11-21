@@ -6,10 +6,10 @@ package net.sf.sketchlet.designer.tools.imagecache;
 
 import net.sf.sketchlet.common.context.SketchletContextUtils;
 import net.sf.sketchlet.designer.Workspace;
-import net.sf.sketchlet.designer.data.Page;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.designer.ui.MessageFrame;
-import net.sf.sketchlet.designer.ui.playback.PlaybackFrame;
+import net.sf.sketchlet.designer.editor.ui.MessageFrame;
+import net.sf.sketchlet.designer.playback.ui.PlaybackFrame;
+import net.sf.sketchlet.model.Page;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -23,15 +23,15 @@ import java.util.Vector;
 
 public class ImageCache {
 
-    public static Hashtable<File, BufferedImage> images = null;
+    private static Hashtable<File, BufferedImage> images = null;
 
     public static void clear() {
-        if (images != null) {
+        if (getImages() != null) {
             if (SketchletEditor.editorFrame != null) {
                 SketchletEditor.editorFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             }
             flush();
-            images.clear();
+            getImages().clear();
             images = null;
             if (SketchletEditor.editorFrame != null) {
                 SketchletEditor.editorFrame.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -40,8 +40,8 @@ public class ImageCache {
     }
 
     public static void flush() {
-        if (images != null) {
-            for (BufferedImage img : images.values()) {
+        if (getImages() != null) {
+            for (BufferedImage img : getImages().values()) {
                 img.flush();
             }
         }
@@ -56,28 +56,28 @@ public class ImageCache {
 
             public void run() {
                 try {
-                    if (images != null) {
+                    if (getImages() != null) {
                         flush();
-                        images.clear();
+                        getImages().clear();
                     }
                     images = new Hashtable<File, BufferedImage>();
                     String strDir = SketchletContextUtils.getCurrentProjectSkecthletsDir();
                     //File dir = new File(strDir);
                     //File files[] = dir.listFiles();
                     //for (int i = 0; i < files.length; i++) {
-                    for (Page s : SketchletEditor.pages.pages) {
+                    for (Page s : SketchletEditor.getPages().getPages()) {
                         Vector<File> imageFiles = s.getImageFiles();
                         for (File file : imageFiles) {
                             if (file.exists() && file.getName().endsWith(".png")) {
                                 BufferedImage img = read(file);
-                                images.put(file, img);
+                                getImages().put(file, img);
                             }
                         }
                     }
                 } catch (OutOfMemoryError oome) {
                     flush();
-                    if (images != null) {
-                        images.clear();
+                    if (getImages() != null) {
+                        getImages().clear();
                     }
                     images = null;
                     System.gc();
@@ -86,8 +86,8 @@ public class ImageCache {
                     }
                 } catch (Throwable e) {
                     flush();
-                    if (images != null) {
-                        images.clear();
+                    if (getImages() != null) {
+                        getImages().clear();
                     }
                     images = null;
                     System.gc();
@@ -109,9 +109,9 @@ public class ImageCache {
     }
 
     public static BufferedImage read(File file, BufferedImage oldImage, boolean bForceRead) throws IOException {
-        if (images != null) {
+        if (getImages() != null) {
             if (!bForceRead) {
-                BufferedImage img = images.get(file);
+                BufferedImage img = getImages().get(file);
                 if (img != null) {
                     return img;
                 }
@@ -127,33 +127,37 @@ public class ImageCache {
         tempImage.flush();
         tempImage = null;
 
-        if (images != null) {
-            images.put(file, image);
+        if (getImages() != null) {
+            getImages().put(file, image);
         }
 
         return image;
     }
 
     public static boolean write(BufferedImage image, File file) throws IOException {
-        if (images != null) {
-            BufferedImage img = images.get(file);
+        if (getImages() != null) {
+            BufferedImage img = getImages().get(file);
             if (img != null) {
-                images.remove(img);
+                getImages().remove(img);
                 img.flush();
                 img = null;
-                images.put(file, image);
+                getImages().put(file, image);
             }
         }
         return ImageIO.write(image, "png", file);
     }
 
     public static void remove(File file) {
-        if (images != null) {
-            images.remove(file);
+        if (getImages() != null) {
+            getImages().remove(file);
         }
         if (file.exists()) {
             file.delete();
         }
+    }
+
+    public static Hashtable<File, BufferedImage> getImages() {
+        return images;
     }
 
     public VolatileImage getVolatileImage(File file) throws IOException {

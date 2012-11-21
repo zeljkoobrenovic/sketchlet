@@ -33,7 +33,7 @@ public class DataReceiver {
     }
 
     public void updateVariable(String updateCommand, boolean bEncode) {
-        if (DataServer.paused) {
+        if (DataServer.isPaused()) {
             return;
         }
 
@@ -59,14 +59,14 @@ public class DataReceiver {
                     // log.error(e);
                 }
                 if (prefix.equalsIgnoreCase("UPDATE-DIRECT")) {
-                    DataServer.variablesServer.updateVariable(variableName, value, group, description);
+                    DataServer.getInstance().updateVariable(variableName, value, group, description);
                 } else if (prefix.equalsIgnoreCase("UPDATE")) {
-                    DataServer.variablesServer.updateVariable(variableName, value, group, description);
+                    DataServer.getInstance().updateVariable(variableName, value, group, description);
                 } else if (prefix.equalsIgnoreCase("DELETE")) {
                     if (variableName.contains("*")) {
-                        DataServer.variablesServer.removeVariables(variableName);
+                        DataServer.getInstance().removeVariables(variableName);
                     } else {
-                        DataServer.variablesServer.removeVariable(variableName);
+                        DataServer.getInstance().removeVariable(variableName);
                     }
                 } else {
                     log.info("Command '" + updateCommand + "' not recognized.");
@@ -88,14 +88,14 @@ public class DataReceiver {
                     String description = "";
 
                     if (prefix.equalsIgnoreCase("UPDATE-DIRECT")) {
-                        DataServer.variablesServer.updateVariable(variableName, value);
+                        DataServer.getInstance().updateVariable(variableName, value);
                     } else if (prefix.equalsIgnoreCase("UPDATE")) {
-                        DataServer.variablesServer.updateVariable(variableName, value);
+                        DataServer.getInstance().updateVariable(variableName, value);
                     } else if (prefix.equalsIgnoreCase("DELETE")) {
                         if (variableName.contains("*")) {
-                            DataServer.variablesServer.removeVariables(variableName);
+                            DataServer.getInstance().removeVariables(variableName);
                         } else {
-                            DataServer.variablesServer.removeVariable(variableName);
+                            DataServer.getInstance().removeVariable(variableName);
                         }
                     } else {
                         log.info("Command '" + updateCommand + "' not recognized.");
@@ -139,7 +139,7 @@ public class DataReceiver {
         }
 
         public void processLine(String line, BufferedReader in, PrintWriter out) throws IOException {
-            updateVariable(line.trim(), encode);
+            updateVariable(line.trim(), isEncode());
         }
 
         protected void reconnect() {

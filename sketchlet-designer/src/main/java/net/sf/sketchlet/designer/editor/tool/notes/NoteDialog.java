@@ -17,25 +17,23 @@ import java.awt.*;
  */
 public class NoteDialog extends JInternalFrame {
 
-    JScrollPane scrollPane;
-    public JTextArea noteTextArea = new JTextArea();
-    public int original_w;
-    public int original_h;
-    public boolean isMinimized = false;
-    public static Font noteFont = new Font("Verdana", Font.PLAIN, 11);
+    private JScrollPane scrollPane;
+    private JTextArea noteTextArea = new JTextArea();
+    private int originalWidth;
+    private int originalHeight;
+    private boolean minimized = false;
+    private static Font noteFont = new Font("Verdana", Font.PLAIN, 11);
 
     public NoteDialog(int x, int y) {
         super("", true, true, false, true);
         setLayout(new BorderLayout());
         setTitle("");
-        // setAlwaysOnTop(true);
         this.setFrameIcon(Workspace.createImageIcon("resources/cursor_postit.png"));
 
         scrollPane = new JScrollPane(noteTextArea);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         noteTextArea.setLineWrap(true);
         noteTextArea.setWrapStyleWord(true);
-        // noteTextArea.setFont(new Font("Verdana", Font.PLAIN, 11));
         noteTextArea.setFont(noteFont);
 
         noteTextArea.setBackground(Color.YELLOW);
@@ -49,12 +47,40 @@ public class NoteDialog extends JInternalFrame {
         this.addInternalFrameListener(new InternalFrameAdapter() {
 
             public void internalFrameClosed(InternalFrameEvent e) {
-                SketchletEditor.editorPanel.currentPage.notes.remove(NoteDialog.this);
+                SketchletEditor.getInstance().getCurrentPage().getNotes().remove(NoteDialog.this);
             }
         });
     }
 
-    public static void main(String args[]) {
-        new NoteDialog(20, 20);
+    public boolean isMinimized() {
+        return minimized;
+    }
+
+    public void setMinimized(boolean minimized) {
+        this.minimized = minimized;
+    }
+
+    public int getOriginalWidth() {
+        return originalWidth;
+    }
+
+    public void setOriginalWidth(int originalWidth) {
+        this.originalWidth = originalWidth;
+    }
+
+    public int getOriginalHeight() {
+        return originalHeight;
+    }
+
+    public void setOriginalHeight(int originalHeight) {
+        this.originalHeight = originalHeight;
+    }
+
+    public String getNoteText() {
+        return noteTextArea.getText();
+    }
+
+    public void setNoteText(String noteText) {
+        this.noteTextArea.setText(noteText);
     }
 }

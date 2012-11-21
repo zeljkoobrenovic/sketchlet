@@ -17,12 +17,12 @@ import java.util.Properties;
  */
 public class SketchletDesignerProperties {
     private static final Logger log = Logger.getLogger(SketchletDesignerProperties.class);
-    public static Properties properties;
+    private static Properties properties;
 
     static {
         properties = new Properties();
         try {
-            properties.loadFromXML(new FileInputStream(new File(SketchletContextUtils.getSketchletDesignerConfDir() + "parameters.xml")));
+            getProperties().loadFromXML(new FileInputStream(new File(SketchletContextUtils.getSketchletDesignerConfDir() + "parameters.xml")));
         } catch (Exception e) {
         }
     }
@@ -31,15 +31,15 @@ public class SketchletDesignerProperties {
     }
 
     public static void set(String key, String value) {
-        properties.setProperty(key, value);
+        getProperties().setProperty(key, value);
     }
 
     public static String get(String key) {
-        return properties.getProperty(key);
+        return getProperties().getProperty(key);
     }
 
     public static String get(String key, String defaultValue) {
-        return properties.getProperty(key, defaultValue);
+        return getProperties().getProperty(key, defaultValue);
     }
 
     public static int get(String key, int defaultValue) {
@@ -60,8 +60,12 @@ public class SketchletDesignerProperties {
 
     public static void save() {
         try {
-            properties.storeToXML(new FileOutputStream(new File(SketchletContextUtils.getSketchletDesignerConfDir() + "parameters.xml")), "sketchlet");
+            getProperties().storeToXML(new FileOutputStream(new File(SketchletContextUtils.getSketchletDesignerConfDir() + "parameters.xml")), "sketchlet");
         } catch (Exception e) {
         }
+    }
+
+    public static Properties getProperties() {
+        return properties;
     }
 }

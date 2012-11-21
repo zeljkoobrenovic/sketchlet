@@ -19,7 +19,7 @@ public class ScriptEyeSlot extends EyeSlot {
     public ScriptEyeSlot(ScriptPluginProxy script, EyeData parent) {
         super(parent);
         this.script = script;
-        this.name = script.scriptFile.getName();
+        this.name = script.getScriptFile().getName();
         this.backgroundColor = Color.CYAN;
     }
 
@@ -28,6 +28,6 @@ public class ScriptEyeSlot extends EyeSlot {
     }
 
     public void openItem() {
-        SketchletEditor.editorPanel.extraEditorPanel.scriptEditorExtraPanel.openScript(script.scriptFile);
+        SketchletEditor.getInstance().getExtraEditorPanel().scriptEditorExtraPanel.openScript(script.getScriptFile());
     }
 }

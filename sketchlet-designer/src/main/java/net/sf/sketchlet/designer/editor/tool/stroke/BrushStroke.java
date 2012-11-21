@@ -19,9 +19,9 @@
  */
 package net.sf.sketchlet.designer.editor.tool.stroke;
 
-import net.sf.sketchlet.designer.editor.stroke.geom.GeneralPathWriter;
-import net.sf.sketchlet.designer.editor.stroke.geom.InsetPathWriter;
-import net.sf.sketchlet.designer.editor.stroke.geom.MeasuredShape;
+import net.sf.sketchlet.model.geom.GeneralPathWriter;
+import net.sf.sketchlet.model.geom.InsetPathWriter;
+import net.sf.sketchlet.model.geom.MeasuredShape;
 
 import java.awt.*;
 import java.awt.geom.GeneralPath;

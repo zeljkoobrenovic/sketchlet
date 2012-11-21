@@ -21,12 +21,12 @@ import java.awt.event.WindowEvent;
  */
 public class ResizeDialog extends JDialog {
 
-    JFrame frame;
-    double aspectRatio = 0.0;
-    ResizeInterface resizeInterface;
-    ButtonGroup group = new ButtonGroup();
-    JRadioButton radioImage = new JRadioButton(Language.translate("Scale Image"));
-    JRadioButton radioCanvas = new JRadioButton(Language.translate("Resize Canvas Only"));
+    private JFrame frame;
+    private double aspectRatio = 0.0;
+    private ResizeInterface resizeInterface;
+    private ButtonGroup group = new ButtonGroup();
+    private JRadioButton radioImage = new JRadioButton(Language.translate("Scale Image"));
+    private JRadioButton radioCanvas = new JRadioButton(Language.translate("Resize Canvas Only"));
 
     public ResizeDialog(JFrame frame, String strTitle, final ResizeInterface resizeInterface) {
         this(frame, strTitle, resizeInterface, resizeInterface.getImageWidth(), resizeInterface.getImageHeight());

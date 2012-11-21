@@ -13,9 +13,9 @@ import net.sf.sketchlet.common.file.FileUtils;
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.GlobalProperties;
 import net.sf.sketchlet.designer.Workspace;
-import net.sf.sketchlet.designer.data.Page;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.designer.ui.CheckboxList;
+import net.sf.sketchlet.designer.editor.ui.CheckboxList;
+import net.sf.sketchlet.model.Page;
 
 import javax.swing.*;
 import java.awt.*;
@@ -35,21 +35,21 @@ import java.util.List;
 /* ZipVersion.java requires no other files. */
 public class ZipVersion extends JFrame implements KeyListener, ZipProgressFeedback {
 
-    JRadioButton zipBtn = new JRadioButton(Language.translate("Create simple ZIP archive"));
-    JRadioButton jarBtn = new JRadioButton(Language.translate("Create self-executable JAR file"));
-    JLabel label2 = new JLabel(Language.translate("Archive name:      "));
-    JLabel label3 = new JLabel(Language.translate(""));
-    JLabel label4 = new JLabel(Language.translate("Exclude extensions:      "));
-    JTextField remoteSubdirectoryField = new JTextField(20);
-    JTextField zipFileField = new JTextField(40);
-    JTextField excludeField = new JTextField(27);
-    JProgressBar progressBar = new JProgressBar();
-    CheckboxList fileList;
-    JButton createButton;
-    ZipThread thread;
-    public static final JFileChooser fc = new JFileChooser();
-    JFrame frame = this;
-    String strRoot = "";
+    private JRadioButton zipBtn = new JRadioButton(Language.translate("Create simple ZIP archive"));
+    private JRadioButton jarBtn = new JRadioButton(Language.translate("Create self-executable JAR file"));
+    private JLabel label2 = new JLabel(Language.translate("Archive name:      "));
+    private JLabel label3 = new JLabel(Language.translate(""));
+    private JLabel label4 = new JLabel(Language.translate("Exclude extensions:      "));
+    private JTextField remoteSubdirectoryField = new JTextField(20);
+    private JTextField zipFileField = new JTextField(40);
+    private JTextField excludeField = new JTextField(27);
+    private JProgressBar progressBar = new JProgressBar();
+    private CheckboxList fileList;
+    private JButton createButton;
+    private ZipThread thread;
+    private static final JFileChooser fc = new JFileChooser();
+    private JFrame frame = this;
+    private String strRoot = "";
 
     public ZipVersion(String initName) {
         super(Language.translate("Archive Project"));
@@ -253,10 +253,10 @@ public class ZipVersion extends JFrame implements KeyListener, ZipProgressFeedba
     }
 
     public void selectStartSketch() {
-        String sketches[] = new String[SketchletEditor.pages.pages.size()];
+        String sketches[] = new String[SketchletEditor.getPages().getPages().size()];
         int i = 0;
-        for (Page sk : SketchletEditor.pages.pages) {
-            sketches[i++] = sk.title;
+        for (Page sk : SketchletEditor.getPages().getPages()) {
+            sketches[i++] = sk.getTitle();
         }
 
         if (sketches.length == 0) {
@@ -401,22 +401,54 @@ public class ZipVersion extends JFrame implements KeyListener, ZipProgressFeedba
 class RemoteLocationInfo {
 
     public RemoteLocationInfo(String name, String uri, String username, String password) {
-        this.name = name;
-        this.uri = uri;
-        this.username = username;
-        this.password = password;
+        this.setName(name);
+        this.setUri(uri);
+        this.setUsername(username);
+        this.setPassword(password);
     }
 
-    String name = "";
-    String uri = "";
-    String username = "";
-    String password = "";
+    private String name = "";
+    private String uri = "";
+    private String username = "";
+    private String password = "";
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getUri() {
+        return uri;
+    }
+
+    public void setUri(String uri) {
+        this.uri = uri;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 }
 
 class StreamGobbler extends Thread {
 
-    InputStream is;
-    String type;
+    private InputStream is;
+    private String type;
 
     StreamGobbler(InputStream is, String type) {
         this.is = is;

@@ -8,14 +8,11 @@
  */
 package net.sf.sketchlet.designer;
 
-import net.sf.sketchlet.common.SimpleProperties;
 import net.sf.sketchlet.common.context.SketchletContextUtils;
 import net.sf.sketchlet.common.file.FileUtils;
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.communicator.ConfigurationData;
-import net.sf.sketchlet.communicator.server.AdditionalVariables;
 import net.sf.sketchlet.communicator.server.DataServer;
-import net.sf.sketchlet.communicator.server.Variable;
 import net.sf.sketchlet.context.SketchletContext;
 import net.sf.sketchlet.context.SketchletGraphicsContext;
 import net.sf.sketchlet.context.VariablesBlackboardContext;
@@ -23,61 +20,35 @@ import net.sf.sketchlet.designer.context.SketchletContextImpl;
 import net.sf.sketchlet.designer.context.SketchletGraphicsContextImpl;
 import net.sf.sketchlet.designer.context.UtilContextImpl;
 import net.sf.sketchlet.designer.context.VariablesBlackboardContextImpl;
-import net.sf.sketchlet.designer.data.ActiveRegions;
-import net.sf.sketchlet.designer.data.Evaluator;
-import net.sf.sketchlet.designer.data.LocalVariable;
-import net.sf.sketchlet.designer.data.Page;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.designer.help.TutorialPanel;
 import net.sf.sketchlet.designer.playback.displays.InteractionSpace;
-import net.sf.sketchlet.designer.programming.macros.Commands;
-import net.sf.sketchlet.designer.ui.DidYouKnow;
-import net.sf.sketchlet.designer.ui.SketchletDesignerMainPanel;
-import net.sf.sketchlet.designer.ui.desktop.ProcessConsolePanel;
-import net.sf.sketchlet.designer.ui.desktop.SketchletDesignerSplashScreen;
-import net.sf.sketchlet.designer.ui.playback.PlaybackFrame;
-import net.sf.sketchlet.designer.ui.playback.PlaybackPanel;
-import net.sf.sketchlet.designer.ui.profiles.Profiles;
-import net.sf.sketchlet.parser.CellReferenceResolver;
-import net.sf.sketchlet.parser.JEParser;
-import net.sf.sketchlet.plugin.VariableSpacePlugin;
-import net.sf.sketchlet.pluginloader.PluginInstance;
-import net.sf.sketchlet.pluginloader.PluginLoader;
+import net.sf.sketchlet.designer.editor.ui.DidYouKnow;
+import net.sf.sketchlet.designer.editor.ui.SketchletDesignerMainPanel;
+import net.sf.sketchlet.designer.editor.ui.desktop.SketchletDesignerSplashScreen;
+import net.sf.sketchlet.designer.playback.ui.PlaybackFrame;
+import net.sf.sketchlet.designer.playback.ui.PlaybackPanel;
+import net.sf.sketchlet.designer.editor.ui.profiles.Profiles;
+import net.sf.sketchlet.ioservices.IoServicesHandler;
+import net.sf.sketchlet.loaders.pluginloader.PluginInstance;
+import net.sf.sketchlet.loaders.pluginloader.PluginLoader;
+import net.sf.sketchlet.model.Page;
+import net.sf.sketchlet.model.varspaces.VariableSpacesHandler;
 import net.sf.sketchlet.util.UtilContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import javax.swing.*;
 import javax.swing.UIManager.LookAndFeelInfo;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.URL;
-import java.net.URLDecoder;
-import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -88,32 +59,31 @@ import java.util.concurrent.Executors;
 /**
  * @author cuypers
  */
-public class Workspace extends JPanel {
+public class Workspace {
     private static final Logger log = Logger.getLogger(Workspace.class);
-    public static JFrame mainFrame;
-    public static JFrame referenceFrame;
-    public static GraphicsConfiguration graphics;
-    public static SketchletDesignerMainPanel mainPanel;
-    public static JFrame frame;
-    public static boolean showGUI = true;
-    public static boolean programEnding = false;
-    public static Workspace processRunner;
-    public static Workspace consolePane;
-    public static String filePath;
-    public JTabbedPane tabbedPane = new JTabbedPane();
-    public static Vector processes = new Vector();
-    public static Vector processHandlers = new Vector();
-    public static Hashtable processHandlersIdMap = new Hashtable();
-    public static Color sketchBackground = new Color(255, 255, 255);
-    public static List<PluginInstance> variableSpaces = new Vector<PluginInstance>();
-    public static List<String> variableSourcesNames = new Vector<String>();
-    public static CountDownLatch pluginsReady = new CountDownLatch(1);
-    public static CountDownLatch derivedVariablesReady = new CountDownLatch(1);
-    public static CountDownLatch applicationReady = new CountDownLatch(1);
-    public static CountDownLatch ready = new CountDownLatch(1);
+    private static JFrame mainFrame;
+    private static JFrame referenceFrame;
+    private static GraphicsConfiguration graphics;
+    private static SketchletDesignerMainPanel mainPanel;
+    private static JFrame ioServicesFrame;
+    private static boolean showGUI = true;
+    private static Workspace processRunner;
+    private static Workspace consolePane;
+    private static String filePath;
+    private static Color sketchBackground = new Color(255, 255, 255);
+    private static List<PluginInstance> variableSpaces = new Vector<PluginInstance>();
+    private static List<String> variableSourcesNames = new Vector<String>();
+    private static CountDownLatch pluginsReadyCountDownLatch = new CountDownLatch(1);
+    private static CountDownLatch derivedVariablesReadyCountDownLatch = new CountDownLatch(1);
+    private static CountDownLatch applicationReadyCountDownLatch = new CountDownLatch(1);
+    private static CountDownLatch readyCountDownLatch = new CountDownLatch(1);
+
+    private IoServicesHandler ioServicesHandler = new IoServicesHandler();
+    private VariableSpacesHandler variableSpacesHandler = new VariableSpacesHandler();
+    private static SketchletDesignerSplashScreen splashScreen;
 
     public Workspace(String configFileUrl) throws Exception {
-        this.processRunner = this;
+        this.setProcessRunner(this);
         URL configURL;
         if (configFileUrl == null) {
             configURL = null;
@@ -122,25 +92,128 @@ public class Workspace extends JPanel {
             configURL = new URL(configFileUrl);
         }
 
-        this.loadProcesses(configURL);
-
-        add(tabbedPane);
+        getIoServicesHandler().loadProcesses(configURL);
     }
 
-    public void addProcess(String id, String command, String workingDirectory, String title, String description, int offset, boolean autoStart,
-                           String startCondition, String stopCondition, String outVariable, String inVariable) {
-        ProcessConsolePanel panel = new ProcessConsolePanel(id, title, description, command, workingDirectory,
-                processes, offset, autoStart,
-                startCondition, stopCondition, outVariable, inVariable);
-        panel.setParentTabbedPanel(tabbedPane);
-        this.processHandlers.add(panel);
-        this.processHandlersIdMap.put(id, panel);
-        tabbedPane.addTab(title, createImageIcon("resources/middle.gif", ""), panel, description);
+    public static CountDownLatch getPluginsReadyCountDownLatch() {
+        return pluginsReadyCountDownLatch;
+    }
+
+    public static CountDownLatch getDerivedVariablesReadyCountDownLatch() {
+        return derivedVariablesReadyCountDownLatch;
+    }
+
+    public static CountDownLatch getApplicationReadyCountDownLatch() {
+        return applicationReadyCountDownLatch;
+    }
+
+    public static CountDownLatch getReadyCountDownLatch() {
+        return readyCountDownLatch;
+    }
+
+    public static SketchletDesignerSplashScreen getSplashScreen() {
+        return splashScreen;
+    }
+
+    public static JFrame getMainFrame() {
+        return mainFrame;
+    }
+
+    public static void setMainFrame(JFrame mainFrame) {
+        Workspace.mainFrame = mainFrame;
+    }
+
+    public static JFrame getReferenceFrame() {
+        return referenceFrame;
+    }
+
+    public static void setReferenceFrame(JFrame referenceFrame) {
+        Workspace.referenceFrame = referenceFrame;
+    }
+
+    public static GraphicsConfiguration getGraphics() {
+        return graphics;
+    }
+
+    public static void setGraphics(GraphicsConfiguration graphics) {
+        Workspace.graphics = graphics;
+    }
+
+    public static SketchletDesignerMainPanel getMainPanel() {
+        return mainPanel;
+    }
+
+    public static void setMainPanel(SketchletDesignerMainPanel mainPanel) {
+        Workspace.mainPanel = mainPanel;
+    }
+
+    public static JFrame getIoServicesFrame() {
+        return ioServicesFrame;
+    }
+
+    public static void setIoServicesFrame(JFrame ioServicesFrame) {
+        Workspace.ioServicesFrame = ioServicesFrame;
+    }
+
+    public static boolean isShowGUI() {
+        return showGUI;
+    }
+
+    public static void setShowGUI(boolean showGUI) {
+        Workspace.showGUI = showGUI;
+    }
+
+    public static Workspace getProcessRunner() {
+        return processRunner;
+    }
+
+    public static void setProcessRunner(Workspace processRunner) {
+        Workspace.processRunner = processRunner;
+    }
+
+    public static Workspace getConsolePane() {
+        return consolePane;
+    }
+
+    public static void setConsolePane(Workspace consolePane) {
+        Workspace.consolePane = consolePane;
+    }
+
+    public static String getFilePath() {
+        return filePath;
+    }
+
+    public static void setFilePath(String filePath) {
+        Workspace.filePath = filePath;
+    }
+
+    public static Color getSketchBackground() {
+        return sketchBackground;
+    }
+
+    public static void setSketchBackground(Color sketchBackground) {
+        Workspace.sketchBackground = sketchBackground;
+    }
+
+    public static List<PluginInstance> getVariableSpaces() {
+        return variableSpaces;
+    }
+
+    public static void setVariableSpaces(List<PluginInstance> variableSpaces) {
+        Workspace.variableSpaces = variableSpaces;
+    }
+
+    public static List<String> getVariableSourcesNames() {
+        return variableSourcesNames;
+    }
+
+    public static void setVariableSourcesNames(List<String> variableSourcesNames) {
+        Workspace.variableSourcesNames = variableSourcesNames;
     }
 
     protected void finalize() throws Throwable {
         try {
-            this.killProcesses();
+            getIoServicesHandler().killProcesses();
         } finally {
             super.finalize();
         }
@@ -160,56 +233,23 @@ public class Workspace extends JPanel {
         }
     }
 
-    public void killProcesses() {
-        if (programEnding) {
-            return;
-        }  // already called
-
-        synchronized (Workspace.processes) {
-            Workspace.programEnding = true;
-            Iterator iterator = this.processes.iterator();
-
-            while (iterator.hasNext()) {
-                try {
-                    Process process = (Process) iterator.next();
-                    if (process != null) {
-                        process.destroy();
-                    }
-                } catch (Exception e) {
-                    log.error(e);
-                }
-            }
-
-            processRunner.tabbedPane.removeAll();
-
-            this.processHandlers.removeAllElements();
-            this.processHandlersIdMap.clear();
-            this.processes.removeAllElements();
-        }
-
-        Workspace.programEnding = false;
-    }
-
     private static void createAndShowGUI(String configFileUrl) throws Exception {
-        //Make sure we have nice window decorations.
         JFrame.setDefaultLookAndFeelDecorated(true);
 
-        //Create and set up the main window.
-        mainFrame = new JFrame("Sketchlet");
+        setMainFrame(new JFrame("Sketchlet"));
 
-        mainFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        mainFrame.setIconImage(Workspace.createImageIcon("resources/sketcify24x24.png", "").getImage());
-        //Create and set up the window.
-        frame = new JFrame("Sketchlet");
-        frame.setIconImage(Workspace.createImageIcon("resources/sketcify24x24.png", "").getImage());
-        frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-        //frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        getMainFrame().setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        getMainFrame().setIconImage(Workspace.createImageIcon("resources/sketcify24x24.png", "").getImage());
 
-        mainFrame.addWindowListener(new WindowAdapter() {
+        setIoServicesFrame(new JFrame("I/O Services"));
+        getIoServicesFrame().setIconImage(Workspace.createImageIcon("resources/sketcify24x24.png", "").getImage());
+        getIoServicesFrame().setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+
+        getMainFrame().addWindowListener(new WindowAdapter() {
 
             public void windowClosing(WindowEvent e) {
-                if (SketchletEditor.editorPanel != null) {
-                    int n = JOptionPane.showConfirmDialog(frame,
+                if (SketchletEditor.getInstance() != null) {
+                    int n = JOptionPane.showConfirmDialog(getMainFrame(),
                             Language.translate("Are you sure you want to exit Sketchlet") + "\n" + Language.translate("and close all windows?"),
                             Language.translate("Exit"),
                             JOptionPane.YES_NO_OPTION,
@@ -218,16 +258,16 @@ public class Workspace extends JPanel {
                     if (n != JOptionPane.YES_OPTION) {
                         return;
                     }
-                    if (!SketchletEditor.editorPanel.close()) {
+                    if (!SketchletEditor.getInstance().close()) {
                         return;
                     }
                 }
 
-                Workspace.mainPanel.saveConfiguration();
-                consolePane.killProcesses();
+                Workspace.getMainPanel().saveConfiguration();
+                getConsolePane().getIoServicesHandler().killProcesses();
 
-                int w = mainFrame.getWidth();
-                int h = mainFrame.getHeight();
+                int w = getMainFrame().getWidth();
+                int h = getMainFrame().getHeight();
 
                 GlobalProperties.set("main-window-size", w + "," + h);
                 GlobalProperties.save();
@@ -235,7 +275,7 @@ public class Workspace extends JPanel {
                 ApplicationLifecycleCentre.beforeApplicationEnd();
 
                 int attempt = 0;
-                while (SketchletEditor.editorPanel != null && attempt++ < 50) {
+                while (SketchletEditor.getInstance() != null && attempt++ < 50) {
                     try {
                         Thread.sleep(100);
                     } catch (Exception te) {
@@ -245,21 +285,20 @@ public class Workspace extends JPanel {
             }
         });
 
-        consolePane = new Workspace(null);
-        consolePane.setOpaque(true); //content panes must be opaque
-        frame.getContentPane().add(consolePane, BorderLayout.SOUTH);
-        TutorialPanel.prepare(frame);
+        setConsolePane(new Workspace(null));
+        getConsolePane().getIoServicesHandler().setOpaque(true); //content panes must be opaque
+        getIoServicesFrame().getContentPane().add(getConsolePane().getIoServicesHandler(), BorderLayout.SOUTH);
 
-        frame.addWindowListener(new WindowAdapter() {
+        getIoServicesFrame().addWindowListener(new WindowAdapter() {
 
             public void windowClosing(WindowEvent e) {
-                mainPanel.consoleButton.setText(Language.translate("Show Details and Console..."));
+                getMainPanel().consoleButton.setText(Language.translate("Show Details and Console..."));
             }
         });
 
-        mainPanel = new SketchletDesignerMainPanel(frame, consolePane);
+        setMainPanel(new SketchletDesignerMainPanel(getIoServicesFrame(), getConsolePane()));
 
-        mainFrame.getContentPane().add(mainPanel, BorderLayout.CENTER);
+        getMainFrame().getContentPane().add(getMainPanel(), BorderLayout.CENTER);
 
         Dimension sd = Toolkit.getDefaultToolkit().getScreenSize();
         int windowWidth = (int) (sd.getWidth() * 0.6);
@@ -277,26 +316,26 @@ public class Workspace extends JPanel {
         }
 
         if (sd.getWidth() <= windowWidth || sd.getHeight() <= windowHeight) {
-            mainFrame.setSize((int) (sd.getWidth() * 0.6), (int) (sd.getHeight() * 0.6));
-            mainFrame.setExtendedState(mainFrame.getExtendedState() | Frame.MAXIMIZED_BOTH);
+            getMainFrame().setSize((int) (sd.getWidth() * 0.6), (int) (sd.getHeight() * 0.6));
+            getMainFrame().setExtendedState(getMainFrame().getExtendedState() | Frame.MAXIMIZED_BOTH);
         } else {
-            mainFrame.setSize(windowWidth, windowHeight);
+            getMainFrame().setSize(windowWidth, windowHeight);
         }
 
-        Workspace.referenceFrame = mainFrame;
+        Workspace.setReferenceFrame(getMainFrame());
 
         if (configFileUrl == null) {
             RecentFilesManager.loadRecentFiles();
             RecentFilesManager.loadLastProject();
-            if (Workspace.showGUI) {
+            if (Workspace.isShowGUI()) {
                 RecentFilesManager.populateMenu();
-                mainFrame.setVisible(true);
+                getMainFrame().setVisible(true);
             }
         } else {
             try {
                 bCloseOnPlaybackEnd = true;
-                consolePane.loadProcesses(new URL(configFileUrl));
-                mainPanel.openSketches(true);
+                getConsolePane().getIoServicesHandler().loadProcesses(new URL(configFileUrl));
+                getMainPanel().openSketches(true);
             } catch (Exception e) {
                 Workspace.closeSplashScreen();
                 JOptionPane.showMessageDialog(null, Language.translate("Could nor open the project") + "\n" + configFileUrl, Language.translate("Sketchlet Error"), JOptionPane.ERROR_MESSAGE);
@@ -361,69 +400,8 @@ public class Workspace extends JPanel {
         return commandLine;
     }
 
-    public static Vector<String> getVariablesWindows(String str) {
-        Vector<String> variables = new Vector<String>();
-
-        int n;
-
-        try {
-            while ((n = str.indexOf("%")) != -1) {
-                int n2 = str.indexOf("%", n + 1);
-
-                if (n2 == -1) {
-                    break;
-                }
-
-                String var = str.substring(n + 1, n2);
-                if (!var.startsWith("=")) {
-                    variables.add(var);
-                }
-
-                str = str.substring(n2 + 1);
-            }
-        } catch (Exception e) {
-            log.error(e);
-        }
-
-        return variables;
-    }
-
-    public static Vector<String> getVariablesUnix(String str) {
-        Vector<String> variables = new Vector<String>();
-
-        int n = 0;
-
-        try {
-            while ((n = str.indexOf("$", n)) != -1) {
-                n++;
-                if (str.length() > n && (str.charAt(n + 1) == '\\' || str.charAt(n + 1) == '/')) {
-                    continue;
-                }
-                int n2 = str.indexOf(" ", n + 1);
-
-                if (n2 == -1) {
-                    String var = str.substring(n + 1);
-                    variables.add(var);
-
-                    break;
-                }
-
-                String var = str.substring(n + 1, n2);
-                variables.add(var);
-
-                str = str.substring(n2 + 1);
-            }
-        } catch (Exception e) {
-            log.error(e);
-        }
-
-        return variables;
-    }
-
-    static int imageCounter = 0;
-
     public static BufferedImage createCompatibleImage(int w, int h) {
-        return (BufferedImage) getGraphicsEnvironemnt().createCompatibleImage(w, h, Transparency.TRANSLUCENT);
+        return getGraphicsEnvironemnt().createCompatibleImage(w, h, Transparency.TRANSLUCENT);
     }
 
     public static BufferedImage createCompatibleImageCopy(Image img) {
@@ -454,48 +432,25 @@ public class Workspace extends JPanel {
         g2.dispose();
     }
 
-    public static BufferedImage createCompatibleImageOpaque(int w, int h) {
-        return new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-    }
-
-    public static BufferedImage createCompatibleImageOpaque(int w, int h, BufferedImage oldImage) {
-        if (oldImage == null || oldImage.getWidth() != w || oldImage.getHeight() != h) {
-            if (oldImage != null) {
-                oldImage.flush();
-            }
-            return Workspace.createCompatibleImageOpaque(w, h);
-        } else {
-            Workspace.clearImage(oldImage);
-            return oldImage;
-        }
-    }
-
-    public static void clearImageOpaque(BufferedImage image) {
-        Graphics2D g2 = image.createGraphics();
-        g2.setColor(Color.WHITE);
-        g2.fill(new Rectangle(0, 0, image.getWidth(), image.getHeight()));
-        g2.dispose();
-    }
-
     public static VolatileImage createCompatibleVolatileImage(int w, int h) {
-        return (VolatileImage) getGraphicsEnvironemnt().createCompatibleVolatileImage(w, h, Transparency.TRANSLUCENT);
+        return getGraphicsEnvironemnt().createCompatibleVolatileImage(w, h, Transparency.TRANSLUCENT);
     }
 
     public static void graphicsConfiguration() {
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        graphics = ge.getDefaultScreenDevice().getDefaultConfiguration();
+        setGraphics(ge.getDefaultScreenDevice().getDefaultConfiguration());
     }
 
     public static GraphicsConfiguration getGraphicsEnvironemnt() {
-        if (graphics == null) {
+        if (getGraphics() == null) {
             graphicsConfiguration();
         }
-        return graphics;
+        return getGraphics();
     }
 
     public static void testPorts() {
         ConfigurationData.loadFromURL(null);
-        int port = ConfigurationData.tcpPort;
+        int port = ConfigurationData.getTcpPort();
         try {
             ServerSocket serverSocket = new ServerSocket(port);
             serverSocket.close();
@@ -507,11 +462,9 @@ public class Workspace extends JPanel {
         }
     }
 
-    public static SketchletDesignerSplashScreen splashScreen;
-
     public static void closeSplashScreen() {
-        if (splashScreen != null) {
-            splashScreen.setVisible(false);
+        if (getSplashScreen() != null) {
+            getSplashScreen().setVisible(false);
         }
     }
 
@@ -575,9 +528,9 @@ public class Workspace extends JPanel {
 
             public void run() {
                 try {
-                    Workspace.splashScreen.setMessage("Loading plugins...");
+                    Workspace.getSplashScreen().setMessage("Loading plugins...");
                     PluginLoader.loadPlugins();
-                    Workspace.splashScreen.setMessage("");
+                    Workspace.getSplashScreen().setMessage("");
 
                     InteractionSpace.createDisplaySpace();
                     RecentFilesManager.loadRecentFiles();
@@ -589,16 +542,16 @@ public class Workspace extends JPanel {
                     }
                     createAndShowGUI(configFileUrl);
                     SketchletDesignerMainPanel.projectSelectorPanel.populate();
-                    mainPanel.sketchletPanel.globalVariablesPanel.enableControls();
+                    getMainPanel().sketchletPanel.globalVariablesPanel.enableControls();
                 } catch (Exception e) {
                     log.error(e);
                 } finally {
-                    applicationReady.countDown();
+                    getApplicationReadyCountDownLatch().countDown();
                 }
                 if (!Workspace.bCloseOnPlaybackEnd) {
                     Workspace.closeSplashScreen();
                     if (GlobalProperties.get("help-start-screen") == null || !GlobalProperties.get("help-start-screen").equalsIgnoreCase("false")) {
-                        DidYouKnow.showFrame(Workspace.mainFrame);
+                        DidYouKnow.showFrame(Workspace.getMainFrame());
                     }
                 }
             }
@@ -608,493 +561,22 @@ public class Workspace extends JPanel {
 
             public void run() {
                 try {
-                    applicationReady.await();
+                    getApplicationReadyCountDownLatch().await();
                     ApplicationLifecycleCentre.afterApplicationStart();
                     ApplicationLifecycleCentre.afterProjectOpening();
                 } catch (InterruptedException ie) {
                     log.error(ie);
                 } finally {
-                    Workspace.derivedVariablesReady.countDown();
-                    Workspace.ready.countDown();
+                    Workspace.getDerivedVariablesReadyCountDownLatch().countDown();
+                    Workspace.getReadyCountDownLatch().countDown();
                 }
             }
         });
-    }
-
-    public static void prepareAdditionalVariables() {
-
-        DataServer.variablesServer.addAdditionalVariables(new AdditionalVariables() {
-            public Variable getVariable(String variableName) {
-                Page page = Workspace.getPage();
-                for (LocalVariable localVariable : page.localVariables) {
-                    if (localVariable.getName().equalsIgnoreCase(variableName)) {
-                        Variable v = new Variable() {
-                            @Override
-                            public void save() {
-                                savePageVariable(name, value);
-                            }
-                        };
-                        v.name = localVariable.getName();
-                        v.value = localVariable.getValue();
-                        v.format = localVariable.getFormat();
-                        v.timestamp--;
-                        return v;
-                    }
-                }
-
-                return null;
-            }
-
-
-            public void updateVariable(String variableName, String value) {
-                savePageVariable(variableName, value);
-            }
-        });
-        DataServer.variablesServer.addAdditionalVariables(new AdditionalVariables() {
-
-            @Override
-            public Variable getVariable(String name) {
-                if (!name.isEmpty()) {
-                    String strCol = name.substring(0, 1);
-                    if (strCol.charAt(0) >= 'A' && strCol.charAt(0) <= 'Z') {
-                        try {
-                            String strRow = name.substring(1);
-                            final int col = strCol.charAt(0) - 'A' + 1;
-                            final int row = Integer.parseInt(strRow) - 1;
-                            Variable v = new Variable() {
-
-                                @Override
-                                public void save() {
-                                    if (SketchletEditor.editorPanel != null && SketchletEditor.editorPanel.spreadsheetPanel != null) {
-                                        SketchletEditor.editorPanel.spreadsheetPanel.model.setValueAt(this.value, row, col);
-                                    }
-                                }
-                            };
-                            v.timestamp--;
-                            v.name = name;
-                            String strValue = getPage().getSpreadsheetCellValue(row, col);
-                            if (strValue.startsWith("=")) {
-                                strValue = Evaluator.processText(strValue, "", "");
-                                while (strValue.startsWith("=")) {
-                                    strValue = Evaluator.processText(strValue, "", "");
-                                }
-                            }
-                            v.value = strValue;
-                            return v;
-                        } catch (Exception e) {
-                            //log.error(e);
-                        }
-                    }
-                }
-                return null;
-            }
-        });
-
-
-        DataServer.variablesServer.addAdditionalVariables(new AdditionalVariables() {
-
-            @Override
-            public Variable getVariable(String id) {
-                if (!id.isEmpty()) {
-                    for (int i = 0; i < Workspace.variableSourcesNames.size(); i++) {
-                        String dsName = Workspace.variableSourcesNames.get(i);
-                        if (id.startsWith(dsName)) {
-                            final PluginInstance ds = Workspace.variableSpaces.get(i);
-                            if (ds.getInstance() instanceof VariableSpacePlugin) {
-                                id = id.substring(dsName.length() + 1);
-                                try {
-                                    Variable v = new Variable() {
-
-                                        @Override
-                                        public void save() {
-                                            ((VariableSpacePlugin) ds.getInstance()).update(name, value);
-                                        }
-                                    };
-                                    v.timestamp--;
-                                    v.name = id;
-                                    String strValue = ((VariableSpacePlugin) ds.getInstance()).evaluate(id);
-                                    if (strValue.startsWith("=")) {
-                                        strValue = Evaluator.processText(strValue, "", "");
-                                        while (strValue.startsWith("=")) {
-                                            strValue = Evaluator.processText(strValue, "", "");
-                                        }
-                                    }
-                                    v.value = strValue;
-                                    return v;
-                                } catch (Exception e) {
-                                }
-                            }
-                        }
-                    }
-                }
-                return null;
-            }
-        });
-
-        DataServer.variablesServer.addAdditionalVariables(new AdditionalVariables() {
-
-            @Override
-            public Variable getVariable(String name) {
-                name = name.trim();
-                if (name.startsWith("[") && name.endsWith("]")) {
-                    try {
-                        Variable v = new Variable() {
-
-                            @Override
-                            public void save() {
-                                Commands.updateVariableOrProperty(this, name, value, Commands.ACTION_VARIABLE_UPDATE);
-                            }
-                        };
-                        v.timestamp--;
-                        v.name = name;
-                        ActiveRegions regions = Workspace.getPage().regions;
-                        v.value = Evaluator.processRegionReferences(regions, name);
-                        return v;
-                    } catch (Exception e) {
-                        log.error(e);
-                    }
-
-                }
-                return null;
-            }
-        });
-
-        JEParser.setResolver(new CellReferenceResolver() {
-
-            @Override
-            public String getValue(String strReference) {
-                if (!strReference.isEmpty() && SketchletEditor.editorPanel != null) {
-                    ActiveRegions regions = Workspace.getPage().regions;
-
-                    strReference = DataServer.populateTemplateSimple(strReference, false);
-                    strReference = Evaluator.processRegionReferences(regions, strReference);
-                    try {
-                        String expression = "";
-                        int col = 0;
-                        int row = 0;
-                        if (DataServer.variablesServer.variableExists(strReference)) {
-                            return DataServer.variablesServer.getVariableValue(strReference);
-                        }
-                        String prevValue = getPage().getSpreadsheetCellValue(row, col);
-                        if (!expression.equals(prevValue)) {
-                            if (SketchletEditor.editorPanel != null && SketchletEditor.editorPanel.spreadsheetPanel != null) {
-                                SketchletEditor.editorPanel.spreadsheetPanel.model.fireTableCellUpdated(row, col);
-                            }
-                        }
-                        return expression;
-                    } catch (Exception e) {
-                    }
-                }
-                return "";
-            }
-        });
-    }
-
-    public URL selectFile() {
-
-        Object[] options = {"Create New Configuration", "Open Existing Configuration...", "Exit"};
-        int selectedValue = JOptionPane.showOptionDialog(frame, "Sketchlet: ", "Sketchlet",
-                JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
-                null, options, options[0]);
-
-        if (selectedValue == 0) {
-            return null;
-        } else if (selectedValue == 1) {
-            return openFile();
-        } else {
-            System.exit(0);
-            return null;
-        }
-    }
-
-    static JFileChooser fc = new JFileChooser();
-
-    public URL openFile() {
-        try {
-            //Create a file chooser
-            fc.setApproveButtonText("Open Configuration");
-            fc.setDialogTitle("Select Sketchlet Workspace Configuration");
-            fc.setCurrentDirectory(new File(SketchletContextUtils.sketchletDataDir() + "/conf/processrunner"));
-            //In response to a button click:
-            int returnVal = fc.showOpenDialog(this);
-
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                File file = fc.getSelectedFile();
-                return file.toURL();
-            } else {
-                return null;
-            }
-        } catch (Exception e) {
-            log.error(e);
-        }
-        return null;
-    }
-
-    public static void main2(String args[]) throws Exception {
-        for (String strCommand : args) {
-            Thread.sleep(2000);
-        }
-    }
-
-    public void reloadProcesses() {
-        try {
-            this.loadProcesses(new File(Workspace.filePath).toURL(), false);
-        } catch (Exception e) {
-            log.error(e);
-        }
-    }
-
-    public void loadProcesses(File file, boolean append) {
-        try {
-            this.loadProcesses(file.toURL(), append);
-        } catch (Exception e) {
-            log.error(e);
-        }
-    }
-
-    public void loadProcesses(URL configURL) {
-        this.loadProcesses(configURL, false);
-    }
-
-    public void loadProcesses(URL configURL, boolean append) {
-        if (configURL == null) {
-            return;
-        }
-
-        Workspace.mainFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        if (!append) {
-            Workspace.processRunner.killProcesses();
-            filePath = configURL.getFile();
-
-            if (new File(filePath).getParentFile().getName().equals(SketchletContextUtils.sketchletDataDir())) {
-                SketchletContextUtils.projectFolder = new File(filePath).getParentFile().getParent() + File.separator;
-            } else {
-                SketchletContextUtils.projectFolder = new File(filePath).getParent() + File.separator;
-            }
-
-            System.setProperty("user.dir", SketchletContextUtils.projectFolder);
-
-            if (!Workspace.bCloseOnPlaybackEnd) {
-                RecentFilesManager.addRecentFile(Workspace.filePath);
-                RecentFilesManager.saveRecentFiles();
-            }
-        }
-
-        if (SketchletContextUtils.getCurrentProjectDir() != null && Workspace.mainPanel != null) {
-            Workspace.mainPanel.populateSettingsMenu(Workspace.mainPanel.projectSettingsMenu, new File(SketchletContextUtils.getCurrentProjectConfDir()));
-        }
-
-        if (configURL.toString().toLowerCase().endsWith(".xml")) {
-            loadProcessesXML(configURL, append);
-        } else {
-            loadProcessesTxT(configURL, append);
-        }
-
-        if (!append) {
-            try {
-                net.sf.sketchlet.communicator.Global.workingDirectory = SketchletContextUtils.getCurrentProjectDir();
-                mainPanel.sketchletPanel.restart(URLDecoder.decode(new File(SketchletContextUtils.getCurrentProjectConfDir() + "communicator/config.xml").toURL().toString(), "UTF8"));
-                ApplicationLifecycleCentre.afterProjectOpening();
-            } catch (Exception e) {
-                log.error(e);
-            }
-        }
-
-        if (Workspace.mainPanel != null) {
-            this.mainPanel.enableMenuItems();
-            this.mainPanel.enableToolbarItems();
-
-            this.mainPanel.refreshData(append);
-            Workspace.mainFrame.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        }
-    }
-
-    public void loadProcessesXML(URL configURL, boolean append) {
-        boolean installFiles = true;
-        try {
-            DocumentBuilderFactory factory;
-            DocumentBuilder builder;
-            TransformerFactory tFactory;
-            Transformer transformers[];
-
-            try {
-                factory = DocumentBuilderFactory.newInstance();
-                builder = factory.newDocumentBuilder();
-                tFactory = TransformerFactory.newInstance();
-            } catch (Exception e) {
-                log.error(e);
-                return;
-            }
-
-            Document docConfig = builder.parse(configURL.openStream());
-
-            XPath xpath = XPathFactory.newInstance().newXPath();
-
-            String expression;
-            String str;
-            double number;
-
-            if (!append) {
-                expression = "/process-runner/@title";
-                str = (String) xpath.evaluate(expression, docConfig, XPathConstants.STRING);
-
-                if (this.mainFrame != null) {
-                    this.mainFrame.setTitle("Sketchlet: " + str + " (" + SketchletContextUtils.projectFolder + ")");
-                }
-                if (this.frame != null) {
-                    this.frame.setTitle("Control Panel: " + str);
-                    this.mainPanel.projectTitle = str;
-                }
-            }
-
-            if (installFiles) {
-                expression = "/process-runner/file-dependency/file";
-                NodeList files = (NodeList) xpath.evaluate(expression, docConfig, XPathConstants.NODESET);
-
-                for (int i = 0; i < files.getLength(); i++) {
-                    Node file = files.item(i);
-
-                    String copyFile = (String) xpath.evaluate("@copy-on-install", file, XPathConstants.STRING);
-
-                    if (copyFile.equalsIgnoreCase("true") || copyFile.equalsIgnoreCase("yes")) {
-                        String fileName = (String) xpath.evaluate("@name", file, XPathConstants.STRING);
-                        String inputDirectory = (String) xpath.evaluate("@directory", file, XPathConstants.STRING);
-                        String installDirectory = (String) xpath.evaluate("@install-directory", file, XPathConstants.STRING);
-
-                        String inputPath = inputDirectory + "/" + fileName;
-                        String installPath = installDirectory + "/" + fileName;
-
-                        installDirectory = Workspace.replaceSystemVariables(installDirectory);
-                        inputPath = Workspace.replaceSystemVariables(inputPath);
-                        installPath = Workspace.replaceSystemVariables(installPath);
-
-                        try {
-                            File installDir = new File(installDirectory);
-                            installDir.mkdirs();
-                            File installFile = new File(installPath);
-                            if (installFile.createNewFile()) {
-                                InputStream in = new FileInputStream(inputPath);
-                                OutputStream out = new FileOutputStream(installPath);
-
-                                // Transfer bytes from in to out
-                                byte[] buf = new byte[1024];
-                                int len;
-                                while ((len = in.read(buf)) > 0) {
-                                    out.write(buf, 0, len);
-                                }
-                                in.close();
-                                out.close();
-                            }
-                        } catch (Exception e) {
-                            log.error(e);
-                        }
-                    }
-                }
-            }
-
-            expression = "/process-runner/process";
-            NodeList processes = (NodeList) xpath.evaluate(expression, docConfig, XPathConstants.NODESET);
-
-            for (int i = 0; i < processes.getLength(); i++) {
-                Node process = processes.item(i);
-
-                String title = (String) xpath.evaluate("@title", process, XPathConstants.STRING);
-                String id = (String) xpath.evaluate("@id", process, XPathConstants.STRING);
-                String workingDirectory = (String) xpath.evaluate("@working-directory", process, XPathConstants.STRING);
-
-                String strAutoStart = (String) xpath.evaluate("@auto-start", process, XPathConstants.STRING);
-                boolean autoStart = !(strAutoStart.equals("no") || strAutoStart.equals("false"));
-
-                if (id.equals("")) {
-                    id = "" + i;
-                }
-
-                String description = (String) xpath.evaluate("@description", process, XPathConstants.STRING);
-                String command = (String) xpath.evaluate(".", process, XPathConstants.STRING);
-
-                int offset = 0;
-                String strOffset = (String) xpath.evaluate("@timeOffsetMs", process, XPathConstants.STRING);
-
-                if (strOffset != null && !strOffset.equals("")) {
-                    offset = Integer.parseInt(strOffset);
-                }
-
-                String startCondition = (String) xpath.evaluate("@start-condition", process, XPathConstants.STRING);
-                String stopCondition = (String) xpath.evaluate("@stop-condition", process, XPathConstants.STRING);
-                String outVariable = (String) xpath.evaluate("@out-variable", process, XPathConstants.STRING);
-                String inVariable = (String) xpath.evaluate("@in-variable", process, XPathConstants.STRING);
-
-                this.addProcess(id, command, workingDirectory, title, description, offset, autoStart,
-                        startCondition, stopCondition, outVariable, inVariable);
-            }
-
-        } catch (XPathExpressionException xpee) {
-            log.error(xpee);
-        } catch (SAXException sxe) {
-            log.error(sxe);
-        } catch (IOException ioe) {
-            log.error(ioe);
-        } catch (Exception e) {
-            log.error(e);
-        }
-    }
-
-    public void loadProcessesTxT(URL configURL, boolean append) {
-        if (configURL == null) {
-            return;
-        }
-
-        boolean installFiles = true;
-
-        try {
-            SimpleProperties props = new SimpleProperties();
-
-            props.loadData(configURL.toExternalForm(), "addprocess");
-
-            if (!append) {
-                String title = props.getString("title");
-
-                if (this.mainFrame != null) {
-                    this.mainFrame.setTitle("Sketchlet: " + title + " (" + SketchletContextUtils.projectFolder + ")");
-                }
-                if (this.frame != null) {
-                    this.frame.setTitle("Control Panel: " + title);
-                    this.mainPanel.projectTitle = title;
-                }
-            }
-
-            for (int i = 0; i < props.getCount("addprocess"); i++) {
-                String processTitle = props.getString("AddProcess", i, "ProcessTitle");
-                String id = props.getString("AddProcess", i);
-
-                boolean autoStart = props.getBoolean("AddProcess", i, "AutoStart");
-
-                if (id.equals("")) {
-                    id = "" + i;
-                }
-
-                String description = props.getString("AddProcess", i, "Description");
-                String command = props.getString("AddProcess", i, "CommandLine");
-                String workingDirectory = props.getString("AddProcess", i, "WorkingDirectory");
-
-                String startCondition = props.getString("AddProcess", i, "StartCondition");
-                String stopCondition = props.getString("AddProcess", i, "StopCondition");
-                String outVariable = props.getString("AddProcess", i, "OutVariable");
-                String inVariable = props.getString("AddProcess", i, "InVariable");
-
-                int offset = props.getInteger("AddProcess", i, "TimeOffsetMs");
-
-                this.addProcess(id, command, workingDirectory, processTitle, description, offset, autoStart,
-                        startCondition, stopCondition, outVariable, inVariable);
-            }
-        } catch (Exception e) {
-            log.error(e);
-        }
     }
 
     public static void openProject(String strPath, boolean append) {
         try {
-            DataServer.paused = false;
+            DataServer.setPaused(false);
             if (!strPath.endsWith("\\") && !strPath.endsWith("/")) {
                 strPath += File.separator;
             }
@@ -1121,36 +603,24 @@ public class Workspace extends JPanel {
                 FileUtils.saveFileText(strPath, "Title " + strTitle);
             }
 
-            processRunner.loadProcesses(new File(strPath).toURL(), append);
+            getProcessRunner().getIoServicesHandler().loadProcesses(new File(strPath).toURL(), append);
         } catch (Exception e) {
             log.error(e);
         }
     }
 
-    private static void savePageVariable(String variableName, String value) {
-        Page page = Workspace.getPage();
-        for (LocalVariable localVariable : page.localVariables) {
-            if (localVariable.getName().equalsIgnoreCase(variableName)) {
-                localVariable.setValue(value);
-                SketchletEditor.editorPanel.pageVariablesPanel.refreshComponents();
-                break;
-            }
-        }
-    }
-
-
     public static Page getPage() {
         Page page;
-        if ((PlaybackFrame.playbackFrame != null || SketchletEditor.editorPanel.internalPlaybackPanel != null) && PlaybackPanel.currentPage != null) {
+        if ((PlaybackFrame.playbackFrame != null || SketchletEditor.getInstance().getInternalPlaybackPanel() != null) && PlaybackPanel.currentPage != null) {
             page = PlaybackPanel.currentPage;
         } else {
-            page = SketchletEditor.editorPanel.currentPage;
+            page = SketchletEditor.getInstance().getCurrentPage();
         }
         return page;
     }
 
     public static Page getMasterSketch() {
-        return SketchletEditor.editorPanel != null ? SketchletEditor.editorPanel.getMasterPage() : null;
+        return SketchletEditor.getInstance() != null ? SketchletEditor.getInstance().getMasterPage() : null;
     }
 
     public static void initForBatchProcessing() {
@@ -1162,4 +632,13 @@ public class Workspace extends JPanel {
         UtilContext.setInstance(new UtilContextImpl());
         PluginLoader.loadPlugins();
     }
+
+    public IoServicesHandler getIoServicesHandler() {
+        return ioServicesHandler;
+    }
+
+    public VariableSpacesHandler getVariableSpacesHandler() {
+        return variableSpacesHandler;
+    }
+
 }

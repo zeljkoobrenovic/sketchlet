@@ -5,9 +5,9 @@
 package net.sf.sketchlet.designer.editor.dnd;
 
 import net.sf.sketchlet.designer.Workspace;
-import net.sf.sketchlet.designer.data.ActiveRegion;
-import net.sf.sketchlet.designer.editor.EditorMode;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
+import net.sf.sketchlet.designer.editor.SketchletEditorMode;
+import net.sf.sketchlet.model.ActiveRegion;
 import org.apache.log4j.Logger;
 
 import javax.imageio.ImageIO;
@@ -66,8 +66,8 @@ public class SelectDropFile extends JDialog {
                                         region.saveImage();
                                     }
                                 } else {
-                                    SketchletEditor.editorPanel.setMode(EditorMode.SKETCHING);
-                                    SketchletEditor.editorPanel.fromFile(x, y, file);
+                                    SketchletEditor.getInstance().setEditorMode(SketchletEditorMode.SKETCHING);
+                                    SketchletEditor.getInstance().fromFile(x, y, file);
                                 }
                             } catch (Exception e) {
                                 log.error(e);

@@ -26,6 +26,7 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
 /**
@@ -40,10 +41,10 @@ public class ConfigurationData {
     private ConfigurationData() {
     }
 
-    public static int tcpPort = 3320;
-    public static int udpPort = 3321;
-    public static Vector initialVariablesURLs = new Vector();
-    public static Vector scriptFiles = new Vector();
+    private static int tcpPort = 3320;
+    private static int udpPort = 3321;
+    public static List initialVariablesURLs = new Vector();
+    public static List scriptFiles = new Vector();
     public static String configURL = "file:conf/communicator/config.xml";
 
     public static void addInitialVariablesURL(String strURL) {
@@ -68,7 +69,7 @@ public class ConfigurationData {
             strFileURL = "file:conf/communicator/init-variables.xml";
         } else {
             strFileURL = (String) initialVariablesURLs.get(0);
-            initialVariablesURLs.removeAllElements();
+            initialVariablesURLs.clear();
         }
 
         initialVariablesURLs.add(strFileURL);
@@ -94,10 +95,10 @@ public class ConfigurationData {
             out.println("<?xml version='1.0' encoding='UTF-8'?>");
             out.println("<variables>");
 
-            for (String variableName : DataServer.variablesServer.variablesVector) {
-                Variable v = DataServer.variablesServer.getVariable(variableName);
+            for (String variableName : DataServer.getInstance().variablesVector) {
+                Variable v = DataServer.getInstance().getVariable(variableName);
 
-                out.println("    <variable" + " name='" + prepareForXML(v.name) + "' format='" + prepareForXML(v.format) + "' min='" + prepareForXML(v.min) + "' max='" + prepareForXML(v.max) + "'" + " group='" + prepareForXML(v.group) + "'" + " count-filter='" + v.countFilter + "'" + " time-filter='" + v.timeFilterMs + "'" + " description='" + prepareForXML(v.description) + "'" + "><![CDATA[" + v.value + "]]></variable>");
+                out.println("    <variable" + " name='" + prepareForXML(v.getName()) + "' format='" + prepareForXML(v.getFormat()) + "' min='" + prepareForXML(v.getMin()) + "' max='" + prepareForXML(v.getMax()) + "'" + " group='" + prepareForXML(v.getGroup()) + "'" + " count-filter='" + v.getCountFilter() + "'" + " time-filter='" + v.getTimeFilterMs() + "'" + " description='" + prepareForXML(v.getDescription()) + "'" + "><![CDATA[" + v.getValue() + "]]></variable>");
             }
 
             out.println("</variables>");
@@ -109,8 +110,7 @@ public class ConfigurationData {
         }
     }
 
-    public static String prepareForXML(
-            String strText) {
+    public static String prepareForXML(String strText) {
         if (strText != null) {
             return getEsc(strText, false);
         } else {
@@ -193,12 +193,12 @@ public class ConfigurationData {
             out.println("<?xml version='1.0' encoding='UTF-8'?>");
             out.print("<config");
 
-            if (tcpPort != DefaultSettings.getCommunicatorTCPPort()) {
-                out.print(" tcp-port='" + tcpPort + "'");
+            if (getTcpPort() != DefaultSettings.getCommunicatorTCPPort()) {
+                out.print(" tcp-port='" + getTcpPort() + "'");
             }
 
-            if (udpPort != DefaultSettings.getCommunicatorUDPPort()) {
-                out.print(" udp-port='" + udpPort + "'");
+            if (getUdpPort() != DefaultSettings.getCommunicatorUDPPort()) {
+                out.print(" udp-port='" + getUdpPort() + "'");
             }
 
             out.println(">");
@@ -239,12 +239,12 @@ public class ConfigurationData {
             out.println("<?xml version='1.0' encoding='UTF-8'?>");
             out.print("<config");
 
-            if (tcpPort != DefaultSettings.getCommunicatorTCPPort()) {
-                out.print(" tcp-port='" + tcpPort + "'");
+            if (getTcpPort() != DefaultSettings.getCommunicatorTCPPort()) {
+                out.print(" tcp-port='" + getTcpPort() + "'");
             }
 
-            if (udpPort != DefaultSettings.getCommunicatorUDPPort()) {
-                out.print(" udp-port='" + udpPort + "'");
+            if (getUdpPort() != DefaultSettings.getCommunicatorUDPPort()) {
+                out.print(" udp-port='" + getUdpPort() + "'");
             }
 
             out.println(">");
@@ -262,8 +262,8 @@ public class ConfigurationData {
     public static void loadFromURL(String configURL) {
         try {
 
-            ConfigurationData.initialVariablesURLs.removeAllElements();
-            ConfigurationData.scriptFiles.removeAllElements();
+            ConfigurationData.initialVariablesURLs.clear();
+            ConfigurationData.scriptFiles.clear();
 
             DataServer.scripts = new Vector<ScriptPluginProxy>();
 
@@ -272,13 +272,13 @@ public class ConfigurationData {
 
             if (configURL != null) {
                 try {
-                    docConfig = Global.builder.parse(new URL(configURL).openStream());
+                    docConfig = Global.getBuilder().parse(new URL(configURL).openStream());
                 } catch (Exception fnfe) {
                     log.error("Configuration file '" + configURL + "' could not be found. Creating an empty document.", fnfe);
-                    docConfig = Global.builder.newDocument();
+                    docConfig = Global.getBuilder().newDocument();
                 }
             } else {
-                docConfig = Global.builder.newDocument();
+                docConfig = Global.getBuilder().newDocument();
             }
 
             XPath xpath = XPathFactory.newInstance().newXPath();
@@ -291,18 +291,18 @@ public class ConfigurationData {
             number = ((Double) xpath.evaluate(expression, docConfig, XPathConstants.NUMBER)).doubleValue();
 
             if (number > 0.0) {
-                ConfigurationData.tcpPort = (int) number;
+                ConfigurationData.setTcpPort((int) number);
             } else {
-                ConfigurationData.tcpPort = DefaultSettings.getCommunicatorTCPPort();
+                ConfigurationData.setTcpPort(DefaultSettings.getCommunicatorTCPPort());
             }
 
             expression = "/config/@udp-port";
             number = ((Double) xpath.evaluate(expression, docConfig, XPathConstants.NUMBER)).doubleValue();
 
             if (number > 0.0) {
-                ConfigurationData.udpPort = (int) number;
+                ConfigurationData.setUdpPort((int) number);
             } else {
-                ConfigurationData.udpPort = DefaultSettings.getCommunicatorUDPPort();
+                ConfigurationData.setUdpPort(DefaultSettings.getCommunicatorUDPPort());
             }
 
             try {
@@ -313,7 +313,7 @@ public class ConfigurationData {
             }
 
             try {
-                File files[] = new File(Global.workingDirectory + SketchletContextUtils.sketchletDataDir() + "/scripts").listFiles();
+                File files[] = new File(Global.getWorkingDirectory() + SketchletContextUtils.sketchletDataDir() + "/scripts").listFiles();
 
                 if (files != null) {
                     for (int i = 0; i < files.length; i++) {
@@ -337,8 +337,24 @@ public class ConfigurationData {
     public static void printConfData() {
         if (firstTime) {
             firstTime = false;
-            log.info("TCP Port = " + ConfigurationData.tcpPort);
-            log.info("UDP Port = " + ConfigurationData.udpPort);
+            log.info("TCP Port = " + ConfigurationData.getTcpPort());
+            log.info("UDP Port = " + ConfigurationData.getUdpPort());
         }
+    }
+
+    public static int getTcpPort() {
+        return tcpPort;
+    }
+
+    public static void setTcpPort(int tcpPort) {
+        ConfigurationData.tcpPort = tcpPort;
+    }
+
+    public static int getUdpPort() {
+        return udpPort;
+    }
+
+    public static void setUdpPort(int udpPort) {
+        ConfigurationData.udpPort = udpPort;
     }
 }

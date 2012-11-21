@@ -47,8 +47,8 @@ public class InteractionSpaceSaxLoader extends DefaultHandler {
     }
 
     public void endDocument() {
-        if (InteractionSpace.gridSpacing <= 0) {
-            InteractionSpace.gridSpacing = 30;
+        if (InteractionSpace.getGridSpacing() <= 0) {
+            InteractionSpace.setGridSpacing(30);
         }
     }
 
@@ -109,55 +109,55 @@ public class InteractionSpaceSaxLoader extends DefaultHandler {
         }
         if (currentElement.equalsIgnoreCase("sketch-width")) {
             try {
-                InteractionSpace.sketchWidth = Double.parseDouble(strCharacters);
+                InteractionSpace.setSketchWidth(Double.parseDouble(strCharacters));
             } catch (Exception e) {
             }
         }
         if (currentElement.equalsIgnoreCase("sketch-height")) {
             try {
-                InteractionSpace.sketchHeight = Double.parseDouble(strCharacters);
+                InteractionSpace.setSketchHeight(Double.parseDouble(strCharacters));
             } catch (Exception e) {
             }
         }
         if (currentElement.equalsIgnoreCase("sketch-left")) {
             try {
-                InteractionSpace.left = Double.parseDouble(strCharacters);
+                InteractionSpace.setLeft(Double.parseDouble(strCharacters));
             } catch (Exception e) {
             }
         }
         if (currentElement.equalsIgnoreCase("sketch-right")) {
             try {
-                InteractionSpace.right = Double.parseDouble(strCharacters);
+                InteractionSpace.setRight(Double.parseDouble(strCharacters));
             } catch (Exception e) {
             }
         }
         if (currentElement.equalsIgnoreCase("sketch-top")) {
             try {
-                InteractionSpace.top = Double.parseDouble(strCharacters);
+                InteractionSpace.setTop(Double.parseDouble(strCharacters));
             } catch (Exception e) {
             }
         }
         if (currentElement.equalsIgnoreCase("sketch-bottom")) {
             try {
-                InteractionSpace.bottom = Double.parseDouble(strCharacters);
+                InteractionSpace.setBottom(Double.parseDouble(strCharacters));
             } catch (Exception e) {
             }
         }
         if (currentElement.equalsIgnoreCase("start-angle")) {
             try {
-                InteractionSpace.angleStart = Double.parseDouble(strCharacters);
+                InteractionSpace.setAngleStart(Double.parseDouble(strCharacters));
             } catch (Exception e) {
             }
         }
         if (currentElement.equalsIgnoreCase("end-angle")) {
             try {
-                InteractionSpace.angleEnd = Double.parseDouble(strCharacters);
+                InteractionSpace.setAngleEnd(Double.parseDouble(strCharacters));
             } catch (Exception e) {
             }
         }
         if (currentElement.equalsIgnoreCase("grid-spacing")) {
             try {
-                InteractionSpace.gridSpacing = Integer.parseInt(strCharacters);
+                InteractionSpace.setGridSpacing(Integer.parseInt(strCharacters));
             } catch (Exception e) {
             }
         }
@@ -209,7 +209,7 @@ public class InteractionSpaceSaxLoader extends DefaultHandler {
 
             if (currentElement.equalsIgnoreCase("cut-param1")) {
                 this.indexCut++;
-                currentScreen.cutFromSketch[indexCut][1] = strCharacters;
+                currentScreen.pageClip[indexCut][1] = strCharacters;
             }
             if (currentElement.equalsIgnoreCase("transform-action")) {
                 this.indexTransform++;

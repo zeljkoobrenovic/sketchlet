@@ -20,7 +20,7 @@ public class VariableEyeSlot extends EyeSlot {
     public VariableEyeSlot(Variable variable, EyeData parent) {
         super(parent);
         this.variable = variable;
-        this.name = variable.name;
+        this.name = variable.getName();
         this.backgroundColor = Color.RED;
     }
 
@@ -31,42 +31,42 @@ public class VariableEyeSlot extends EyeSlot {
     public void addRelatedSlot(EyeSlot relatedSlot) {
         if (relatedSlot instanceof TimerEyeSlot) {
             TimerEyeSlot s = (TimerEyeSlot) relatedSlot;
-            for (int i = 0; i < s.timer.variables.length; i++) {
-                String strVar = (String) s.timer.variables[i][0];
-                if (strVar.equalsIgnoreCase(variable.name)) {
+            for (int i = 0; i < s.timer.getVariables().length; i++) {
+                String strVar = (String) s.timer.getVariables()[i][0];
+                if (strVar.equalsIgnoreCase(variable.getName())) {
                     addRelationToSlot(relatedSlot,
-                            "updates variable '" + this.name + "' from " + s.timer.variables[i][1] + " to " + s.timer.variables[i][2],
-                            "updated by timer '" + s.timer.name + "' from " + s.timer.variables[i][1] + " to " + s.timer.variables[i][2]);
+                            "updates variable '" + this.name + "' from " + s.timer.getVariables()[i][1] + " to " + s.timer.getVariables()[i][2],
+                            "updated by timer '" + s.timer.getName() + "' from " + s.timer.getVariables()[i][1] + " to " + s.timer.getVariables()[i][2]);
                     break;
                 }
             }
         } else if (relatedSlot instanceof MacroEyeSlot) {
             MacroEyeSlot m = (MacroEyeSlot) relatedSlot;
-            for (int i = 0; i < m.macro.actions.length; i++) {
-                String strAction = (String) m.macro.actions[i][0];
-                String strVar = (String) m.macro.actions[i][1];
-                if (strAction.equalsIgnoreCase("variable update") && strVar.equalsIgnoreCase(variable.name)) {
+            for (int i = 0; i < m.macro.getActions().length; i++) {
+                String strAction = (String) m.macro.getActions()[i][0];
+                String strVar = (String) m.macro.getActions()[i][1];
+                if (strAction.equalsIgnoreCase("variable update") && strVar.equalsIgnoreCase(variable.getName())) {
                     addRelationToSlot(relatedSlot,
-                            "updates variable '" + this.name + "' to '" + m.macro.actions[i][2] + "'",
-                            "updated by macro '" + m.name + "' to '" + m.macro.actions[i][2] + "'");
-                } else if (strAction.equalsIgnoreCase("variable increment") && strVar.equalsIgnoreCase(variable.name)) {
+                            "updates variable '" + this.name + "' to '" + m.macro.getActions()[i][2] + "'",
+                            "updated by macro '" + m.name + "' to '" + m.macro.getActions()[i][2] + "'");
+                } else if (strAction.equalsIgnoreCase("variable increment") && strVar.equalsIgnoreCase(variable.getName())) {
                     addRelationToSlot(relatedSlot,
-                            "increments variable '" + this.name + "' by " + m.macro.actions[i][2],
-                            "incremented by macro '" + m.name + "' by " + m.macro.actions[i][2]);
-                } else if (strAction.equalsIgnoreCase("variable append") && strVar.equalsIgnoreCase(variable.name)) {
+                            "increments variable '" + this.name + "' by " + m.macro.getActions()[i][2],
+                            "incremented by macro '" + m.name + "' by " + m.macro.getActions()[i][2]);
+                } else if (strAction.equalsIgnoreCase("variable append") && strVar.equalsIgnoreCase(variable.getName())) {
                     addRelationToSlot(relatedSlot,
-                            "appends variable '" + this.name + "' by " + m.macro.actions[i][2],
-                            "appended by macro '" + m.name + "' by " + m.macro.actions[i][2]);
+                            "appends variable '" + this.name + "' by " + m.macro.getActions()[i][2],
+                            "appended by macro '" + m.name + "' by " + m.macro.getActions()[i][2]);
                 }
             }
         }
     }
 
     public void openItem() {
-        SketchletEditor.editorPanel.sketchToolbar.showNavigator(true);
-        int row = Workspace.mainPanel.sketchletPanel.globalVariablesPanel.variablesTableModel.variableRows.indexOf(variable);
-        Workspace.mainPanel.sketchletPanel.globalVariablesPanel.table.getSelectionModel().setSelectionInterval(row, row);
-        Rectangle rect = Workspace.mainPanel.sketchletPanel.globalVariablesPanel.table.getCellRect(row, 0, true);
-        Workspace.mainPanel.sketchletPanel.globalVariablesPanel.table.scrollRectToVisible(rect);
+        SketchletEditor.getInstance().getSketchToolbar().showNavigator(true);
+        int row = Workspace.getMainPanel().sketchletPanel.globalVariablesPanel.variablesTableModel.variableRows.indexOf(variable);
+        Workspace.getMainPanel().sketchletPanel.globalVariablesPanel.table.getSelectionModel().setSelectionInterval(row, row);
+        Rectangle rect = Workspace.getMainPanel().sketchletPanel.globalVariablesPanel.table.getCellRect(row, 0, true);
+        Workspace.getMainPanel().sketchletPanel.globalVariablesPanel.table.scrollRectToVisible(rect);
     }
 }

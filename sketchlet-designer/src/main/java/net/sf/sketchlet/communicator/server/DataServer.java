@@ -16,9 +16,9 @@ import net.sf.sketchlet.communicator.Global;
 import net.sf.sketchlet.communicator.VariableOperationsListener;
 import net.sf.sketchlet.context.SketchletContext;
 import net.sf.sketchlet.context.VariableUpdateListener;
-import net.sf.sketchlet.parser.JEParser;
-import net.sf.sketchlet.pluginloader.PluginInstance;
-import net.sf.sketchlet.pluginloader.ScriptPluginFactory;
+import net.sf.sketchlet.model.evaluator.JEParser;
+import net.sf.sketchlet.loaders.pluginloader.PluginInstance;
+import net.sf.sketchlet.loaders.pluginloader.ScriptPluginFactory;
 import net.sf.sketchlet.script.ScriptConsole;
 import net.sf.sketchlet.script.ScriptPluginProxy;
 import net.sf.sketchlet.util.RefreshTime;
@@ -39,10 +39,12 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -52,16 +54,35 @@ import java.util.Vector;
  */
 public class DataServer {
     private static final Logger log = Logger.getLogger(DataServer.class);
+
     public Hashtable<String, Variable> variablesHastable = new Hashtable<String, Variable>();
-    public Vector<String> variablesVector = new Vector<String>();
-    public static Vector<ScriptPluginProxy> scripts = new Vector<ScriptPluginProxy>();
-    public static Vector scriptFiles = new Vector();
-    public static boolean paused = false;
+    public List<String> variablesVector = new Vector<String>();
+    public static List<ScriptPluginProxy> scripts = new Vector<ScriptPluginProxy>();
+    public static List scriptFiles = new Vector();
+    private static boolean paused = false;
     public static boolean drawExternal = false;
-    public static DataServer variablesServer = null;
-    public static long startingTime = System.currentTimeMillis();
-    Vector changeClinets = new Vector();
-    Vector<VariableOperationsListener> operationsListeners = new Vector<VariableOperationsListener>();
+    private static DataServer instance = null;
+    private static long startingTime = System.currentTimeMillis();
+    private List changeClients = new Vector();
+    private List<VariableOperationsListener> operationsListeners = new Vector<VariableOperationsListener>();
+    private List<AdditionalVariables> additionalVariables = new Vector<AdditionalVariables>();
+
+    public static boolean isPaused() {
+        return paused;
+    }
+
+    public static void setPaused(boolean paused) {
+        DataServer.paused = paused;
+    }
+
+    public static DataServer getInstance() {
+        return instance;
+    }
+
+    public static void setInstance(DataServer instance) {
+        DataServer.instance = instance;
+    }
+
 
     enum FileImportMarkers {
 
@@ -106,7 +127,6 @@ public class DataServer {
     }
 
     public static boolean isInProcessing(String strVariable) {
-        //return false;
         return strVariable != null && variablesInProcessing.contains(strVariable.toLowerCase());
     }
 
@@ -114,8 +134,8 @@ public class DataServer {
      *
      */
     public void addVariablesUpdateListener(VariableUpdateListener client) {
-        if (!this.changeClinets.contains(client)) {
-            this.changeClinets.add(client);
+        if (!this.changeClients.contains(client)) {
+            this.changeClients.add(client);
         }
     }
 
@@ -124,19 +144,19 @@ public class DataServer {
             return;
         }
 
-        this.changeClinets.remove(client);
+        this.changeClients.remove(client);
     }
 
     public void removeVariablesUpdateListener() {
-        this.changeClinets.removeAllElements();
+        this.changeClients.clear();
     }
 
     public void removeVariablesUpdateListenerByVlass(String strPrefix) {
-        final Object array[] = changeClinets.toArray();
+        final Object array[] = changeClients.toArray();
         for (int i = 0; i < array.length; i++) {
             String strClassName = array[i].getClass().getName();
             if (strClassName.startsWith(strPrefix)) {
-                this.changeClinets.remove(array[i]);
+                this.changeClients.remove(array[i]);
             }
         }
     }
@@ -166,7 +186,7 @@ public class DataServer {
         while (variable != null) {
             strName = strPrefix + "_" + i;
             i++;
-            variable = DataServer.variablesServer.getVariable(strName);
+            variable = DataServer.getInstance().getVariable(strName);
         }
 
         return strName;
@@ -206,7 +226,7 @@ public class DataServer {
                 if (n1 >= 0) {
                     int n2 = expression.indexOf("'", n1 + 1);
                     if (n2 > n1) {
-                        String str = DataServer.variablesServer.getVariableValue(expression.substring(n1 + 1, n2));
+                        String str = DataServer.getInstance().getVariableValue(expression.substring(n1 + 1, n2));
                         boolean bNum = true;
                         try {
                             double d = Double.parseDouble(str);
@@ -234,7 +254,7 @@ public class DataServer {
     }
 
     public static String populateTemplateSimple(String template, boolean encode) {
-        if (DataServer.variablesServer == null || template == null) {
+        if (DataServer.getInstance() == null || template == null) {
             return template;
         }
 
@@ -291,7 +311,7 @@ public class DataServer {
     }
 
     public static String populateTemplateVelocity(String template) {
-        if (DataServer.variablesServer == null || template == null) {
+        if (DataServer.getInstance() == null || template == null) {
             return template;
         }
 
@@ -317,7 +337,6 @@ public class DataServer {
                     break;
                 }
             } catch (Exception e) {
-                // log.error(e);
                 break;
             }
         }
@@ -326,7 +345,7 @@ public class DataServer {
     }
 
     public static String populateTemplate(String template, boolean encode) {
-        if (DataServer.variablesServer == null || template == null) {
+        if (DataServer.getInstance() == null || template == null) {
             return template;
         }
 
@@ -341,8 +360,8 @@ public class DataServer {
 
     public static String processForFormulas(String template) {
         String varName = template.substring(1);
-        if (varName.startsWith("{") || DataServer.variablesServer.getVariable(varName) != null) {
-            template = DataServer.variablesServer.getVariableValue(varName);
+        if (varName.startsWith("{") || DataServer.getInstance().getVariable(varName) != null) {
+            template = DataServer.getInstance().getVariableValue(varName);
         } else if (varName.startsWith("sequence{") || varName.startsWith("seq{") || varName.startsWith("sequence {") || varName.startsWith("seq {")) {
             int n = varName.indexOf("{");
             try {
@@ -394,7 +413,7 @@ public class DataServer {
 
     public static Vector<String> getVariablesInTemplate(String template) {
         Vector<String> vars = new Vector<String>();
-        if (DataServer.variablesServer == null || template == null) {
+        if (DataServer.getInstance() == null || template == null) {
             return vars;
         }
 
@@ -449,7 +468,7 @@ public class DataServer {
 
     public void notifyChange(final String triggerVariable, final String value, final String oldValue, final boolean newThread) {
 
-        final Object array[] = changeClinets.toArray();
+        final Object array[] = changeClients.toArray();
         final int n = array.length;
         if (newThread) {
             if (DataServer.isInProcessing(triggerVariable)) {
@@ -480,13 +499,11 @@ public class DataServer {
             }
             unprotectVariable(triggerVariable);
         }
-
-        //}
     }
 
     public void printInfo() {
 
-        final Object array[] = changeClinets.toArray();
+        final Object array[] = changeClients.toArray();
         final int n = array.length;
         for (int i = 0; i < n; i++) {
             final VariableUpdateListener client = (VariableUpdateListener) array[i];
@@ -506,26 +523,13 @@ public class DataServer {
             differentVariables = new String[]{variableName};
         }
 
-        if (Global.serverTCP != null) {
-            Global.serverTCP.processTemplates(changedVariables, differentVariables);
+        if (Global.getServerTCP() != null) {
+            Global.getServerTCP().processTemplates(changedVariables, differentVariables);
         }
-        if (Global.serverUDP != null) {
-            Global.serverUDP.processUDPTemplates(changedVariables, differentVariables);
+        if (Global.getServerUDP() != null) {
+            Global.getServerUDP().processUDPTemplates(changedVariables, differentVariables);
         }
 
-    }
-
-    public void reloadAllTransformers() {
-        DataServer.scripts = new Vector<ScriptPluginProxy>();
-        Vector scriptURLs = DataServer.scriptFiles;
-        DataServer.scriptFiles = new Vector();
-
-        Iterator iterator = scriptURLs.iterator();
-
-        while (iterator.hasNext()) {
-            String strURL = (String) iterator.next();
-            addScript(strURL);
-        }
     }
 
     public static boolean addScript(String scriptFile) {
@@ -539,7 +543,7 @@ public class DataServer {
                 log.info("Cannot load script '" + scriptFile + "'");
             }
 
-            DataServer.variablesServer.notifyChange("sajfh87435987", "", "");
+            DataServer.getInstance().notifyChange("sajfh87435987", "", "");
 
             log.info("Communicator: added script '" + scriptFile + "'");
         } catch (Exception e) {
@@ -550,27 +554,9 @@ public class DataServer {
         return success;
     }
 
-    public static void removeScript(String scriptFile) {
-        try {
-            int n = DataServer.scriptFiles.indexOf(scriptFile);
-
-            if (n >= 0) {
-                DataServer.scriptFiles.remove(n);
-
-                DataServer.scripts.remove(n);
-                DataServer.variablesServer.notifyChange("sajfh87435987", "", "");
-
-                log.info("Communicator: removed script '" + scriptFile + "'");
-            }
-        } catch (Exception e) {
-            log.info("Cannot remove script '" + scriptFile + "'");
-            log.error(e);
-        }
-    }
-
     public static void createScripts() {
-        DataServer.scripts.removeAllElements();
-        DataServer.scriptFiles.removeAllElements();
+        DataServer.scripts.clear();
+        DataServer.scriptFiles.clear();
 
         for (int i = 0; i < ConfigurationData.scriptFiles.size(); i++) {
             String scriptURL = "";
@@ -623,7 +609,7 @@ public class DataServer {
             Iterator iterator = ConfigurationData.initialVariablesURLs.iterator();
 
             this.variablesHastable.clear();
-            this.variablesVector.removeAllElements();
+            this.variablesVector.clear();
 
             while (iterator.hasNext()) {
                 String initVariablesFileURL = (String) iterator.next();
@@ -639,19 +625,19 @@ public class DataServer {
                     Variable v = new Variable();
 
                     Node varNode = varNodes.item(i);
-                    v.value = varNode.getTextContent();
-                    v.count = 0;
-                    v.name = (String) xp.evaluate("@name", varNode, XPathConstants.STRING);
-                    v.group = (String) xp.evaluate("@group", varNode, XPathConstants.STRING);
-                    v.countFilter = (int) ((Double) xp.evaluate("@count-filter", varNode, XPathConstants.NUMBER)).doubleValue();
-                    v.timeFilterMs = (int) ((Double) xp.evaluate("@time-filter", varNode, XPathConstants.NUMBER)).doubleValue();
-                    v.description = (String) xp.evaluate("@description", varNode, XPathConstants.STRING);
-                    v.format = (String) xp.evaluate("@format", varNode, XPathConstants.STRING);
-                    v.min = (String) xp.evaluate("@min", varNode, XPathConstants.STRING);
-                    v.max = (String) xp.evaluate("@max", varNode, XPathConstants.STRING);
+                    v.setValue(varNode.getTextContent());
+                    v.setCount(0);
+                    v.setName((String) xp.evaluate("@name", varNode, XPathConstants.STRING));
+                    v.setGroup((String) xp.evaluate("@group", varNode, XPathConstants.STRING));
+                    v.setCountFilter((int) ((Double) xp.evaluate("@count-filter", varNode, XPathConstants.NUMBER)).doubleValue());
+                    v.setTimeFilterMs((int) ((Double) xp.evaluate("@time-filter", varNode, XPathConstants.NUMBER)).doubleValue());
+                    v.setDescription((String) xp.evaluate("@description", varNode, XPathConstants.STRING));
+                    v.setFormat((String) xp.evaluate("@format", varNode, XPathConstants.STRING));
+                    v.setMin((String) xp.evaluate("@min", varNode, XPathConstants.STRING));
+                    v.setMax((String) xp.evaluate("@max", varNode, XPathConstants.STRING));
 
-                    this.variablesHastable.put(v.name, v);
-                    this.variablesVector.add(v.name);
+                    this.variablesHastable.put(v.getName(), v);
+                    this.variablesVector.add(v.getName());
                 }
 
             }
@@ -671,7 +657,7 @@ public class DataServer {
             return;
         }
         Variable v = this.getVariable(variableName);
-        if (v == null || !value.equals(v.value)) {
+        if (v == null || !value.equals(v.getValue())) {
             updateVariable(variableName, value);
         }
         RefreshTime.update();
@@ -721,16 +707,16 @@ public class DataServer {
             this.updateVariable(variableName, value, "", "");
             this.notifyVariableAdded(variableName, value);
         } else {
-            v.count++;
+            v.setCount(v.getCount() + 1);
 
-            long timeDiff = System.currentTimeMillis() - v.timestamp;
+            long timeDiff = System.currentTimeMillis() - v.getTimestamp();
 
-            if ((v.countFilter <= 0 || v.count % v.countFilter == 0) && (timeDiff > v.timeFilterMs)) {
-                String oldValue = v.value;
-                v.value = value;
+            if ((v.getCountFilter() <= 0 || v.getCount() % v.getCountFilter() == 0) && (timeDiff > v.getTimeFilterMs())) {
+                String oldValue = v.getValue();
+                v.setValue(value);
                 v.boundValue();
 
-                v.timestamp = System.currentTimeMillis();
+                v.setTimestamp(System.currentTimeMillis());
 
                 v.save();
 
@@ -752,7 +738,7 @@ public class DataServer {
             if (v == null) {
                 this.updateVariable(variableName, value);
             } else {
-                this.updateVariable(variableName, v.value + value);
+                this.updateVariable(variableName, v.getValue() + value);
             }
         }
         RefreshTime.update();
@@ -762,8 +748,8 @@ public class DataServer {
         RefreshTime.update();
         Variable v = this.getVariable(variableName);
 
-        if (v != null && v.value.length() >= numOfCharacters) {
-            this.updateVariable(variableName, v.value.substring(0, v.value.length() - numOfCharacters));
+        if (v != null && v.getValue().length() >= numOfCharacters) {
+            this.updateVariable(variableName, v.getValue().substring(0, v.getValue().length() - numOfCharacters));
         }
         RefreshTime.update();
     }
@@ -779,12 +765,12 @@ public class DataServer {
             }
 
             try {
-                int nValue = Integer.parseInt(v.value);
+                int nValue = Integer.parseInt(v.getValue());
                 int nIncrement = Integer.parseInt(strValue);
                 this.updateVariable(variableName, "" + (nValue + nIncrement));
             } catch (NumberFormatException e) {
                 try {
-                    double nValue = Double.parseDouble(v.value);
+                    double nValue = Double.parseDouble(v.getValue());
                     double nIncrement = Double.parseDouble(strValue);
                     this.updateVariable(variableName, "" + (nValue + nIncrement));
                 } catch (NumberFormatException e2) {
@@ -804,49 +790,49 @@ public class DataServer {
     }
 
     public void updateVariable(Variable v, int col, String value) {
-        if (isInProcessing(v.name)) {
+        if (isInProcessing(v.getName())) {
             return;
         }
         RefreshTime.update();
         try {
             switch (col) {
                 case 0:
-                    v.name = value;
+                    v.setName(value);
                     break;
                 case 1:
-                    v.count++;
-                    String oldValue = v.value;
-                    v.value = value;
+                    v.setCount(v.getCount() + 1);
+                    String oldValue = v.getValue();
+                    v.setValue(value);
                     v.boundValue();
                     v.save();
 
-                    this.notifyChange(v.name, value, oldValue);
-                    this.notifyVariableUpdated(v.name, value);
+                    this.notifyChange(v.getName(), value, oldValue);
+                    this.notifyVariableUpdated(v.getName(), value);
 
                     break;
                 case 2:
-                    v.description = value;
+                    v.setDescription(value);
                     break;
                 case 3:
-                    v.group = value;
+                    v.setGroup(value);
                     break;
                 case 4:
-                    v.format = value;
+                    v.setFormat(value);
                     break;
                 case 5:
-                    v.min = value;
+                    v.setMin(value);
                     break;
                 case 6:
-                    v.max = value;
+                    v.setMax(value);
                     break;
                 case 7:
-                    v.count = value.isEmpty() ? 0 : Integer.parseInt(value);
+                    v.setCount(value.isEmpty() ? 0 : Integer.parseInt(value));
                     break;
                 case 8:
-                    v.countFilter = value.isEmpty() ? 0 : Integer.parseInt(value);
+                    v.setCountFilter(value.isEmpty() ? 0 : Integer.parseInt(value));
                     break;
                 case 9:
-                    v.timeFilterMs = value.isEmpty() ? 0 : Integer.parseInt(value);
+                    v.setTimeFilterMs(value.isEmpty() ? 0 : Integer.parseInt(value));
                     break;
                 case 10:
                     break;
@@ -864,7 +850,7 @@ public class DataServer {
             this.updateVariable(variableName, "", group, "");
 //            this.notifyChange(variableName, "", "");
         } else {
-            v.group = group;
+            v.setGroup(group);
             //          this.notifyChange(variableName, v.value, v.value);
         }
         RefreshTime.update();
@@ -876,7 +862,7 @@ public class DataServer {
             this.updateVariable(variableName, "", "", description);
 //            this.notifyChange(variableName, "", "");
         } else {
-            v.description = description;
+            v.setDescription(description);
 //            this.notifyChange(variableName, v.value, v.value);
         }
         RefreshTime.update();
@@ -898,34 +884,34 @@ public class DataServer {
 
         try {
             Variable oldVariable = this.getVariable(variableName);
-            String oldValue = oldVariable == null ? null : oldVariable.value;
+            String oldValue = oldVariable == null ? null : oldVariable.getValue();
 
             if (oldVariable != null) {
-                oldVariable.count++;
+                oldVariable.setCount(oldVariable.getCount() + 1);
             }
 
-            long timeDiff = oldVariable == null ? 0 : System.currentTimeMillis() - oldVariable.timestamp;
+            long timeDiff = oldVariable == null ? 0 : System.currentTimeMillis() - oldVariable.getTimestamp();
 
-            if (oldVariable == null || ((oldVariable.countFilter == 0 || (oldVariable.count % oldVariable.countFilter == 0)) && (timeDiff > oldVariable.timeFilterMs))) {
+            if (oldVariable == null || ((oldVariable.getCountFilter() == 0 || (oldVariable.getCount() % oldVariable.getCountFilter() == 0)) && (timeDiff > oldVariable.getTimeFilterMs()))) {
                 Variable v = new Variable();
-                v.name = variableName;
-                v.value = value;
+                v.setName(variableName);
+                v.setValue(value);
                 v.boundValue();
 
                 if (!group.isEmpty()) {
-                    v.group = group;
+                    v.setGroup(group);
                 }
-                v.count = oldVariable == null ? 1 : oldVariable.count;
-                v.countFilter = oldVariable == null ? 1 : oldVariable.countFilter;
-                v.timeFilterMs = oldVariable == null ? 0 : oldVariable.timeFilterMs;
+                v.setCount(oldVariable == null ? 1 : oldVariable.getCount());
+                v.setCountFilter(oldVariable == null ? 1 : oldVariable.getCountFilter());
+                v.setTimeFilterMs(oldVariable == null ? 0 : oldVariable.getTimeFilterMs());
                 if (!description.isEmpty()) {
-                    v.description = description;
+                    v.setDescription(description);
                 }
-                v.timestamp = System.currentTimeMillis();
+                v.setTimestamp(System.currentTimeMillis());
 
-                this.variablesHastable.put(v.name, v);
-                if (!this.variablesVector.contains(v.name)) {
-                    this.variablesVector.add(v.name);
+                this.variablesHastable.put(v.getName(), v);
+                if (!this.variablesVector.contains(v.getName())) {
+                    this.variablesVector.add(v.getName());
                 }
 
                 this.notifyChange(variableName, value, oldValue, newThread);
@@ -958,29 +944,29 @@ public class DataServer {
 
             if (oldVariable == null) {
                 Variable v = new Variable();
-                v.name = variableName;
+                v.setName(variableName);
                 if (!group.isEmpty()) {
-                    v.group = group;
+                    v.setGroup(group);
                 }
-                v.count = oldVariable == null ? 1 : oldVariable.count;
-                v.countFilter = oldVariable == null ? 1 : oldVariable.countFilter;
-                v.timeFilterMs = oldVariable == null ? 0 : oldVariable.timeFilterMs;
+                v.setCount(oldVariable == null ? 1 : oldVariable.getCount());
+                v.setCountFilter(oldVariable == null ? 1 : oldVariable.getCountFilter());
+                v.setTimeFilterMs(oldVariable == null ? 0 : oldVariable.getTimeFilterMs());
                 if (!description.isEmpty()) {
-                    v.description = description;
+                    v.setDescription(description);
                 }
-                v.timestamp = System.currentTimeMillis();
+                v.setTimestamp(System.currentTimeMillis());
 
-                this.variablesHastable.put(v.name, v);
-                if (!this.variablesVector.contains(v.name)) {
-                    this.variablesVector.add(v.name);
+                this.variablesHastable.put(v.getName(), v);
+                if (!this.variablesVector.contains(v.getName())) {
+                    this.variablesVector.add(v.getName());
                 }
 
                 if (oldVariable == null) {
                     this.notifyVariableAdded(variableName, "");
                 }
             } else {
-                oldVariable.group = group;
-                oldVariable.description = description;
+                oldVariable.setGroup(group);
+                oldVariable.setDescription(description);
             }
         } catch (Exception e) {
             log.error(e);
@@ -991,16 +977,16 @@ public class DataServer {
     public void removeAll() {
         try {
             this.variablesHastable.clear();
-            this.variablesVector.removeAllElements();
+            this.variablesVector.clear();
 
             this.notifyChange("", "", "");
             this.notifyVariableDeleted("");
 
-            ConfigurationData.initialVariablesURLs.removeAllElements();
-            ConfigurationData.scriptFiles.removeAllElements();
+            ConfigurationData.initialVariablesURLs.clear();
+            ConfigurationData.scriptFiles.clear();
 
-            DataServer.scriptFiles.removeAllElements();
-            DataServer.scripts.removeAllElements();
+            DataServer.scriptFiles.clear();
+            DataServer.scripts.clear();
         } catch (Exception e) {
             log.error(e);
         }
@@ -1022,7 +1008,7 @@ public class DataServer {
 
     public void removeVariable(int index) {
         try {
-            String name = this.variablesVector.elementAt(index);
+            String name = this.variablesVector.get(index);
 
             this.variablesHastable.remove(name);
             this.variablesVector.remove(name);
@@ -1105,7 +1091,7 @@ public class DataServer {
 
                 Variable v = this.getVariable(variableName);
 
-                String valueString = v == null ? "" : v.value;
+                String valueString = v == null ? "" : v.getValue();
 
                 if (asXML) {
                     valueString = "<variable name='" + variableName + "'>" + EscapeChars.forHTMLTag(valueString) + "</variable>";
@@ -1131,10 +1117,10 @@ public class DataServer {
         for (String variableName : this.variablesVector) {
             Variable v = this.getVariable(variableName);
 
-            values += "    <variable name='" + v.name + "'";
-            values += " group='" + v.group + "'";
-            values += " description='" + v.description + "'>";
-            values += v.value;
+            values += "    <variable name='" + v.getName() + "'";
+            values += " group='" + v.getGroup() + "'";
+            values += " description='" + v.getDescription() + "'>";
+            values += v.getValue();
             values += "</variable>";
         }
         values += "</variables>";
@@ -1148,12 +1134,12 @@ public class DataServer {
         for (String variableName : this.variablesVector) {
             Variable v = this.getVariable(variableName);
 
-            values += "    <variable name='" + v.name + "'";
-            values += " group='" + v.group + "'";
-            values += " count-filter='" + v.countFilter + "'";
-            values += " time-filter='" + v.timeFilterMs + "'";
-            values += " description='" + v.description + "'>";
-            values += v.value;
+            values += "    <variable name='" + v.getName() + "'";
+            values += " group='" + v.getGroup() + "'";
+            values += " count-filter='" + v.getCountFilter() + "'";
+            values += " time-filter='" + v.getTimeFilterMs() + "'";
+            values += " description='" + v.getDescription() + "'>";
+            values += v.getValue();
             values += "</variable>";
         }
 
@@ -1166,7 +1152,7 @@ public class DataServer {
         } else {
             Variable v = this.getVariable(name);
 
-            String strValue = (v == null || v.value == null) ? "" : v.value;
+            String strValue = (v == null || v.getValue() == null) ? "" : v.getValue();
 
             for (int i = 0; i < 10; i++) {
                 if (strValue.contains(TemplateMarkers.VELOCITY.start()) || strValue.contains(TemplateMarkers.JSP.start())) {
@@ -1187,13 +1173,13 @@ public class DataServer {
         Collections.sort(variables, new Comparator<Variable>() {
 
             public int compare(Variable v1, Variable v2) {
-                return v1.name.compareTo(v2.name);
+                return v1.getName().compareTo(v2.getName());
             }
         });
         StringBuffer str = new StringBuffer();
 
         for (Variable v : variables) {
-            String strValue = (v == null || v.value == null) ? "" : v.value;
+            String strValue = (v == null || v.getValue() == null) ? "" : v.getValue();
             for (int i = 0; i < 10; i++) {
                 if (strValue.contains(TemplateMarkers.VELOCITY.start()) || strValue.contains(TemplateMarkers.JSP.start())) {
                     strValue = this.populateTemplate(strValue);
@@ -1212,17 +1198,17 @@ public class DataServer {
     public int getVariableCount(String name) {
         Variable v = this.getVariable(name);
 
-        return v == null ? 0 : v.count;
+        return v == null ? 0 : v.getCount();
     }
 
     public long getVariableTimestamp(String name) {
         Variable v = this.getVariable(name);
 
-        return v == null ? 0 : v.timestamp;
+        return v == null ? 0 : v.getTimestamp();
     }
 
     public Variable getVariable(int index) {
-        return this.getVariable(this.variablesVector.elementAt(index));
+        return this.getVariable(this.variablesVector.get(index));
     }
 
     public Variable getVariable(String name) {
@@ -1277,8 +1263,6 @@ public class DataServer {
         return false;
     }
 
-    public Vector<AdditionalVariables> additionalVariables = new Vector<AdditionalVariables>();
-
     public void addAdditionalVariables(AdditionalVariables additionalVariables) {
         this.additionalVariables.add(additionalVariables);
     }
@@ -1296,19 +1280,19 @@ public class DataServer {
             Variable v = this.getVariable(variableName);
 
             String values = "";
-            values += "    <variable name='" + v.name + "'";
-            values += " group='" + v.group + "'";
-            values += " count-filter='" + v.countFilter + "'";
-            values += " time-filter='" + v.timeFilterMs + "'";
-            values += " description='" + v.description + "'>";
-            values += v.value;
+            values += "    <variable name='" + v.getName() + "'";
+            values += " group='" + v.getGroup() + "'";
+            values += " count-filter='" + v.getCountFilter() + "'";
+            values += " time-filter='" + v.getTimeFilterMs() + "'";
+            values += " description='" + v.getDescription() + "'>";
+            values += v.getValue();
             values += "</variable>";
         }
     }
 
     public void test() {
         DataServer s = new DataServer();
-        DataServer.variablesServer = s;
+        DataServer.setInstance(s);
 
         s.updateVariable("a", "AAA");
         s.updateVariable("c", "bBb");
@@ -1333,7 +1317,7 @@ public class DataServer {
 
             if (strText.length() > 1) {
                 String strVariable = strText.substring(1);
-                strText = DataServer.variablesServer.getVariableValue(strVariable);
+                strText = DataServer.getInstance().getVariableValue(strVariable);
             }
 
         } else {
@@ -1350,7 +1334,7 @@ public class DataServer {
         comboBox.setEditable(true);
         comboBox.addItem("");
 
-        for (String strVar : DataServer.variablesServer.variablesVector) {
+        for (String strVar : DataServer.getInstance().variablesVector) {
             comboBox.addItem((addEquals ? "=" : "") + strVar);
         }
 
@@ -1361,14 +1345,14 @@ public class DataServer {
         }
     }
 
-    public Vector<String> getGroups() {
-        Vector<String> groups = new Vector<String>();
+    public List<String> getGroups() {
+        List<String> groups = new ArrayList<String>();
         groups.add("");
 
         for (String strVariable : this.variablesVector) {
             Variable v = this.getVariable(strVariable);
-            if (!groups.contains(v.group)) {
-                groups.add(v.group);
+            if (!groups.contains(v.getGroup())) {
+                groups.add(v.getGroup());
             }
         }
 

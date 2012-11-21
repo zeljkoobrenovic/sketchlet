@@ -10,7 +10,7 @@ package net.sf.sketchlet.designer;
 
 import net.sf.sketchlet.common.SimpleProperties;
 import net.sf.sketchlet.common.context.SketchletContextUtils;
-import net.sf.sketchlet.designer.data.Page;
+import net.sf.sketchlet.model.Page;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -134,11 +134,11 @@ public class RecentFilesManager {
     }
 
     public static void populateMenu() {
-        if (Workspace.mainPanel == null || Workspace.mainPanel.recentProjectsMenu == null) {
+        if (Workspace.getMainPanel() == null || Workspace.getMainPanel().recentProjectsMenu == null) {
             return;
         }
 
-        JMenu menu = Workspace.mainPanel.recentProjectsMenu;
+        JMenu menu = Workspace.getMainPanel().recentProjectsMenu;
         menu.removeAll();
 
         int startIndex = 0;
@@ -177,8 +177,8 @@ public class RecentFilesManager {
                             if (!net.sf.sketchlet.designer.editor.SketchletEditor.close()) {
                                 return;
                             }
-                            Workspace.mainPanel.saveConfiguration();
-                            Workspace.processRunner.loadProcesses(new File(file).toURL(), false);
+                            Workspace.getMainPanel().saveConfiguration();
+                            Workspace.getProcessRunner().getIoServicesHandler().loadProcesses(new File(file).toURL(), false);
                         } catch (Exception e) {
                             log.error(e);
                         }
@@ -204,14 +204,14 @@ public class RecentFilesManager {
     }
 
     public static void loadLastProject() {
-        if (recentFiles == null || recentFiles.size() == 0 || Workspace.processRunner == null) {
+        if (recentFiles == null || recentFiles.size() == 0 || Workspace.getProcessRunner() == null) {
             return;
         }
 
         String file = recentFiles.lastElement();
         try {
             if (new File(file).exists()) {
-                Workspace.processRunner.loadProcesses(new File(file).toURL(), false);
+                Workspace.getProcessRunner().getIoServicesHandler().loadProcesses(new File(file).toURL(), false);
             }
         } catch (Exception e) {
             log.error(e);

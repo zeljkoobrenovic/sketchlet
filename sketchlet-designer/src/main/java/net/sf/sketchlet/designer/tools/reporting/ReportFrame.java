@@ -8,14 +8,14 @@ import net.sf.sketchlet.common.context.SketchletContextUtils;
 import net.sf.sketchlet.common.file.FileUtils;
 import net.sf.sketchlet.communicator.server.DataServer;
 import net.sf.sketchlet.designer.Workspace;
-import net.sf.sketchlet.designer.data.Page;
-import net.sf.sketchlet.designer.data.Pages;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.designer.programming.macros.Macro;
-import net.sf.sketchlet.designer.programming.macros.Macros;
-import net.sf.sketchlet.designer.ui.MessageFrame;
-import net.sf.sketchlet.designer.ui.SketchletDesignerMainPanel;
-import net.sf.sketchlet.designer.ui.toolbars.SketchToolbar;
+import net.sf.sketchlet.designer.editor.ui.MessageFrame;
+import net.sf.sketchlet.designer.editor.ui.SketchletDesignerMainPanel;
+import net.sf.sketchlet.designer.editor.ui.toolbars.SketchToolbar;
+import net.sf.sketchlet.model.Page;
+import net.sf.sketchlet.model.Pages;
+import net.sf.sketchlet.model.programming.macros.Macro;
+import net.sf.sketchlet.model.programming.macros.Macros;
 import net.sf.sketchlet.script.ScriptPluginProxy;
 import net.sf.sketchlet.util.XMLUtils;
 
@@ -41,26 +41,33 @@ import java.util.Properties;
  */
 public class ReportFrame extends JDialog {
 
-    JCheckBox printStateDiagram = new JCheckBox("State diagram", true);
-    JCheckBox printMacros = new JCheckBox("Action Lists", true);
-    JCheckBox printSceenActions = new JCheckBox("Screen Actions", true);
-    JCheckBox printScripts = new JCheckBox("Scripts", true);
-    JCheckBox printTimers = new JCheckBox("Timers", true);
-    JCheckBox printTOC = new JCheckBox("Generate TOC", true);
-    JButton btnOK = new JButton("Create Report");
-    JButton btnCancel = new JButton("Cancel");
-    JButton selectAll = new JButton("Select All");
-    JButton deselectAll = new JButton("Deselect All");
-    JTextField title = new JTextField(20);
-    int width = Toolkit.getDefaultToolkit().getScreenSize().width;
-    int height = Toolkit.getDefaultToolkit().getScreenSize().height;
-    JTextField imgWidth = new JTextField("" + width, 6);
-    JTextField imgHeight = new JTextField("" + height, 6);
-    JTextArea shortIntro = new JTextArea(5, 20);
-    JProgressBar progress = new JProgressBar();
-    JCheckBox showRegionsInfo = new JCheckBox("Show Active Regions Info", true);
-    JCheckBox showVariables = new JCheckBox("Show Used Variables", true);
-    Properties reportProps = new Properties();
+    private JCheckBox printStateDiagram = new JCheckBox("State diagram", true);
+    private JCheckBox printMacros = new JCheckBox("Action Lists", true);
+    private JCheckBox printSceenActions = new JCheckBox("Screen Actions", true);
+    private JCheckBox printScripts = new JCheckBox("Scripts", true);
+    private JCheckBox printTimers = new JCheckBox("Timers", true);
+    private JCheckBox printTOC = new JCheckBox("Generate TOC", true);
+    private JButton btnOK = new JButton("Create Report");
+    private JButton btnCancel = new JButton("Cancel");
+    private JButton selectAll = new JButton("Select All");
+    private JButton deselectAll = new JButton("Deselect All");
+    private JTextField title = new JTextField(20);
+    private int width = Toolkit.getDefaultToolkit().getScreenSize().width;
+    private int height = Toolkit.getDefaultToolkit().getScreenSize().height;
+    private JTextField imgWidth = new JTextField("" + width, 6);
+    private JTextField imgHeight = new JTextField("" + height, 6);
+    private JTextArea shortIntro = new JTextArea(5, 20);
+    private JProgressBar progress = new JProgressBar();
+    private JCheckBox showRegionsInfo = new JCheckBox("Show Active Regions Info", true);
+    private JCheckBox showVariables = new JCheckBox("Show Used Variables", true);
+    private Properties reportProps = new Properties();
+
+    private JTable table = new JTable();
+    private AbstractTableModel model;
+    private Object data[][];
+
+    private static JFileChooser fc = new JFileChooser();
+    private String strId = "";
 
     public ReportFrame() {
         this.setTitle("HTML Report");
@@ -114,7 +121,7 @@ public class ReportFrame extends JDialog {
 
         add(panelNorth, BorderLayout.NORTH);
 
-        title.setText(Workspace.mainPanel.projectTitle);
+        title.setText(Workspace.getMainPanel().projectTitle);
         shortIntro.setText(FileUtils.getFileText(SketchletContextUtils.getCurrentProjectDir() + SketchletContextUtils.sketchletDataDir() + "/report_abstract.txt"));
 
         try {
@@ -217,17 +224,13 @@ public class ReportFrame extends JDialog {
         setVisible(true);
     }
 
-    JTable table = new JTable();
-    AbstractTableModel model;
-    Object data[][];
-
     public void prepareSketchesTable() {
-        data = new Object[SketchletEditor.pages.pages.size()][2];
+        data = new Object[SketchletEditor.getPages().getPages().size()][2];
 
-        for (int i = 0; i < SketchletEditor.pages.pages.size(); i++) {
-            Page s = SketchletEditor.pages.pages.elementAt(i);
+        for (int i = 0; i < SketchletEditor.getPages().getPages().size(); i++) {
+            Page s = SketchletEditor.getPages().getPages().elementAt(i);
             data[i][0] = new Boolean(true);
-            data[i][1] = s.title;
+            data[i][1] = s.getTitle();
         }
 
         model = new AbstractTableModel() {
@@ -272,9 +275,6 @@ public class ReportFrame extends JDialog {
         col.setMaxWidth(50);
     }
 
-    static JFileChooser fc = new JFileChooser();
-    String strId = "";
-
     public void generateReport() {
         try {
             int imageCount = 0;
@@ -287,7 +287,7 @@ public class ReportFrame extends JDialog {
             int returnVal = fc.showSaveDialog(this);
 
             if (returnVal == JFileChooser.APPROVE_OPTION) {
-                if (Pages.msgFrame == null) {
+                if (Pages.getMessageFrame() == null) {
                     MessageFrame.showMessage(SketchletEditor.editorFrame, "Generating report...", SketchletEditor.editorFrame);
                 }
                 file = fc.getSelectedFile();
@@ -349,7 +349,7 @@ public class ReportFrame extends JDialog {
 
                 SketchletDesignerMainPanel.openFileInWebBrowser(file);
 
-                if (Pages.msgFrame != null) {
+                if (Pages.getMessageFrame() != null) {
                     MessageFrame.closeMessage();
                 }
 
@@ -440,23 +440,23 @@ public class ReportFrame extends JDialog {
             Graphics2D g2 = img.createGraphics();
 
 
-            if (SketchletEditor.editorPanel.tabsModes.getSelectedIndex() != 0) {
-                SketchletEditor.editorPanel.tabsModes.setSelectedIndex(0);
+            if (SketchletEditor.getInstance().getSelectedModesTabIndex() != 0) {
+                SketchletEditor.getInstance().setSelectedModesTabIndex(0);
             }
-            SketchletEditor.editorPanel.openSketchByIndex(index);
-            while (SketchletEditor.editorPanel.bLoading) {
+            SketchletEditor.getInstance().openSketchByIndex(index);
+            while (SketchletEditor.getInstance().isbLoading()) {
                 Thread.sleep(10);
             }
 
             boolean bPlayback = !this.showRegionsInfo.isSelected() && !this.showVariables.isSelected();
             if (!bPlayback) {
-                g2.translate(-SketchletEditor.marginX * SketchletEditor.editorPanel.scale, -SketchletEditor.marginY * SketchletEditor.editorPanel.scale);
-                SketchletEditor.editorPanel.paintComponent(g2);
+                g2.translate(-SketchletEditor.getInstance().getMarginX() * SketchletEditor.getInstance().getScale(), -SketchletEditor.getInstance().getMarginY() * SketchletEditor.getInstance().getScale());
+                SketchletEditor.getInstance().paintComponent(g2);
             } else {
-                if (SketchletEditor.editorPanel.tabsModes.getSelectedIndex() != 1) {
-                    SketchletEditor.editorPanel.tabsModes.setSelectedIndex(1);
+                if (SketchletEditor.getInstance().getSelectedModesTabIndex() != 1) {
+                    SketchletEditor.getInstance().setSelectedModesTabIndex(1);
                 }
-                SketchletEditor.editorPanel.internalPlaybackPanel.paint(g2);
+                SketchletEditor.getInstance().getInternalPlaybackPanel().paint(g2);
             }
 
             g2.dispose();
@@ -468,8 +468,8 @@ public class ReportFrame extends JDialog {
 
     public void printSketches(PrintWriter out) {
 
-        Page _page = SketchletEditor.editorPanel.currentPage;
-        int _nMode = SketchletEditor.editorPanel.tabsModes.getSelectedIndex();
+        Page _page = SketchletEditor.getInstance().getCurrentPage();
+        int _nMode = SketchletEditor.getInstance().getSelectedModesTabIndex();
 
         boolean bVisualizeInfoSketch = SketchToolbar.bVisualizeInfoSketch;
         boolean bVisualizeInfoRegions = SketchToolbar.bVisualizeInfoRegions;
@@ -501,17 +501,17 @@ public class ReportFrame extends JDialog {
                 String strImage = "sketch" + imgN + ".png";
                 File imgFile = new File(dirImages, strImage);
 
-                Page page = SketchletEditor.pages.pages.elementAt(i);
+                Page page = SketchletEditor.getPages().getPages().elementAt(i);
 
                 out.println("<br />");
-                out.println("<a  style='page-break-before:always' name='sketch_" + (i + 1) + "'></a><h3>" + page.title + "</h3>");
+                out.println("<a  style='page-break-before:always' name='sketch_" + (i + 1) + "'></a><h3>" + page.getTitle() + "</h3>");
 
                 this.createSketchImage(i, imgFile);
                 out.println("<p><img border='1' src='" + strId + "/" + strImage + "' /></p>");
-                page.onEntryMacro.name = "on entry";
-                page.onEntryMacro.getHTMLCode(out, "b");
-                page.onExitMacro.name = "on exit";
-                page.onExitMacro.getHTMLCode(out, "b");
+                page.getOnEntryMacro().setName("on entry");
+                page.getOnEntryMacro().getHTMLCode(out, "b");
+                page.getOnExitMacro().setName("on exit");
+                page.getOnExitMacro().getHTMLCode(out, "b");
             }
         }
         SketchToolbar.bVisualizeInfoSketch = bVisualizeInfoSketch;
@@ -519,17 +519,17 @@ public class ReportFrame extends JDialog {
         SketchToolbar.bVisualizeInfoVariables = bVisualizeInfoVariables;
         SketchToolbar.bVisualizeVariables = bVisualizeVariables;
 
-        SketchletEditor.editorPanel.tabsModes.setSelectedIndex(_nMode);
-        SketchletEditor.editorPanel.openSketchByIndex(SketchletEditor.editorPanel.pages.pages.indexOf(_page));
+        SketchletEditor.getInstance().setSelectedModesTabIndex(_nMode);
+        SketchletEditor.getInstance().openSketchByIndex(SketchletEditor.getInstance().getPages().getPages().indexOf(_page));
     }
 
     public void getScriptsHTMLCode(PrintWriter out) {
-        for (ScriptPluginProxy script : DataServer.variablesServer.scripts) {
-            out.println("<h3>" + XMLUtils.prepareForXML(script.scriptFile.getName()) + "</h3>");
+        for (ScriptPluginProxy script : DataServer.getInstance().scripts) {
+            out.println("<h3>" + XMLUtils.prepareForXML(script.getScriptFile().getName()) + "</h3>");
             out.println("<pre>");
             int n = 0;
             try {
-                BufferedReader in = new BufferedReader(new FileReader(script.scriptFile));
+                BufferedReader in = new BufferedReader(new FileReader(script.getScriptFile()));
 
                 String line;
 

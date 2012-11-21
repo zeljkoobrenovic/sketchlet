@@ -6,7 +6,6 @@ package net.sf.sketchlet.designer.editor.tool;
 
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
-import net.sf.sketchlet.designer.help.TutorialPanel;
 import net.sf.sketchlet.designer.tools.log.ActivityLog;
 import org.apache.log4j.Logger;
 
@@ -22,9 +21,6 @@ public class TransparentColorTool extends Tool {
 
     public TransparentColorTool(ToolInterface toolInterface) {
         super(toolInterface);
-    }
-
-    public void mouseMoved(int x, int y, int modifiers) {
     }
 
     public void mousePressed(final int x, final int y, int modifiers) {
@@ -52,12 +48,6 @@ public class TransparentColorTool extends Tool {
         Point hotSpot = new Point(2, 22);
 
         return toolkit.createCustomCursor(cursorImage, hotSpot, "Transparent Color");
-    }
-
-    public void mouseDragged(int x, int y, int modifiers) {
-    }
-
-    public void draw(Point start, Point end) {
     }
 
     public ImageIcon getIcon() {
@@ -89,6 +79,5 @@ public class TransparentColorTool extends Tool {
     public void mouseReleased(int x, int y, int modifiers) {
         super.mouseReleased(x, y, modifiers);
         ActivityLog.log("toolResult", "Set transparent color in " + toolInterface.getName(), "image_transparent_color.png", toolInterface.getPanel());
-        TutorialPanel.addLine("cmd", "Set transparent color in " + toolInterface.getName(), "", toolInterface.getPanel());
     }
 }

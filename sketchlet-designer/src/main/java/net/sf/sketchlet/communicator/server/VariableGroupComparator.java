@@ -23,7 +23,7 @@ public class VariableGroupComparator implements Comparator {
 
     public int compare(Object o1, Object o2) {
         if (o1 instanceof Variable && o2 instanceof Variable) {
-            return ((Variable) o1).group.compareTo(((Variable) o2).group);
+            return ((Variable) o1).getGroup().compareTo(((Variable) o2).getGroup());
         } else {
             return 0;
         }

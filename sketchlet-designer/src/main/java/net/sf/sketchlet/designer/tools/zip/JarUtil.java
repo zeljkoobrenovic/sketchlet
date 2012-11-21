@@ -24,8 +24,7 @@ import java.util.zip.CRC32;
  */
 public class JarUtil {
     private static final Logger log = Logger.getLogger(JarUtil.class);
-
-    ZipProgressFeedback feedback;
+    private ZipProgressFeedback feedback;
 
     /**
      * Creates a new instance of JarUtil

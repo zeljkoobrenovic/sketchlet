@@ -4,10 +4,10 @@
  */
 package net.sf.sketchlet.designer.eye.eye;
 
-import net.sf.sketchlet.designer.data.ActiveRegion;
-import net.sf.sketchlet.designer.editor.EditorMode;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.designer.ui.region.ActiveRegionsFrame;
+import net.sf.sketchlet.designer.editor.SketchletEditorMode;
+import net.sf.sketchlet.designer.editor.ui.region.ActiveRegionsFrame;
+import net.sf.sketchlet.model.ActiveRegion;
 
 import java.awt.*;
 
@@ -133,7 +133,7 @@ this.checkAndAdd(relatedSlot, region.mouseEvents, "Go to page", relatedSlot.name
     }
 
     public void openItem() {
-        SketchletEditor.editorPanel.setMode(EditorMode.ACTIONS);
+        SketchletEditor.getInstance().setEditorMode(SketchletEditorMode.ACTIONS);
         ActiveRegionsFrame.showRegionsAndActions();
         ActiveRegionsFrame.refresh(region);
     }

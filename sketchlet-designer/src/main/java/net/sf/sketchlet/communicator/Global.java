@@ -15,9 +15,7 @@ import org.apache.log4j.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
-import java.util.Hashtable;
 
 
 /**
@@ -25,25 +23,57 @@ import java.util.Hashtable;
  */
 public class Global {
     private static final Logger log = Logger.getLogger(Global.class);
-    // public static TCPDataReceiver dataReceiverTCP;
-    public static UDPServer serverUDP;
-    public static TCPServer serverTCP;
-    public static Hashtable delayedVariables = new Hashtable();
-    public static String workingDirectory;
+    private static UDPServer serverUDP;
+    private static TCPServer serverTCP;
+    private static String workingDirectory;
 
-    public static DocumentBuilderFactory factory;
-    public static DocumentBuilder builder;
-    public static TransformerFactory tFactory;
-    Transformer t;
+    private static DocumentBuilderFactory factory;
+    private static DocumentBuilder builder;
+    private static TransformerFactory tFactory;
 
     static {
         try {
             factory = DocumentBuilderFactory.newInstance();
-            builder = factory.newDocumentBuilder();
+            builder = getFactory().newDocumentBuilder();
             tFactory = TransformerFactory.newInstance();
         } catch (Exception e) {
             log.error(e);
         }
     }
 
+    public static UDPServer getServerUDP() {
+        return serverUDP;
+    }
+
+    public static TCPServer getServerTCP() {
+        return serverTCP;
+    }
+
+    public static String getWorkingDirectory() {
+        return workingDirectory;
+    }
+
+    public static DocumentBuilderFactory getFactory() {
+        return factory;
+    }
+
+    public static DocumentBuilder getBuilder() {
+        return builder;
+    }
+
+    public static TransformerFactory gettFactory() {
+        return tFactory;
+    }
+
+    public static void setServerUDP(UDPServer serverUDP) {
+        Global.serverUDP = serverUDP;
+    }
+
+    public static void setServerTCP(TCPServer serverTCP) {
+        Global.serverTCP = serverTCP;
+    }
+
+    public static void setWorkingDirectory(String workingDirectory) {
+        Global.workingDirectory = workingDirectory;
+    }
 }

@@ -7,11 +7,11 @@ package net.sf.sketchlet.designer.help;
 import net.sf.sketchlet.common.context.SketchletContextUtils;
 import net.sf.sketchlet.common.html.HTMLImageRenderer;
 import net.sf.sketchlet.designer.Workspace;
-import net.sf.sketchlet.designer.data.ActiveRegion;
-import net.sf.sketchlet.designer.editor.EditorMode;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.designer.ui.region.ActiveRegionPanel;
-import net.sf.sketchlet.designer.ui.region.ActiveRegionsFrame;
+import net.sf.sketchlet.designer.editor.SketchletEditorMode;
+import net.sf.sketchlet.designer.editor.ui.region.ActiveRegionPanel;
+import net.sf.sketchlet.designer.editor.ui.region.ActiveRegionsFrame;
+import net.sf.sketchlet.model.ActiveRegion;
 import org.apache.log4j.Logger;
 import org.xhtmlrenderer.simple.FSScrollPane;
 import org.xhtmlrenderer.swing.BasicPanel;
@@ -39,16 +39,21 @@ import java.util.Vector;
 public class HelpViewer extends JPanel {
     private static final Logger log = Logger.getLogger(HelpViewer.class);
 
-    ScalableXHTMLPanel panel;
-    FSScrollPane scrollPane;
-    JCheckBox autoHelp = new JCheckBox("context sensitive", true);
-    JButton back = new JButton(Workspace.createImageIcon("resources/go-previous.png"));
-    JButton forward = new JButton(Workspace.createImageIcon("resources/go-next.png"));
-    JButton home = new JButton("Help Index", Workspace.createImageIcon("resources/go-home.png"));
-    Vector<String> history = new Vector<String>();
-    Vector<String> historyForward = new Vector<String>();
-    JButton edit = new JButton(".");
-    public String indexPage = "";
+    private ScalableXHTMLPanel panel;
+    private FSScrollPane scrollPane;
+    private JCheckBox autoHelp = new JCheckBox("context sensitive", true);
+    private JButton back = new JButton(Workspace.createImageIcon("resources/go-previous.png"));
+    private JButton forward = new JButton(Workspace.createImageIcon("resources/go-next.png"));
+    private JButton home = new JButton("Help Index", Workspace.createImageIcon("resources/go-home.png"));
+    private Vector<String> history = new Vector<String>();
+    private Vector<String> historyForward = new Vector<String>();
+    private JButton edit = new JButton(".");
+
+    private String indexPage = "";
+    private String strHTML = "";
+    private String strPrevURL = null;
+    private static DocumentBuilderFactory factory;
+    private static DocumentBuilder builder;
 
     public HelpViewer() {
         this("index");
@@ -59,7 +64,7 @@ public class HelpViewer extends JPanel {
     }
 
     public HelpViewer(String _indexPage, boolean bShowToolbar) {
-        this.indexPage = _indexPage;
+        this.setIndexPage(_indexPage);
         setLayout(new BorderLayout());
         JToolBar panelSouth = new JToolBar();
         panelSouth.setFloatable(false);
@@ -105,7 +110,7 @@ public class HelpViewer extends JPanel {
         home.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                showHelpByID(indexPage);
+                showHelpByID(getIndexPage());
             }
         });
         back.setEnabled(false);
@@ -123,13 +128,9 @@ public class HelpViewer extends JPanel {
         }
     }
 
-    String strHTML = "";
-
     public void showHelp(String strFile) {
         showHelp(strFile, true);
     }
-
-    String strPrevURL = null;
 
     public void showHelp(String strFile, boolean bAddToHistory) {
         try {
@@ -185,58 +186,58 @@ public class HelpViewer extends JPanel {
         }
     }
 
-    public void processSketchletURL(String command) {
-        if (SketchletEditor.editorPanel == null) {
+    private void processSketchletURL(String command) {
+        if (SketchletEditor.getInstance() == null) {
             return;
         }
         if (command.equalsIgnoreCase("goto variables-panel")) {
-            SketchletEditor.editorPanel.tabsBrowser.setSelectedIndex(0);
+            SketchletEditor.getInstance().getTabsBrowser().setSelectedIndex(0);
         } else if (command.equalsIgnoreCase("goto services-panel")) {
-            SketchletEditor.editorPanel.tabsBrowser.setSelectedIndex(0);
-            SketchletEditor.editorPanel.tabsRight.setSelectedIndex(SketchletEditor.ioservicesTabIndex);
+            SketchletEditor.getInstance().getTabsBrowser().setSelectedIndex(0);
+            SketchletEditor.getInstance().getTabsRight().setSelectedIndex(SketchletEditor.getIoservicesTabIndex());
         } else if (command.equalsIgnoreCase("goto timers-panel")) {
-            SketchletEditor.editorPanel.tabsBrowser.setSelectedIndex(0);
-            SketchletEditor.editorPanel.tabsRight.setSelectedIndex(SketchletEditor.programmingTabIndex);
-            SketchletEditor.editorPanel.tabsProgramming.setSelectedIndex(SketchletEditor.timersTabIndex);
+            SketchletEditor.getInstance().getTabsBrowser().setSelectedIndex(0);
+            SketchletEditor.getInstance().getTabsRight().setSelectedIndex(SketchletEditor.getProgrammingTabIndex());
+            SketchletEditor.getInstance().getTabsProgramming().setSelectedIndex(SketchletEditor.getTimersTabIndex());
         } else if (command.equalsIgnoreCase("goto macros-panel")) {
-            SketchletEditor.editorPanel.tabsBrowser.setSelectedIndex(0);
-            SketchletEditor.editorPanel.tabsRight.setSelectedIndex(SketchletEditor.programmingTabIndex);
-            SketchletEditor.editorPanel.tabsProgramming.setSelectedIndex(SketchletEditor.macrosTabIndex);
+            SketchletEditor.getInstance().getTabsBrowser().setSelectedIndex(0);
+            SketchletEditor.getInstance().getTabsRight().setSelectedIndex(SketchletEditor.getProgrammingTabIndex());
+            SketchletEditor.getInstance().getTabsProgramming().setSelectedIndex(SketchletEditor.getMacrosTabIndex());
         } else if (command.equalsIgnoreCase("goto screen-poking-panel")) {
-            SketchletEditor.editorPanel.tabsBrowser.setSelectedIndex(0);
-            SketchletEditor.editorPanel.tabsRight.setSelectedIndex(SketchletEditor.programmingTabIndex);
-            SketchletEditor.editorPanel.tabsProgramming.setSelectedIndex(SketchletEditor.screenpokingTabIndex);
+            SketchletEditor.getInstance().getTabsBrowser().setSelectedIndex(0);
+            SketchletEditor.getInstance().getTabsRight().setSelectedIndex(SketchletEditor.getProgrammingTabIndex());
+            SketchletEditor.getInstance().getTabsProgramming().setSelectedIndex(SketchletEditor.getScreenpokingTabIndex());
         } else if (command.equalsIgnoreCase("goto scripts-panel")) {
-            SketchletEditor.editorPanel.tabsBrowser.setSelectedIndex(0);
-            SketchletEditor.editorPanel.tabsRight.setSelectedIndex(SketchletEditor.programmingTabIndex);
-            SketchletEditor.editorPanel.tabsProgramming.setSelectedIndex(SketchletEditor.scriptsTabIndex);
+            SketchletEditor.getInstance().getTabsBrowser().setSelectedIndex(0);
+            SketchletEditor.getInstance().getTabsRight().setSelectedIndex(SketchletEditor.getProgrammingTabIndex());
+            SketchletEditor.getInstance().getTabsProgramming().setSelectedIndex(SketchletEditor.getScriptsTabIndex());
         } else if (command.equalsIgnoreCase("page://")) {
             String strPage = command.substring(7);
-            SketchletEditor.editorPanel.selectSketch(strPage);
+            SketchletEditor.getInstance().selectSketch(strPage);
         } else if (command.startsWith("region-")) {
             regionAction(command);
         } else if (command.startsWith("menu ")) {
             String strMenuCommand = command.substring(5).trim();
-            Workspace.mainPanel.executeCommand(strMenuCommand, null);
+            Workspace.getMainPanel().executeCommand(strMenuCommand, null);
         }
     }
 
-    public ActiveRegion createActiveRegion(int x, int y, int width, int height) {
-        ActiveRegion reg = new ActiveRegion(SketchletEditor.editorPanel.currentPage.regions);
+    private ActiveRegion createActiveRegion(int x, int y, int width, int height) {
+        ActiveRegion reg = new ActiveRegion(SketchletEditor.getInstance().getCurrentPage().getRegions());
         reg.x1 = x;
         reg.y1 = y;
         reg.x2 = x + width;
         reg.y2 = y + height;
-        SketchletEditor.editorPanel.setMode(EditorMode.ACTIONS);
-        SketchletEditor.editorPanel.currentPage.regions.regions.insertElementAt(reg, 0);
-        SketchletEditor.editorPanel.currentPage.regions.selectedRegions = null;
-        SketchletEditor.editorPanel.currentPage.regions.addToSelection(reg);
+        SketchletEditor.getInstance().setEditorMode(SketchletEditorMode.ACTIONS);
+        SketchletEditor.getInstance().getCurrentPage().getRegions().getRegions().insertElementAt(reg, 0);
+        SketchletEditor.getInstance().getCurrentPage().getRegions().setSelectedRegions(null);
+        SketchletEditor.getInstance().getCurrentPage().getRegions().addToSelection(reg);
 
         return reg;
     }
 
-    public void refreshRegion(ActiveRegion reg, int tab, int subtab) {
-        SketchletEditor.editorPanel.repaint();
+    private void refreshRegion(ActiveRegion reg, int tab, int subtab) {
+        SketchletEditor.getInstance().repaint();
         ActiveRegionsFrame.showRegionsAndActions();
         ActiveRegionsFrame.reload(reg);
 
@@ -266,13 +267,13 @@ public class HelpViewer extends JPanel {
         }
     }
 
-    public void regionAction(String command) {
+    private void regionAction(String command) {
     }
 
     public void showHelpByID(String strID) {
-        if (SketchletEditor.editorPanel != null) {
-            SketchletEditor.editorPanel.sketchToolbar.showNavigator(true);
-            SketchletEditor.editorPanel.tabsBrowser.setSelectedIndex(SketchletEditor.editorPanel.tabsBrowser.getTabCount() - 1);
+        if (SketchletEditor.getInstance() != null) {
+            SketchletEditor.getInstance().getSketchToolbar().showNavigator(true);
+            SketchletEditor.getInstance().getTabsBrowser().setSelectedIndex(SketchletEditor.getInstance().getTabsBrowser().getTabCount() - 1);
         }
         String strPath = SketchletContextUtils.getSketchletDesignerHelpDir() + strID + ".html";
         showHelp(strPath);
@@ -286,18 +287,15 @@ public class HelpViewer extends JPanel {
     }
 
     public void showHelpByID(String strID, boolean bForceShow) {
-        if (bForceShow && SketchletEditor.editorPanel != null) {
-            SketchletEditor.editorPanel.sketchToolbar.showNavigator(true);
-            SketchletEditor.editorPanel.tabsBrowser.setSelectedIndex(SketchletEditor.editorPanel.tabsBrowser.getTabCount() - 1);
+        if (bForceShow && SketchletEditor.getInstance() != null) {
+            SketchletEditor.getInstance().getSketchToolbar().showNavigator(true);
+            SketchletEditor.getInstance().getTabsBrowser().setSelectedIndex(SketchletEditor.getInstance().getTabsBrowser().getTabCount() - 1);
         }
         String strPath = SketchletContextUtils.getSketchletDesignerHelpDir() + strID + ".html";
         showHelp(strPath);
     }
 
-    static DocumentBuilderFactory factory;
-    static DocumentBuilder builder;
-
-    public void fillHTMLPanel() {
+    private void fillHTMLPanel() {
         try {
             factory = DocumentBuilderFactory.newInstance();
             factory.setNamespaceAware(true);
@@ -324,17 +322,11 @@ public class HelpViewer extends JPanel {
         }
     }
 
-    public static void main(String args[]) {
-        try {
-            HelpViewer scrol = new HelpViewer();
-            scrol.showHelp("C:\\Program Files\\Sketchlet\\help\\timers.html");
-            JFrame frame = new JFrame();
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.add(scrol);
-            frame.pack();
-            frame.setVisible(true);
-        } catch (Exception e) {
-            log.error(e);
-        }
+    public String getIndexPage() {
+        return indexPage;
+    }
+
+    public void setIndexPage(String indexPage) {
+        this.indexPage = indexPage;
     }
 }

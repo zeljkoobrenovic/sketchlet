@@ -45,7 +45,7 @@ public class RestoreRemoteBackup extends RemoteCopy {
                 return;
             }
 
-            StaticUserAuthenticator auth = new StaticUserAuthenticator("", RemoteBackup.userInfo.username, RemoteBackup.userInfo.password);
+            StaticUserAuthenticator auth = new StaticUserAuthenticator("", RemoteBackup.userInfo.getUsername(), RemoteBackup.userInfo.getPassword());
             FileSystemOptions opts = new FileSystemOptions();
             SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(opts, "no");
             DefaultFileSystemConfigBuilder.getInstance().setUserAuthenticator(opts, auth);
@@ -65,7 +65,7 @@ public class RestoreRemoteBackup extends RemoteCopy {
     }
 
     public void doRestoreRemoteBackup(String remoteFolder, String localFolder, String relativePath, FileSystemOptions opts, JFrame frame) {
-        if (this.stopped) {
+        if (this.isStopped()) {
             return;
         }
         try {
@@ -82,7 +82,7 @@ public class RestoreRemoteBackup extends RemoteCopy {
             if (remoteFileObject.getType() == FileType.FOLDER) {
                 FileObject children[] = remoteFileObject.getChildren();
                 for (int i = 0; i < children.length; i++) {
-                    if (this.stopped) {
+                    if (this.isStopped()) {
                         return;
                     }
                     doRestoreRemoteBackup(remoteFolder, localFolder, relativePath + "/" + children[i].getName().getBaseName(), opts, frame);
@@ -111,7 +111,7 @@ public class RestoreRemoteBackup extends RemoteCopy {
     }
 
     public void countFiles(String remoteFolder, String relativePath, FileSystemOptions opts) {
-        if (this.stopped) {
+        if (this.isStopped()) {
             return;
         }
 
@@ -129,7 +129,7 @@ public class RestoreRemoteBackup extends RemoteCopy {
             if (remoteFileObject.getType() == FileType.FOLDER) {
                 FileObject children[] = remoteFileObject.getChildren();
                 for (int i = 0; i < children.length; i++) {
-                    if (this.stopped) {
+                    if (this.isStopped()) {
                         return;
                     }
                     countFiles(remoteFolder, relativePath + "/" + children[i].getName().getBaseName(), opts);

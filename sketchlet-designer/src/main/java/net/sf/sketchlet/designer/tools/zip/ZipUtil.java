@@ -25,7 +25,7 @@ import java.util.zip.ZipOutputStream;
 public class ZipUtil {
     private static final Logger log = Logger.getLogger(ZipUtil.class);
 
-    ZipProgressFeedback feedback;
+    private ZipProgressFeedback feedback;
 
     /**
      * Creates a new instance of ZipUtil

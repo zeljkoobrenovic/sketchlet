@@ -6,11 +6,10 @@ package net.sf.sketchlet.designer.editor.tool;
 
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
-import net.sf.sketchlet.designer.data.ActiveRegion;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.designer.editor.regions.connector.Connector;
-import net.sf.sketchlet.designer.help.TutorialPanel;
+import net.sf.sketchlet.model.Connector;
 import net.sf.sketchlet.designer.tools.log.ActivityLog;
+import net.sf.sketchlet.model.ActiveRegion;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,13 +21,8 @@ import java.awt.event.MouseEvent;
  */
 public class ActiveRegionConnectorTool extends Tool {
 
-    int prevX, prevY;
-    long prevTimestamp;
-    double speeds[] = new double[5];
-    int currentDistanceIndex = 0;
-    double speed;
-    Cursor cursor;
-    Connector connector = null;
+    private Cursor cursor;
+    private Connector connector = null;
 
     public ActiveRegionConnectorTool(SketchletEditor freeHand) {
         super(freeHand);
@@ -38,56 +32,54 @@ public class ActiveRegionConnectorTool extends Tool {
         cursor = toolkit.createCustomCursor(cursorImage, hotSpot, "Active Region Connector");
     }
 
+    @Override
     public String getName() {
         return Language.translate("Active Region Connector Tool");
     }
 
+    @Override
     public ImageIcon getIcon() {
         return Workspace.createImageIcon("resources/connector.png");
     }
 
+    @Override
     public String getIconFileName() {
         return "connector.png";
     }
 
+    @Override
     public void mouseMoved(MouseEvent e, int x, int y) {
-        ActiveRegion a = freeHand.currentPage.regions.selectRegion(x, y, false);
+        ActiveRegion a = editor.getCurrentPage().getRegions().selectRegion(x, y, false);
         if (x < 0 || y < 0) {
-            freeHand.setCursor(Cursor.getDefaultCursor());
-            /*} else if (a != null) {
-            a.mouseHandler.mouseMoved(e, editorPanel.scale, SketchletEditor.editorFrame, false);
-             */
+            editor.setCursor(Cursor.getDefaultCursor());
         } else {
-            freeHand.setCursor();
+            editor.setCursor();
             if (this.connector != null) {
-                this.connector.renderer.mouseX = x;
-                this.connector.renderer.mouseY = y;
-                freeHand.repaintEverything();
+                this.connector.getRenderer().setMouseX(x);
+                this.connector.getRenderer().setMouseY(y);
+                editor.repaintEverything();
             }
         }
     }
 
+    @Override
     public void mousePressed(MouseEvent e, int x, int y) {
-        prevX = x;
-        prevY = y;
-        prevTimestamp = e.getWhen();
-
-        ActiveRegion region = freeHand.currentPage.regions.selectRegion(x, y, false);
+        ActiveRegion region = editor.getCurrentPage().getRegions().selectRegion(x, y, false);
         if (region != null) {
             if (connector == null) {
                 connector = new Connector(region);
-                connector.renderer.mouseX = x;
-                connector.renderer.mouseY = y;
+                connector.getRenderer().setMouseX(x);
+                connector.getRenderer().setMouseY(y);
             } else {
                 if (region == null || region == connector.getRegion1()) {
                     JOptionPane.showMessageDialog(SketchletEditor.editorFrame, Language.translate("You have to select another region."), Language.translate("Connector"), JOptionPane.WARNING_MESSAGE);
                 } else {
                     connector.setRegion2(region);
-                    SketchletEditor.editorPanel.currentPage.addConnector(this.connector);
-                    SketchletEditor.editorPanel.currentPage.selectedConnector = connector;
+                    SketchletEditor.getInstance().getCurrentPage().addConnector(this.connector);
+                    SketchletEditor.getInstance().getCurrentPage().setSelectedConnector(connector);
                     connector = null;
-                    SketchletEditor.editorPanel.setTool(SketchletEditor.editorPanel.activeRegionSelectTool, SketchletEditor.editorPanel);
-                    freeHand.repaintEverything();
+                    SketchletEditor.getInstance().setTool(SketchletEditor.getInstance().getActiveRegionSelectTool(), SketchletEditor.getInstance());
+                    editor.repaintEverything();
                 }
             }
         } else {
@@ -95,57 +87,29 @@ public class ActiveRegionConnectorTool extends Tool {
         }
     }
 
-    public void mouseReleased(MouseEvent e, int x, int y) {
-    }
-
-    public void mouseDragged(MouseEvent e, int x, int y) {
-        this.mouseMoved(e, x, y);
-    }
-
-    public void mouseMoved(int x, int y, int modifiers) {
-    }
-
-    public void mousePressed(int x, int y, int modifiers) {
-    }
-
+    @Override
     public void mouseReleased(int x, int y, int modifiers) {
         ActivityLog.log("toolResult", "Create a new region");
-        TutorialPanel.addLine("cmd", "Create a new region by dragging a rectangle area on the page", "", toolInterface.getPanel());
     }
 
-    public void mouseDragged(int x, int y, int modifiers) {
-    }
-
+    @Override
     public Cursor getCursor() {
         return cursor;
     }
 
+    @Override
     public void draw(Graphics2D g2) {
         if (this.connector != null) {
-            connector.renderer.draw(g2, false);
+            connector.getRenderer().draw(g2, false);
         }
     }
 
-    public void activate() {
-    }
-
-    public void deactivate() {
-    }
-
-    public void onUndo() {
-    }
-
-    public void keyTyped(KeyEvent e) {
-    }
-
+    @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
             connector.dispose();
             connector = null;
-            freeHand.repaintEverything();
+            editor.repaintEverything();
         }
-    }
-
-    public void keyReleased(KeyEvent e) {
     }
 }

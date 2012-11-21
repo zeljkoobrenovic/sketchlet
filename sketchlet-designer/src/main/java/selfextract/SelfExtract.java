@@ -23,14 +23,14 @@ import java.util.zip.ZipFile;
 public class SelfExtract {
     private static final Logger log = Logger.getLogger(SelfExtract.class);
 
-    public static int total = 1;
-    public static int current = 0;
+    private static int totalNumberOfFiles = 1;
+    private static int currentFileIndex = 0;
 
     public static void unzipArchive(File archive, File outputDir) throws Exception {
         ZipFile zipfile = new ZipFile(archive);
-        total = zipfile.size();
-        current = 0;
-        MsgFrame.msgFrame.refresh();
+        setTotalNumberOfFiles(zipfile.size());
+        setCurrentFileIndex(0);
+        MessageFrame.getMessageFrame().refresh();
         for (Enumeration e = zipfile.entries(); e.hasMoreElements(); ) {
             ZipEntry entry = (ZipEntry) e.nextElement();
             unzipEntry(zipfile, entry, outputDir);
@@ -61,8 +61,8 @@ public class SelfExtract {
             inputStream.close();
         }
 
-        current++;
-        MsgFrame.msgFrame.refresh();
+        setCurrentFileIndex(getCurrentFileIndex() + 1);
+        MessageFrame.getMessageFrame().refresh();
     }
 
     private static void createDir(File dir) {
@@ -123,7 +123,7 @@ public class SelfExtract {
                 log.error(e);
             }
 
-            MsgFrame.showMessage(null, "Preparing files...");
+            MessageFrame.showMessage(null, "Preparing files...");
             URL url = SelfExtract.class.getResource("SelfExtract.class");
             File file = null;
             String arch = "";
@@ -154,7 +154,7 @@ public class SelfExtract {
 
             SelfExtract.unzipArchive(file, temp);
 
-            MsgFrame.msgFrame.setMessage(Language.translate("Please wait..."));
+            MessageFrame.getMessageFrame().setMessage(Language.translate("Please wait..."));
 
             String prefix = SketchletContext.getInstance().getApplicationHomeDir();
             if (!prefix.endsWith("\\") || !prefix.endsWith("/")) {
@@ -179,13 +179,29 @@ public class SelfExtract {
             log.error(e);
         }
     }
+
+    public static int getTotalNumberOfFiles() {
+        return totalNumberOfFiles;
+    }
+
+    public static void setTotalNumberOfFiles(int totalNumberOfFiles) {
+        SelfExtract.totalNumberOfFiles = totalNumberOfFiles;
+    }
+
+    public static int getCurrentFileIndex() {
+        return currentFileIndex;
+    }
+
+    public static void setCurrentFileIndex(int currentFileIndex) {
+        SelfExtract.currentFileIndex = currentFileIndex;
+    }
 }
 
 class StreamGobbler extends Thread {
     private static final Logger log = Logger.getLogger(StreamGobbler.class);
 
-    InputStream is;
-    String type;
+    private InputStream is;
+    private String type;
 
     StreamGobbler(InputStream is, String type) {
         this.is = is;
@@ -198,7 +214,7 @@ class StreamGobbler extends Thread {
             BufferedReader br = new BufferedReader(isr);
             String line = null;
             while ((line = br.readLine()) != null) {
-                MsgFrame.closeMessage();
+                MessageFrame.closeMessage();
             }
         } catch (IOException ioe) {
             log.error(ioe);
@@ -206,25 +222,24 @@ class StreamGobbler extends Thread {
     }
 }
 
-class MsgFrame extends JDialog implements Runnable {
+class MessageFrame extends JDialog implements Runnable {
 
-    boolean stopped = false;
-    public JTextField message = new JTextField(20);
-    JProgressBar progressBar = new JProgressBar();
-    boolean finished = false;
-    JFrame frame;
-    Cursor originalCursor;
-    Thread t = new Thread(this);
-    static MsgFrame msgFrame;
+    private boolean stopped = false;
+    private JTextField message = new JTextField(20);
+    private JProgressBar progressBar = new JProgressBar();
+    private JFrame frame;
+    private Cursor originalCursor;
+    private Thread t = new Thread(this);
+    private static MessageFrame messageFrame;
 
-    private MsgFrame(JFrame frame, String strMessage, final long timeout) {
+    private MessageFrame(JFrame frame, String strMessage, final long timeout) {
         this(frame, strMessage);
         new Thread(new Runnable() {
 
             public void run() {
                 try {
                     Thread.sleep(timeout);
-                    msgFrame.close();
+                    getMessageFrame().close();
                 } catch (Exception e) {
                 }
             }
@@ -232,16 +247,16 @@ class MsgFrame extends JDialog implements Runnable {
     }
 
     public static void showMessage(JFrame frame, String strMessage) {
-        MsgFrame.closeMessage();
-        msgFrame = new MsgFrame(frame, strMessage);
+        MessageFrame.closeMessage();
+        messageFrame = new MessageFrame(frame, strMessage);
     }
 
     public static void showMessage(JFrame frame, String strMessage, long timeout) {
-        MsgFrame.closeMessage();
-        msgFrame = new MsgFrame(frame, strMessage, timeout);
+        MessageFrame.closeMessage();
+        messageFrame = new MessageFrame(frame, strMessage, timeout);
     }
 
-    private MsgFrame(JFrame frame, String strMessage) {
+    private MessageFrame(JFrame frame, String strMessage) {
         super(frame, false);
         this.frame = frame;
         this.setUndecorated(true);
@@ -265,9 +280,13 @@ class MsgFrame extends JDialog implements Runnable {
         run();
     }
 
+    public static MessageFrame getMessageFrame() {
+        return messageFrame;
+    }
+
     public void refresh() {
-        this.progressBar.setMaximum(SelfExtract.total);
-        this.progressBar.setValue(SelfExtract.current);
+        this.progressBar.setMaximum(SelfExtract.getTotalNumberOfFiles());
+        this.progressBar.setValue(SelfExtract.getCurrentFileIndex());
     }
 
     public void run() {
@@ -277,16 +296,16 @@ class MsgFrame extends JDialog implements Runnable {
     }
 
     public static void closeMessage() {
-        if (msgFrame != null) {
-            msgFrame.close();
+        if (getMessageFrame() != null) {
+            getMessageFrame().close();
         }
     }
 
     public void close() {
-        if (msgFrame != null) {
+        if (getMessageFrame() != null) {
             stopped = true;
             setVisible(false);
-            msgFrame = null;
+            messageFrame = null;
         }
         if (frame != null) {
             frame.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -298,6 +317,6 @@ class MsgFrame extends JDialog implements Runnable {
     }
 
     public static void main(String args[]) {
-        new MsgFrame(null, "test");
+        new MessageFrame(null, "test");
     }
 }

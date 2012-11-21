@@ -20,34 +20,42 @@ import java.awt.image.BufferedImage;
 public abstract class Tool implements KeyListener {
 
     protected BufferedImage image;
-    SketchletEditor freeHand;
-    public ToolInterface toolInterface;
-    String settings[] = new String[]{};
+    protected SketchletEditor editor;
+    protected ToolInterface toolInterface;
+    protected String settings[] = new String[]{};
 
-    public Tool(SketchletEditor freeHand) {
-        this.freeHand = freeHand;
-        this.toolInterface = freeHand;
+    public Tool(SketchletEditor editor) {
+        this.editor = editor;
+        this.toolInterface = editor;
     }
 
-    public Tool(SketchletEditor freeHand, String settings[]) {
-        this.freeHand = freeHand;
-        this.toolInterface = freeHand;
+    public Tool(SketchletEditor editor, String settings[]) {
+        this.editor = editor;
+        this.toolInterface = editor;
         this.settings = settings;
     }
 
     public Tool(ToolInterface toolInterface) {
-        this.freeHand = null;
+        this.editor = null;
         this.toolInterface = toolInterface;
     }
 
     public Tool(ToolInterface toolInterface, String settings[]) {
-        this.freeHand = null;
+        this.editor = null;
         this.toolInterface = toolInterface;
         this.settings = settings;
     }
 
+    public ToolInterface getToolInterface() {
+        return toolInterface;
+    }
+
+    public void setToolInterface(ToolInterface toolInterface) {
+        this.toolInterface = toolInterface;
+    }
+
     public void dispose() {
-        this.freeHand = null;
+        this.editor = null;
         this.toolInterface = null;
         if (image != null) {
             image.flush();

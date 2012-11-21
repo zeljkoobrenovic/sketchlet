@@ -4,9 +4,9 @@
  */
 package net.sf.sketchlet.designer.eye.eye;
 
-import net.sf.sketchlet.designer.data.Page;
-import net.sf.sketchlet.designer.data.Pages;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
+import net.sf.sketchlet.model.Page;
+import net.sf.sketchlet.model.Pages;
 import org.apache.log4j.Logger;
 
 import java.awt.*;
@@ -21,7 +21,7 @@ public class SketchEyeSlot extends EyeSlot {
     public SketchEyeSlot(Page page, EyeData parent) {
         super(parent);
         this.page = page;
-        this.name = page.title;
+        this.name = page.getTitle();
         this.backgroundColor = Color.GREEN;
     }
 
@@ -30,13 +30,13 @@ public class SketchEyeSlot extends EyeSlot {
     }
 
     public void addRelatedSlot(EyeSlot relatedSlot) {
-        String sname = "page '" + page.title + "'";
+        String sname = "page '" + page.getTitle() + "'";
         if (relatedSlot instanceof VariableEyeSlot) {
             String vname = "variable '" + ((VariableEyeSlot) relatedSlot).name + "'";
             String value;
 
-            value = this.getValue(page.onEntryMacro.actions, "Variable update", relatedSlot.name, 0, 1);
-            checkAndAdd(relatedSlot, page.onEntryMacro.actions, "Variable update", relatedSlot.name, 0, 1,
+            value = this.getValue(page.getOnEntryMacro().getActions(), "Variable update", relatedSlot.name, 0, 1);
+            checkAndAdd(relatedSlot, page.getOnEntryMacro().getActions(), "Variable update", relatedSlot.name, 0, 1,
                     "updated on entry of " + sname + " to '" + value + "'",
                     "on entry updates " + vname + " to '" + value + "'");
 
@@ -45,28 +45,28 @@ public class SketchEyeSlot extends EyeSlot {
                     "connected to property '" + value + "' of " + sname,
                     "property '" + value + "' connected to variable '" + vname + "'");*/
 
-            value = this.getValue(page.onEntryMacro.actions, "Variable append", relatedSlot.name, 0, 1);
-            checkAndAdd(relatedSlot, page.onEntryMacro.actions, "Variable append", relatedSlot.name, 0, 1,
+            value = this.getValue(page.getOnEntryMacro().getActions(), "Variable append", relatedSlot.name, 0, 1);
+            checkAndAdd(relatedSlot, page.getOnEntryMacro().getActions(), "Variable append", relatedSlot.name, 0, 1,
                     "appended on entry of " + sname + " with '" + value + "'",
                     "on entry appends " + vname + " with '" + value + "'");
 
-            value = this.getValue(page.onEntryMacro.actions, "Variable increment", relatedSlot.name, 0, 1);
-            checkAndAdd(relatedSlot, page.onEntryMacro.actions, "Variable increment", relatedSlot.name, 0, 1,
+            value = this.getValue(page.getOnEntryMacro().getActions(), "Variable increment", relatedSlot.name, 0, 1);
+            checkAndAdd(relatedSlot, page.getOnEntryMacro().getActions(), "Variable increment", relatedSlot.name, 0, 1,
                     "incremented on entry of " + sname + " by " + value + "",
                     "on entry increments " + vname + " by " + value + "");
 
-            value = this.getValue(page.onExitMacro.actions, "Variable update", relatedSlot.name, 0, 1);
-            checkAndAdd(relatedSlot, page.onExitMacro.actions, "Variable update", relatedSlot.name, 0, 1,
+            value = this.getValue(page.getOnExitMacro().getActions(), "Variable update", relatedSlot.name, 0, 1);
+            checkAndAdd(relatedSlot, page.getOnExitMacro().getActions(), "Variable update", relatedSlot.name, 0, 1,
                     "updated on exit of " + sname + " to '" + value + "'",
                     "on exit updates " + vname + " to '" + value + "'");
 
-            value = this.getValue(page.onExitMacro.actions, "Variable append", relatedSlot.name, 0, 1);
-            checkAndAdd(relatedSlot, page.onExitMacro.actions, "Variable append", relatedSlot.name, 0, 1,
+            value = this.getValue(page.getOnExitMacro().getActions(), "Variable append", relatedSlot.name, 0, 1);
+            checkAndAdd(relatedSlot, page.getOnExitMacro().getActions(), "Variable append", relatedSlot.name, 0, 1,
                     "appended on exit of " + sname + " with '" + value + "'",
                     "on exit appends " + vname + " with '" + value + "'");
 
-            value = this.getValue(page.onExitMacro.actions, "Variable increment", relatedSlot.name, 0, 1);
-            checkAndAdd(relatedSlot, page.onExitMacro.actions, "Variable increment", relatedSlot.name, 0, 1,
+            value = this.getValue(page.getOnExitMacro().getActions(), "Variable increment", relatedSlot.name, 0, 1);
+            checkAndAdd(relatedSlot, page.getOnExitMacro().getActions(), "Variable increment", relatedSlot.name, 0, 1,
                     "incremented on exit of " + sname + " by " + value + "",
                     "on exit increments " + vname + " by " + value + "");
 
@@ -81,33 +81,33 @@ public class SketchEyeSlot extends EyeSlot {
             addRelationToSlot(relatedSlot, "append", "append");
             }*/
         } else if (relatedSlot instanceof TimerEyeSlot) {
-//            checkAndAdd(relatedSlot, sketch.onEntryMacro.actions, "Start Timer", relatedSlot.name, 0, 1);
-            //checkAndAdd(relatedSlot, sketch.onEntryMacro.actions, "Stop Timer", relatedSlot.name, 0, 1);
-//            checkAndAdd(relatedSlot, sketch.onExitMacro.actions, "Start Timer", relatedSlot.name, 0, 1);
-//            checkAndAdd(relatedSlot, sketch.onExitMacro.actions, "Stop Timer", relatedSlot.name, 0, 1);
-            checkAndAdd(relatedSlot, page.onEntryMacro.actions, "Start Timer", relatedSlot.name, 0, 1,
-                    "started on entry of sketch '" + page.title + "'",
+//            checkAndAdd(relatedSlot, sketch.onEntryMacro.getActions(), "Start Timer", relatedSlot.name, 0, 1);
+            //checkAndAdd(relatedSlot, sketch.onEntryMacro.getActions(), "Stop Timer", relatedSlot.name, 0, 1);
+//            checkAndAdd(relatedSlot, sketch.onExitMacro.getActions(), "Start Timer", relatedSlot.name, 0, 1);
+//            checkAndAdd(relatedSlot, sketch.onExitMacro.getActions(), "Stop Timer", relatedSlot.name, 0, 1);
+            checkAndAdd(relatedSlot, page.getOnEntryMacro().getActions(), "Start Timer", relatedSlot.name, 0, 1,
+                    "started on entry of sketch '" + page.getTitle() + "'",
                     "starts timer '" + relatedSlot.name + "'");
-            checkAndAdd(relatedSlot, page.onEntryMacro.actions, "Pause Timer", relatedSlot.name, 0, 1,
-                    "paused on entry of sketch '" + page.title + "'",
+            checkAndAdd(relatedSlot, page.getOnEntryMacro().getActions(), "Pause Timer", relatedSlot.name, 0, 1,
+                    "paused on entry of sketch '" + page.getTitle() + "'",
                     "pauses timer '" + relatedSlot.name + "'");
-            checkAndAdd(relatedSlot, page.onEntryMacro.actions, "Stop Timer", relatedSlot.name, 0, 1,
-                    "stopped on entry of sketch '" + page.title + "'",
+            checkAndAdd(relatedSlot, page.getOnEntryMacro().getActions(), "Stop Timer", relatedSlot.name, 0, 1,
+                    "stopped on entry of sketch '" + page.getTitle() + "'",
                     "stops timer '" + relatedSlot.name + "'");
-            checkAndAdd(relatedSlot, page.onExitMacro.actions, "Start Timer", relatedSlot.name, 0, 1,
-                    "started on exit of sketch '" + page.title + "'",
+            checkAndAdd(relatedSlot, page.getOnExitMacro().getActions(), "Start Timer", relatedSlot.name, 0, 1,
+                    "started on exit of sketch '" + page.getTitle() + "'",
                     "starts timer '" + relatedSlot.name + "'");
-            checkAndAdd(relatedSlot, page.onExitMacro.actions, "Pause Timer", relatedSlot.name, 0, 1,
-                    "paused on exit of sketch '" + page.title + "'",
+            checkAndAdd(relatedSlot, page.getOnExitMacro().getActions(), "Pause Timer", relatedSlot.name, 0, 1,
+                    "paused on exit of sketch '" + page.getTitle() + "'",
                     "pauses timer '" + relatedSlot.name + "'");
-            checkAndAdd(relatedSlot, page.onExitMacro.actions, "Stop Timer", relatedSlot.name, 0, 1,
-                    "stopped on exit of sketch '" + page.title + "'",
+            checkAndAdd(relatedSlot, page.getOnExitMacro().getActions(), "Stop Timer", relatedSlot.name, 0, 1,
+                    "stopped on exit of sketch '" + page.getTitle() + "'",
                     "stops timer '" + relatedSlot.name + "'");
-            //checkAndAdd(relatedSlot, sketch.keyboardHandler.actions, "Start Timer", relatedSlot.name, 5, 6);
-            //checkAndAdd(relatedSlot, sketch.keyboardHandler.actions, "Stop Timer", relatedSlot.name, 5, 6);
+            //checkAndAdd(relatedSlot, sketch.keyboardHandler.getActions(), "Start Timer", relatedSlot.name, 5, 6);
+            //checkAndAdd(relatedSlot, sketch.keyboardHandler.getActions(), "Stop Timer", relatedSlot.name, 5, 6);
 
-            //checkAndAdd(relatedSlot, sketch.eventHandler.actions, "Start Timer", relatedSlot.name, 3, 4);
-            //checkAndAdd(relatedSlot, sketch.eventHandler.actions, "Stop Timer", relatedSlot.name, 3, 4);
+            //checkAndAdd(relatedSlot, sketch.eventHandler.getActions(), "Start Timer", relatedSlot.name, 3, 4);
+            //checkAndAdd(relatedSlot, sketch.eventHandler.getActions(), "Stop Timer", relatedSlot.name, 3, 4);
             /*if (this.sketch.isConnectedTo("Start timer", relatedSlot.name)) {
             addRelationToSlot(relatedSlot, "start timer", "start timer");
             }
@@ -115,14 +115,14 @@ public class SketchEyeSlot extends EyeSlot {
             addRelationToSlot(relatedSlot, "stop timer", "stop timer");
             }*/
         } else if (relatedSlot instanceof MacroEyeSlot) {
-            /*checkAndAdd(relatedSlot, sketch.onEntryMacro.actions, "Start macro", relatedSlot.name, 0, 1);
-            checkAndAdd(relatedSlot, sketch.onEntryMacro.actions, "Stop macro", relatedSlot.name, 0, 1);
-            checkAndAdd(relatedSlot, sketch.onExitMacro.actions, "Start macro", relatedSlot.name, 0, 1);
-            checkAndAdd(relatedSlot, sketch.onExitMacro.actions, "Stop macro", relatedSlot.name, 0, 1);
-            checkAndAdd(relatedSlot, sketch.keyboardHandler.actions, "Start macro", relatedSlot.name, 5, 6);
-            checkAndAdd(relatedSlot, sketch.keyboardHandler.actions, "Stop macro", relatedSlot.name, 5, 6);
-            checkAndAdd(relatedSlot, sketch.eventHandler.actions, "Start macro", relatedSlot.name, 3, 4);
-            checkAndAdd(relatedSlot, sketch.eventHandler.actions, "Stop macro", relatedSlot.name, 3, 4);
+            /*checkAndAdd(relatedSlot, sketch.onEntryMacro.getActions(), "Start macro", relatedSlot.name, 0, 1);
+            checkAndAdd(relatedSlot, sketch.onEntryMacro.getActions(), "Stop macro", relatedSlot.name, 0, 1);
+            checkAndAdd(relatedSlot, sketch.onExitMacro.getActions(), "Start macro", relatedSlot.name, 0, 1);
+            checkAndAdd(relatedSlot, sketch.onExitMacro.getActions(), "Stop macro", relatedSlot.name, 0, 1);
+            checkAndAdd(relatedSlot, sketch.keyboardHandler.getActions(), "Start macro", relatedSlot.name, 5, 6);
+            checkAndAdd(relatedSlot, sketch.keyboardHandler.getActions(), "Stop macro", relatedSlot.name, 5, 6);
+            checkAndAdd(relatedSlot, sketch.eventHandler.getActions(), "Start macro", relatedSlot.name, 3, 4);
+            checkAndAdd(relatedSlot, sketch.eventHandler.getActions(), "Stop macro", relatedSlot.name, 3, 4);
             if (this.sketch.isConnectedTo("Start macro", relatedSlot.name)) {
             addRelationToSlot(relatedSlot, "start macro", "start macro");
             }
@@ -130,14 +130,14 @@ public class SketchEyeSlot extends EyeSlot {
             addRelationToSlot(relatedSlot, "stop macro", "stop macro");
             }*/
         } else if (relatedSlot instanceof ScriptEyeSlot) {
-            /*checkAndAdd(relatedSlot, sketch.onEntryMacro.actions, "Start macro", "Script:" + relatedSlot.name, 0, 1);
-            checkAndAdd(relatedSlot, sketch.onEntryMacro.actions, "Stop macro", "Script:" + relatedSlot.name, 0, 1);
-            checkAndAdd(relatedSlot, sketch.onExitMacro.actions, "Start macro", "Script:" + relatedSlot.name, 0, 1);
-            checkAndAdd(relatedSlot, sketch.onExitMacro.actions, "Stop macro", "Script:" + relatedSlot.name, 0, 1);
-            checkAndAdd(relatedSlot, sketch.keyboardHandler.actions, "Start macro", "Script:" + relatedSlot.name, 5, 6);
-            checkAndAdd(relatedSlot, sketch.keyboardHandler.actions, "Stop macro", "Script:" + relatedSlot.name, 5, 6);
-            checkAndAdd(relatedSlot, sketch.eventHandler.actions, "Start macro", "Script:" + relatedSlot.name, 3, 4);
-            checkAndAdd(relatedSlot, sketch.eventHandler.actions, "Stop macro", "Script:" + relatedSlot.name, 3, 4);
+            /*checkAndAdd(relatedSlot, sketch.onEntryMacro.getActions(), "Start macro", "Script:" + relatedSlot.name, 0, 1);
+            checkAndAdd(relatedSlot, sketch.onEntryMacro.getActions(), "Stop macro", "Script:" + relatedSlot.name, 0, 1);
+            checkAndAdd(relatedSlot, sketch.onExitMacro.getActions(), "Start macro", "Script:" + relatedSlot.name, 0, 1);
+            checkAndAdd(relatedSlot, sketch.onExitMacro.getActions(), "Stop macro", "Script:" + relatedSlot.name, 0, 1);
+            checkAndAdd(relatedSlot, sketch.keyboardHandler.getActions(), "Start macro", "Script:" + relatedSlot.name, 5, 6);
+            checkAndAdd(relatedSlot, sketch.keyboardHandler.getActions(), "Stop macro", "Script:" + relatedSlot.name, 5, 6);
+            checkAndAdd(relatedSlot, sketch.eventHandler.getActions(), "Start macro", "Script:" + relatedSlot.name, 3, 4);
+            checkAndAdd(relatedSlot, sketch.eventHandler.getActions(), "Stop macro", "Script:" + relatedSlot.name, 3, 4);
             if (this.sketch.isConnectedTo("Start macro", "Script:" + relatedSlot.name)) {
             addRelationToSlot(relatedSlot, "start macro", "start macro");
             }
@@ -145,13 +145,13 @@ public class SketchEyeSlot extends EyeSlot {
             addRelationToSlot(relatedSlot, "stop macro", "stop macro");
             }*/
         } else if (relatedSlot instanceof ScreenActionEyeSlot) {
-            checkAndAdd(relatedSlot, page.onEntryMacro.actions, "Start action", "Screen:" + relatedSlot.name, 0, 1);
-            checkAndAdd(relatedSlot, page.onEntryMacro.actions, "Stop action", "Screen:" + relatedSlot.name, 0, 1);
-            checkAndAdd(relatedSlot, page.onExitMacro.actions, "Start action", "Screen:" + relatedSlot.name, 0, 1);
-            checkAndAdd(relatedSlot, page.onExitMacro.actions, "Stop action", "Screen:" + relatedSlot.name, 0, 1);
+            checkAndAdd(relatedSlot, page.getOnEntryMacro().getActions(), "Start action", "Screen:" + relatedSlot.name, 0, 1);
+            checkAndAdd(relatedSlot, page.getOnEntryMacro().getActions(), "Stop action", "Screen:" + relatedSlot.name, 0, 1);
+            checkAndAdd(relatedSlot, page.getOnExitMacro().getActions(), "Start action", "Screen:" + relatedSlot.name, 0, 1);
+            checkAndAdd(relatedSlot, page.getOnExitMacro().getActions(), "Stop action", "Screen:" + relatedSlot.name, 0, 1);
         } else if (relatedSlot instanceof SketchEyeSlot) {
-            checkAndAdd(relatedSlot, page.onEntryMacro.actions, "Go to page", relatedSlot.name, 0, 1);
-            checkAndAdd(relatedSlot, page.onExitMacro.actions, "Go to page", relatedSlot.name, 0, 1);
+            checkAndAdd(relatedSlot, page.getOnEntryMacro().getActions(), "Go to page", relatedSlot.name, 0, 1);
+            checkAndAdd(relatedSlot, page.getOnExitMacro().getActions(), "Go to page", relatedSlot.name, 0, 1);
 
             /*if (this.sketch.isConnectedTo(((SketchEyeSlot) relatedSlot).sketch)) {
             addRelationToSlot(relatedSlot, "go to", "go to");
@@ -160,10 +160,10 @@ public class SketchEyeSlot extends EyeSlot {
     }
 
     public void openItem() {
-        SketchletEditor.editorPanel.selectSketch(page);
+        SketchletEditor.getInstance().selectSketch(page);
 
         try {
-            while (Pages.msgFrame != null) {
+            while (Pages.getMessageFrame() != null) {
                 Thread.sleep(10);
             }
         } catch (Exception e) {

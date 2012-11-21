@@ -15,9 +15,12 @@ import java.awt.image.BufferedImage;
  */
 public class ShapeTool extends Tool {
 
-    int x1, y1, x2, y2;
-    boolean bDrawLine = true;
-    boolean bFill = false;
+    protected int x1, y1, x2, y2;
+    protected boolean bFill = false;
+    protected int mouseX, mouseY;
+
+    protected boolean drawStrokeWidth = true;
+    protected float transparency = 1.0f;
 
     public ShapeTool(ToolInterface toolInterface) {
         super(toolInterface, new String[]{"stroke type", "stroke width", "anitaliasing", "outline/filling", "fill patterns"});
@@ -27,17 +30,10 @@ public class ShapeTool extends Tool {
         super(toolInterface, settings);
     }
 
-    int mouseX;
-    int mouseY;
-
     public void mouseMoved(int x, int y, int modifiers) {
         mouseX = x;
         mouseY = y;
-        /*toolInterface.repaintImage();
-        toolInterface.setImageCursor(getCursor());*/
     }
-
-    int prev_x, prev_y;
 
     public boolean shouldFill() {
         return bFill;
@@ -52,9 +48,6 @@ public class ShapeTool extends Tool {
         transparency = 1.0f;
         toolInterface.repaintImage();
     }
-
-    boolean drawStrokeWidth = true;
-    float transparency = 1.0f;
 
     public Color getColor() {
         Color c = this.toolInterface.getColor();
@@ -145,7 +138,6 @@ public class ShapeTool extends Tool {
 
                 g2i.dispose();
                 img.flush();
-                img = null;
             } else {
                 g2.setStroke(toolInterface.getStroke());
                 g2.setColor(toolInterface.getColor());

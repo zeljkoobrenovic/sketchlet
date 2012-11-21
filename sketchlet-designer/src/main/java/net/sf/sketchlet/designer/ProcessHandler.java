@@ -10,7 +10,7 @@ package net.sf.sketchlet.designer;
 
 import net.sf.sketchlet.common.QuotedStringTokenizer;
 import net.sf.sketchlet.common.system.PlatformManager;
-import net.sf.sketchlet.designer.ui.desktop.ProcessConsolePanel;
+import net.sf.sketchlet.designer.editor.ui.desktop.ProcessConsolePanel;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
@@ -18,46 +18,46 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.util.Vector;
+import java.util.List;
 
 /**
  * @author cuypers
  */
 public class ProcessHandler implements Runnable, net.sf.sketchlet.context.VariableUpdateListener {
     private static final Logger log = Logger.getLogger(ProcessHandler.class);
-    Thread t = new Thread(this);
-    static Runtime runtime = Runtime.getRuntime();
-    public Process theProcess;
-    String command;
-    String workingDirectory;
-    int offset;
-    public ProcessConsolePanel output;
-    Vector processes;
-    String id;
-    boolean running = false;
+    private Thread t = new Thread(this);
+    private static Runtime runtime = Runtime.getRuntime();
+    private Process process;
+    private String command;
+    private String workingDirectory;
+    private int offset;
+    private ProcessConsolePanel processConsolePanel;
+    private List processes;
+    private String id;
+    private boolean running = false;
+
+    private PrintWriter outStream;
 
     /**
      * Creates a new instance of Workspace
      */
-    public ProcessHandler(String id, String command, String workingDirectory, int offset, Vector processes, ProcessConsolePanel output) {
+    public ProcessHandler(String id, String command, String workingDirectory, int offset, List processes, ProcessConsolePanel processConsolePanel) {
         this.id = id;
         this.command = command;
         this.workingDirectory = workingDirectory;
         this.offset = offset;
         this.processes = processes;
-        this.output = output;
+        this.processConsolePanel = processConsolePanel;
 
         t.start();
     }
 
     public void setStatus(String status) {
-        this.output.status = status;
-        if (Workspace.mainPanel != null && !Workspace.programEnding) {
-            Workspace.mainPanel.refreshData(true);
+        this.processConsolePanel.status = status;
+        if (Workspace.getMainPanel() != null && !Workspace.getProcessRunner().getIoServicesHandler().isProgramEnding()) {
+            Workspace.getMainPanel().refreshData(true);
         }
     }
-
-    PrintWriter outStream;
 
     @Override
     public void variableUpdated(String variableName, String value) {
@@ -68,7 +68,7 @@ public class ProcessHandler implements Runnable, net.sf.sketchlet.context.Variab
             return;
         }
 
-        String inVariable = this.output.inVariableField.getText().trim();
+        String inVariable = this.processConsolePanel.inVariableField.getText().trim();
         if (!inVariable.equals("") && variableName.equals(inVariable)) {
             value = value.replace("\\n", "\n");
             outStream.print(value);
@@ -76,7 +76,7 @@ public class ProcessHandler implements Runnable, net.sf.sketchlet.context.Variab
         }
 
         if (!this.running) {
-            String startCondition = this.output.startOnField.getText().trim();
+            String startCondition = this.processConsolePanel.startOnField.getText().trim();
             if (!startCondition.equals("")) {
                 int n = startCondition.indexOf(" ");
                 if (n == -1) {
@@ -95,11 +95,11 @@ public class ProcessHandler implements Runnable, net.sf.sketchlet.context.Variab
                 }
 
                 if (startProcess) {
-                    this.output.startProcess();
+                    this.processConsolePanel.startProcess();
                 }
             }
         } else {
-            String stopCondition = this.output.stopOnField.getText().trim();
+            String stopCondition = this.processConsolePanel.stopOnField.getText().trim();
             if (!stopCondition.equals("")) {
                 int n = stopCondition.indexOf(" ");
                 if (n == -1) {
@@ -118,7 +118,7 @@ public class ProcessHandler implements Runnable, net.sf.sketchlet.context.Variab
                 }
 
                 if (stopProcess) {
-                    this.output.stopProcess();
+                    this.processConsolePanel.stopProcess();
                 }
             }
         }
@@ -156,7 +156,7 @@ public class ProcessHandler implements Runnable, net.sf.sketchlet.context.Variab
             addLine("Working directory: " + workingDirectory);
 
             if (openFile) {
-                theProcess = Runtime.getRuntime().exec(command);
+                setProcess(Runtime.getRuntime().exec(command));
             } else {
                 String args[] = QuotedStringTokenizer.parseArgs(command);
 
@@ -165,17 +165,17 @@ public class ProcessHandler implements Runnable, net.sf.sketchlet.context.Variab
                     processBuilder = processBuilder.directory(new File(workingDirectory));
                 }
                 processBuilder.redirectErrorStream(true);
-                theProcess = processBuilder.start();
+                setProcess(processBuilder.start());
             }
 
             synchronized (processes) {
-                this.processes.add(theProcess);
+                this.processes.add(getProcess());
             }
-            BufferedReader inStream = new BufferedReader(new InputStreamReader(theProcess.getInputStream()));
-            outStream = new PrintWriter(new OutputStreamWriter(theProcess.getOutputStream()));
+            BufferedReader inStream = new BufferedReader(new InputStreamReader(getProcess().getInputStream()));
+            outStream = new PrintWriter(new OutputStreamWriter(getProcess().getOutputStream()));
 
-            if (net.sf.sketchlet.communicator.server.DataServer.variablesServer != null) {
-                net.sf.sketchlet.communicator.server.DataServer.variablesServer.addVariablesUpdateListener(this);
+            if (net.sf.sketchlet.communicator.server.DataServer.getInstance() != null) {
+                net.sf.sketchlet.communicator.server.DataServer.getInstance().addVariablesUpdateListener(this);
             }
 
             this.setStatus("running");
@@ -193,16 +193,16 @@ public class ProcessHandler implements Runnable, net.sf.sketchlet.context.Variab
             log.error(e);
         }
 
-        if (theProcess != null) {
+        if (getProcess() != null) {
             synchronized (processes) {
-                this.processes.remove(theProcess);
-                this.theProcess.destroy();
-                this.theProcess = null;
+                this.processes.remove(getProcess());
+                this.getProcess().destroy();
+                this.setProcess(null);
             }
         }
 
-        this.output.stop.setEnabled(false);
-        this.output.start.setEnabled(true);
+        this.processConsolePanel.stop.setEnabled(false);
+        this.processConsolePanel.start.setEnabled(true);
 
         addLine("Process finished.");
 
@@ -210,34 +210,42 @@ public class ProcessHandler implements Runnable, net.sf.sketchlet.context.Variab
 
         running = false;
 
-        if (net.sf.sketchlet.communicator.server.DataServer.variablesServer != null) {
-            net.sf.sketchlet.communicator.server.DataServer.variablesServer.removeVariablesUpdateListener(this);
+        if (net.sf.sketchlet.communicator.server.DataServer.getInstance() != null) {
+            net.sf.sketchlet.communicator.server.DataServer.getInstance().removeVariablesUpdateListener(this);
         }
     }
 
     private synchronized void addCharacter(int c) {
-        if (Workspace.showGUI) {
-            this.output.textArea.append("" + (char) c);
+        if (Workspace.isShowGUI()) {
+            this.processConsolePanel.textArea.append("" + (char) c);
 
-            this.output.textArea.setSelectionStart(this.output.textArea.getText().length() - 1);
-            this.output.textArea.setSelectionEnd(this.output.textArea.getText().length());
+            this.processConsolePanel.textArea.setSelectionStart(this.processConsolePanel.textArea.getText().length() - 1);
+            this.processConsolePanel.textArea.setSelectionEnd(this.processConsolePanel.textArea.getText().length());
         } else {
             System.out.print(c);
         }
     }
 
     private synchronized void addLine(String line) {
-        if (Workspace.showGUI) {
-            this.output.textArea.append(line + "\n");
-            this.output.textArea.setSelectionStart(this.output.textArea.getText().length() - line.length());
-            this.output.textArea.setSelectionEnd(this.output.textArea.getText().length());
+        if (Workspace.isShowGUI()) {
+            this.processConsolePanel.textArea.append(line + "\n");
+            this.processConsolePanel.textArea.setSelectionStart(this.processConsolePanel.textArea.getText().length() - line.length());
+            this.processConsolePanel.textArea.setSelectionEnd(this.processConsolePanel.textArea.getText().length());
 
-            String outVariable = this.output.outVariableField.getText().trim();
+            String outVariable = this.processConsolePanel.outVariableField.getText().trim();
             if (!outVariable.equals("")) {
-                net.sf.sketchlet.communicator.server.DataServer.variablesServer.updateVariable(outVariable, line, this.id, "Console output of process " + this.output.titleField.getText());
+                net.sf.sketchlet.communicator.server.DataServer.getInstance().updateVariable(outVariable, line, this.id, "Console output of process " + this.processConsolePanel.titleField.getText());
             }
         } else {
             log.info("[" + this.id + "]: " + line);
         }
+    }
+
+    public Process getProcess() {
+        return process;
+    }
+
+    public void setProcess(Process process) {
+        this.process = process;
     }
 }

@@ -7,27 +7,28 @@ package net.sf.sketchlet.designer.editor.tool;
 import net.sf.sketchlet.common.geom.DistancePointSegment;
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
-import net.sf.sketchlet.designer.data.ActiveRegion;
-import net.sf.sketchlet.designer.data.TrajectoryPoint;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.designer.help.TutorialPanel;
 import net.sf.sketchlet.designer.tools.log.ActivityLog;
+import net.sf.sketchlet.model.ActiveRegion;
+import net.sf.sketchlet.model.TrajectoryPoint;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-import java.util.Vector;
+import java.util.List;
 
 /**
  * @author zobrenovic
  */
 public class TrajectoryMoveTool extends TrajectoryPointsTool {
 
-    Cursor cursor;
-    Vector<TrajectoryPoint> selectedTrajectory;
+    private Cursor cursor;
+    private List<TrajectoryPoint> selectedTrajectory;
+
+    private int startX = -1;
+    private int startY = -1;
 
     public TrajectoryMoveTool(SketchletEditor freeHand) {
         super(freeHand);
@@ -55,8 +56,8 @@ public class TrajectoryMoveTool extends TrajectoryPointsTool {
     }
 
     public void draw(Graphics2D g2) {
-        super.bDraw1 = selectedTrajectory == this.tps1;
-        super.bDraw2 = selectedTrajectory == this.tps2;
+        super.bDrawTrajectory1 = selectedTrajectory == this.tps1;
+        super.bDrawTrajectory2 = selectedTrajectory == this.tps2;
         super.draw(g2);
     }
 
@@ -71,11 +72,7 @@ public class TrajectoryMoveTool extends TrajectoryPointsTool {
             angle = 0.0;
         }
         ActivityLog.log("toolResult", "Move the trajectory", "select.png", toolInterface.getPanel());
-        TutorialPanel.addLine("cmd", "Move the trajectory", "", toolInterface.getPanel());
     }
-
-    int startX = -1;
-    int startY = -1;
 
     public void mousePressed(int x, int y, int modifiers) {
         selectedTrajectory = null;
@@ -83,7 +80,7 @@ public class TrajectoryMoveTool extends TrajectoryPointsTool {
         startY = y;
         ActiveRegion reg = this.getRegion();
         if (reg != null && tps1 != null && tps2 != null) {
-            SketchletEditor.editorPanel.saveRegionUndo();
+            SketchletEditor.getInstance().saveRegionUndo();
             if (tps1 == null) {
                 tps1 = reg.createTrajectoryVector();
             }
@@ -99,7 +96,7 @@ public class TrajectoryMoveTool extends TrajectoryPointsTool {
                     prevtp = tp;
                     continue;
                 }
-                if (DistancePointSegment.distanceToSegment(x, y, prevtp.x, prevtp.y, tp.x, tp.y) <= 12) {
+                if (DistancePointSegment.distanceToSegment(x, y, prevtp.getX(), prevtp.getY(), tp.getX(), tp.getY()) <= 12) {
                     selectedTrajectory = tps1;
                     return;
                 }
@@ -114,7 +111,7 @@ public class TrajectoryMoveTool extends TrajectoryPointsTool {
                     prevtp = tp;
                     continue;
                 }
-                if (DistancePointSegment.distanceToSegment(x, y, prevtp.x, prevtp.y, tp.x, tp.y) <= 12) {
+                if (DistancePointSegment.distanceToSegment(x, y, prevtp.getX(), prevtp.getY(), tp.getX(), tp.getY()) <= 12) {
                     selectedTrajectory = tps2;
                     return;
                 }
@@ -141,7 +138,7 @@ public class TrajectoryMoveTool extends TrajectoryPointsTool {
                 startY = y;
 
                 saveTrajectory();
-                toolInterface.repaintImage();
+                getToolInterface().repaintImage();
             } else if (selectedTrajectory != null && (modifiers & InputEvent.BUTTON3_MASK) == InputEvent.BUTTON3_MASK) {
                 Rectangle r = this.getRectangle(selectedTrajectory);
                 angle = -Math.atan2(startY - r.getCenterY(), startX - r.getCenterX()) + Math.atan2(y - r.getCenterY(), x - r.getCenterX());
@@ -149,14 +146,14 @@ public class TrajectoryMoveTool extends TrajectoryPointsTool {
         }
     }
 
-    public void moveTrajectory(Vector<TrajectoryPoint> trajectory, int dx, int dy) {
+    private void moveTrajectory(List<TrajectoryPoint> trajectory, int dx, int dy) {
         for (TrajectoryPoint tp : trajectory) {
-            tp.x += dx;
-            tp.y += dy;
+            tp.setX(tp.getX() + dx);
+            tp.setY(tp.getY() + dy);
         }
     }
 
-    public void rotateTrajectory(Vector<TrajectoryPoint> trajectory, double angle) {
+    private void rotateTrajectory(List<TrajectoryPoint> trajectory, double angle) {
         if (trajectory != null) {
             Rectangle r = this.getRectangle(trajectory);
             for (TrajectoryPoint tp : trajectory) {
@@ -164,12 +161,9 @@ public class TrajectoryMoveTool extends TrajectoryPointsTool {
                 affine.rotate(angle, r.getCenterX(), r.getCenterY());
                 Point2D ptDest = new Point2D.Double();
                 affine.transform(tp.getPoint(), ptDest);
-                tp.x = (int) ptDest.getX();
-                tp.y = (int) ptDest.getY();
+                tp.setX((int) ptDest.getX());
+                tp.setY((int) ptDest.getY());
             }
         }
-    }
-
-    public void keyPressed(KeyEvent e) {
     }
 }

@@ -26,8 +26,8 @@ public class CommandHandler {
             desc = varDesc[2].trim();
         }
 
-        if (DataServer.variablesServer != null && !DataServer.variablesServer.paused) {
-            DataServer.variablesServer.addVariable(name, group, desc);
+        if (DataServer.getInstance() != null && !DataServer.getInstance().isPaused()) {
+            DataServer.getInstance().addVariable(name, group, desc);
         }
     }
 
@@ -51,8 +51,8 @@ public class CommandHandler {
             name = strLine;
         }
 
-        if (DataServer.variablesServer != null && !DataServer.variablesServer.paused) {
-            DataServer.variablesServer.updateVariable(name, value, newThread);
+        if (DataServer.getInstance() != null && !DataServer.getInstance().isPaused()) {
+            DataServer.getInstance().updateVariable(name, value, newThread);
         }
     }
 
@@ -79,8 +79,8 @@ public class CommandHandler {
                 name = strCommand;
             }
 
-            if (DataServer.variablesServer != null && !DataServer.variablesServer.paused) {
-                DataServer.variablesServer.updateVariable(name, value, newThread);
+            if (DataServer.getInstance() != null && !DataServer.getInstance().isPaused()) {
+                DataServer.getInstance().updateVariable(name, value, newThread);
             }
         }
     }

@@ -6,12 +6,11 @@ package net.sf.sketchlet.designer.editor.tool;
 
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
-import net.sf.sketchlet.designer.data.ActiveRegion;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.designer.editor.regions.connector.Connector;
-import net.sf.sketchlet.designer.editor.regions.connector.ConnectorPanel;
-import net.sf.sketchlet.designer.help.TutorialPanel;
-import net.sf.sketchlet.designer.ui.playback.PlaybackFrame;
+import net.sf.sketchlet.model.Connector;
+import net.sf.sketchlet.designer.editor.ui.region.ConnectorPanel;
+import net.sf.sketchlet.designer.playback.ui.PlaybackFrame;
+import net.sf.sketchlet.model.ActiveRegion;
 
 import javax.swing.*;
 import java.awt.*;
@@ -25,14 +24,18 @@ import java.util.Vector;
  */
 public class ActiveRegionSelectTool extends Tool {
 
-    int prevX, prevY;
-    int endX, endY;
-    long prevTimestamp;
-    double speeds[] = new double[5];
-    int currentDistanceIndex = 0;
-    double speed;
-    boolean inSelectMode = false;
-    int lastX = -1000, lastY = -1000;
+    private int prevX, prevY;
+    private int endX, endY;
+    private long prevTimestamp;
+    private double speeds[] = new double[5];
+    private int currentDistanceIndex = 0;
+    private double speed;
+    private boolean inSelectMode = false;
+    private int lastX = -1000, lastY = -1000;
+
+    private boolean bDraggingPerspectivePoint1 = false;
+    private boolean bDraggingPerspectivePoint2 = false;
+    private boolean bDragged = false;
 
     public ActiveRegionSelectTool(SketchletEditor freeHand) {
         super(freeHand);
@@ -40,45 +43,45 @@ public class ActiveRegionSelectTool extends Tool {
         Point hotSpot = new Point(5, 4);
     }
 
+    @Override
     public ImageIcon getIcon() {
         return Workspace.createImageIcon("resources/arrow_cursor.png");
     }
 
+    @Override
     public String getIconFileName() {
         return "arrow_cursor.png";
     }
 
+    @Override
     public void mouseMoved(MouseEvent e, int x, int y) {
-        ActiveRegion a = freeHand.currentPage.regions.selectRegion(x, y, false);
-        freeHand.currentPage.regions.defocusAllRegions();
+        ActiveRegion a = editor.getCurrentPage().getRegions().selectRegion(x, y, false);
+        editor.getCurrentPage().getRegions().defocusAllRegions();
 
         if (x < 0 || y < 0) {
-            freeHand.setCursor(Cursor.getDefaultCursor());
+            editor.setCursor(Cursor.getDefaultCursor());
         } else if (a != null) {
-            a.mouseHandler.mouseMoved(e, freeHand.scale, SketchletEditor.editorFrame, false);
+            a.getMouseHandler().mouseMoved(e, editor.getScale(), SketchletEditor.editorFrame, false);
             a.bInFocus = true;
         } else {
-            freeHand.setCursor();
+            editor.setCursor();
         }
         lastX = x;
         lastY = y;
     }
 
-    boolean bDraggingPerspectivePoint1 = false;
-    boolean bDraggingPerspectivePoint2 = false;
-    private boolean bDragged = false;
-
+    @Override
     public void mousePressed(MouseEvent e, int x, int y) {
         bDragged = false;
-        freeHand.currentPage.selectedConnector = null;
-        if (new Rectangle((int) freeHand.currentPage.perspective_horizont_x1 - 5, (int) freeHand.currentPage.perspective_horizont_y - 5, 11, 11).contains(x, y)) {
+        editor.getCurrentPage().setSelectedConnector(null);
+        if (new Rectangle((int) editor.getCurrentPage().getPerspective_horizont_x1() - 5, (int) editor.getCurrentPage().getPerspective_horizont_y() - 5, 11, 11).contains(x, y)) {
             bDraggingPerspectivePoint1 = true;
-        } else if (new Rectangle((int) freeHand.currentPage.perspective_horizont_x2 - 5, (int) freeHand.currentPage.perspective_horizont_y - 5, 11, 11).contains(x, y)) {
+        } else if (new Rectangle((int) editor.getCurrentPage().getPerspective_horizont_x2() - 5, (int) editor.getCurrentPage().getPerspective_horizont_y() - 5, 11, 11).contains(x, y)) {
             bDraggingPerspectivePoint2 = true;
         } else {
-            freeHand.currentPage.selectConnector(e.getX(), e.getY());
-            freeHand.currentPage.regions.mousePressed(e, freeHand.scale, freeHand.editorFrame, false, false);
-            freeHand.saveRegionUndo();
+            editor.getCurrentPage().selectConnector(e.getX(), e.getY());
+            editor.getCurrentPage().getRegions().mousePressed(e, editor.getScale(), editor.editorFrame, false, false);
+            editor.saveRegionUndo();
 
             prevX = x;
             prevY = y;
@@ -88,13 +91,13 @@ public class ActiveRegionSelectTool extends Tool {
                 speeds[i] = 0.0;
             }
 
-            if (freeHand.currentPage.regions.selectedRegions == null) {
-                Connector c = freeHand.currentPage.selectConnector(e.getX(), e.getY());
+            if (editor.getCurrentPage().getRegions().getSelectedRegions() == null) {
+                Connector c = editor.getCurrentPage().selectConnector(e.getX(), e.getY());
                 if (c != null) {
                     if (e.getClickCount() >= 2) {
                         ConnectorPanel.createAndShowGUI(c);
                     }
-                    freeHand.repaintEverything();
+                    editor.repaintEverything();
                 } else {
                     endX = x;
                     endY = y;
@@ -104,50 +107,52 @@ public class ActiveRegionSelectTool extends Tool {
         }
     }
 
+    @Override
     public void mouseReleased(MouseEvent e, int x, int y) {
-        freeHand.currentPage.regions.mouseReleased(e, freeHand.scale, freeHand.editorFrame, false);
+        editor.getCurrentPage().getRegions().mouseReleased(e, editor.getScale(), editor.editorFrame, false);
         if (!bDragged) {
-            if (freeHand.undoRegionActions.size() > 0) {
-                freeHand.undoRegionActions.remove(freeHand.undoRegionActions.size() - 1);
+            if (editor.getUndoRegionActions().size() > 0) {
+                editor.getUndoRegionActions().remove(editor.getUndoRegionActions().size() - 1);
             }
         }
         if (inSelectMode) {
-            freeHand.currentPage.regions.selectedRegions = getSelectedRegions();
+            editor.getCurrentPage().getRegions().setSelectedRegions(getSelectedRegions());
             prevX = 0;
             prevY = 0;
             endX = 0;
             endY = 0;
             inSelectMode = false;
-            freeHand.repaint();
+            editor.repaint();
         }
         bDraggingPerspectivePoint1 = false;
         bDraggingPerspectivePoint2 = false;
-        freeHand.perspectivePanel.reload();
+        editor.getPerspectivePanel().reload();
     }
 
+    @Override
     public void mouseDragged(MouseEvent e, int x, int y) {
         bDragged = true;
         if (bDraggingPerspectivePoint2) {
-            freeHand.currentPage.perspective_horizont_x2 = x;
-            freeHand.currentPage.perspective_horizont_y = y;
-            freeHand.currentPage.setProperty("perspective x2", "" + x);
-            freeHand.currentPage.setProperty("perspective y", "" + y);
-            freeHand.repaint();
+            editor.getCurrentPage().setPerspective_horizont_x2(x);
+            editor.getCurrentPage().setPerspective_horizont_y(y);
+            editor.getCurrentPage().setProperty("perspective x2", "" + x);
+            editor.getCurrentPage().setProperty("perspective y", "" + y);
+            editor.repaint();
         } else if (bDraggingPerspectivePoint1) {
-            freeHand.currentPage.perspective_horizont_x1 = x;
-            freeHand.currentPage.perspective_horizont_y = y;
-            freeHand.currentPage.setProperty("perspective x1", "" + x);
-            freeHand.currentPage.setProperty("perspective y", "" + y);
-            freeHand.repaint();
+            editor.getCurrentPage().setPerspective_horizont_x1(x);
+            editor.getCurrentPage().setPerspective_horizont_y(y);
+            editor.getCurrentPage().setProperty("perspective x1", "" + x);
+            editor.getCurrentPage().setProperty("perspective y", "" + y);
+            editor.repaint();
         } else if (!inSelectMode) {
-            freeHand.currentPage.regions.mouseDragged(e, freeHand.scale, freeHand.editorFrame, false);
-            if (PlaybackFrame.playbackFrame != null && freeHand.currentPage.regions.selectedRegions != null) {
-                freeHand.currentPage.regions.selectedRegions.lastElement().play();
+            editor.getCurrentPage().getRegions().mouseDragged(e, editor.getScale(), editor.editorFrame, false);
+            if (PlaybackFrame.playbackFrame != null && editor.getCurrentPage().getRegions().getSelectedRegions() != null) {
+                editor.getCurrentPage().getRegions().getSelectedRegions().lastElement().play();
             }
 
-            if (freeHand.currentPage.regions.selectedRegions != null && freeHand.currentPage.regions.selectedRegions.size() > 0 && ((e.getModifiers() & InputEvent.BUTTON1_MASK) == InputEvent.BUTTON1_MASK || (e.getModifiers() & InputEvent.BUTTON3_MASK) == InputEvent.BUTTON3_MASK)) {
+            if (editor.getCurrentPage().getRegions().getSelectedRegions() != null && editor.getCurrentPage().getRegions().getSelectedRegions().size() > 0 && ((e.getModifiers() & InputEvent.BUTTON1_MASK) == InputEvent.BUTTON1_MASK || (e.getModifiers() & InputEvent.BUTTON3_MASK) == InputEvent.BUTTON3_MASK)) {
                 if (e.getWhen() != prevTimestamp) {
-                    ActiveRegion region = freeHand.currentPage.regions.selectedRegions.lastElement();
+                    ActiveRegion region = editor.getCurrentPage().getRegions().getSelectedRegions().lastElement();
                     int dx = x - prevX;
                     int dy = y - prevY;
                     double dt = (e.getWhen() - prevTimestamp) / 100.0;
@@ -163,21 +168,13 @@ public class ActiveRegionSelectTool extends Tool {
                     }
 
                     speed = _s / speeds.length;
-                    double _speed = region.limitsHandler.processLimits("speed", speed, 0.0, 0.0, true);
-
-                    /*
-                    if (_speed != speed) {
-                    x = (int) (prevX + dx * _speed / speed);
-                    y = (int) (prevY + dy * _speed / speed);
-                    }
-                     */
 
                     if (dx != 0 || dy != 0) {
                         if (!region.regionGrouping.equals("")) {
-                            for (ActiveRegion as : region.parent.regions) {
+                            for (ActiveRegion as : region.parent.getRegions()) {
                                 if (as != region && as.regionGrouping.equals(region.regionGrouping)) {
-                                    as.limitsHandler.processLimits("position x", as.x1, 0, 0, true);
-                                    as.limitsHandler.processLimits("position y", as.y1, 0, 0, true);
+                                    as.getMotionHandler().processLimits("position x", as.x1, 0, 0, true);
+                                    as.getMotionHandler().processLimits("position y", as.y1, 0, 0, true);
                                 }
                             }
                         }
@@ -188,35 +185,25 @@ public class ActiveRegionSelectTool extends Tool {
                 }
             }
         } else {
-            freeHand.currentPage.regions.selectedRegions = getSelectedRegions();
+            editor.getCurrentPage().getRegions().setSelectedRegions(getSelectedRegions());
             endX = x;
             endY = y;
-            freeHand.repaint();
+            editor.repaint();
         }
     }
 
-    public void mouseMoved(int x, int y, int modifiers) {
-    }
-
-    public void mousePressed(int x, int y, int modifiers) {
-    }
-
-    public void mouseReleased(int x, int y, int modifiers) {
-    }
-
-    public void mouseDragged(int x, int y, int modifiers) {
-    }
-
+    @Override
     public Cursor getCursor() {
-        if (new Rectangle((int) freeHand.currentPage.perspective_horizont_x1 - 5, (int) freeHand.currentPage.perspective_horizont_y - 5, 11, 11).contains(lastX, lastY)) {
+        if (new Rectangle((int) editor.getCurrentPage().getPerspective_horizont_x1() - 5, (int) editor.getCurrentPage().getPerspective_horizont_y() - 5, 11, 11).contains(lastX, lastY)) {
             return Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR);
-        } else if (new Rectangle((int) freeHand.currentPage.perspective_horizont_x2 - 5, (int) freeHand.currentPage.perspective_horizont_y - 5, 11, 11).contains(lastX, lastY)) {
+        } else if (new Rectangle((int) editor.getCurrentPage().getPerspective_horizont_x2() - 5, (int) editor.getCurrentPage().getPerspective_horizont_y() - 5, 11, 11).contains(lastX, lastY)) {
             return Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR);
         } else {
             return Cursor.getDefaultCursor();
         }
     }
 
+    @Override
     public void draw(Graphics2D g2) {
         if (inSelectMode) {
             g2.setColor(new Color(100, 100, 100, 100));
@@ -225,82 +212,69 @@ public class ActiveRegionSelectTool extends Tool {
         }
     }
 
-    public void activate() {
-    }
-
-    public void deactivate() {
-    }
-
-    public void onUndo() {
-    }
-
-    public void keyTyped(KeyEvent e) {
-    }
-
+    @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_DELETE) {
-            if (freeHand.currentPage.selectedConnector != null) {
-                freeHand.currentPage.removeConnector(freeHand.currentPage.selectedConnector);
-                freeHand.currentPage.selectedConnector = null;
+            if (editor.getCurrentPage().getSelectedConnector() != null) {
+                editor.getCurrentPage().removeConnector(editor.getCurrentPage().getSelectedConnector());
+                editor.getCurrentPage().setSelectedConnector(null);
             } else {
-                SketchletEditor.editorPanel.deleteSelectedRegion();
+                SketchletEditor.getInstance().deleteSelectedRegion();
             }
         } else {
-            if (freeHand.currentPage.selectedConnector != null) {
-                Connector conn = freeHand.currentPage.selectedConnector;
+            if (editor.getCurrentPage().getSelectedConnector() != null) {
+                Connector conn = editor.getCurrentPage().getSelectedConnector();
                 switch (e.getKeyCode()) {
                     case KeyEvent.VK_BACK_SPACE:
-                        SketchletEditor.editorPanel.saveRegionUndo();
-                        String strText = conn.caption;
+                        SketchletEditor.getInstance().saveRegionUndo();
+                        String strText = conn.getCaption();
                         if (strText.length() > 0) {
-                            conn.caption = strText.substring(0, strText.length() - 1);
+                            conn.setCaption(strText.substring(0, strText.length() - 1));
                         }
 
-                        freeHand.repaintEverything();
+                        editor.repaintEverything();
                         break;
 
                     default:
                         String keyText = e.getKeyText(e.getKeyCode());
-                        if (!conn.caption.startsWith("=")) {
+                        if (!conn.getCaption().startsWith("=")) {
                             if (keyText.equalsIgnoreCase("ENTER")) {
-                                SketchletEditor.editorPanel.saveRegionUndo();
-                                conn.caption += "\n";
-                                freeHand.repaintEverything();
+                                SketchletEditor.getInstance().saveRegionUndo();
+                                conn.setCaption(conn.getCaption() + "\n");
+                                editor.repaintEverything();
                             } else if (!e.isControlDown() && !e.isAltGraphDown() && !e.isMetaDown() && !e.isAltDown() && !e.isActionKey() && e.getKeyChar() != KeyEvent.CHAR_UNDEFINED) {
-                                SketchletEditor.editorPanel.saveRegionUndo();
-                                conn.caption += "" + e.getKeyChar();
-                                freeHand.repaintEverything();
-                                TutorialPanel.addLine("cmd", "Type the connection caption", "keyboard.png", SketchletEditor.editorPanel.scrollPane);
+                                SketchletEditor.getInstance().saveRegionUndo();
+                                conn.setCaption(conn.getCaption() + "" + e.getKeyChar());
+                                editor.repaintEverything();
                             }
                         }
                         break;
                 }
             } else {
-                ActiveRegion region = freeHand.currentPage.regions.getLastSelectedRegion();
+                ActiveRegion region = editor.getCurrentPage().getRegions().getLastSelectedRegion();
                 if (region != null) {
                     switch (e.getKeyCode()) {
                         case KeyEvent.VK_BACK_SPACE:
-                            SketchletEditor.editorPanel.saveRegionUndo();
-                            String strText = region.strText;
+                            SketchletEditor.getInstance().saveRegionUndo();
+                            String strText = region.text;
                             if (strText.length() > 0) {
-                                region.strText = strText.substring(0, strText.length() - 1);
+                                region.text = strText.substring(0, strText.length() - 1);
                             }
 
-                            freeHand.repaintEverything();
+                            editor.repaintEverything();
                             break;
 
                         default:
                             String keyText = e.getKeyText(e.getKeyCode());
-                            if (!region.strText.startsWith("=")) {
+                            if (!region.text.startsWith("=")) {
                                 if (keyText.equalsIgnoreCase("ENTER")) {
-                                    SketchletEditor.editorPanel.saveRegionUndo();
-                                    region.strText += "\n";
-                                    freeHand.repaintEverything();
+                                    SketchletEditor.getInstance().saveRegionUndo();
+                                    region.text += "\n";
+                                    editor.repaintEverything();
                                 } else if (!e.isControlDown() && !e.isAltGraphDown() && !e.isMetaDown() && !e.isAltDown() && !e.isActionKey() && e.getKeyChar() != KeyEvent.CHAR_UNDEFINED) {
-                                    SketchletEditor.editorPanel.saveRegionUndo();
-                                    region.strText += "" + e.getKeyChar();
-                                    freeHand.repaintEverything();
-                                    TutorialPanel.addLine("cmd", "Type the region text", "keyboard.png", SketchletEditor.editorPanel.scrollPane);
+                                    SketchletEditor.getInstance().saveRegionUndo();
+                                    region.text += "" + e.getKeyChar();
+                                    editor.repaintEverything();
                                 }
                             }
                             break;
@@ -310,13 +284,10 @@ public class ActiveRegionSelectTool extends Tool {
         }
     }
 
-    public void keyReleased(KeyEvent e) {
-    }
-
-    public Vector<ActiveRegion> getSelectedRegions() {
+    private Vector<ActiveRegion> getSelectedRegions() {
         Vector<ActiveRegion> regions = new Vector<ActiveRegion>();
 
-        for (ActiveRegion region : freeHand.currentPage.regions.regions) {
+        for (ActiveRegion region : editor.getCurrentPage().getRegions().getRegions()) {
             if (region.getArea(false).intersects(Math.min(prevX, endX), Math.min(prevY, endY), Math.abs(prevX - endX), Math.abs(prevY - endY))) {
                 regions.add(region);
             }
@@ -325,6 +296,7 @@ public class ActiveRegionSelectTool extends Tool {
         return regions.size() == 0 ? null : regions;
     }
 
+    @Override
     public String getName() {
         return Language.translate("Active Region Select Tool");
     }

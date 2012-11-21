@@ -15,10 +15,10 @@ import java.util.Vector;
  */
 public class ActivityLog {
 
-    static long startTime = System.currentTimeMillis();
-    static Vector<LogItem> logItems = new Vector<LogItem>();
-    static Vector<String> startObjects = new Vector<String>();
-    static Vector<String> endObjects = new Vector<String>();
+    private static long startTime = System.currentTimeMillis();
+    private static Vector<LogItem> logItems = new Vector<LogItem>();
+    private static Vector<String> startObjects = new Vector<String>();
+    private static Vector<String> endObjects = new Vector<String>();
 
     public static void resetTime() {
         startTime = System.currentTimeMillis();
@@ -29,9 +29,9 @@ public class ActivityLog {
     public static Vector<String> getObjects() {
         Vector<String> objects = new Vector<String>();
 
-        for (String variableName : DataServer.variablesServer.variablesVector) {
-            Variable v = DataServer.variablesServer.getVariable(variableName);
-            String strObject = "variable " + v.name + "," + v.count + "," + v.value;
+        for (String variableName : DataServer.getInstance().variablesVector) {
+            Variable v = DataServer.getInstance().getVariable(variableName);
+            String strObject = "variable " + v.getName() + "," + v.getCount() + "," + v.getValue();
             objects.add(strObject);
         }
 

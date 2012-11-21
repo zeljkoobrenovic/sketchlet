@@ -13,17 +13,17 @@ import javax.swing.*;
  * @author cuypers
  */
 public class RemoteCopy {
-    boolean stopped = false;
+    private boolean stopped = false;
 
     public static final int OVEWRITE_ASK = 0;
     public static final int OVEWRITE_ALL = 1;
     public static final int OVEWRITE_ALL_OLDER = 2;
     public static final int SKIP_ALL = 3;
     public static final int CANCEL = 4;
-    public int overwriteAction = OVEWRITE_ASK;
+    private int overwriteAction = OVEWRITE_ASK;
 
     void copyFile(FileObject sourceFileObject, FileObject targetFileObject, JFrame frame) throws Exception {
-        if (this.stopped) {
+        if (this.isStopped()) {
             return;
         }
 
@@ -31,7 +31,7 @@ public class RemoteCopy {
             boolean bCopy = false;
 
             if (targetFileObject.exists()) {
-                if (overwriteAction == OVEWRITE_ASK) {
+                if (getOverwriteAction() == OVEWRITE_ASK) {
                     Object[] options = {"Overwrite",
                             "Overwrite all", "Overwrite all older",
                             "Skip", "Skip all",
@@ -49,32 +49,32 @@ public class RemoteCopy {
                     switch (answer) {
                         case 0:
                             bCopy = true;
-                            overwriteAction = OVEWRITE_ASK;
+                            setOverwriteAction(OVEWRITE_ASK);
                             break;
                         case 1:
                             bCopy = true;
-                            overwriteAction = OVEWRITE_ALL;
+                            setOverwriteAction(OVEWRITE_ALL);
                             break;
                         case 2:
                             bCopy = targetFileObject.getContent().getLastModifiedTime() < sourceFileObject.getContent().getLastModifiedTime();
-                            overwriteAction = OVEWRITE_ALL_OLDER;
+                            setOverwriteAction(OVEWRITE_ALL_OLDER);
                             break;
                         case 3: // skip now, ask next time
                             bCopy = false;
-                            overwriteAction = OVEWRITE_ASK;
+                            setOverwriteAction(OVEWRITE_ASK);
                             break;
                         case 4:
                             bCopy = false;
-                            overwriteAction = SKIP_ALL;
+                            setOverwriteAction(SKIP_ALL);
                             break;
                         case 5:
                             bCopy = false;
-                            overwriteAction = CANCEL;
-                            stopped = true;
+                            setOverwriteAction(CANCEL);
+                            setStopped(true);
                             break;
                     }
                 } else {
-                    switch (overwriteAction) {
+                    switch (getOverwriteAction()) {
                         case OVEWRITE_ASK:
                         case OVEWRITE_ALL:
                             bCopy = true;
@@ -89,7 +89,7 @@ public class RemoteCopy {
                     }
                 }
             } else {
-                bCopy = overwriteAction != CANCEL;
+                bCopy = getOverwriteAction() != CANCEL;
             }
 
             if (bCopy) {
@@ -99,5 +99,21 @@ public class RemoteCopy {
         } catch (Exception e) {
             throw e;
         }
+    }
+
+    public int getOverwriteAction() {
+        return overwriteAction;
+    }
+
+    public void setOverwriteAction(int overwriteAction) {
+        this.overwriteAction = overwriteAction;
+    }
+
+    public boolean isStopped() {
+        return stopped;
+    }
+
+    public void setStopped(boolean stopped) {
+        this.stopped = stopped;
     }
 }

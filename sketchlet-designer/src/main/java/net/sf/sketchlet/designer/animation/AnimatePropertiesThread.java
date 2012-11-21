@@ -4,16 +4,16 @@
  */
 package net.sf.sketchlet.designer.animation;
 
-import net.sf.sketchlet.designer.data.ActiveRegion;
-import net.sf.sketchlet.designer.data.ActiveRegions;
-import net.sf.sketchlet.designer.data.Evaluator;
-import net.sf.sketchlet.designer.data.Page;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.playback.displays.InteractionSpace;
-import net.sf.sketchlet.designer.programming.timers.TimerThread;
-import net.sf.sketchlet.designer.programming.timers.curves.Curve;
-import net.sf.sketchlet.designer.programming.timers.curves.Curves;
-import net.sf.sketchlet.designer.ui.playback.PlaybackFrame;
+import net.sf.sketchlet.designer.playback.ui.PlaybackFrame;
+import net.sf.sketchlet.model.evaluator.Evaluator;
+import net.sf.sketchlet.model.ActiveRegion;
+import net.sf.sketchlet.model.ActiveRegions;
+import net.sf.sketchlet.model.Page;
+import net.sf.sketchlet.model.programming.timers.TimerThread;
+import net.sf.sketchlet.model.programming.timers.curves.Curve;
+import net.sf.sketchlet.model.programming.timers.curves.Curves;
 import net.sf.sketchlet.util.RefreshTime;
 import org.apache.log4j.Logger;
 
@@ -23,9 +23,9 @@ import org.apache.log4j.Logger;
 public class AnimatePropertiesThread implements Runnable {
     private static final Logger log = Logger.getLogger(AnimatePropertiesThread.class);
 
-    Page page;
-    Thread t = new Thread(this);
-    public boolean stopped = false;
+    private Page page;
+    private Thread t = new Thread(this);
+    private boolean stopped = false;
 
     public AnimatePropertiesThread(Page page) {
         this.page = page;
@@ -33,12 +33,12 @@ public class AnimatePropertiesThread implements Runnable {
     }
 
     public void stop() {
-        stopped = true;
+        setStopped(true);
     }
 
     public void run() {
         long startTime = System.currentTimeMillis();
-        for (ActiveRegion region : page.regions.regions) {
+        for (ActiveRegion region : page.getRegions().getRegions()) {
             region.speed_prevX1 = region.playback_x1;
             region.speed_prevY1 = region.playback_y1;
             region.speed_prevX2 = region.playback_x2;
@@ -52,7 +52,7 @@ public class AnimatePropertiesThread implements Runnable {
 
             region.speed_prevDirection = region.playback_rotation;
         }
-        while (!stopped && (SketchletEditor.editorPanel != null && (SketchletEditor.editorPanel.internalPlaybackPanel != null || PlaybackFrame.playbackFrame != null))) {
+        while (!isStopped() && (SketchletEditor.getInstance() != null && (SketchletEditor.getInstance().getInternalPlaybackPanel() != null || PlaybackFrame.playbackFrame != null))) {
             try {
                 if (shouldAnimate()) {
                     RefreshTime.update();
@@ -61,14 +61,14 @@ public class AnimatePropertiesThread implements Runnable {
                     animateProperties(page, time);
                     animateTimers(page, time);
 
-                    for (ActiveRegion region : page.regions.regions) {
+                    for (ActiveRegion region : page.getRegions().getRegions()) {
                         animateRegionFrame(region);
                         animateProperties(region, time);
                         animateRegionDirection(region);
                     }
 
-                    if (SketchletEditor.editorPanel.internalPlaybackPanel != null) {
-                        SketchletEditor.editorPanel.internalPlaybackPanel.repaint();
+                    if (SketchletEditor.getInstance().getInternalPlaybackPanel() != null) {
+                        SketchletEditor.getInstance().getInternalPlaybackPanel().repaint();
                     }
                     PlaybackFrame.repaintAllFrames();
                     Thread.sleep(50);
@@ -105,7 +105,7 @@ public class AnimatePropertiesThread implements Runnable {
                     //region.imageIndex.setSelectedItem("" + (i % region.getImageCount() + 1));
                     region.strImageIndex = "" + (i % region.getImageCount() + 1);
 
-                    SketchletEditor.editorPanel.repaintInternalPlaybackPanel();
+                    SketchletEditor.getInstance().repaintInternalPlaybackPanel();
                     PlaybackFrame.repaintAllFrames();
                 }
             }
@@ -152,8 +152,8 @@ public class AnimatePropertiesThread implements Runnable {
                     } catch (Exception ex) {
                     }
                 }
-                String strHAlign = region.processText(region.strHAlign);
-                String strVAlign = region.processText(region.strVAlign);
+                String strHAlign = region.processText(region.horizontalAlignment);
+                String strVAlign = region.processText(region.verticalAlignment);
 
                 for (int i = 0; i < region.speed / 10; i++) {
 
@@ -163,21 +163,21 @@ public class AnimatePropertiesThread implements Runnable {
                     region.playback_x1 = (int) region.speed_x;
                     region.playback_y1 = (int) region.speed_y;
 
-                    region.playback_x1 = (int) region.limitsHandler.processLimits("position x", region.playback_x1, 0, region.speed_w, false);
+                    region.playback_x1 = (int) region.getMotionHandler().processLimits("position x", region.playback_x1, 0, region.speed_w, false);
                     if (strHAlign.equalsIgnoreCase("center")) {
-                        region.limitsHandler.processLimits("position x", region.playback_x1 + region.speed_w / 2, region.speed_w / 2, region.speed_w / 2, true);
+                        region.getMotionHandler().processLimits("position x", region.playback_x1 + region.speed_w / 2, region.speed_w / 2, region.speed_w / 2, true);
                     } else if (strHAlign.equalsIgnoreCase("right")) {
-                        region.limitsHandler.processLimits("position x", region.playback_x1 + region.speed_w, region.speed_w, 0, true);
+                        region.getMotionHandler().processLimits("position x", region.playback_x1 + region.speed_w, region.speed_w, 0, true);
                     } else {
-                        region.limitsHandler.processLimits("position x", region.playback_x1, 0, region.speed_w, true);
+                        region.getMotionHandler().processLimits("position x", region.playback_x1, 0, region.speed_w, true);
                     }
-                    region.playback_y1 = (int) region.limitsHandler.processLimits("position y", region.playback_y1, 0, region.speed_h, false);
+                    region.playback_y1 = (int) region.getMotionHandler().processLimits("position y", region.playback_y1, 0, region.speed_h, false);
                     if (strVAlign.equalsIgnoreCase("center")) {
-                        region.limitsHandler.processLimits("position y", region.playback_y1 + region.speed_h / 2, region.speed_h / 2, region.speed_h / 2, true);
+                        region.getMotionHandler().processLimits("position y", region.playback_y1 + region.speed_h / 2, region.speed_h / 2, region.speed_h / 2, true);
                     } else if (strVAlign.equalsIgnoreCase("bottom")) {
-                        region.limitsHandler.processLimits("position y", region.playback_y1 + region.speed_h, region.speed_h, 0, true);
+                        region.getMotionHandler().processLimits("position y", region.playback_y1 + region.speed_h, region.speed_h, 0, true);
                     } else {
-                        region.limitsHandler.processLimits("position y", region.playback_y1, 0, region.speed_h, true);
+                        region.getMotionHandler().processLimits("position y", region.playback_y1, 0, region.speed_h, true);
                     }
 
                     region.playback_x2 = region.playback_x1 + region.speed_w;
@@ -187,7 +187,7 @@ public class AnimatePropertiesThread implements Runnable {
 
                     // region.interactionHandler.processInteractionEvents(true, region.parent.sketch.activeTimers, region.parent.sketch.activeMacros);
 
-                    if (!region.isWithinLimits(true) || region.interactionHandler.intersectsWithSolids(true)) {
+                    if (!region.isWithinLimits(true) || region.getInteractionHandler().intersectsWithSolids(true)) {
                         ActiveRegions.findNonOverlapingLocationPlayback(region);
                         break;
                     } else {
@@ -197,7 +197,7 @@ public class AnimatePropertiesThread implements Runnable {
                         region.speed_prevY2 = region.playback_y2;
                     }
                 }
-                region.interactionHandler.processInteractionEvents(true, region.parent.page.activeTimers, region.parent.page.activeMacros);
+                region.getInteractionHandler().processInteractionEvents(true, region.parent.getPage().getActiveTimers(), region.parent.getPage().getActiveMacros());
                 region.getSketch().updateConnectors(region, true);
 
             } catch (NumberFormatException nfe) {
@@ -208,23 +208,23 @@ public class AnimatePropertiesThread implements Runnable {
     }
 
     public void animateTimers(Page page, long time) {
-        for (TimerThread tt : page.activeTimers) {
+        for (TimerThread tt : page.getActiveTimers()) {
             tt.tick(time);
         }
     }
 
     public void animateProperties(Page page, long time) {
-        for (int i = 0; i < page.propertiesAnimation.length; i++) {
-            String property = page.propertiesAnimation[i][0];
-            String type = Evaluator.processText(page.propertiesAnimation[i][1], "", "");
-            String start = Evaluator.processText(page.propertiesAnimation[i][2], "", "");
-            String end = Evaluator.processText(page.propertiesAnimation[i][3], "", "");
-            String cycle = Evaluator.processText(page.propertiesAnimation[i][4], "", "");
+        for (int i = 0; i < page.getPropertiesAnimation().length; i++) {
+            String property = page.getPropertiesAnimation()[i][0];
+            String type = Evaluator.processText(page.getPropertiesAnimation()[i][1], "", "");
+            String start = Evaluator.processText(page.getPropertiesAnimation()[i][2], "", "");
+            String end = Evaluator.processText(page.getPropertiesAnimation()[i][3], "", "");
+            String cycle = Evaluator.processText(page.getPropertiesAnimation()[i][4], "", "");
             if (type != null && !type.isEmpty() && !start.isEmpty() && !end.isEmpty() && !cycle.isEmpty()) {
-                double nStart = Double.parseDouble(Evaluator.processText(page.propertiesAnimation[i][2], "", ""));
-                double nEnd = Double.parseDouble(Evaluator.processText(page.propertiesAnimation[i][3], "", ""));
-                double nCycle = Double.parseDouble(Evaluator.processText(page.propertiesAnimation[i][4], "", ""));
-                String strCurve = Evaluator.processText(page.propertiesAnimation[i][5], "", "");
+                double nStart = Double.parseDouble(Evaluator.processText(page.getPropertiesAnimation()[i][2], "", ""));
+                double nEnd = Double.parseDouble(Evaluator.processText(page.getPropertiesAnimation()[i][3], "", ""));
+                double nCycle = Double.parseDouble(Evaluator.processText(page.getPropertiesAnimation()[i][4], "", ""));
+                String strCurve = Evaluator.processText(page.getPropertiesAnimation()[i][5], "", "");
 
                 if (nCycle <= 0) {
                     continue;
@@ -233,7 +233,7 @@ public class AnimatePropertiesThread implements Runnable {
                 double relPos = (time % (int) (nCycle * 1000)) / (nCycle * 1000);
                 Curve curve = null;
                 if (!strCurve.isEmpty()) {
-                    curve = Curves.globalCurves.getCurve(strCurve);
+                    curve = Curves.getGlobalCurves().getCurve(strCurve);
                 }
 
                 if (type.equalsIgnoreCase("loop forever")) {
@@ -313,7 +313,7 @@ public class AnimatePropertiesThread implements Runnable {
                 double relPos = (time % (int) (nCycle * 1000)) / (nCycle * 1000);
                 Curve curve = null;
                 if (!strCurve.isEmpty()) {
-                    curve = Curves.globalCurves.getCurve(strCurve);
+                    curve = Curves.getGlobalCurves().getCurve(strCurve);
                 }
 
                 if (type.equalsIgnoreCase("loop forever")) {
@@ -399,24 +399,32 @@ public class AnimatePropertiesThread implements Runnable {
     }
 
     public boolean shouldAnimate(Page page) {
-        for (int i = 0; i < page.propertiesAnimation.length; i++) {
-            String type = page.propertiesAnimation[i][1];
-            String start = page.propertiesAnimation[i][2];
-            String end = page.propertiesAnimation[i][3];
-            String cycle = page.propertiesAnimation[i][4];
+        for (int i = 0; i < page.getPropertiesAnimation().length; i++) {
+            String type = page.getPropertiesAnimation()[i][1];
+            String start = page.getPropertiesAnimation()[i][2];
+            String end = page.getPropertiesAnimation()[i][3];
+            String cycle = page.getPropertiesAnimation()[i][4];
             if (type != null && !type.isEmpty() && !start.isEmpty() && !end.isEmpty() && !cycle.isEmpty()) {
                 return true;
             }
 
         }
-        for (ActiveRegion r : page.regions.regions) {
+        for (ActiveRegion r : page.getRegions().getRegions()) {
             if (shouldAnimate(r)) {
                 return true;
             }
         }
-        if (page.activeTimers.size() > 0) {
+        if (page.getActiveTimers().size() > 0) {
             return true;
         }
         return false;
+    }
+
+    public boolean isStopped() {
+        return stopped;
+    }
+
+    public void setStopped(boolean stopped) {
+        this.stopped = stopped;
     }
 }

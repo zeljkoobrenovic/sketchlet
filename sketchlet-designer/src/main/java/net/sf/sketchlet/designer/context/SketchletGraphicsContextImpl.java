@@ -8,7 +8,7 @@ import net.sf.sketchlet.context.SketchletGraphicsContext;
 import net.sf.sketchlet.context.SketchletPainter;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.designer.ui.playback.PlaybackFrame;
+import net.sf.sketchlet.designer.playback.ui.PlaybackFrame;
 import net.sf.sketchlet.util.RefreshTime;
 import org.apache.log4j.Logger;
 
@@ -26,15 +26,23 @@ import java.net.URL;
 public class SketchletGraphicsContextImpl extends SketchletGraphicsContext {
     private static final Logger log = Logger.getLogger(SketchletGraphicsContext.class);
 
-    public static BufferedImage image = null;
-    Graphics2D g2;
+    private static BufferedImage image = null;
+    private Graphics2D g2;
+
+    public static BufferedImage getImage() {
+        return image;
+    }
+
+    public static void setImage(BufferedImage image) {
+        SketchletGraphicsContextImpl.image = image;
+    }
 
     private Graphics2D getGraphics() {
-        if (image == null) {
-            image = Workspace.createCompatibleImage(2000, 2000);
+        if (getImage() == null) {
+            setImage(Workspace.createCompatibleImage(2000, 2000));
         }
         if (g2 == null) {
-            g2 = image.createGraphics();
+            g2 = getImage().createGraphics();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setColor(Color.BLACK);
         }
@@ -42,14 +50,14 @@ public class SketchletGraphicsContextImpl extends SketchletGraphicsContext {
     }
 
     public static void paint(Graphics2D g) {
-        if (image != null) {
-            g.drawImage(image, 0, 0, null);
+        if (getImage() != null) {
+            g.drawImage(getImage(), 0, 0, null);
         }
     }
 
     @Override
     public void clearCanvas() {
-        image = null;
+        setImage(null);
         g2 = null;
         repaint();
     }
@@ -57,10 +65,10 @@ public class SketchletGraphicsContextImpl extends SketchletGraphicsContext {
     @Override
     public void repaint() {
         RefreshTime.update();
-        if (SketchletEditor.editorPanel.internalPlaybackPanel != null) {
-            SketchletEditor.editorPanel.internalPlaybackPanel.repaint();
+        if (SketchletEditor.getInstance().getInternalPlaybackPanel() != null) {
+            SketchletEditor.getInstance().getInternalPlaybackPanel().repaint();
         } else {
-            SketchletEditor.editorPanel.repaint();
+            SketchletEditor.getInstance().repaint();
         }
 
         try {
@@ -257,11 +265,11 @@ public class SketchletGraphicsContextImpl extends SketchletGraphicsContext {
         if (PlaybackFrame.playbackFrame != null) {
             return PlaybackFrame.playbackFrame[0].playbackPanel;
         }
-        if (SketchletEditor.editorPanel != null) {
-            if (SketchletEditor.editorPanel.internalPlaybackPanel != null) {
-                return SketchletEditor.editorPanel.internalPlaybackPanel;
+        if (SketchletEditor.getInstance() != null) {
+            if (SketchletEditor.getInstance().getInternalPlaybackPanel() != null) {
+                return SketchletEditor.getInstance().getInternalPlaybackPanel();
             } else {
-                return SketchletEditor.editorPanel;
+                return SketchletEditor.getInstance();
             }
         }
 

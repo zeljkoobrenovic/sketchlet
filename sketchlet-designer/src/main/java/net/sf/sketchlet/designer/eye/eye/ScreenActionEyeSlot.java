@@ -5,7 +5,7 @@
 
 package net.sf.sketchlet.designer.eye.eye;
 
-import net.sf.sketchlet.designer.programming.screenscripts.ScreenScript;
+import net.sf.sketchlet.model.programming.screenscripts.ScreenScript;
 
 import java.awt.*;
 
@@ -18,7 +18,7 @@ public class ScreenActionEyeSlot extends EyeSlot {
     public ScreenActionEyeSlot(ScreenScript macro, EyeData parent) {
         super(parent);
         this.macro = macro;
-        this.name = macro.info.name;
+        this.name = macro.getInfo().getName();
         this.backgroundColor = Color.BLUE;
     }
 

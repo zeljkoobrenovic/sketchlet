@@ -12,8 +12,8 @@ import net.sf.sketchlet.common.context.SketchletContextUtils;
 import net.sf.sketchlet.common.file.FileUtils;
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
-import net.sf.sketchlet.designer.ui.CheckboxList;
-import net.sf.sketchlet.designer.ui.desktop.Notepad;
+import net.sf.sketchlet.designer.editor.ui.CheckboxList;
+import net.sf.sketchlet.designer.editor.ui.desktop.Notepad;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,18 +31,18 @@ import java.util.Vector;
 /* RemoteLocationFrame.java requires no other files. */
 public class RemoteLocationFrame extends JFrame implements KeyListener, RemoteBackupProgressFeedback {
 
-    JLabel label1 = new JLabel(Language.translate("Remote location:  "));
-    JLabel label2 = new JLabel(Language.translate("Subdirectory:        "));
-    JLabel label3 = new JLabel(Language.translate("Remote folder:      "));
-    JLabel label4 = new JLabel(Language.translate("Exclude extensions:      "));
-    JComboBox remoteDirectoryCombobox = new JComboBox();
-    JTextField remoteSubdirectoryField = new JTextField(30);
-    JTextField remoteFolderField = new JTextField(30);
-    JTextField excludeField = new JTextField(27);
-    JProgressBar progressBar = new JProgressBar();
-    CheckboxList fileList;
-    JButton createButton;
-    RemoteBackupThread thread;
+    private JLabel label1 = new JLabel(Language.translate("Remote location:  "));
+    private JLabel label2 = new JLabel(Language.translate("Subdirectory:        "));
+    private JLabel label3 = new JLabel(Language.translate("Remote folder:      "));
+    private JLabel label4 = new JLabel(Language.translate("Exclude extensions:      "));
+    private JComboBox remoteDirectoryCombobox = new JComboBox();
+    private JTextField remoteSubdirectoryField = new JTextField(30);
+    private JTextField remoteFolderField = new JTextField(30);
+    private JTextField excludeField = new JTextField(27);
+    private JProgressBar progressBar = new JProgressBar();
+    private CheckboxList fileList;
+    private JButton createButton;
+    private RemoteBackupThread thread;
 
     public RemoteLocationFrame() {
         super(Language.translate("Remote Location"));
@@ -93,7 +93,7 @@ public class RemoteLocationFrame extends JFrame implements KeyListener, RemoteBa
                 int sel = remoteDirectoryCombobox.getSelectedIndex();
 
                 if (sel >= 0 && sel < locations.size()) {
-                    RemoteBackup.userInfo.username = locations.elementAt(sel).username;
+                    RemoteBackup.userInfo.setUsername(locations.elementAt(sel).getUsername());
                 }
 
                 setFolder();
@@ -151,7 +151,7 @@ public class RemoteLocationFrame extends JFrame implements KeyListener, RemoteBa
 
             public void actionPerformed(ActionEvent event) {
                 if (thread != null) {
-                    thread.remoteBackup.stopped = true;
+                    thread.remoteBackup.setStopped(true);
                 }
                 setVisible(false);
             }
@@ -328,7 +328,7 @@ public class RemoteLocationFrame extends JFrame implements KeyListener, RemoteBa
                 this.remoteDirectoryCombobox.removeAllItems();
 
                 for (RemoteLocationInfo info : locations) {
-                    this.remoteDirectoryCombobox.addItem(info.name);
+                    this.remoteDirectoryCombobox.addItem(info.getName());
                 }
 
             } else {
@@ -353,7 +353,7 @@ public class RemoteLocationFrame extends JFrame implements KeyListener, RemoteBa
             return;
         }
 
-        String root = Workspace.replaceSystemVariables(locations.elementAt(sel).uri);
+        String root = Workspace.replaceSystemVariables(locations.elementAt(sel).getUri());
 
         if (root == null) {
             root = "";
@@ -394,16 +394,48 @@ public class RemoteLocationFrame extends JFrame implements KeyListener, RemoteBa
 class RemoteLocationInfo {
 
     public RemoteLocationInfo(String name, String uri, String username, String password) {
-        this.name = name;
-        this.uri = uri;
-        this.username = username;
-        this.password = password;
+        this.setName(name);
+        this.setUri(uri);
+        this.setUsername(username);
+        this.setPassword(password);
     }
 
-    String name = "";
-    String uri = "";
-    String username = "";
-    String password = "";
+    private String name = "";
+    private String uri = "";
+    private String username = "";
+    private String password = "";
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getUri() {
+        return uri;
+    }
+
+    public void setUri(String uri) {
+        this.uri = uri;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 }
 
 

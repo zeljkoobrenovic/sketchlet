@@ -6,15 +6,15 @@ package net.sf.sketchlet.designer.eye.eye;
 
 import net.sf.sketchlet.communicator.server.DataServer;
 import net.sf.sketchlet.communicator.server.Variable;
-import net.sf.sketchlet.designer.data.ActiveRegion;
-import net.sf.sketchlet.designer.data.Page;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.designer.programming.macros.Macro;
-import net.sf.sketchlet.designer.programming.macros.Macros;
-import net.sf.sketchlet.designer.programming.screenscripts.ScreenScript;
-import net.sf.sketchlet.designer.programming.screenscripts.ScreenScripts;
-import net.sf.sketchlet.designer.programming.timers.Timer;
-import net.sf.sketchlet.designer.programming.timers.Timers;
+import net.sf.sketchlet.model.ActiveRegion;
+import net.sf.sketchlet.model.Page;
+import net.sf.sketchlet.model.programming.macros.Macro;
+import net.sf.sketchlet.model.programming.macros.Macros;
+import net.sf.sketchlet.model.programming.screenscripts.ScreenScript;
+import net.sf.sketchlet.model.programming.screenscripts.ScreenScripts;
+import net.sf.sketchlet.model.programming.timers.Timer;
+import net.sf.sketchlet.model.programming.timers.Timers;
 import net.sf.sketchlet.script.ScriptPluginProxy;
 
 import java.awt.*;
@@ -43,9 +43,9 @@ public class EyeData {
         slots.removeAllElements();
         int n = 0;
         if (selector.showVariables.isSelected()) {
-            for (String strVar : DataServer.variablesServer.variablesVector) {
-                Variable v = DataServer.variablesServer.getVariable(strVar);
-                if (v != null && !v.name.isEmpty()) {
+            for (String strVar : DataServer.getInstance().variablesVector) {
+                Variable v = DataServer.getInstance().getVariable(strVar);
+                if (v != null && !v.getName().isEmpty()) {
                     VariableEyeSlot slot = new VariableEyeSlot(v, this);
                     slots.add(slot);
                     n++;
@@ -58,7 +58,7 @@ public class EyeData {
         }
 
         if (selector.showTimers.isSelected()) {
-            for (Timer t : Timers.globalTimers.timers) {
+            for (Timer t : Timers.getGlobalTimers().getTimers()) {
                 TimerEyeSlot slot = new TimerEyeSlot(t, this);
                 slots.add(slot);
                 n++;
@@ -81,7 +81,7 @@ public class EyeData {
             n = 0;
         }
         if (selector.showScreenActions.isSelected()) {
-            for (ScreenScript sc : ScreenScripts.publicScriptRunner.scripts) {
+            for (ScreenScript sc : ScreenScripts.getPublicScriptRunner().getScripts()) {
                 ScreenActionEyeSlot slot = new ScreenActionEyeSlot(sc, this);
                 slots.add(slot);
                 n++;
@@ -104,13 +104,13 @@ public class EyeData {
         }
 
         if (selector.showSketches.isSelected()) {
-            for (Page s : SketchletEditor.pages.pages) {
+            for (Page s : SketchletEditor.getPages().getPages()) {
                 EyeSlot slot = new SketchEyeSlot(s, this);
-                if (s == SketchletEditor.editorPanel.currentPage && n > 0) {
+                if (s == SketchletEditor.getInstance().getCurrentPage() && n > 0) {
                     slots.add(new EmptyEyeSlot(this));
                 }
                 slots.add(slot);
-                if (s == SketchletEditor.editorPanel.currentPage) {
+                if (s == SketchletEditor.getInstance().getCurrentPage()) {
                     addCurrentSketch();
                     slots.add(new EmptyEyeSlot(this));
                     n = 0;
@@ -148,7 +148,7 @@ public class EyeData {
 
     public void addCurrentSketch() {
         if (selector.showRegions.isSelected()) {
-            Page page = SketchletEditor.editorPanel.currentPage;
+            Page page = SketchletEditor.getInstance().getCurrentPage();
             SketchEntryEyeSlot mslot = new SketchEntryEyeSlot(page, this);
             slots.add(mslot);
             SketchExitEyeSlot mslot2 = new SketchExitEyeSlot(page, this);
@@ -157,7 +157,7 @@ public class EyeData {
             slots.add(kslot);
             VariablesEventsEyeSlot vslot = new VariablesEventsEyeSlot(page, this);
             slots.add(vslot);
-            for (ActiveRegion region : page.regions.regions) {
+            for (ActiveRegion region : page.getRegions().getRegions()) {
                 RegionEyeSlot rs = new RegionEyeSlot(region, this);
                 slots.add(rs);
             }

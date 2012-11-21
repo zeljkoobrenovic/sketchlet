@@ -10,7 +10,7 @@ import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.communicator.server.DataServer;
 import net.sf.sketchlet.designer.GlobalProperties;
 import net.sf.sketchlet.designer.Workspace;
-import net.sf.sketchlet.designer.data.ActiveRegion;
+import net.sf.sketchlet.model.ActiveRegion;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -106,18 +106,18 @@ public class SketchletEditorUtils {
     }
 
     public static void createAnimatedImageWindow() {
-        if (SketchletEditor.editorPanel.currentPage.regions.selectedRegions != null) {
-            for (ActiveRegion region : SketchletEditor.editorPanel.currentPage.regions.selectedRegions) {
+        if (SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions() != null) {
+            for (ActiveRegion region : SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions()) {
                 String strXVar = "x";
                 String strYVar = "y";
                 String _strXVar = "x";
                 String _strYVar = "y";
                 int temp = 2;
-                while (DataServer.variablesServer.getVariable(_strXVar) != null) {
+                while (DataServer.getInstance().getVariable(_strXVar) != null) {
                     _strXVar = strXVar + "_" + (temp++);
                 }
                 temp = 2;
-                while (DataServer.variablesServer.getVariable(_strYVar) != null) {
+                while (DataServer.getInstance().getVariable(_strYVar) != null) {
                     _strYVar = strYVar + "_" + (temp++);
                 }
 
@@ -176,7 +176,7 @@ public class SketchletEditorUtils {
                 region.strWindowY = "=" + strYVar;
                 region.strWindowWidth = "" + region.getWidth();
                 region.strWindowHeight = "" + region.getHeight();
-                SketchletEditor.editorPanel.forceRepaint();
+                SketchletEditor.getInstance().forceRepaint();
             }
         }
     }

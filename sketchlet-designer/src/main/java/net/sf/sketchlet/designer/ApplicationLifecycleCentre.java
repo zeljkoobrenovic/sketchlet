@@ -7,11 +7,11 @@ package net.sf.sketchlet.designer;
 import net.sf.sketchlet.context.PageContext;
 import net.sf.sketchlet.context.PageEventsListener;
 import net.sf.sketchlet.designer.context.PageContextImpl;
-import net.sf.sketchlet.designer.data.Page;
+import net.sf.sketchlet.loaders.pluginloader.GenericPluginFactory;
+import net.sf.sketchlet.loaders.pluginloader.PluginInstance;
+import net.sf.sketchlet.loaders.pluginloader.PluginLoader;
+import net.sf.sketchlet.model.Page;
 import net.sf.sketchlet.plugin.SketchletProjectAware;
-import net.sf.sketchlet.pluginloader.GenericPluginFactory;
-import net.sf.sketchlet.pluginloader.PluginInstance;
-import net.sf.sketchlet.pluginloader.PluginLoader;
 
 import java.util.List;
 import java.util.Vector;
@@ -22,14 +22,15 @@ import java.util.concurrent.Executors;
  * @author zobrenovic
  */
 public class ApplicationLifecycleCentre {
+    private static List<PageEventsListener> pageListeners = new Vector<PageEventsListener>();
 
     public static void afterApplicationStart() {
-        Workspace.variableSpaces = PluginLoader.getPluginInstances("varspace", "datasource");
-        Workspace.variableSourcesNames = PluginLoader.getPluginNames("varspace", "datasource");
+        Workspace.setVariableSpaces(PluginLoader.getPluginInstances("varspace", "datasource"));
+        Workspace.setVariableSourcesNames(PluginLoader.getPluginNames("varspace", "datasource"));
 
-        Workspace.derivedVariablesReady.countDown();
+        Workspace.getDerivedVariablesReadyCountDownLatch().countDown();
         GenericPluginFactory.createPluginInstances();
-        Workspace.pluginsReady.countDown();
+        Workspace.getPluginsReadyCountDownLatch().countDown();
         GenericPluginFactory.afterApplicationStart();
     }
 
@@ -38,7 +39,7 @@ public class ApplicationLifecycleCentre {
     }
 
     public static void afterProjectOpening() {
-        if (Workspace.applicationReady.getCount() > 0) {
+        if (Workspace.getApplicationReadyCountDownLatch().getCount() > 0) {
             return;
         }
         loadVariableSpaces();
@@ -47,8 +48,8 @@ public class ApplicationLifecycleCentre {
 
     public static void beforeProjectClosing() {
         try {
-            Workspace.pluginsReady.await();
-            Workspace.derivedVariablesReady.await();
+            Workspace.getPluginsReadyCountDownLatch().await();
+            Workspace.getDerivedVariablesReadyCountDownLatch().await();
             GenericPluginFactory.beforeProjectClosing();
             closeVariableSpaces();
         } catch (InterruptedException e) {
@@ -56,8 +57,8 @@ public class ApplicationLifecycleCentre {
     }
 
     private static void closeVariableSpaces() {
-        if (Workspace.variableSpaces != null) {
-            for (PluginInstance ds : Workspace.variableSpaces) {
+        if (Workspace.getVariableSpaces() != null) {
+            for (PluginInstance ds : Workspace.getVariableSpaces()) {
                 if (ds.getInstance() instanceof SketchletProjectAware) {
                     ((SketchletProjectAware) ds.getInstance()).onSave();
                     ((SketchletProjectAware) ds.getInstance()).beforeProjectClosing();
@@ -67,14 +68,12 @@ public class ApplicationLifecycleCentre {
     }
 
     private static void loadVariableSpaces() {
-        for (PluginInstance ds : Workspace.variableSpaces) {
+        for (PluginInstance ds : Workspace.getVariableSpaces()) {
             if (ds.getInstance() instanceof SketchletProjectAware) {
                 ((SketchletProjectAware) ds.getInstance()).afterProjectOpening();
             }
         }
     }
-
-    public static List<PageEventsListener> pageListeners = new Vector<PageEventsListener>();
 
     public static void afterPageEntry(final Page sketch) {
         ExecutorService executor = Executors.newCachedThreadPool();
@@ -82,7 +81,7 @@ public class ApplicationLifecycleCentre {
 
             public void run() {
                 PageContext page = new PageContextImpl(sketch);
-                for (PageEventsListener l : pageListeners) {
+                for (PageEventsListener l : getPageListeners()) {
                     l.afterPageEntry(page);
                 }
             }
@@ -95,10 +94,14 @@ public class ApplicationLifecycleCentre {
 
             public void run() {
                 PageContext page = new PageContextImpl(sketch);
-                for (PageEventsListener l : pageListeners) {
+                for (PageEventsListener l : getPageListeners()) {
                     l.afterPageEntry(page);
                 }
             }
         });
+    }
+
+    public static List<PageEventsListener> getPageListeners() {
+        return pageListeners;
     }
 }

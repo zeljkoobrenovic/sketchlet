@@ -20,73 +20,79 @@ import net.sf.sketchlet.designer.GlobalProperties;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.context.ActiveRegionContextImpl;
 import net.sf.sketchlet.designer.context.PageContextImpl;
-import net.sf.sketchlet.designer.data.ActiveRegion;
-import net.sf.sketchlet.designer.data.ActiveRegions;
-import net.sf.sketchlet.designer.data.EventMacro;
-import net.sf.sketchlet.designer.data.KeyboardEventMacro;
-import net.sf.sketchlet.designer.data.Page;
-import net.sf.sketchlet.designer.data.Pages;
-import net.sf.sketchlet.designer.data.SketchletsSaxLoader;
-import net.sf.sketchlet.designer.data.VariableUpdateEventMacro;
-import net.sf.sketchlet.designer.editor.regions.ActiveRegionImageEditor;
-import net.sf.sketchlet.designer.editor.regions.ActiveRegionMenu;
-import net.sf.sketchlet.designer.editor.regions.ActiveRegionPopupListener;
-import net.sf.sketchlet.designer.editor.renderer.PageRenderer;
-import net.sf.sketchlet.designer.editor.renderer.RendererInterface;
+import net.sf.sketchlet.designer.editor.controllers.SketchletEditorClipboardController;
+import net.sf.sketchlet.designer.editor.controllers.SketchletEditorDragAndDropController;
+import net.sf.sketchlet.designer.editor.controllers.SketchletEditorMouseInputController;
+import net.sf.sketchlet.designer.editor.media.ImportMediaWatcher;
+import net.sf.sketchlet.designer.editor.media.SketchletEditorImagesHandler;
+import net.sf.sketchlet.designer.editor.printing.BufferedImagePrinter;
+import net.sf.sketchlet.designer.editor.ui.region.ActiveRegionImageEditor;
+import net.sf.sketchlet.designer.editor.ui.region.menus.ActiveRegionMenu;
+import net.sf.sketchlet.designer.editor.ui.region.menus.ActiveRegionPopupListener;
 import net.sf.sketchlet.designer.editor.resize.ResizeDialog;
 import net.sf.sketchlet.designer.editor.resize.ResizeInterface;
+import net.sf.sketchlet.designer.editor.rulers.Ruler;
 import net.sf.sketchlet.designer.editor.tool.*;
 import net.sf.sketchlet.designer.editor.tool.notes.NoteDialog;
 import net.sf.sketchlet.designer.editor.tool.stroke.WobbleStroke;
 import net.sf.sketchlet.designer.eye.eye.EyeFrame;
 import net.sf.sketchlet.designer.help.HelpViewer;
-import net.sf.sketchlet.designer.help.TutorialPanel;
 import net.sf.sketchlet.designer.playback.displays.InteractionSpace;
-import net.sf.sketchlet.designer.programming.macros.Macro;
-import net.sf.sketchlet.designer.programming.macros.Macros;
-import net.sf.sketchlet.designer.programming.timers.Timer;
-import net.sf.sketchlet.designer.programming.timers.Timers;
 import net.sf.sketchlet.designer.tools.imagecache.ImageCache;
 import net.sf.sketchlet.designer.tools.log.ActivityLog;
-import net.sf.sketchlet.designer.ui.LayerCheckBoxTabComponent;
-import net.sf.sketchlet.designer.ui.MemoryPanel;
-import net.sf.sketchlet.designer.ui.MessageFrame;
-import net.sf.sketchlet.designer.ui.datasource.VariableSpacesFrame;
-import net.sf.sketchlet.designer.ui.desktop.DesktopPanel;
-import net.sf.sketchlet.designer.ui.desktop.SystemVariablesDialog;
-import net.sf.sketchlet.designer.ui.extraeditor.ActiveRegionsExtraPanel;
-import net.sf.sketchlet.designer.ui.extraeditor.ExtraEditorPanel;
-import net.sf.sketchlet.designer.ui.localvars.PageVariablesPanel;
-import net.sf.sketchlet.designer.ui.macros.ImageAreaSelect;
-import net.sf.sketchlet.designer.ui.macros.MacrosFrame;
-import net.sf.sketchlet.designer.ui.macros.MacrosTablePanel;
-import net.sf.sketchlet.designer.ui.page.SketchListPanel;
-import net.sf.sketchlet.designer.ui.page.SketchStatePanel;
-import net.sf.sketchlet.designer.ui.page.perspective.PerspectivePanel;
-import net.sf.sketchlet.designer.ui.page.spreadsheet.SpreadsheetPanel;
-import net.sf.sketchlet.designer.ui.pagetransition.StateDiagram;
-import net.sf.sketchlet.designer.ui.playback.InteractionRecorder;
-import net.sf.sketchlet.designer.ui.playback.PlaybackFrame;
-import net.sf.sketchlet.designer.ui.playback.PlaybackPanel;
-import net.sf.sketchlet.designer.ui.playback.displays.InteractionSpaceFrame;
-import net.sf.sketchlet.designer.ui.profiles.Profiles;
-import net.sf.sketchlet.designer.ui.region.ActiveRegionPanel;
-import net.sf.sketchlet.designer.ui.region.ActiveRegionToolbar;
-import net.sf.sketchlet.designer.ui.region.ActiveRegionsFrame;
-import net.sf.sketchlet.designer.ui.timers.TimersTablePanel;
-import net.sf.sketchlet.designer.ui.timers.curve.CurvesFrame;
-import net.sf.sketchlet.designer.ui.toolbars.ColorToolbar;
-import net.sf.sketchlet.designer.ui.toolbars.FormulaToolbar;
-import net.sf.sketchlet.designer.ui.toolbars.ModeToolbar;
-import net.sf.sketchlet.designer.ui.toolbars.SimplePagesNavigationPanel;
-import net.sf.sketchlet.designer.ui.toolbars.SketchToolbar;
-import net.sf.sketchlet.designer.ui.undo.*;
+import net.sf.sketchlet.designer.editor.ui.LayerCheckBoxTabComponent;
+import net.sf.sketchlet.designer.editor.ui.MemoryPanel;
+import net.sf.sketchlet.designer.editor.ui.MessageFrame;
+import net.sf.sketchlet.designer.editor.ui.varspace.VariableSpacesFrame;
+import net.sf.sketchlet.designer.editor.ui.desktop.DesktopPanel;
+import net.sf.sketchlet.designer.editor.ui.desktop.SystemVariablesDialog;
+import net.sf.sketchlet.designer.editor.ui.extraeditor.ActiveRegionsExtraPanel;
+import net.sf.sketchlet.designer.editor.ui.extraeditor.ExtraEditorPanel;
+import net.sf.sketchlet.designer.editor.ui.localvars.PageVariablesPanel;
+import net.sf.sketchlet.designer.editor.ui.macros.ImageAreaSelect;
+import net.sf.sketchlet.designer.editor.ui.macros.MacrosFrame;
+import net.sf.sketchlet.designer.editor.ui.macros.MacrosTablePanel;
+import net.sf.sketchlet.designer.editor.ui.page.PageDetailsPanel;
+import net.sf.sketchlet.designer.editor.ui.page.SketchListPanel;
+import net.sf.sketchlet.designer.editor.ui.page.perspective.PerspectivePanel;
+import net.sf.sketchlet.designer.editor.ui.page.spreadsheet.SpreadsheetPanel;
+import net.sf.sketchlet.designer.editor.ui.pagetransition.StateDiagram;
+import net.sf.sketchlet.designer.playback.ui.InteractionRecorder;
+import net.sf.sketchlet.designer.playback.ui.PlaybackFrame;
+import net.sf.sketchlet.designer.playback.ui.PlaybackPanel;
+import net.sf.sketchlet.designer.playback.ui.InteractionSpaceFrame;
+import net.sf.sketchlet.designer.editor.ui.profiles.Profiles;
+import net.sf.sketchlet.designer.editor.ui.region.ActiveRegionPanel;
+import net.sf.sketchlet.designer.editor.ui.region.ActiveRegionToolbar;
+import net.sf.sketchlet.designer.editor.ui.region.ActiveRegionsFrame;
+import net.sf.sketchlet.designer.editor.ui.timers.TimersTablePanel;
+import net.sf.sketchlet.designer.editor.ui.timers.curve.CurvesFrame;
+import net.sf.sketchlet.designer.editor.ui.toolbars.ColorToolbar;
+import net.sf.sketchlet.designer.editor.ui.toolbars.FormulaToolbar;
+import net.sf.sketchlet.designer.editor.ui.toolbars.ModeToolbar;
+import net.sf.sketchlet.designer.editor.ui.toolbars.SimplePagesNavigationPanel;
+import net.sf.sketchlet.designer.editor.ui.toolbars.SketchToolbar;
+import net.sf.sketchlet.designer.editor.ui.undo.*;
 import net.sf.sketchlet.help.HelpInterface;
 import net.sf.sketchlet.help.HelpUtils;
+import net.sf.sketchlet.loaders.SketchletsSaxLoader;
+import net.sf.sketchlet.loaders.pluginloader.GenericPluginFactory;
+import net.sf.sketchlet.loaders.pluginloader.PluginInstance;
+import net.sf.sketchlet.loaders.pluginloader.WidgetPluginFactory;
+import net.sf.sketchlet.model.ActiveRegion;
+import net.sf.sketchlet.model.ActiveRegions;
+import net.sf.sketchlet.model.EventMacro;
+import net.sf.sketchlet.model.events.KeyboardEventMacro;
+import net.sf.sketchlet.model.Page;
+import net.sf.sketchlet.model.Pages;
+import net.sf.sketchlet.model.VariableUpdateEventMacro;
+import net.sf.sketchlet.model.programming.macros.Macro;
+import net.sf.sketchlet.model.programming.macros.Macros;
+import net.sf.sketchlet.model.programming.timers.Timer;
+import net.sf.sketchlet.model.programming.timers.Timers;
 import net.sf.sketchlet.plugin.SketchletPluginGUI;
-import net.sf.sketchlet.pluginloader.GenericPluginFactory;
-import net.sf.sketchlet.pluginloader.PluginInstance;
-import net.sf.sketchlet.pluginloader.WidgetPluginFactory;
+import net.sf.sketchlet.renderer.page.PageRenderer;
+import net.sf.sketchlet.renderer.page.PanelRenderer;
 import net.sf.sketchlet.util.RefreshTime;
 import org.apache.log4j.Logger;
 
@@ -111,132 +117,128 @@ import java.nio.channels.FileChannel;
 import java.util.List;
 import java.util.Vector;
 
-public class SketchletEditor extends JDesktopPane implements KeyListener, VariableUpdateListener, Refresh, ToolInterface, ResizeInterface, RendererInterface, HelpInterface, SketchletPainter {
+public class SketchletEditor extends JDesktopPane implements KeyListener, VariableUpdateListener, Refresh, ToolInterface, ResizeInterface, PanelRenderer, HelpInterface, SketchletPainter {
     private static final Logger log = Logger.getLogger(SketchletEditor.class);
-    public PageRenderer renderer = new PageRenderer(this);
-    FileDrop fileDrop;
-    public static Pages pages;
-    public Page currentPage;
-    public Page masterPage;
-    public EditorMode mode = EditorMode.SKETCHING;
-    public JTabbedPane tabsModes = new JTabbedPane();
-    public JTabbedPane tabsLayers = new JTabbedPane();
-    public JSlider sliderLayerTransparency;
-    // public JTabbedPane tabs = new JTabbedPane();
-    public JTextArea textArea = new JTextArea();
-    public static SketchletEditor editorPanel;
-    public JToolBar navigationToolbar = new JToolBar();
-    public static double transparencyFactor = 1.0;
-    public int layer = 0;
-    public static JFileChooser fc = new JFileChooser();
-    public boolean bDragging = false;
-    public Graphics2D g2FreeHandDraw = null;
-    public ActiveRegionMenu activeRegionMenu = new ActiveRegionMenu();
-    public boolean inShiftMode = false;
-    public boolean inCtrlMode = false;
-    public SimplePagesNavigationPanel controlPanel;
-    public JPanel centralPanel = new JPanel(new BorderLayout());
-    public PenTool penTool = new PenTool(this);
-    public ColorPickerTool colorPickerTool = new ColorPickerTool(this);
-    public BucketTool bucketTool = new BucketTool(this);
-    public TransparentColorTool transparentColorTool = new TransparentColorTool(this);
-    public MagicWandTool magicWandTool = new MagicWandTool(this);
-    public LineTool lineTool = new LineTool(this);
-    public RectTool rectTool = new RectTool(this);
-    public OvalTool ovalTool = new OvalTool(this);
-    public EraserTool eraserTool = new EraserTool(this);
-    public SelectTool selectTool = new SelectTool(this);
-    public FreeFormSelectTool freeFormSelectTool = new FreeFormSelectTool(this);
-    public ActiveRegionTool activeRegionTool = new ActiveRegionTool(this);
-    public ActiveRegionConnectorTool activeRegionConnectorTool = new ActiveRegionConnectorTool(this);
-    public TrajectoryPointsTool trajectoryPointsTool = new TrajectoryPointsTool(this);
-    public TrajectoryPenTool trajectory1PointsTool = new TrajectoryPenTool(this, 1);
-    public TrajectoryPenTool trajectory2PointsTool = new TrajectoryPenTool(this, 2);
-    public TrajectoryMoveTool trajectoryMoveTool = new TrajectoryMoveTool(this);
-    public ActiveRegionSelectTool activeRegionSelectTool = new ActiveRegionSelectTool(this);
-    public PostNoteTool postNoteTool = new PostNoteTool(this);
-    public Tool tool = activeRegionSelectTool;
-    public ActiveRegionPopupListener regionPopupListener = new ActiveRegionPopupListener();
-    public ModeToolbar modeToolbar;
-    public PerspectivePanel perspectivePanel;
-    public PageVariablesPanel pageVariablesPanel;
-    public SpreadsheetPanel spreadsheetPanel;
-    public SketchStatePanel statePanel;
-    public ExtraEditorPanel extraEditorPanel;
-    JPanel panelNorthMode;
-    public ColorToolbar colorToolbar;
-    public ActiveRegionToolbar activeRegionToolbar;
-    public FormulaToolbar formulaToolbar;
-    public SketchToolbar sketchToolbar = new SketchToolbar();
-    public JTabbedPane tabsRight = new JTabbedPane();
-    public JTabbedPane tabsProgramming = new JTabbedPane();
-    public TimersTablePanel timersTablePanel;
-    public MacrosTablePanel macrosTablePanel;
-    JSplitPane splitRight;
-    public JTabbedPane tabsBrowser;
-    public JTabbedPane tabsNavigator = new JTabbedPane();
-    public boolean tabsVisible = true;
-    public static boolean snapToGrid = false;
-    public static boolean showPerspectiveLines = false;
-    public static boolean bShowStatePanel = false;
-    public BufferedImage masterImage;
-    public double scale = 1.0;
-    public double oldScale = 0.0;
-    public static int margin = 0;
-    public static int marginX = 0;
-    public static int marginY = 0;
-    public Color color;
-    public Stroke stroke;
-    public int outlineType = 0;
-    public float watering = 1.0f;
-    int statusX = 0;
-    int statusY = 0;
-    JPanel panelDrawingPanel;
-    public JPanel editorPane = new JPanel(new BorderLayout());
-    public JSplitPane splitPane;
-    public SketchListPanel sketchListPanel;
-    // public JTabbedPane drawingTabs = new JTabbedPane();
-    public JPanel drawingPanel = new JPanel(new BorderLayout());
-    public JPanel mainSketchPanel = new JPanel(new BorderLayout());
-    public PlaybackPanel internalPlaybackPanel;
-    public JScrollPane internalPlaybackPanelScrollPane;
-    public boolean bExtraEditorPanelVisible = false;
-    public Rule rulerHorizontal = new Rule(Rule.HORIZONTAL, true);
-    public Rule rulerVertical = new Rule(Rule.VERTICAL, true);
-    JPanel statusPanel;
-    //public ObjectBrowser objectBrowser;
-    public HelpViewer helpViewer;
-    JSplitPane spllitPane;
-    public TutorialPanel tutorialPanel;
-    public static int pageTabIndex = 0;
-    public static int ioservicesTabIndex = 1;
-    public static int programmingTabIndex = 2;
-    public static int timersTabIndex = 0;
-    public static int macrosTabIndex = 1;
-    public static int screenpokingTabIndex = 2;
-    public static int scriptsTabIndex = 3;
-    JPanel panelModes;
-    public static String[][] initProperties = null;
-    public JMenu profilesMenu;
-    boolean bCloseMsg = false;
-    public boolean bLoading = false;
-    public Vector<Page> navigationHistory = new Vector<Page>();
-    public static boolean bStatePanelUndocked = false;
-    public static JFrame undockStateFrame = null;
-    public boolean bRepaint = false;
-    long lastRepaintTime = 0;
-    public static boolean bGUIReady = false;
-    public SketchletEditorClipboard editorClipboard = new SketchletEditorClipboard(this);
-    public SketchletEditorImages sketchletImages = new SketchletEditorImages(this);
-    public List<UndoAction> undoRegionActions;
-    public JButton hide = new JButton(Workspace.createImageIcon("resources/hide-right-icon.png"));
-    public boolean objectPanelVisible = true;
+    private PageRenderer renderer = new PageRenderer(this);
+    private FileDrop fileDrop;
+    private static Pages pages;
+    private Page currentPage;
+    private Page masterPage;
+    private SketchletEditorMode mode = SketchletEditorMode.SKETCHING;
+    private JTabbedPane tabsModes = new JTabbedPane();
+    private JTabbedPane tabsLayers = new JTabbedPane();
+    private JTextArea textArea = new JTextArea();
+    private static SketchletEditor editorPanel;
+    private JToolBar navigationToolbar = new JToolBar();
+    private static double transparencyFactor = 1.0;
+    private int layer = 0;
+    private static JFileChooser fc = new JFileChooser();
+    private boolean dragging = false;
+    private Graphics2D g2SketchletEditor = null;
+    private ActiveRegionMenu activeRegionMenu = new ActiveRegionMenu();
+    private boolean inShiftMode = false;
+    private boolean inCtrlMode = false;
+    private SimplePagesNavigationPanel controlPanel;
+    private JPanel centralPanel = new JPanel(new BorderLayout());
+    private PenTool penTool = new PenTool(this);
+    private ColorPickerTool colorPickerTool = new ColorPickerTool(this);
+    private BucketTool bucketTool = new BucketTool(this);
+    private TransparentColorTool transparentColorTool = new TransparentColorTool(this);
+    private MagicWandTool magicWandTool = new MagicWandTool(this);
+    private LineTool lineTool = new LineTool(this);
+    private RectTool rectTool = new RectTool(this);
+    private OvalTool ovalTool = new OvalTool(this);
+    private EraserTool eraserTool = new EraserTool(this);
+    private SelectTool selectTool = new SelectTool(this);
+    private FreeFormSelectTool freeFormSelectTool = new FreeFormSelectTool(this);
+    private ActiveRegionTool activeRegionTool = new ActiveRegionTool(this);
+    private ActiveRegionConnectorTool activeRegionConnectorTool = new ActiveRegionConnectorTool(this);
+    private TrajectoryPointsTool trajectoryPointsTool = new TrajectoryPointsTool(this);
+    private TrajectoryPenTool trajectory1PointsTool = new TrajectoryPenTool(this, 1);
+    private TrajectoryPenTool trajectory2PointsTool = new TrajectoryPenTool(this, 2);
+    private TrajectoryMoveTool trajectoryMoveTool = new TrajectoryMoveTool(this);
+    private ActiveRegionSelectTool activeRegionSelectTool = new ActiveRegionSelectTool(this);
+    private PostNoteTool postNoteTool = new PostNoteTool(this);
+    private Tool tool = getActiveRegionSelectTool();
+    private ActiveRegionPopupListener regionPopupListener = new ActiveRegionPopupListener();
+    private ModeToolbar modeToolbar;
+    private PerspectivePanel perspectivePanel;
+    private PageVariablesPanel pageVariablesPanel;
+    private SpreadsheetPanel spreadsheetPanel;
+    private PageDetailsPanel pageDetailsPanel;
+    private ExtraEditorPanel extraEditorPanel;
+    private JPanel panelNorthMode;
+    private ColorToolbar colorToolbar;
+    private ActiveRegionToolbar activeRegionToolbar;
+    private FormulaToolbar formulaToolbar;
+    private SketchToolbar sketchToolbar = new SketchToolbar();
+    private JTabbedPane tabsRight = new JTabbedPane();
+    private JTabbedPane tabsProgramming = new JTabbedPane();
+    private TimersTablePanel timersTablePanel;
+    private MacrosTablePanel macrosTablePanel;
+    private JTabbedPane tabsBrowser;
+    private JTabbedPane tabsNavigator = new JTabbedPane();
+    private boolean tabsVisible = true;
+    private static boolean snapToGrid = false;
+    private static boolean showPerspectiveLines = false;
+    private static boolean pagePanelShown = false;
+    private BufferedImage masterImage;
+    private double scale = 1.0;
+    private double oldScale = 0.0;
+    private static int margin = 0;
+    private static int marginX = 0;
+    private static int marginY = 0;
+    private Color color;
+    private Stroke stroke;
+    private int outlineType = 0;
+    private float watering = 1.0f;
+    private int statusX = 0;
+    private int statusY = 0;
+    private JPanel panelDrawingPanel;
+    private JPanel editorPane = new JPanel(new BorderLayout());
+    private JSplitPane splitPane;
+    private SketchListPanel sketchListPanel;
+    private JPanel drawingPanel = new JPanel(new BorderLayout());
+    private JPanel mainSketchPanel = new JPanel(new BorderLayout());
+    private PlaybackPanel internalPlaybackPanel;
+    private JScrollPane internalPlaybackPanelScrollPane;
+    private boolean extraEditorPanelVisible = false;
+    private Ruler rulerHorizontal = new Ruler(Ruler.HORIZONTAL, true);
+    private Ruler rulerVertical = new Ruler(Ruler.VERTICAL, true);
+    private JPanel statusPanel;
+    private HelpViewer helpViewer;
+    private JSplitPane spllitPane;
+    private static int pageTabIndex = 0;
+    private static int ioservicesTabIndex = 1;
+    private static int programmingTabIndex = 2;
+    private static int timersTabIndex = 0;
+    private static int macrosTabIndex = 1;
+    private static int screenpokingTabIndex = 2;
+    private static int scriptsTabIndex = 3;
+    private JPanel panelModes;
+    private static String[][] initProperties = null;
+    private JMenu profilesMenu;
+    private boolean bCloseMsg = false;
+    private boolean bLoading = false;
+    private Vector<Page> navigationHistory = new Vector<Page>();
+    private static boolean bStatePanelUndocked = false;
+    private static JFrame undockStateFrame = null;
+    private boolean bRepaint = false;
+    private long lastRepaintTime = 0;
+    private static boolean bGUIReady = false;
+    private SketchletEditorClipboardController editorClipboardController = new SketchletEditorClipboardController(this);
+    private SketchletEditorImagesHandler sketchletImagesHandler = new SketchletEditorImagesHandler(this);
+    private SketchletEditorDragAndDropController dragAndDropController = new SketchletEditorDragAndDropController(this);
+    private List<UndoAction> undoRegionActions;
+    private JButton hideButton = new JButton(Workspace.createImageIcon("resources/hide-right-icon.png"));
+    private boolean objectPanelVisible = true;
+    private boolean pasting = false;
 
     private ImportMediaWatcher mediaWatcher;
 
     public SketchletEditor() {
         ActivityLog.resetTime();
-        this.undoRegionActions = new Vector();
+        this.setUndoRegionActions(new Vector());
         new Thread(new Runnable() {
 
             public void run() {
@@ -250,28 +252,28 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
                 }
             }
         }).start();
-        bShowStatePanel = false;
+        setPagePanelShown(false);
         initSketches();
 
-        HelpUtils.helpInterface = this;
+        HelpUtils.setHelpInterface(this);
 
-        color = Color.BLACK;
-        stroke = new WobbleStroke(3, 1, 1);
+        setColor(Color.BLACK);
+        setStroke(new WobbleStroke(3, 1, 1));
 
         InteractionSpace.load();
 
-        SketchletEditorMouseListener listener = new SketchletEditorMouseListener();
+        SketchletEditorMouseInputController listener = new SketchletEditorMouseInputController();
         this.addMouseListener(listener);
         this.addMouseMotionListener(listener);
 
-        this.addMouseListener(regionPopupListener);
+        this.addMouseListener(getRegionPopupListener());
 
         this.addKeyListener(this);
         setFocusable(true);
 
         SketchletEditor.statusBar.setText("Sketching mode");
 
-        DataServer.variablesServer.addVariablesUpdateListener(this);
+        DataServer.getInstance().addVariablesUpdateListener(this);
         setCursor();
 
         this.setDesktopManager(new NoteDesktopManager());
@@ -280,19 +282,169 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
         UIManager.put("InternalFrame.closeButtonToolTip", "Delete note");
 
         this.putClientProperty("JComponent.sizeVariant", "small");
-        this.tabsRight.putClientProperty("JComponent.sizeVariant", "small");
-
-        TutorialPanel.prepare(tabsRight);
+        this.getTabsRight().putClientProperty("JComponent.sizeVariant", "small");
 
         SwingUtilities.updateComponentTreeUI(this);
-        Workspace.prepareAdditionalVariables();
+        Workspace.getProcessRunner().getVariableSpacesHandler().prepareAdditionalVariables();
 
         mediaWatcher = new ImportMediaWatcher();
     }
 
+    public static SketchletEditor getInstance() {
+        return editorPanel;
+    }
+
+    public static void setEditorPanel(SketchletEditor editorPanel) {
+        SketchletEditor.editorPanel = editorPanel;
+    }
+
+    public static Pages getPages() {
+        return pages;
+    }
+
+    public static void setPages(Pages pages) {
+        SketchletEditor.pages = pages;
+    }
+
+    public static double getTransparencyFactor() {
+        return transparencyFactor;
+    }
+
+    public static void setTransparencyFactor(double transparencyFactor) {
+        SketchletEditor.transparencyFactor = transparencyFactor;
+    }
+
+    public static boolean isSnapToGrid() {
+        return snapToGrid;
+    }
+
+    public static void setSnapToGrid(boolean snapToGrid) {
+        SketchletEditor.snapToGrid = snapToGrid;
+    }
+
+    public static boolean isShowPerspectiveLines() {
+        return showPerspectiveLines;
+    }
+
+    public static void setShowPerspectiveLines(boolean showPerspectiveLines) {
+        SketchletEditor.showPerspectiveLines = showPerspectiveLines;
+    }
+
+    public static boolean isPagePanelShown() {
+        return pagePanelShown;
+    }
+
+    public static void setPagePanelShown(boolean pagePanelShown) {
+        SketchletEditor.pagePanelShown = pagePanelShown;
+    }
+
+    public static int getMargin() {
+        return margin;
+    }
+
+    public static void setMargin(int margin) {
+        SketchletEditor.margin = margin;
+    }
+
+    public static int getPageTabIndex() {
+        return pageTabIndex;
+    }
+
+    public static void setPageTabIndex(int pageTabIndex) {
+        SketchletEditor.pageTabIndex = pageTabIndex;
+    }
+
+    public static int getIoservicesTabIndex() {
+        return ioservicesTabIndex;
+    }
+
+    public static void setIoservicesTabIndex(int ioservicesTabIndex) {
+        SketchletEditor.ioservicesTabIndex = ioservicesTabIndex;
+    }
+
+    public static int getProgrammingTabIndex() {
+        return programmingTabIndex;
+    }
+
+    public static void setProgrammingTabIndex(int programmingTabIndex) {
+        SketchletEditor.programmingTabIndex = programmingTabIndex;
+    }
+
+    public static int getTimersTabIndex() {
+        return timersTabIndex;
+    }
+
+    public static void setTimersTabIndex(int timersTabIndex) {
+        SketchletEditor.timersTabIndex = timersTabIndex;
+    }
+
+    public static int getMacrosTabIndex() {
+        return macrosTabIndex;
+    }
+
+    public static void setMacrosTabIndex(int macrosTabIndex) {
+        SketchletEditor.macrosTabIndex = macrosTabIndex;
+    }
+
+    public static int getScreenpokingTabIndex() {
+        return screenpokingTabIndex;
+    }
+
+    public static void setScreenpokingTabIndex(int screenpokingTabIndex) {
+        SketchletEditor.screenpokingTabIndex = screenpokingTabIndex;
+    }
+
+    public static int getScriptsTabIndex() {
+        return scriptsTabIndex;
+    }
+
+    public static void setScriptsTabIndex(int scriptsTabIndex) {
+        SketchletEditor.scriptsTabIndex = scriptsTabIndex;
+    }
+
+    public static String[][] getInitProperties() {
+        return initProperties;
+    }
+
+    public static void setInitProperties(String[][] initProperties) {
+        SketchletEditor.initProperties = initProperties;
+    }
+
+    public static boolean isbStatePanelUndocked() {
+        return bStatePanelUndocked;
+    }
+
+    public static void setbStatePanelUndocked(boolean bStatePanelUndocked) {
+        SketchletEditor.bStatePanelUndocked = bStatePanelUndocked;
+    }
+
+    public static JFrame getUndockStateFrame() {
+        return undockStateFrame;
+    }
+
+    public static void setUndockStateFrame(JFrame undockStateFrame) {
+        SketchletEditor.undockStateFrame = undockStateFrame;
+    }
+
+    public static void setMarginX(int marginX) {
+        SketchletEditor.marginX = marginX;
+    }
+
+    public static void setMarginY(int marginY) {
+        SketchletEditor.marginY = marginY;
+    }
+
+    public static boolean isbGUIReady() {
+        return bGUIReady;
+    }
+
+    public static void setbGUIReady(boolean bGUIReady) {
+        SketchletEditor.bGUIReady = bGUIReady;
+    }
+
     public void update(Graphics g) {
-        if (renderer != null) {
-            renderer.prepare(false, true);
+        if (getRenderer() != null) {
+            getRenderer().prepare(false, true);
         }
         if (System.currentTimeMillis() - lastRepaintTime > 50) {
             super.update(g);
@@ -303,27 +455,27 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
 
     public void repaint() {
         if (RefreshTime.shouldRefresh()) {
-            bRepaint = true;
+            setbRepaint(true);
         }
     }
 
     public void repaintIfNeeded() {
         if (PlaybackFrame.playbackFrame != null) {
             PlaybackFrame.repaintAllFramesIfNeeded();
-            bRepaint = true;
-        } else if (this.internalPlaybackPanel != null) {
-            this.internalPlaybackPanel.repaintIfNeeded();
+            setbRepaint(true);
+        } else if (this.getInternalPlaybackPanel() != null) {
+            this.getInternalPlaybackPanel().repaintIfNeeded();
             refreshTables();
         } else {
-            if (bRepaint) {
-                bRepaint = false;
+            if (isbRepaint()) {
+                setbRepaint(false);
                 super.repaint();
 
-                if (rulerHorizontal != null) {
-                    rulerHorizontal.repaint();
+                if (getRulerHorizontal() != null) {
+                    getRulerHorizontal().repaint();
                 }
-                if (rulerVertical != null) {
-                    rulerVertical.repaint();
+                if (getRulerVertical() != null) {
+                    getRulerVertical().repaint();
                 }
                 PlaybackPanel.repaintCounter++;
             }
@@ -335,14 +487,14 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
         EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                if (Workspace.mainPanel.sketchletPanel.globalVariablesPanel.bTableDirty) {
-                    Workspace.mainPanel.sketchletPanel.globalVariablesPanel.bTableDirty = false;
-                    Workspace.mainPanel.sketchletPanel.globalVariablesPanel.variablesTableModel.fireTableDataChanged();
+                if (Workspace.getMainPanel().sketchletPanel.globalVariablesPanel.bTableDirty) {
+                    Workspace.getMainPanel().sketchletPanel.globalVariablesPanel.bTableDirty = false;
+                    Workspace.getMainPanel().sketchletPanel.globalVariablesPanel.variablesTableModel.fireTableDataChanged();
                     PlaybackPanel.repaintCounter++;
                 }
-                if (Workspace.mainPanel.sketchletPanel.globalVariablesPanel.bTableUpdated) {
-                    Workspace.mainPanel.sketchletPanel.globalVariablesPanel.table.repaint();
-                    Workspace.mainPanel.sketchletPanel.globalVariablesPanel.bTableUpdated = false;
+                if (Workspace.getMainPanel().sketchletPanel.globalVariablesPanel.bTableUpdated) {
+                    Workspace.getMainPanel().sketchletPanel.globalVariablesPanel.table.repaint();
+                    Workspace.getMainPanel().sketchletPanel.globalVariablesPanel.bTableUpdated = false;
                     PlaybackPanel.repaintCounter++;
                 }
             }
@@ -350,22 +502,22 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public void addNote(int x, int y) {
-        NoteDialog note = new NoteDialog(editorPanel.marginX + x - 8, editorPanel.marginY + y - 33);
-        currentPage.notes.add(note);
+        NoteDialog note = new NoteDialog(getInstance().getMarginX() + x - 8, getInstance().getMarginY() + y - 33);
+        getCurrentPage().getNotes().add(note);
         addAndShowNote(note);
     }
 
     public void addAndShowNote(NoteDialog note) {
         NoteDialog _note = new NoteDialog(note.getX(), note.getY());
         _note.setBounds(note.getX(), note.getY(), note.getWidth(), note.getHeight());
-        _note.noteTextArea.setText(note.noteTextArea.getText());
-        currentPage.notes.remove(note);
-        currentPage.notes.add(_note);
+        _note.setNoteText(note.getNoteText());
+        getCurrentPage().getNotes().remove(note);
+        getCurrentPage().getNotes().add(_note);
         remove(note);
         add(_note, JDesktopPane.PALETTE_LAYER);
         _note.setVisible(true);
-        if (note.isMinimized) {
-            _note.isMinimized = true;
+        if (note.isMinimized()) {
+            _note.setMinimized(true);
 
             this.getDesktopManager().iconifyFrame(_note);
             try {
@@ -373,8 +525,8 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
             } catch (Throwable e) {
                 log.error(e);
             }
-            _note.original_w = note.original_w;
-            _note.original_h = note.original_h;
+            _note.setOriginalWidth(note.getOriginalWidth());
+            _note.setOriginalHeight(note.getOriginalHeight());
         }
     }
 
@@ -384,76 +536,716 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public void loadLayersTab() {
-        editorPanel.tabsLayers.removeAll();
+        getInstance().getTabsLayers().removeAll();
 
         int i = 0;
         for (i = 0; i < Page.NUMBER_OF_LAYERS; i++) {
-            editorPanel.tabsLayers.add("" + (i + 1), new JPanel());
-            editorPanel.tabsLayers.setTabComponentAt(i, new LayerCheckBoxTabComponent(i, editorPanel.tabsLayers));
+            getInstance().getTabsLayers().add("" + (i + 1), new JPanel());
+            getInstance().getTabsLayers().setTabComponentAt(i, new LayerCheckBoxTabComponent(i, getInstance().getTabsLayers()));
         }
-        editorPanel.tabsLayers.setSelectedIndex(0);
+        getInstance().getTabsLayers().setSelectedIndex(0);
     }
 
     public static void showPerspectivePanel() {
-        showStatePanel(SketchStatePanel.perspectiveTabIndex, 0);
+        showStatePanel(PageDetailsPanel.perspectiveTabIndex, 0);
     }
 
     public static void showSpreadsheetPanel() {
-        showStatePanel(SketchStatePanel.spreadsheetTabIndex, 0);
+        showStatePanel(PageDetailsPanel.spreadsheetTabIndex, 0);
     }
 
     public static void showStatePanel(int tab, int subTab) {
         showExtraEditorPanel(ExtraEditorPanel.indexPage);
 
-        editorPanel.statePanel.tabs.setSelectedIndex(tab);
+        getInstance().getPageDetailsPanel().tabs.setSelectedIndex(tab);
         if (tab == 0) {
-            editorPanel.statePanel.tabs1.setSelectedIndex(subTab);
+            getInstance().getPageDetailsPanel().tabs1.setSelectedIndex(subTab);
         } else if (tab == 1) {
-            editorPanel.statePanel.tabs2.setSelectedIndex(subTab);
+            getInstance().getPageDetailsPanel().tabs2.setSelectedIndex(subTab);
         } else {
         }
     }
 
     public static void undockStatePanel() {
         showStatePanel();
-        undockStateFrame = new JFrame();
-        undockStateFrame.getRootPane().putClientProperty("Window.style", "small");
-        undockStateFrame.addWindowListener(new WindowAdapter() {
+        setUndockStateFrame(new JFrame());
+        getUndockStateFrame().getRootPane().putClientProperty("Window.style", "small");
+        getUndockStateFrame().addWindowListener(new WindowAdapter() {
 
             public void windowClosing(WindowEvent e) {
-                bStatePanelUndocked = false;
-                editorPanel.bShowStatePanel = false;
+                setbStatePanelUndocked(false);
+                getInstance().setPagePanelShown(false);
             }
 
             public void windowActivated(WindowEvent e) {
-                AWTUtilitiesWrapper.setWindowOpacity(undockStateFrame, 1.0f);
+                AWTUtilitiesWrapper.setWindowOpacity(getUndockStateFrame(), 1.0f);
             }
 
             public void windowDeactivated(WindowEvent e) {
-                AWTUtilitiesWrapper.setWindowOpacity(undockStateFrame, 0.5f);
+                AWTUtilitiesWrapper.setWindowOpacity(getUndockStateFrame(), 0.5f);
             }
         });
 
-        undockStateFrame.setAlwaysOnTop(true);
-        undockStateFrame.setTitle("Page Events and Propertites");
-        undockStateFrame.add(editorPanel.statePanel);
-        Dimension d = editorPanel.statePanel.getSize();
-        undockStateFrame.setSize(new Dimension((int) d.getWidth(), (int) d.getHeight() + 60));
-        undockStateFrame.setVisible(true);
-        undockStateFrame.setIconImage(Workspace.createImageIcon("resources/editor.gif", "").getImage());
+        getUndockStateFrame().setAlwaysOnTop(true);
+        getUndockStateFrame().setTitle("Page Events and Propertites");
+        getUndockStateFrame().add(getInstance().getPageDetailsPanel());
+        Dimension d = getInstance().getPageDetailsPanel().getSize();
+        getUndockStateFrame().setSize(new Dimension((int) d.getWidth(), (int) d.getHeight() + 60));
+        getUndockStateFrame().setVisible(true);
+        getUndockStateFrame().setIconImage(Workspace.createImageIcon("resources/editor.gif", "").getImage());
         bUndocked = true;
     }
 
     public static void dockStatePanel() {
-        bStatePanelUndocked = false;
-        if (undockStateFrame != null) {
-            undockStateFrame.setVisible(false);
-            editorPanel.bShowStatePanel = false;
+        setbStatePanelUndocked(false);
+        if (getUndockStateFrame() != null) {
+            getUndockStateFrame().setVisible(false);
+            getInstance().setPagePanelShown(false);
             showStatePanel();
         }
     }
 
     public static void showStatePanel() {
+    }
+
+    public Page getCurrentPage() {
+        return currentPage;
+    }
+
+    public void setCurrentPage(Page currentPage) {
+        this.currentPage = currentPage;
+    }
+
+    public void setMasterPage(Page masterPage) {
+        this.masterPage = masterPage;
+    }
+
+    public PenTool getPenTool() {
+        return penTool;
+    }
+
+    public void setPenTool(PenTool penTool) {
+        this.penTool = penTool;
+    }
+
+    public ColorPickerTool getColorPickerTool() {
+        return colorPickerTool;
+    }
+
+    public void setColorPickerTool(ColorPickerTool colorPickerTool) {
+        this.colorPickerTool = colorPickerTool;
+    }
+
+    public BucketTool getBucketTool() {
+        return bucketTool;
+    }
+
+    public void setBucketTool(BucketTool bucketTool) {
+        this.bucketTool = bucketTool;
+    }
+
+    public TransparentColorTool getTransparentColorTool() {
+        return transparentColorTool;
+    }
+
+    public void setTransparentColorTool(TransparentColorTool transparentColorTool) {
+        this.transparentColorTool = transparentColorTool;
+    }
+
+    public MagicWandTool getMagicWandTool() {
+        return magicWandTool;
+    }
+
+    public void setMagicWandTool(MagicWandTool magicWandTool) {
+        this.magicWandTool = magicWandTool;
+    }
+
+    public LineTool getLineTool() {
+        return lineTool;
+    }
+
+    public void setLineTool(LineTool lineTool) {
+        this.lineTool = lineTool;
+    }
+
+    public RectTool getRectTool() {
+        return rectTool;
+    }
+
+    public void setRectTool(RectTool rectTool) {
+        this.rectTool = rectTool;
+    }
+
+    public OvalTool getOvalTool() {
+        return ovalTool;
+    }
+
+    public void setOvalTool(OvalTool ovalTool) {
+        this.ovalTool = ovalTool;
+    }
+
+    public EraserTool getEraserTool() {
+        return eraserTool;
+    }
+
+    public void setEraserTool(EraserTool eraserTool) {
+        this.eraserTool = eraserTool;
+    }
+
+    public void setSelectTool(SelectTool selectTool) {
+        this.selectTool = selectTool;
+    }
+
+    public FreeFormSelectTool getFreeFormSelectTool() {
+        return freeFormSelectTool;
+    }
+
+    public void setFreeFormSelectTool(FreeFormSelectTool freeFormSelectTool) {
+        this.freeFormSelectTool = freeFormSelectTool;
+    }
+
+    public ActiveRegionTool getActiveRegionTool() {
+        return activeRegionTool;
+    }
+
+    public void setActiveRegionTool(ActiveRegionTool activeRegionTool) {
+        this.activeRegionTool = activeRegionTool;
+    }
+
+    public ActiveRegionConnectorTool getActiveRegionConnectorTool() {
+        return activeRegionConnectorTool;
+    }
+
+    public void setActiveRegionConnectorTool(ActiveRegionConnectorTool activeRegionConnectorTool) {
+        this.activeRegionConnectorTool = activeRegionConnectorTool;
+    }
+
+    public TrajectoryPointsTool getTrajectoryPointsTool() {
+        return trajectoryPointsTool;
+    }
+
+    public void setTrajectoryPointsTool(TrajectoryPointsTool trajectoryPointsTool) {
+        this.trajectoryPointsTool = trajectoryPointsTool;
+    }
+
+    public TrajectoryPenTool getTrajectory1PointsTool() {
+        return trajectory1PointsTool;
+    }
+
+    public void setTrajectory1PointsTool(TrajectoryPenTool trajectory1PointsTool) {
+        this.trajectory1PointsTool = trajectory1PointsTool;
+    }
+
+    public TrajectoryPenTool getTrajectory2PointsTool() {
+        return trajectory2PointsTool;
+    }
+
+    public void setTrajectory2PointsTool(TrajectoryPenTool trajectory2PointsTool) {
+        this.trajectory2PointsTool = trajectory2PointsTool;
+    }
+
+    public TrajectoryMoveTool getTrajectoryMoveTool() {
+        return trajectoryMoveTool;
+    }
+
+    public void setTrajectoryMoveTool(TrajectoryMoveTool trajectoryMoveTool) {
+        this.trajectoryMoveTool = trajectoryMoveTool;
+    }
+
+    public ActiveRegionSelectTool getActiveRegionSelectTool() {
+        return activeRegionSelectTool;
+    }
+
+    public void setActiveRegionSelectTool(ActiveRegionSelectTool activeRegionSelectTool) {
+        this.activeRegionSelectTool = activeRegionSelectTool;
+    }
+
+    public PostNoteTool getPostNoteTool() {
+        return postNoteTool;
+    }
+
+    public void setPostNoteTool(PostNoteTool postNoteTool) {
+        this.postNoteTool = postNoteTool;
+    }
+
+    public Tool getTool() {
+        return tool;
+    }
+
+    public void setTool(Tool tool) {
+        this.tool = tool;
+    }
+
+    public ActiveRegionPopupListener getRegionPopupListener() {
+        return regionPopupListener;
+    }
+
+    public void setRegionPopupListener(ActiveRegionPopupListener regionPopupListener) {
+        this.regionPopupListener = regionPopupListener;
+    }
+
+    public ActiveRegionMenu getActiveRegionMenu() {
+        return activeRegionMenu;
+    }
+
+    public boolean isDragging() {
+        return dragging;
+    }
+
+    public void setDragging(boolean dragging) {
+        this.dragging = dragging;
+    }
+
+    public JPanel getCentralPanel() {
+        return centralPanel;
+    }
+
+    public FileDrop getFileDrop() {
+        return fileDrop;
+    }
+
+    public void setFileDrop(FileDrop fileDrop) {
+        this.fileDrop = fileDrop;
+    }
+
+    public void setInShiftMode(boolean inShiftMode) {
+        this.inShiftMode = inShiftMode;
+    }
+
+    public void setInCtrlMode(boolean inCtrlMode) {
+        this.inCtrlMode = inCtrlMode;
+    }
+
+    public JTabbedPane getTabsModes() {
+        return tabsModes;
+    }
+
+    public JTabbedPane getTabsLayers() {
+        return tabsLayers;
+    }
+
+    public SimplePagesNavigationPanel getControlPanel() {
+        return controlPanel;
+    }
+
+    public void setControlPanel(SimplePagesNavigationPanel controlPanel) {
+        this.controlPanel = controlPanel;
+    }
+
+    public JToolBar getNavigationToolbar() {
+        return navigationToolbar;
+    }
+
+    public void setNavigationToolbar(JToolBar navigationToolbar) {
+        this.navigationToolbar = navigationToolbar;
+    }
+
+    public PageRenderer getRenderer() {
+        return renderer;
+    }
+
+    public void setRenderer(PageRenderer renderer) {
+        this.renderer = renderer;
+    }
+
+    public ModeToolbar getModeToolbar() {
+        return modeToolbar;
+    }
+
+    public void setModeToolbar(ModeToolbar modeToolbar) {
+        this.modeToolbar = modeToolbar;
+    }
+
+    public PerspectivePanel getPerspectivePanel() {
+        return perspectivePanel;
+    }
+
+    public void setPerspectivePanel(PerspectivePanel perspectivePanel) {
+        this.perspectivePanel = perspectivePanel;
+    }
+
+    public PageVariablesPanel getPageVariablesPanel() {
+        return pageVariablesPanel;
+    }
+
+    public void setPageVariablesPanel(PageVariablesPanel pageVariablesPanel) {
+        this.pageVariablesPanel = pageVariablesPanel;
+    }
+
+    public SpreadsheetPanel getSpreadsheetPanel() {
+        return spreadsheetPanel;
+    }
+
+    public void setSpreadsheetPanel(SpreadsheetPanel spreadsheetPanel) {
+        this.spreadsheetPanel = spreadsheetPanel;
+    }
+
+    public PageDetailsPanel getPageDetailsPanel() {
+        return pageDetailsPanel;
+    }
+
+    public void setPageDetailsPanel(PageDetailsPanel pageDetailsPanel) {
+        this.pageDetailsPanel = pageDetailsPanel;
+    }
+
+    public ExtraEditorPanel getExtraEditorPanel() {
+        return extraEditorPanel;
+    }
+
+    public void setExtraEditorPanel(ExtraEditorPanel extraEditorPanel) {
+        this.extraEditorPanel = extraEditorPanel;
+    }
+
+    public JPanel getPanelNorthMode() {
+        return panelNorthMode;
+    }
+
+    public void setPanelNorthMode(JPanel panelNorthMode) {
+        this.panelNorthMode = panelNorthMode;
+    }
+
+    public ColorToolbar getColorToolbar() {
+        return colorToolbar;
+    }
+
+    public void setColorToolbar(ColorToolbar colorToolbar) {
+        this.colorToolbar = colorToolbar;
+    }
+
+    public ActiveRegionToolbar getActiveRegionToolbar() {
+        return activeRegionToolbar;
+    }
+
+    public void setActiveRegionToolbar(ActiveRegionToolbar activeRegionToolbar) {
+        this.activeRegionToolbar = activeRegionToolbar;
+    }
+
+    public FormulaToolbar getFormulaToolbar() {
+        return formulaToolbar;
+    }
+
+    public void setFormulaToolbar(FormulaToolbar formulaToolbar) {
+        this.formulaToolbar = formulaToolbar;
+    }
+
+    public SketchToolbar getSketchToolbar() {
+        return sketchToolbar;
+    }
+
+    public void setSketchToolbar(SketchToolbar sketchToolbar) {
+        this.sketchToolbar = sketchToolbar;
+    }
+
+    public JTabbedPane getTabsRight() {
+        return tabsRight;
+    }
+
+    public void setTabsRight(JTabbedPane tabsRight) {
+        this.tabsRight = tabsRight;
+    }
+
+    public JTabbedPane getTabsProgramming() {
+        return tabsProgramming;
+    }
+
+    public void setTabsProgramming(JTabbedPane tabsProgramming) {
+        this.tabsProgramming = tabsProgramming;
+    }
+
+    public TimersTablePanel getTimersTablePanel() {
+        return timersTablePanel;
+    }
+
+    public void setTimersTablePanel(TimersTablePanel timersTablePanel) {
+        this.timersTablePanel = timersTablePanel;
+    }
+
+    public MacrosTablePanel getMacrosTablePanel() {
+        return macrosTablePanel;
+    }
+
+    public void setMacrosTablePanel(MacrosTablePanel macrosTablePanel) {
+        this.macrosTablePanel = macrosTablePanel;
+    }
+
+    public JTabbedPane getTabsBrowser() {
+        return tabsBrowser;
+    }
+
+    public void setTabsBrowser(JTabbedPane tabsBrowser) {
+        this.tabsBrowser = tabsBrowser;
+    }
+
+    public JTabbedPane getTabsNavigator() {
+        return tabsNavigator;
+    }
+
+    public void setTabsNavigator(JTabbedPane tabsNavigator) {
+        this.tabsNavigator = tabsNavigator;
+    }
+
+    public boolean isTabsVisible() {
+        return tabsVisible;
+    }
+
+    public void setTabsVisible(boolean tabsVisible) {
+        this.tabsVisible = tabsVisible;
+    }
+
+    public double getScale() {
+        return scale;
+    }
+
+    public void setScale(double scale) {
+        this.scale = scale;
+    }
+
+    public double getOldScale() {
+        return oldScale;
+    }
+
+    public void setOldScale(double oldScale) {
+        this.oldScale = oldScale;
+    }
+
+    public int getOutlineType() {
+        return outlineType;
+    }
+
+    public void setOutlineType(int outlineType) {
+        this.outlineType = outlineType;
+    }
+
+    public JPanel getEditorPane() {
+        return editorPane;
+    }
+
+    public void setEditorPane(JPanel editorPane) {
+        this.editorPane = editorPane;
+    }
+
+    public JSplitPane getSplitPane() {
+        return splitPane;
+    }
+
+    public void setSplitPane(JSplitPane splitPane) {
+        this.splitPane = splitPane;
+    }
+
+    public SketchListPanel getSketchListPanel() {
+        return sketchListPanel;
+    }
+
+    public void setSketchListPanel(SketchListPanel sketchListPanel) {
+        this.sketchListPanel = sketchListPanel;
+    }
+
+    public JPanel getDrawingPanel() {
+        return drawingPanel;
+    }
+
+    public void setDrawingPanel(JPanel drawingPanel) {
+        this.drawingPanel = drawingPanel;
+    }
+
+    public JPanel getMainSketchPanel() {
+        return mainSketchPanel;
+    }
+
+    public void setMainSketchPanel(JPanel mainSketchPanel) {
+        this.mainSketchPanel = mainSketchPanel;
+    }
+
+    public PlaybackPanel getInternalPlaybackPanel() {
+        return internalPlaybackPanel;
+    }
+
+    public void setInternalPlaybackPanel(PlaybackPanel internalPlaybackPanel) {
+        this.internalPlaybackPanel = internalPlaybackPanel;
+    }
+
+    public JScrollPane getInternalPlaybackPanelScrollPane() {
+        return internalPlaybackPanelScrollPane;
+    }
+
+    public void setInternalPlaybackPanelScrollPane(JScrollPane internalPlaybackPanelScrollPane) {
+        this.internalPlaybackPanelScrollPane = internalPlaybackPanelScrollPane;
+    }
+
+    public boolean isExtraEditorPanelVisible() {
+        return extraEditorPanelVisible;
+    }
+
+    public void setExtraEditorPanelVisible(boolean extraEditorPanelVisible) {
+        this.extraEditorPanelVisible = extraEditorPanelVisible;
+    }
+
+    public Ruler getRulerHorizontal() {
+        return rulerHorizontal;
+    }
+
+    public void setRulerHorizontal(Ruler rulerHorizontal) {
+        this.rulerHorizontal = rulerHorizontal;
+    }
+
+    public Ruler getRulerVertical() {
+        return rulerVertical;
+    }
+
+    public void setRulerVertical(Ruler rulerVertical) {
+        this.rulerVertical = rulerVertical;
+    }
+
+    public JPanel getStatusPanel() {
+        return statusPanel;
+    }
+
+    public void setStatusPanel(JPanel statusPanel) {
+        this.statusPanel = statusPanel;
+    }
+
+    public HelpViewer getHelpViewer() {
+        return helpViewer;
+    }
+
+    public void setHelpViewer(HelpViewer helpViewer) {
+        this.helpViewer = helpViewer;
+    }
+
+    public JMenu getProfilesMenu() {
+        return profilesMenu;
+    }
+
+    public void setProfilesMenu(JMenu profilesMenu) {
+        this.profilesMenu = profilesMenu;
+    }
+
+    public boolean isbLoading() {
+        return bLoading;
+    }
+
+    public void setbLoading(boolean bLoading) {
+        this.bLoading = bLoading;
+    }
+
+    public Vector<Page> getNavigationHistory() {
+        return navigationHistory;
+    }
+
+    public void setNavigationHistory(Vector<Page> navigationHistory) {
+        this.navigationHistory = navigationHistory;
+    }
+
+    public boolean isbRepaint() {
+        return bRepaint;
+    }
+
+    public void setbRepaint(boolean bRepaint) {
+        this.bRepaint = bRepaint;
+    }
+
+    public void setWatering(float watering) {
+        this.watering = watering;
+    }
+
+    public void setStroke(Stroke stroke) {
+        this.stroke = stroke;
+    }
+
+    public JSplitPane getSpllitPane() {
+        return spllitPane;
+    }
+
+    public void setSpllitPane(JSplitPane spllitPane) {
+        this.spllitPane = spllitPane;
+    }
+
+    public JPanel getPanelModes() {
+        return panelModes;
+    }
+
+    public void setPanelModes(JPanel panelModes) {
+        this.panelModes = panelModes;
+    }
+
+    public List<UndoAction> getUndoRegionActions() {
+        return undoRegionActions;
+    }
+
+    public void setUndoRegionActions(List<UndoAction> undoRegionActions) {
+        this.undoRegionActions = undoRegionActions;
+    }
+
+    public SketchletEditorImagesHandler getSketchletImagesHandler() {
+        return sketchletImagesHandler;
+    }
+
+    public void setSketchletImagesHandler(SketchletEditorImagesHandler sketchletImagesHandler) {
+        this.sketchletImagesHandler = sketchletImagesHandler;
+    }
+
+    public SketchletEditorClipboardController getEditorClipboardController() {
+        return editorClipboardController;
+    }
+
+    public void setEditorClipboardController(SketchletEditorClipboardController editorClipboardController) {
+        this.editorClipboardController = editorClipboardController;
+    }
+
+    public int getStatusX() {
+        return statusX;
+    }
+
+    public void setStatusX(int statusX) {
+        this.statusX = statusX;
+    }
+
+    public int getStatusY() {
+        return statusY;
+    }
+
+    public void setStatusY(int statusY) {
+        this.statusY = statusY;
+    }
+
+    public JPanel getPanelDrawingPanel() {
+        return panelDrawingPanel;
+    }
+
+    public void setPanelDrawingPanel(JPanel panelDrawingPanel) {
+        this.panelDrawingPanel = panelDrawingPanel;
+    }
+
+    public boolean isObjectPanelVisible() {
+        return objectPanelVisible;
+    }
+
+    public void setObjectPanelVisible(boolean objectPanelVisible) {
+        this.objectPanelVisible = objectPanelVisible;
+    }
+
+    public JButton getHideButton() {
+        return hideButton;
+    }
+
+    public void setHideButton(JButton hideButton) {
+        this.hideButton = hideButton;
+    }
+
+    public boolean isPasting() {
+        return pasting;
+    }
+
+    public void setPasting(boolean pasting) {
+        this.pasting = pasting;
+    }
+
+    public SketchletEditorDragAndDropController getDragAndDropController() {
+        return dragAndDropController;
+    }
+
+    public void setDragAndDropController(SketchletEditorDragAndDropController dragAndDropController) {
+        this.dragAndDropController = dragAndDropController;
     }
 
     class NoteDesktopManager extends DefaultDesktopManager {
@@ -462,9 +1254,9 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
             int x = f.getX();
             int y = f.getY();
             if (f instanceof NoteDialog) {
-                ((NoteDialog) f).original_w = f.getWidth();
-                ((NoteDialog) f).original_h = f.getHeight();
-                ((NoteDialog) f).isMinimized = true;
+                ((NoteDialog) f).setOriginalWidth(f.getWidth());
+                ((NoteDialog) f).setOriginalHeight(f.getHeight());
+                ((NoteDialog) f).setMinimized(true);
             }
             f.setTitle("...");
             f.setBorder(BorderFactory.createCompoundBorder());
@@ -477,25 +1269,25 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
             f.setTitle("");
             f.setBorder(BorderFactory.createLineBorder(Color.BLUE, 2));
             if (f instanceof NoteDialog) {
-                ((NoteDialog) f).isMinimized = false;
-                f.setBounds(x, y, ((NoteDialog) f).original_w, ((NoteDialog) f).original_h);
+                ((NoteDialog) f).setMinimized(false);
+                f.setBounds(x, y, ((NoteDialog) f).getOriginalWidth(), ((NoteDialog) f).getOriginalHeight());
             }
         }
     }
 
     public void reloadPlay() {
         if (PlaybackFrame.playbackFrame != null) {
-            PlaybackFrame.play(this.pages, currentPage);
+            PlaybackFrame.play(this.getPages(), getCurrentPage());
         }
-        if (editorPanel != null && editorPanel.currentPage != null && editorPanel.internalPlaybackPanel != null) {
+        if (getInstance() != null && getInstance().getCurrentPage() != null && getInstance().getInternalPlaybackPanel() != null) {
             updateTables();
             save();
 
-            editorPanel.internalPlaybackPanel.showSketch(editorPanel.currentPage);
-            editorPanel.internalPlaybackPanel.revalidate();
+            getInstance().getInternalPlaybackPanel().showSketch(getInstance().getCurrentPage());
+            getInstance().getInternalPlaybackPanel().revalidate();
             RefreshTime.update();
-            editorPanel.internalPlaybackPanel.repaint();
-            editorPanel.internalPlaybackPanelScrollPane.revalidate();
+            getInstance().getInternalPlaybackPanel().repaint();
+            getInstance().getInternalPlaybackPanelScrollPane().revalidate();
         }
     }
 
@@ -509,59 +1301,59 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public void setTool(Tool tool, Component source) {
-        if (this.tool != null) {
-            this.tool.deactivate();
+        if (this.getTool() != null) {
+            this.getTool().deactivate();
         }
 
         ActivityLog.log("setTool", tool.getName(), tool.getIconFileName(), source);
 
-        editorPanel.tool = tool;
-        editorPanel.setCursor();
-        editorPanel.requestFocus();
+        getInstance().setTool(tool);
+        getInstance().setCursor();
+        getInstance().requestFocus();
 
         if (tool instanceof ActiveRegionSelectTool || tool instanceof ActiveRegionTool || tool instanceof ActiveRegionConnectorTool
                 || tool instanceof TrajectoryMoveTool || tool instanceof TrajectoryPenTool || tool instanceof TrajectoryPointsTool) {
-            editorPanel.activeRegionToolbar.toolChanged(tool);
+            getInstance().getActiveRegionToolbar().toolChanged(tool);
         } else {
-            editorPanel.colorToolbar.toolChanged(tool);
-            editorPanel.currentPage.regions.deselectRegions();
+            getInstance().getColorToolbar().toolChanged(tool);
+            getInstance().getCurrentPage().getRegions().deselectRegions();
         }
     }
 
     public int getSketchWidth() {
-        if (currentPage.images != null && currentPage.images[0] != null) {
-            return currentPage.images[0].getWidth();
+        if (getCurrentPage().getImages() != null && getCurrentPage().getImages()[0] != null) {
+            return getCurrentPage().getImages()[0].getWidth();
         } else {
             return getWidth();
         }
     }
 
     public int getSketchHeight() {
-        if (currentPage.images != null && currentPage.images[0] != null) {
-            return currentPage.images[0].getHeight();
+        if (getCurrentPage().getImages() != null && getCurrentPage().getImages()[0] != null) {
+            return getCurrentPage().getImages()[0].getHeight();
         } else {
             return getHeight();
         }
     }
 
     public void initSketches() {
-        if (this.pages == null) {
-            this.pages = new Pages();
+        if (this.getPages() == null) {
+            this.setPages(new Pages());
         }
 
-        if (this.pages.pages.size() > 0) {
-            masterPage = this.pages.getSketch("Master");
-            this.masterPage = this.pages.getSketch("Master");
+        if (this.getPages().getPages().size() > 0) {
+            setMasterPage(this.getPages().getSketch("Master"));
+            this.setMasterPage(this.getPages().getSketch("Master"));
             int index = DesktopPanel.selectedIndex;
-            if (index < 0 || index >= pages.pages.size()) {
+            if (index < 0 || index >= getPages().getPages().size()) {
                 index = 0;
             }
-            this.currentPage = this.pages.pages.elementAt(index);
-            editorFrame.setTitle(currentPage.title);
-            textArea.setText(currentPage.strTextAnnotation);
+            this.setCurrentPage(this.getPages().getPages().elementAt(index));
+            editorFrame.setTitle(getCurrentPage().getTitle());
+            textArea.setText(getCurrentPage().getTextAnnotation());
 
-            if (statePanel != null) {
-                statePanel.load();
+            if (getPageDetailsPanel() != null) {
+                getPageDetailsPanel().load();
             }
 
             reloadPlay();
@@ -574,24 +1366,24 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
         long t = System.currentTimeMillis();
         super.paintComponent(g);
 
-        if (renderer != null) {
+        if (getRenderer() != null) {
             calculateMargins();
-            renderer.draw(g, false, true, false);
-            if (marginX > 0 || marginY > 0) {
-                int w = SketchletEditor.editorPanel.scrollPane.getViewport().getWidth();
-                int h = SketchletEditor.editorPanel.scrollPane.getViewport().getHeight();
+            getRenderer().draw(g, false, true, false);
+            if (getMarginX() > 0 || getMarginY() > 0) {
+                int w = SketchletEditor.getInstance().scrollPane.getViewport().getWidth();
+                int h = SketchletEditor.getInstance().scrollPane.getViewport().getHeight();
 
                 g.setColor(new Color(192, 192, 192));
 
-                int x1 = (int) (marginX * SketchletEditor.editorPanel.scale);
-                int y1 = (int) (marginY * SketchletEditor.editorPanel.scale);
-                int x2 = (int) (w - marginX * SketchletEditor.editorPanel.scale);
-                int y2 = (int) (h - marginY * SketchletEditor.editorPanel.scale);
+                int x1 = (int) (getMarginX() * SketchletEditor.getInstance().getScale());
+                int y1 = (int) (getMarginY() * SketchletEditor.getInstance().getScale());
+                int x2 = (int) (w - getMarginX() * SketchletEditor.getInstance().getScale());
+                int y2 = (int) (h - getMarginY() * SketchletEditor.getInstance().getScale());
 
                 g.fillRect(0, 0, x1, h);
                 g.fillRect(x1, 0, x2 - x1, y1);
-                g.fillRect(x2, 0, marginX, h);
-                g.fillRect(x1, y2, x2 - x1, marginY);
+                g.fillRect(x2, 0, getMarginX(), h);
+                g.fillRect(x1, y2, x2 - x1, getMarginY());
 
                 int grays[] = new int[]{115, 146, 169, 184, 192};
 
@@ -608,57 +1400,57 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public void calculateMargins() {
-        final int w = SketchletEditor.editorPanel.scrollPane.getViewport().getWidth();
-        final int h = SketchletEditor.editorPanel.scrollPane.getViewport().getHeight();
+        final int w = SketchletEditor.getInstance().scrollPane.getViewport().getWidth();
+        final int h = SketchletEditor.getInstance().scrollPane.getViewport().getHeight();
 
-        int w2 = renderer.panel.getImage(0) != null ? renderer.panel.getImage(0).getWidth() : (int) InteractionSpace.sketchWidth;
-        int h2 = renderer.panel.getImage(0) != null ? renderer.panel.getImage(0).getHeight() : (int) InteractionSpace.sketchHeight;
+        int w2 = getRenderer().getPanelRenderer().getImage(0) != null ? getRenderer().getPanelRenderer().getImage(0).getWidth() : (int) InteractionSpace.getSketchWidth();
+        int h2 = getRenderer().getPanelRenderer().getImage(0) != null ? getRenderer().getPanelRenderer().getImage(0).getHeight() : (int) InteractionSpace.getSketchHeight();
 
-        if (w < w2 * SketchletEditor.editorPanel.scale) {
-            SketchletEditor.marginX = 0;
+        if (w < w2 * SketchletEditor.getInstance().getScale()) {
+            SketchletEditor.setMarginX(0);
         } else {
-            SketchletEditor.marginX = (int) ((w / SketchletEditor.editorPanel.scale - w2) / 2);
+            SketchletEditor.setMarginX((int) ((w / SketchletEditor.getInstance().getScale() - w2) / 2));
         }
 
-        if (h < h2 * SketchletEditor.editorPanel.scale) {
-            SketchletEditor.marginY = 0;
+        if (h < h2 * SketchletEditor.getInstance().getScale()) {
+            SketchletEditor.setMarginY(0);
         } else {
-            SketchletEditor.marginY = (int) ((h / SketchletEditor.editorPanel.scale - h2) / 2);
+            SketchletEditor.setMarginY((int) ((h / SketchletEditor.getInstance().getScale() - h2) / 2));
         }
     }
 
     public void extraDraw(Graphics2D g2) {
-        if (tool != null) {
-            tool.draw(g2);
+        if (getTool() != null) {
+            getTool().draw(g2);
         }
     }
 
     public Graphics2D createGraphics() {
-        if (g2FreeHandDraw != null) {
-            g2FreeHandDraw.dispose();
+        if (g2SketchletEditor != null) {
+            g2SketchletEditor.dispose();
         }
-        if (currentPage.images != null && layer >= 0) {
-            if (currentPage.images[layer] == null && currentPage.layerActive[layer]) {
+        if (getCurrentPage().getImages() != null && layer >= 0) {
+            if (getCurrentPage().getImages()[layer] == null && getCurrentPage().getLayerActive()[layer]) {
                 int w = Toolkit.getDefaultToolkit().getScreenSize().width;
                 int h = Toolkit.getDefaultToolkit().getScreenSize().height;
-                if (currentPage.images[0] != null) {
-                    w = currentPage.images[0].getWidth();
-                    h = currentPage.images[0].getHeight();
+                if (getCurrentPage().getImages()[0] != null) {
+                    w = getCurrentPage().getImages()[0].getWidth();
+                    h = getCurrentPage().getImages()[0].getHeight();
                 }
                 //renderer.initImage(layer);
-                if (currentPage.images[layer] == null) {
-                    this.updateImage(layer, Workspace.createCompatibleImage(w, h, currentPage.images[layer]));
+                if (getCurrentPage().getImages()[layer] == null) {
+                    this.updateImage(layer, Workspace.createCompatibleImage(w, h, getCurrentPage().getImages()[layer]));
                 }
-            } else if (currentPage.images[layer] == null) {
+            } else if (getCurrentPage().getImages()[layer] == null) {
                 return null;
             }
-            g2FreeHandDraw = currentPage.images[layer].createGraphics();
-            g2FreeHandDraw.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2SketchletEditor = getCurrentPage().getImages()[layer].createGraphics();
+            g2SketchletEditor.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         } else {
-            g2FreeHandDraw = null;
+            g2SketchletEditor = null;
         }
 
-        return g2FreeHandDraw;
+        return g2SketchletEditor;
     }
 
     public boolean skipKey = false;
@@ -671,12 +1463,12 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
                 skipKey = false;
                 return;
             }
-            if (tool != null) {
-                tool.onUndo();
+            if (getTool() != null) {
+                getTool().onUndo();
             }
 
-            while (this.undoRegionActions.size() > 0) {
-                UndoAction ua = (UndoAction) this.undoRegionActions.remove(this.undoRegionActions.size() - 1);
+            while (this.getUndoRegionActions().size() > 0) {
+                UndoAction ua = (UndoAction) this.getUndoRegionActions().remove(this.getUndoRegionActions().size() - 1);
 
                 if (ua instanceof SketchImageChangedUndoAction) {
                     this.saveImageRedo();
@@ -692,15 +1484,15 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
             if (ActiveRegionPanel.currentActiveRegionPanel != null) {
                 ActiveRegionPanel.currentActiveRegionPanel.refreshComponents();
             }
-            if (SketchletEditor.editorPanel.perspectivePanel != null) {
-                SketchletEditor.editorPanel.perspectivePanel.refresh();
+            if (SketchletEditor.getInstance().getPerspectivePanel() != null) {
+                SketchletEditor.getInstance().getPerspectivePanel().refresh();
             }
-            this.formulaToolbar.refresh();
+            this.getFormulaToolbar().refresh();
             enableControls();
             this.createGraphics();
 
-            if (tool != null) {
-                tool.activate();
+            if (getTool() != null) {
+                getTool().activate();
             }
         } finally {
             undoing = false;
@@ -708,65 +1500,65 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     protected void clearImageMemory() {
-        if (this.currentPage == null) {
+        if (this.getCurrentPage() == null) {
             return;
         }
-        if (currentPage.images != null) {
-            for (int i = 0; i < currentPage.images.length; i++) {
-                BufferedImage img = currentPage.images[i];
+        if (getCurrentPage().getImages() != null) {
+            for (int i = 0; i < getCurrentPage().getImages().length; i++) {
+                BufferedImage img = getCurrentPage().getImages()[i];
                 if (img != null) {
                     img.flush();
-                    currentPage.images[i] = null;
+                    getCurrentPage().getImages()[i] = null;
                 }
             }
         }
-        currentPage.flush();
+        getCurrentPage().flush();
     }
 
     protected void flush() {
-        if (this.currentPage == null) {
+        if (this.getCurrentPage() == null) {
             return;
         }
-        currentPage.flush();
+        getCurrentPage().flush();
     }
 
     protected void initImages() {
-        if (this.currentPage == null) {
+        if (this.getCurrentPage() == null) {
             return;
         }
-        currentPage.initRegionImages();
+        getCurrentPage().initRegionImages();
     }
 
     public void clearAll() {
         ComplexUndoAction ua = new ComplexUndoAction();
-        for (int i = 0; i < currentPage.images.length; i++) {
-            BufferedImage img = currentPage.images[i];
+        for (int i = 0; i < getCurrentPage().getImages().length; i++) {
+            BufferedImage img = getCurrentPage().getImages()[i];
             if (img != null) {
-                ua.add(new SketchImageChangedUndoAction(this.currentPage, img, i));
+                ua.add(new SketchImageChangedUndoAction(this.getCurrentPage(), img, i));
                 // currentSketch.redoRegionActions[i].removeAllElements();
-                this.sketchletImages.clearImage(i, false);
+                this.getSketchletImagesHandler().clearImage(i, false);
             }
         }
-        ua.add(new RegionsDeletedUndoAction(currentPage.regions.regions));
-        this.undoRegionActions.add(ua);
+        ua.add(new RegionsDeletedUndoAction(getCurrentPage().getRegions().getRegions()));
+        this.getUndoRegionActions().add(ua);
         checkUndo();
-        this.currentPage.regions.selectedRegions = null;
-        this.currentPage.regions.regions.removeAllElements();
+        this.getCurrentPage().getRegions().setSelectedRegions(null);
+        this.getCurrentPage().getRegions().getRegions().removeAllElements();
 
         enableControls();
         RefreshTime.update();
-        SketchletEditor.editorPanel.repaint();
+        SketchletEditor.getInstance().repaint();
     }
 
     public void clearAllImage() {
         saveImageUndo();
         this.clearImage();
         RefreshTime.update();
-        SketchletEditor.editorPanel.repaint();
+        SketchletEditor.getInstance().repaint();
     }
 
     protected void clearImage() {
-        this.sketchletImages.clearImage(layer, true);
+        this.getSketchletImagesHandler().clearImage(layer, true);
     }
 
     public boolean bSaving = false;
@@ -787,24 +1579,24 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public void save() {
-        if (bInPreviewMode || bSaving || !bGUIReady) {
+        if (bInPreviewMode || bSaving || !isbGUIReady()) {
             synchronized (lockSave) {
                 lockSave.notifyAll();
             }
             return;
         }
-        if (currentPage == null || pages.pages.indexOf(currentPage) < 0) {
+        if (getCurrentPage() == null || getPages().getPages().indexOf(getCurrentPage()) < 0) {
             synchronized (lockSave) {
                 lockSave.notifyAll();
             }
             return;
         }
 
-        if (this.tool != null) {
-            this.tool.deactivate();
+        if (this.getTool() != null) {
+            this.getTool().deactivate();
         }
-        if (ActiveRegionImageEditor.currentTool != null) {
-            ActiveRegionImageEditor.currentTool.deactivate();
+        if (ActiveRegionImageEditor.getCurrentTool() != null) {
+            ActiveRegionImageEditor.getCurrentTool().deactivate();
         }
 
         bSaving = true;
@@ -819,10 +1611,10 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
                         editorFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     }
 
-                    currentPage.strTextAnnotation = textArea.getText();
-                    currentPage.save((layer >= 0 && undoRegionActions.size() > 0));
+                    getCurrentPage().setTextAnnotation(textArea.getText());
+                    getCurrentPage().save((layer >= 0 && getUndoRegionActions().size() > 0));
 
-                    pages.saveSort();
+                    getPages().savePageSorting();
                     enableControls();
                 } catch (Throwable ex) {
                     ex.printStackTrace();
@@ -840,22 +1632,22 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public void saveImage() {
-        if (this.currentPage == null) {
+        if (this.getCurrentPage() == null) {
             return;
         }
         try {
             for (int i = 0; i < Page.NUMBER_OF_LAYERS; i++) {
-                if (this.currentPage.imageUpdated[i]) {
-                    File file = this.currentPage.getLayerImageFile(i);
+                if (this.getCurrentPage().getImageUpdated()[i]) {
+                    File file = this.getCurrentPage().getLayerImageFile(i);
                     if (file == null) {
                         if (i == 0) {
-                            file = new File(SketchletContextUtils.getCurrentProjectSkecthletsDir() + "Sketch_" + currentPage.getId() + ".png");
+                            file = new File(SketchletContextUtils.getCurrentProjectSkecthletsDir() + "Sketch_" + getCurrentPage().getId() + ".png");
                         } else {
-                            file = new File(SketchletContextUtils.getCurrentProjectSkecthletsDir() + "Sketch_" + currentPage.getId() + "_" + (i + 1) + ".png");
+                            file = new File(SketchletContextUtils.getCurrentProjectSkecthletsDir() + "Sketch_" + getCurrentPage().getId() + "_" + (i + 1) + ".png");
                         }
                     }
-                    ImageCache.write(currentPage.images[i], file);
-                    this.currentPage.imageUpdated[i] = false;
+                    ImageCache.write(getCurrentPage().getImages()[i], file);
+                    this.getCurrentPage().getImageUpdated()[i] = false;
                 }
             }
         } catch (IOException e) {
@@ -864,24 +1656,22 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public void openExternalEditor() {
-        if (this.currentPage == null) {
+        if (this.getCurrentPage() == null) {
             return;
         }
 
-        this.tool.deactivate();
+        this.getTool().deactivate();
         this.saveImageUndo();
 
-        this.currentPage.imageUpdated[layer] = true;
+        this.getCurrentPage().getImageUpdated()[layer] = true;
         save();
 
-        String strFile = currentPage.getLayerImageFile(layer).getPath();
+        String strFile = getCurrentPage().getLayerImageFile(layer).getPath();
         SketchletContextUtils.editImages("\"" + strFile + "\"", this, layer);
     }
 
-    boolean bPasting = false;
-
     public void newRegionFromImage(BufferedImage image, int x, int y) {
-        ActiveRegion a = new ActiveRegion(this.currentPage.regions);
+        ActiveRegion a = new ActiveRegion(this.getCurrentPage().getRegions());
 
         a.setDrawImageChanged(0, true);
 
@@ -893,11 +1683,11 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
 
         RefreshTime.update();
         repaint();
-        currentPage.regions.regions.insertElementAt(a, 0);
-        this.currentPage.regions.selectedRegions = new Vector<ActiveRegion>();
-        currentPage.regions.addToSelection(a);
-        if (this.tabsModes != null && tabsModes.getTabCount() > 0) {
-            this.tabsModes.setSelectedIndex(0);
+        getCurrentPage().getRegions().getRegions().insertElementAt(a, 0);
+        this.getCurrentPage().getRegions().setSelectedRegions(new Vector<ActiveRegion>());
+        getCurrentPage().getRegions().addToSelection(a);
+        if (this.getTabsModes() != null && getTabsModes().getTabCount() > 0) {
+            this.getTabsModes().setSelectedIndex(0);
         }
         ActiveRegionsFrame.reload(a);
         editorFrame.requestFocus();
@@ -907,7 +1697,7 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
         if (page == null) {
             return;
         }
-        int i = pages.pages.indexOf(page);
+        int i = getPages().getPages().indexOf(page);
 
         if (i >= 0) {
             this.openSketchByIndex(i);
@@ -915,27 +1705,27 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public void selectSketch(String strSketch) {
-        selectSketch(pages.getSketch(strSketch));
+        selectSketch(getPages().getSketch(strSketch));
     }
 
     public static boolean bInPreviewMode = false;
 
     public void preview(Page s) {
         ActiveRegionsFrame.closeRegionsAndActions();
-        setMode(EditorMode.SKETCHING);
-        masterPage = pages.getSketch("Master");
-        currentPage = s;
-        statePanel.load();
-        currentPage.activate(false);
-        editorFrame.setTitle(currentPage.title);
-        this.textArea.setText(currentPage.strTextAnnotation);
+        setEditorMode(SketchletEditorMode.SKETCHING);
+        setMasterPage(getPages().getSketch("Master"));
+        setCurrentPage(s);
+        getPageDetailsPanel().load();
+        getCurrentPage().activate(false);
+        editorFrame.setTitle(getCurrentPage().getTitle());
+        this.textArea.setText(getCurrentPage().getTextAnnotation());
         RefreshTime.update();
         repaint();
         reloadPlay();
     }
 
     public void refreshImage(int index) {
-        currentPage.initImage(index, true);
+        getCurrentPage().initImage(index, true);
         if (this.getLayer() == index) {
             this.createGraphics();
         }
@@ -949,24 +1739,24 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public void refresh() {
-        if (this.currentPage == null) {
+        if (this.getCurrentPage() == null) {
             return;
         }
 
-        renderer.initMasterImage();
-        ActiveRegionsFrame.showRegionsAndActions((mode == EditorMode.ACTIONS || mode == EditorMode.PREVIEW) && bExtraEditorPanelVisible);
-        editorFrame.setTitle(currentPage.title);
-        this.textArea.setText(currentPage.strTextAnnotation);
-        statePanel.load();
+        getRenderer().initMasterImage();
+        ActiveRegionsFrame.showRegionsAndActions((getMode() == SketchletEditorMode.ACTIONS || getMode() == SketchletEditorMode.PREVIEW) && isExtraEditorPanelVisible());
+        editorFrame.setTitle(getCurrentPage().getTitle());
+        this.textArea.setText(getCurrentPage().getTextAnnotation());
+        getPageDetailsPanel().load();
 
         revalidate();
         RefreshTime.update();
         repaint();
 
-        if (this.sketchListPanel != null && currentPage != null) {
-            this.sketchListPanel.model.fireTableDataChanged();
-            int index = editorPanel.pages.pages.indexOf(editorPanel.currentPage);
-            editorPanel.sketchListPanel.table.getSelectionModel().setSelectionInterval(index, index);
+        if (this.getSketchListPanel() != null && getCurrentPage() != null) {
+            this.getSketchListPanel().model.fireTableDataChanged();
+            int index = getInstance().getPages().getPages().indexOf(getInstance().getCurrentPage());
+            getInstance().getSketchListPanel().table.getSelectionModel().setSelectionInterval(index, index);
         }
 
         loadLayersTab();
@@ -974,72 +1764,72 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public void refreshPlayback() {
-        if (this.currentPage != null && this.internalPlaybackPanel != null) {
-            internalPlaybackPanel.currentPage.deactivate(true);
-            internalPlaybackPanel.currentPage.activate(true);
+        if (this.getCurrentPage() != null && this.getInternalPlaybackPanel() != null) {
+            getInternalPlaybackPanel().currentPage.deactivate(true);
+            getInternalPlaybackPanel().currentPage.activate(true);
             return;
         }
     }
 
     public void duplicate() {
-        if (currentPage == null) {
+        if (getCurrentPage() == null) {
             return;
         }
         saveAndWait();
         if (editorFrame != null) {
             editorFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         }
-        if (currentPage != null && controlPanel != null) {
-            navigationHistory.add(currentPage);
-            this.controlPanel.goBack.setEnabled(true);
+        if (getCurrentPage() != null && getControlPanel() != null) {
+            getNavigationHistory().add(getCurrentPage());
+            this.getControlPanel().goBack.setEnabled(true);
         }
-        if (editorPanel.tool != null) {
-            editorPanel.tool.deactivate();
+        if (getInstance().getTool() != null) {
+            getInstance().getTool().deactivate();
         }
-        BufferedImage tempImages[] = new BufferedImage[currentPage.images.length];
-        for (int i = 0; i < currentPage.images.length; i++) {
-            tempImages[i] = currentPage.images[i];
-            this.currentPage.imageUpdated[i] = currentPage.getLayerImageFile(i).exists();
+        BufferedImage tempImages[] = new BufferedImage[getCurrentPage().getImages().length];
+        for (int i = 0; i < getCurrentPage().getImages().length; i++) {
+            tempImages[i] = getCurrentPage().getImages()[i];
+            this.getCurrentPage().getImageUpdated()[i] = getCurrentPage().getLayerImageFile(i).exists();
         }
-        Page s = pages.addNewSketch();
-        s.regions = new ActiveRegions(currentPage.regions, s);
+        Page s = getPages().addNewSketch();
+        s.setRegions(new ActiveRegions(getCurrentPage().getRegions(), s));
         // s.title = "Duplicate: " + currentSketch.title;
-        s.strTextAnnotation = currentPage.strTextAnnotation;
+        s.setTextAnnotation(getCurrentPage().getTextAnnotation());
 
-        for (EventMacro eventMacro : currentPage.keyboardProcessor.keyboardEventMacros) {
-            s.keyboardProcessor.keyboardEventMacros.add(new KeyboardEventMacro(eventMacro));
+        for (EventMacro eventMacro : getCurrentPage().getKeyboardProcessor().getKeyboardEventMacros()) {
+            s.getKeyboardProcessor().getKeyboardEventMacros().add(new KeyboardEventMacro(eventMacro));
         }
-        for (EventMacro eventMacro : currentPage.variableUpdateEventMacros) {
-            s.variableUpdateEventMacros.add(new VariableUpdateEventMacro(eventMacro));
+        for (EventMacro eventMacro : getCurrentPage().getVariableUpdateEventMacros()) {
+            s.getVariableUpdateEventMacros().add(new VariableUpdateEventMacro(eventMacro));
         }
 
-        s.onEntryMacro = new Macro(currentPage.onEntryMacro);
-        s.onExitMacro = new Macro(currentPage.onExitMacro);
-        for (int i = 0; i < s.properties.length; i++) {
-            s.properties[i][1] = currentPage.properties[i][1];
+        s.setOnEntryMacro(new Macro(getCurrentPage().getOnEntryMacro()));
+        s.setOnExitMacro(new Macro(getCurrentPage().getOnExitMacro()));
+        for (int i = 0; i < s.getProperties().length; i++) {
+            s.getProperties()[i][1] = getCurrentPage().getProperties()[i][1];
         }
-        for (int i = 0; i < s.propertiesAnimation.length; i++) {
-            for (int j = 0; j < s.propertiesAnimation[i].length; j++) {
-                s.propertiesAnimation[i][j] = currentPage.propertiesAnimation[i][j];
+        for (int i = 0; i < s.getPropertiesAnimation().length; i++) {
+            for (int j = 0; j < s.getPropertiesAnimation()[i].length; j++) {
+                s.getPropertiesAnimation()[i][j] = getCurrentPage().getPropertiesAnimation()[i][j];
             }
         }
         for (int i = 0; i < s.getSpreadsheetData().length; i++) {
             for (int j = 0; j < s.getSpreadsheetData()[i].length; j++) {
-                s.updateSpreadsheetCell(i, j, currentPage.getSpreadsheetCellValue(i, j));
+                s.updateSpreadsheetCell(i, j, getCurrentPage().getSpreadsheetCellValue(i, j));
             }
         }
-        s.strSpreadsheetColumnWidths = currentPage.strSpreadsheetColumnWidths;
-        for (int i = 0; i < s.layerActive.length; i++) {
-            s.layerActive[i] = currentPage.layerActive[i];
+        s.setStrSpreadsheetColumnWidths(getCurrentPage().getStrSpreadsheetColumnWidths());
+        for (int i = 0; i < s.getLayerActive().length; i++) {
+            s.getLayerActive()[i] = getCurrentPage().getLayerActive()[i];
         }
 
-        currentPage.deactivate(false);
+        getCurrentPage().deactivate(false);
 
-        currentPage = s;
+        setCurrentPage(s);
 
-        currentPage.activate(false);
-        for (int i = 0; i < currentPage.images.length; i++) {
-            currentPage.images[i] = tempImages[i];
+        getCurrentPage().activate(false);
+        for (int i = 0; i < getCurrentPage().getImages().length; i++) {
+            getCurrentPage().getImages()[i] = tempImages[i];
         }
         if (editorFrame != null) {
             editorFrame.setCursor(Cursor.getDefaultCursor());
@@ -1051,43 +1841,43 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public Page newSketch() {
-        if (tool != null) {
-            tool.deactivate();
+        if (getTool() != null) {
+            getTool().deactivate();
         }
         saveAndWait();
-        Page s = pages.addNewSketch();
+        Page s = getPages().addNewSketch();
 
         String name = "";
         name = (String) JOptionPane.showInputDialog(SketchletEditor.editorFrame,
                 Language.translate("Page name:"), Language.translate("New Page"),
-                JOptionPane.QUESTION_MESSAGE, null, null, s.title);
-        while (name != null && pages.sketchNameExists(name, s)) {
+                JOptionPane.QUESTION_MESSAGE, null, null, s.getTitle());
+        while (name != null && getPages().sketchNameExists(name, s)) {
             JOptionPane.showMessageDialog(SketchletEditor.editorFrame, Language.translate("Page with name \"" + name + "\" already exists.\nEach page has to have a unique name."), Language.translate("Name Conflict"), JOptionPane.WARNING_MESSAGE);
             name = (String) JOptionPane.showInputDialog(SketchletEditor.editorFrame,
                     Language.translate("Page name:"), Language.translate("New Page"),
-                    JOptionPane.QUESTION_MESSAGE, null, null, s.title);
+                    JOptionPane.QUESTION_MESSAGE, null, null, s.getTitle());
         }
 
         if (name == null) {
-            pages.pages.remove(s);
+            getPages().getPages().remove(s);
             s.dispose();
             return null;
         } else {
-            s.title = name;
-            editorFrame.setTitle(s.title);
-            this.textArea.setText(s.strTextAnnotation);
+            s.setTitle(name);
+            editorFrame.setTitle(s.getTitle());
+            this.textArea.setText(s.getTextAnnotation());
 
-            if (currentPage != null) {
-                currentPage.deactivate(false);
+            if (getCurrentPage() != null) {
+                getCurrentPage().deactivate(false);
             }
-            masterPage = pages.getSketch("Master");
-            currentPage = s;
+            setMasterPage(getPages().getSketch("Master"));
+            setCurrentPage(s);
             this.initImages();
-            if (currentPage != null) {
-                currentPage.activate(false);
+            if (getCurrentPage() != null) {
+                getCurrentPage().activate(false);
             }
 
-            GlobalProperties.setAndSave("last-sketch-index", "" + (pages.pages.size() - 1));
+            GlobalProperties.setAndSave("last-sketch-index", "" + (getPages().getPages().size() - 1));
 
             saveAndWait();
             refresh();
@@ -1099,12 +1889,11 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public void resize() {
-        if (currentPage == null) {
+        if (getCurrentPage() == null) {
             return;
         }
         try {
-            TutorialPanel.addLine("cmd", "Resize the page image");
-            new ResizeDialog(this.editorFrame, "Resize Page", editorPanel);
+            new ResizeDialog(this.editorFrame, "Resize Page", getInstance());
         } catch (Throwable e) {
             log.error(e);
         }
@@ -1115,13 +1904,13 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public void delete(Component component) {
-        if (currentPage == null) {
+        if (getCurrentPage() == null) {
             return;
         }
         try {
             Object[] options = {"Delete", "Cancel"};
             int n = JOptionPane.showOptionDialog(component,
-                    "You are about to delete '" + currentPage.title + "'",
+                    "You are about to delete '" + getCurrentPage().getTitle() + "'",
                     "Delete Sketch Confirmation",
                     JOptionPane.YES_NO_CANCEL_OPTION,
                     JOptionPane.WARNING_MESSAGE,
@@ -1133,21 +1922,21 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
                 return;
             }
 
-            int i = this.pages.pages.indexOf(currentPage);
-            currentPage.delete();
+            int i = this.getPages().getPages().indexOf(getCurrentPage());
+            getCurrentPage().delete();
 
-            this.pages.pages.remove(currentPage);
+            this.getPages().getPages().remove(getCurrentPage());
             //tabs.remove(i);
 
-            masterPage = pages.getSketch("Master");
-            if (this.pages.pages.size() == 0) {
-                currentPage = null;
+            setMasterPage(getPages().getSketch("Master"));
+            if (this.getPages().getPages().size() == 0) {
+                setCurrentPage(null);
             } else {
-                int index = i + 1 > this.pages.pages.size() ? this.pages.pages.size() - 1 : i;
-                masterPage = this.pages.getSketch("Master");
-                currentPage = this.pages.pages.elementAt(index);
+                int index = i + 1 > this.getPages().getPages().size() ? this.getPages().getPages().size() - 1 : i;
+                setMasterPage(this.getPages().getSketch("Master"));
+                setCurrentPage(this.getPages().getPages().elementAt(index));
                 this.initImages();
-                currentPage.activate(false);
+                getCurrentPage().activate(false);
                 reloadPlay();
             }
             refresh();
@@ -1165,17 +1954,17 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
 
     public void play() {
         saveAndWait();
-        if (SketchletEditor.editorPanel.tool != null) {
-            SketchletEditor.editorPanel.tool.deactivate();
+        if (SketchletEditor.getInstance().getTool() != null) {
+            SketchletEditor.getInstance().getTool().deactivate();
         }
-        SketchletEditor.editorPanel.oldScale = SketchletEditor.editorPanel.scale;
+        SketchletEditor.getInstance().setOldScale(SketchletEditor.getInstance().getScale());
         SketchToolbar.animateZoom = false;
-        SketchletEditor.editorPanel.sketchToolbar.zoomBox.setSelectedItem("100%");
+        SketchletEditor.getInstance().getSketchToolbar().zoomBox.setSelectedItem("100%");
         SketchToolbar.animateZoom = true;
-        SketchletEditor.editorPanel.scale = PlaybackPanel.scale;
+        SketchletEditor.getInstance().setScale(PlaybackPanel.scale);
 
-        editorPanel.clearImageMemory();
-        if (ImageCache.images == null) {
+        getInstance().clearImageMemory();
+        if (ImageCache.getImages() == null) {
             PlaybackFrame.clearImagesOnClose = true;
             ImageCache.load();
         }
@@ -1204,24 +1993,24 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
             this.editorFrame.setState(Frame.ICONIFIED);
         }
 
-        PlaybackFrame.play(this.pages, currentPage);
+        PlaybackFrame.play(this.getPages(), getCurrentPage());
         if (PlaybackFrame.playbackFrame.length > 0 && PlaybackFrame.playbackFrame[0] != null) {
             PlaybackFrame.playbackFrame[0].playbackPanel.requestFocus();
         }
     }
 
     public JScrollPane playInternal() {
-        if (SketchletEditor.editorPanel.tool != null) {
-            SketchletEditor.editorPanel.tool.deactivate();
+        if (SketchletEditor.getInstance().getTool() != null) {
+            SketchletEditor.getInstance().getTool().deactivate();
         }
-        SketchletEditor.editorPanel.oldScale = SketchletEditor.editorPanel.scale;
+        SketchletEditor.getInstance().setOldScale(SketchletEditor.getInstance().getScale());
         SketchToolbar.animateZoom = false;
-        SketchletEditor.editorPanel.sketchToolbar.zoomBox.setSelectedItem("100%");
+        SketchletEditor.getInstance().getSketchToolbar().zoomBox.setSelectedItem("100%");
         SketchToolbar.animateZoom = true;
-        SketchletEditor.editorPanel.scale = PlaybackPanel.scale;
+        SketchletEditor.getInstance().setScale(PlaybackPanel.scale);
 
         updateTables();
-        extraEditorPanel.save();
+        getExtraEditorPanel().save();
         saveAndWait();
 
         if (InteractionSpaceFrame.frame != null) {
@@ -1229,150 +2018,148 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
             InteractionSpaceFrame.frame.setState(Frame.ICONIFIED);
         }
 
-        internalPlaybackPanel = new PlaybackPanel(null, pages, null);
-        internalPlaybackPanelScrollPane = new JScrollPane(internalPlaybackPanel);
-        internalPlaybackPanelScrollPane.setFocusable(false);
-        if (currentPage.images != null && currentPage.images[0] != null) {
-            internalPlaybackPanel.setPreferredSize(new Dimension(currentPage.images[0].getWidth(), currentPage.images[0].getHeight()));
+        setInternalPlaybackPanel(new PlaybackPanel(null, getPages(), null));
+        setInternalPlaybackPanelScrollPane(new JScrollPane(getInternalPlaybackPanel()));
+        getInternalPlaybackPanelScrollPane().setFocusable(false);
+        if (getCurrentPage().getImages() != null && getCurrentPage().getImages()[0] != null) {
+            getInternalPlaybackPanel().setPreferredSize(new Dimension(getCurrentPage().getImages()[0].getWidth(), getCurrentPage().getImages()[0].getHeight()));
         } else {
-            int w = (int) InteractionSpace.sketchWidth;
-            int h = (int) InteractionSpace.sketchHeight;
-            internalPlaybackPanel.setPreferredSize(new Dimension(w, h));
+            int w = (int) InteractionSpace.getSketchWidth();
+            int h = (int) InteractionSpace.getSketchHeight();
+            getInternalPlaybackPanel().setPreferredSize(new Dimension(w, h));
         }
 
-        this.currentPage.deactivate(false);
-        if (masterPage != null) {
-            masterPage.deactivate(false);
+        this.getCurrentPage().deactivate(false);
+        if (getMasterPage() != null) {
+            getMasterPage().deactivate(false);
         }
-        internalPlaybackPanel.showSketch(this.currentPage);
+        getInternalPlaybackPanel().showSketch(this.getCurrentPage());
 
-        return internalPlaybackPanelScrollPane;
+        return getInternalPlaybackPanelScrollPane();
     }
     // JLabel label = new JLabel(Workspace.createImageIcon("resources/sketching.png"));
 
     public void zoomToWindow() {
         try {
-            final int w = SketchletEditor.editorPanel.scrollPane.getViewport().getWidth();
-            final int h = SketchletEditor.editorPanel.scrollPane.getViewport().getHeight();
+            final int w = SketchletEditor.getInstance().scrollPane.getViewport().getWidth();
+            final int h = SketchletEditor.getInstance().scrollPane.getViewport().getHeight();
             int w2 = 0;
             int h2 = 0;
-            if (currentPage.images[0] != null) {
-                w2 = currentPage.images[0].getWidth();
-                h2 = currentPage.images[0].getHeight();
+            if (getCurrentPage().getImages()[0] != null) {
+                w2 = getCurrentPage().getImages()[0].getWidth();
+                h2 = getCurrentPage().getImages()[0].getHeight();
             } else {
-                w2 = (int) InteractionSpace.sketchWidth;
-                h2 = (int) InteractionSpace.sketchHeight;
+                w2 = (int) InteractionSpace.getSketchWidth();
+                h2 = (int) InteractionSpace.getSketchHeight();
             }
             double _zoom = Math.min((double) w / w2, (double) h / h2) - 0.02;
-            SketchletEditor.editorPanel.sketchToolbar.zoomBox.setSelectedItem("" + (int) (_zoom * 100) + "%");
+            SketchletEditor.getInstance().getSketchToolbar().zoomBox.setSelectedItem("" + (int) (_zoom * 100) + "%");
         } catch (Exception e) {
         }
     }
 
-    public void setMode(EditorMode m) {
-        setMode(m, layer);
+    public void setEditorMode(SketchletEditorMode m) {
+        setEditorMode(m, layer);
     }
 
-    public void setMode(EditorMode m, int _layer) {
-        if (editorPanel.tool != null) {
-            editorPanel.tool.deactivate();
+    public void setMode(SketchletEditorMode m) {
+        mode = m;
+    }
+
+    public void setEditorMode(SketchletEditorMode m, int _layer) {
+        if (getInstance().getTool() != null) {
+            getInstance().getTool().deactivate();
         }
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
         boolean shouldActivate = false;
-        if (editorPanel.currentPage != null && editorPanel.internalPlaybackPanel != null) {
+        if (getInstance().getCurrentPage() != null && getInstance().getInternalPlaybackPanel() != null) {
             shouldActivate = true;
-            editorPanel.currentPage.deactivate(true);
-            editorPanel.drawingPanel.remove(editorPanel.internalPlaybackPanelScrollPane);
-            DataServer.variablesServer.removeVariablesUpdateListener(editorPanel.internalPlaybackPanel);
-            if (editorPanel.internalPlaybackPanel != null) {
-                editorPanel.internalPlaybackPanel.dispose();
-                editorPanel.masterPage = editorPanel.pages.getSketch("Master");
-                editorPanel.internalPlaybackPanel = null;
-                //System.gc();
-                //System.runFinalization();
+            getInstance().getCurrentPage().deactivate(true);
+            getInstance().getDrawingPanel().remove(getInstance().getInternalPlaybackPanelScrollPane());
+            DataServer.getInstance().removeVariablesUpdateListener(getInstance().getInternalPlaybackPanel());
+            if (getInstance().getInternalPlaybackPanel() != null) {
+                getInstance().getInternalPlaybackPanel().dispose();
+                getInstance().setMasterPage(getInstance().getPages().getSketch("Master"));
+                getInstance().setInternalPlaybackPanel(null);
             }
-            mode = EditorMode.UNDEFINED;
+            setMode(SketchletEditorMode.UNDEFINED);
         }
 
-        if (mode != m) {
+        if (getMode() != m) {
             ActivityLog.log("setMode", "" + m);
         }
 
-        if (m == EditorMode.SKETCHING) {
-            if (mode != EditorMode.SKETCHING || _layer != layer) {
+        if (m == SketchletEditorMode.SKETCHING) {
+            if (getMode() != SketchletEditorMode.SKETCHING || _layer != layer) {
                 if (shouldActivate) {
-                    editorPanel.currentPage.activate(false);
+                    getInstance().getCurrentPage().activate(false);
                 }
 
-                mode = EditorMode.SKETCHING;
+                setMode(SketchletEditorMode.SKETCHING);
                 SketchletEditor.statusBar.setText("Sketching mode");
                 ActiveRegionsFrame.showRegionsAndActions(false);
-                setTool(penTool, null);
-                // layer = _layer;
+                setTool(getPenTool(), null);
                 setCursor();
                 enableControls();
                 createGraphics();
 
-                editorPanel.drawingPanel.add(editorPanel.mainSketchPanel);
-                SketchletEditor.editorPanel.formulaToolbar.refresh();
-                editorPanel.mainSketchPanel.remove(activeRegionToolbar);
-                editorPanel.mainSketchPanel.add(colorToolbar, BorderLayout.SOUTH);
-                editorPanel.drawingPanel.revalidate();
+                getInstance().getDrawingPanel().add(getInstance().getMainSketchPanel());
+                SketchletEditor.getInstance().getFormulaToolbar().refresh();
+                getInstance().getMainSketchPanel().remove(getActiveRegionToolbar());
+                getInstance().getMainSketchPanel().add(getColorToolbar(), BorderLayout.SOUTH);
+                getInstance().getDrawingPanel().revalidate();
                 editorFrame.repaint();
             }
-        } else if (m == EditorMode.ACTIONS) {
-            if (mode != EditorMode.ACTIONS || _layer != layer) {
+        } else if (m == SketchletEditorMode.ACTIONS) {
+            if (getMode() != SketchletEditorMode.ACTIONS || _layer != layer) {
                 if (shouldActivate) {
-                    editorPanel.currentPage.activate(false);
+                    getInstance().getCurrentPage().activate(false);
                 }
-                mode = EditorMode.ACTIONS;
-                currentPage.regions.refreshFromVariables();
+                setMode(SketchletEditorMode.ACTIONS);
+                getCurrentPage().getRegions().refreshFromVariables();
 
                 if (Profiles.isActive("active_regions_layer")) {
-                    setTool(activeRegionSelectTool, null);
+                    setTool(getActiveRegionSelectTool(), null);
                 } else {
-                    setTool(penTool, null);
+                    setTool(getPenTool(), null);
                 }
                 requestFocus();
                 setCursor();
                 enableControls();
-                editorPanel.drawingPanel.add(editorPanel.mainSketchPanel);
-                SketchletEditor.editorPanel.formulaToolbar.refresh();
-                editorPanel.mainSketchPanel.remove(colorToolbar);
-                editorPanel.mainSketchPanel.add(activeRegionToolbar, BorderLayout.SOUTH);
-                editorPanel.drawingPanel.revalidate();
+                getInstance().getDrawingPanel().add(getInstance().getMainSketchPanel());
+                SketchletEditor.getInstance().getFormulaToolbar().refresh();
+                getInstance().getMainSketchPanel().remove(getColorToolbar());
+                getInstance().getMainSketchPanel().add(getActiveRegionToolbar(), BorderLayout.SOUTH);
+                getInstance().getDrawingPanel().revalidate();
                 editorFrame.repaint();
             }
-        } else if (m == EditorMode.PREVIEW) {
-            //layer = 0;
+        } else if (m == SketchletEditorMode.PREVIEW) {
             saveAndWait();
-            editorPanel.drawingPanel.remove(editorPanel.mainSketchPanel);
-            editorPanel.clearImageMemory();
-            JScrollPane sp = editorPanel.playInternal();
-            //sp.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-            editorPanel.drawingPanel.add(sp);
-            editorPanel.drawingPanel.revalidate();
+            getInstance().getDrawingPanel().remove(getInstance().getMainSketchPanel());
+            getInstance().clearImageMemory();
+            JScrollPane sp = getInstance().playInternal();
+            getInstance().getDrawingPanel().add(sp);
+            getInstance().getDrawingPanel().revalidate();
             editorFrame.repaint();
         }
 
-        modeToolbar.addComponents(m);
-        editorPanel.revalidate();
+        getModeToolbar().addComponents(m);
+        getInstance().revalidate();
         RefreshTime.update();
 
-        editorPanel.repaint();
-        editorPanel.enableControls();
-        //freeHandFrame.toFront();
+        getInstance().repaint();
+        getInstance().enableControls();
         editorFrame.setVisible(true);
         requestFocus();
         this.setCursor();
     }
 
-    static Cursor currentCursor = null;
+    private static Cursor currentCursor = null;
 
     public void setCursor() {
-        if (tool != null && currentPage.isLayerActive(layer)) {
-            currentCursor = tool.getCursor();
+        if (getTool() != null && getCurrentPage().isLayerActive(layer)) {
+            currentCursor = getTool().getCursor();
             setCursor(currentCursor);
         } else {
             setCursor(null);
@@ -1380,8 +2167,8 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public void resetScale() {
-        if (SketchletEditor.editorPanel.oldScale != 0.0) {
-            SketchletEditor.editorPanel.sketchToolbar.zoomBox.setSelectedItem((int) (SketchletEditor.editorPanel.oldScale * 100) + "%");
+        if (SketchletEditor.getInstance().getOldScale() != 0.0) {
+            SketchletEditor.getInstance().getSketchToolbar().zoomBox.setSelectedItem((int) (SketchletEditor.getInstance().getOldScale() * 100) + "%");
         }
     }
 
@@ -1389,17 +2176,17 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public void setAsMaster() {
-        setTool(activeRegionSelectTool, null);
+        setTool(getActiveRegionSelectTool(), null);
 
         int i = 0;
-        for (Page s : SketchletEditor.editorPanel.pages.pages) {
-            if (s.title.equalsIgnoreCase("master")) {
-                s.title += " (old)";
+        for (Page s : SketchletEditor.getInstance().getPages().getPages()) {
+            if (s.getTitle().equalsIgnoreCase("master")) {
+                s.setTitle(s.getTitle() + " (old)");
                 s.save(false);
             }
             i++;
         }
-        this.currentPage.title = "master";
+        this.getCurrentPage().setTitle("master");
         editorFrame.setTitle("master");
         this.save();
     }
@@ -1409,9 +2196,9 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
         printer.setActionBeforePrinting(new Runnable() {
 
             public void run() {
-                BufferedImage img = Workspace.createCompatibleImage(currentPage.images[0].getWidth(), currentPage.images[0].getHeight());
+                BufferedImage img = Workspace.createCompatibleImage(getCurrentPage().getImages()[0].getWidth(), getCurrentPage().getImages()[0].getHeight());
                 Graphics2D g2i = img.createGraphics();
-                renderer.draw(g2i, SketchletEditor.editorPanel.tabsModes.getSelectedIndex() != 0, true, false);
+                getRenderer().draw(g2i, SketchletEditor.getInstance().getTabsModes().getSelectedIndex() != 0, true, false);
                 g2i.dispose();
                 printer.setImages(img);
             }
@@ -1467,7 +2254,7 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public void saveSketchAsImage() {
-        File file = selectImageFile(this.currentPage.getTitle());
+        File file = selectImageFile(this.getCurrentPage().getTitle());
         if (file != null) {
             try {
                 if (!file.getName().contains(".")) {
@@ -1475,13 +2262,13 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
                 }
                 int n = file.getName().indexOf(".");
                 String extension = file.getName().substring(n + 1);
-                int w = currentPage.images[0].getWidth();
-                int h = currentPage.images[0].getHeight();
+                int w = getCurrentPage().getImages()[0].getWidth();
+                int h = getCurrentPage().getImages()[0].getHeight();
                 BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
                 Graphics2D g2i = img.createGraphics();
                 g2i.setColor(Color.WHITE);
                 g2i.fillRect(0, 0, w, h);
-                renderer.draw(g2i, SketchletEditor.editorPanel.tabsModes.getSelectedIndex() != 0, true, false);
+                getRenderer().draw(g2i, SketchletEditor.getInstance().getTabsModes().getSelectedIndex() != 0, true, false);
                 g2i.dispose();
                 ImageIO.write(img, extension, file);
                 JOptionPane.showMessageDialog(this, "The image has been saved.");
@@ -1492,15 +2279,15 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public void selectAll() {
-        if (this.tabsModes.getSelectedIndex() == 0) {
-            if (tool instanceof ActiveRegionSelectTool || tool instanceof ActiveRegionTool) {
+        if (this.getTabsModes().getSelectedIndex() == 0) {
+            if (getTool() instanceof ActiveRegionSelectTool || getTool() instanceof ActiveRegionTool) {
                 selectAllRegions();
             } else {
-                setTool(this.selectTool, null);
-                this.selectTool.x1 = 0;
-                this.selectTool.y1 = 0;
-                this.selectTool.x2 = this.getWidth();
-                this.selectTool.y2 = this.getHeight();
+                setTool(this.getSelectTool(), null);
+                this.getSelectTool().setX1(0);
+                this.getSelectTool().setY1(0);
+                this.getSelectTool().setX2(this.getWidth());
+                this.getSelectTool().setY2(this.getHeight());
             }
         }
 
@@ -1509,7 +2296,7 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public void importSketches() {
-        setTool(activeRegionSelectTool, null);
+        setTool(getActiveRegionSelectTool(), null);
         fc.setDialogTitle("Select Project Folder");
         fc.setCurrentDirectory(new File(SketchletContextUtils.getDefaultProjectsRootLocation()));
         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -1524,7 +2311,7 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
 
             for (int i = 0; i < data.length; i++) {
                 data[i][0] = new Boolean(true);
-                data[i][1] = importedPages.elementAt(i).title;
+                data[i][1] = importedPages.elementAt(i).getTitle();
             }
 
             final String columnNames[] = new String[]{"Import", "Page title"};
@@ -1577,13 +2364,13 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
                     int i = 0;
                     for (Page s : importedPages) {
                         if (((Boolean) data[i++][0]).booleanValue()) {
-                            pages.pages.add(s);
+                            getPages().getPages().add(s);
                             JPanel pane = new JPanel();
                             pane.setPreferredSize(new Dimension(10, 10));
                             //tabs.add(pane, s.title);
 
                             FileUtils.restore(SketchletContextUtils.getCurrentProjectSkecthletsDir(), strDir, null, false, s.getId().substring(1));
-                            for (ActiveRegion a : s.regions.regions) {
+                            for (ActiveRegion a : s.getRegions().getRegions()) {
                                 a.getDrawImagePath(0);
                                 FileUtils.copyFile(new File(strDir + a.getDrawImagePath(0)), new File(SketchletContextUtils.getCurrentProjectSkecthletsDir() + a.getDrawImagePath(0)));
 
@@ -1594,7 +2381,7 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
                             }
                         }
                     }
-                    SketchletEditor.editorPanel.refresh();
+                    SketchletEditor.getInstance().refresh();
                     dlg.setVisible(false);
                 }
             });
@@ -1631,17 +2418,17 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public void enableControls() {
-        if (sketchToolbar != null) {
-            sketchToolbar.enableControls();
+        if (getSketchToolbar() != null) {
+            getSketchToolbar().enableControls();
         }
-        if (modeToolbar != null) {
-            modeToolbar.enableControls();
+        if (getModeToolbar() != null) {
+            getModeToolbar().enableControls();
         }
     }
 
     public void moveLeft() {
-        setTool(activeRegionSelectTool, null);
-        int index = pages.pages.indexOf(currentPage);
+        setTool(getActiveRegionSelectTool(), null);
+        int index = getPages().getPages().indexOf(getCurrentPage());
 
         if (index > 0) {
             //String title1 = tabs.getTitleAt(index);
@@ -1649,24 +2436,24 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
             //tabs.setTitleAt(index, title2);
             //tabs.setTitleAt(index - 1, title1);
 
-            Page s = pages.pages.remove(index);
-            pages.pages.insertElementAt(s, index - 1);
-            SketchletEditor.editorPanel.openSketchByIndex(index - 1);
-            editorPanel.refresh();
+            Page s = getPages().getPages().remove(index);
+            getPages().getPages().insertElementAt(s, index - 1);
+            SketchletEditor.getInstance().openSketchByIndex(index - 1);
+            getInstance().refresh();
             //tabs.setSelectedIndex(index - 1);
         }
     }
 
     public void moveRight() {
-        setTool(activeRegionSelectTool, null);
-        int index = pages.pages.indexOf(currentPage);
+        setTool(getActiveRegionSelectTool(), null);
+        int index = getPages().getPages().indexOf(getCurrentPage());
 
-        if (index >= 0 && index < pages.pages.size() - 1) {
-            Page s = pages.pages.remove(index);
-            pages.pages.insertElementAt(s, index + 1);
+        if (index >= 0 && index < getPages().getPages().size() - 1) {
+            Page s = getPages().getPages().remove(index);
+            getPages().getPages().insertElementAt(s, index + 1);
 
-            SketchletEditor.editorPanel.openSketchByIndex(index + 1);
-            editorPanel.refresh();
+            SketchletEditor.getInstance().openSketchByIndex(index + 1);
+            getInstance().refresh();
         }
     }
 
@@ -1675,25 +2462,25 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public Dimension getPreferredSize() {
-        double _scale = scale; // > 1.0 ? scale : 1.0;
+        double _scale = getScale(); // > 1.0 ? scale : 1.0;
         int w = 0;
         int h = 0;
-        if (currentPage.images != null && currentPage.images[0] != null) {
-            w = currentPage.images[0].getWidth();
-            h = currentPage.images[0].getHeight();
-        } else if (currentPage.pageWidth > 0 && currentPage.pageHeight > 0) {
-            w = currentPage.pageWidth;
-            h = currentPage.pageHeight;
+        if (getCurrentPage().getImages() != null && getCurrentPage().getImages()[0] != null) {
+            w = getCurrentPage().getImages()[0].getWidth();
+            h = getCurrentPage().getImages()[0].getHeight();
+        } else if (getCurrentPage().getPageWidth() > 0 && getCurrentPage().getPageHeight() > 0) {
+            w = getCurrentPage().getPageWidth();
+            h = getCurrentPage().getPageHeight();
         } else {
-            w = (int) InteractionSpace.sketchWidth;
-            h = (int) InteractionSpace.sketchHeight;
+            w = (int) InteractionSpace.getSketchWidth();
+            h = (int) InteractionSpace.getSketchHeight();
         }
 
-        currentPage.pageWidth = w;
-        currentPage.pageHeight = h;
+        getCurrentPage().setPageWidth(w);
+        getCurrentPage().setPageHeight(h);
 
-        w += marginX * 2;
-        h += marginY * 2;
+        w += getMarginX() * 2;
+        h += getMarginY() * 2;
 
         return new Dimension((int) (w * _scale), (int) (h * _scale));
     }
@@ -1707,7 +2494,7 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public boolean isLayerActive(int l) {
-        return SketchletEditor.editorPanel.currentPage.layerActive[l];
+        return SketchletEditor.getInstance().getCurrentPage().getLayerActive()[l];
     }
 
     boolean bClosing = false;
@@ -1717,23 +2504,23 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public static boolean close(boolean bMsg) {
-        if (editorPanel == null || editorPanel.bClosing) {
+        if (getInstance() == null || getInstance().bClosing) {
             return true;
         }
-        editorPanel.bClosing = true;
-        if (editorPanel.mediaWatcher != null) {
-            editorPanel.mediaWatcher.stop();
+        getInstance().bClosing = true;
+        if (getInstance().mediaWatcher != null) {
+            getInstance().mediaWatcher.stop();
         }
-        if (undockStateFrame != null) {
-            undockStateFrame.setVisible(false);
-            bStatePanelUndocked = false;
-            editorPanel.bShowStatePanel = false;
+        if (getUndockStateFrame() != null) {
+            getUndockStateFrame().setVisible(false);
+            setbStatePanelUndocked(false);
+            getInstance().setPagePanelShown(false);
         }
 
         if (undockFrame != null) {
             undockFrame.setVisible(false);
             bUndocked = false;
-            editorPanel.bExtraEditorPanelVisible = false;
+            getInstance().setExtraEditorPanelVisible(false);
         }
 
         int nOption = -1;
@@ -1758,50 +2545,50 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
         }
         try {
             GlobalProperties.save();
-            if (editorPanel != null) {
+            if (getInstance() != null) {
                 ActivityLog.save();
-                HelpUtils.helpInterface = null;
-                editorPanel.bDisposed = true;
+                HelpUtils.setHelpInterface(null);
+                getInstance().bDisposed = true;
                 if (nOption == 0) {
-                    editorPanel.saveAndWait();
-                    Timers.globalTimers.save();
+                    getInstance().saveAndWait();
+                    Timers.getGlobalTimers().save();
                     Macros.globalMacros.save();
-                    Workspace.mainPanel.saveConfiguration();
+                    Workspace.getMainPanel().saveConfiguration();
                 }
                 ImageCache.clear();
-                if (editorPanel.currentPage != null) {
-                    editorPanel.currentPage.deactivate(false);
+                if (getInstance().getCurrentPage() != null) {
+                    getInstance().getCurrentPage().deactivate(false);
                 }
-                editorPanel.hideExtraEditorPanel();
-                editorPanel.statePanel.hideProperties();
+                getInstance().hideExtraEditorPanel();
+                getInstance().getPageDetailsPanel().hideProperties();
                 VariableSpacesFrame.hideFrame();
 
-                int w = editorPanel.editorFrame.getWidth();
-                int h = editorPanel.editorFrame.getHeight();
+                int w = getInstance().editorFrame.getWidth();
+                int h = getInstance().editorFrame.getHeight();
                 GlobalProperties.set("editor-window-size", w + "," + h);
                 GlobalProperties.save();
 //                FileUtils.saveFileText(SketchletContextUtils.getDefaultProjectsRootLocation() + "editor_window_size.txt", w + "," + h);
-                editorPanel.editorFrame.remove(editorPanel);
-                if (editorPanel.internalPlaybackPanel != null) {
-                    DataServer.variablesServer.removeVariablesUpdateListener(editorPanel.internalPlaybackPanel);
-                    if (editorPanel.internalPlaybackPanel.currentPage != null) {
-                        editorPanel.internalPlaybackPanel.currentPage.deactivate(true);
+                getInstance().editorFrame.remove(getInstance());
+                if (getInstance().getInternalPlaybackPanel() != null) {
+                    DataServer.getInstance().removeVariablesUpdateListener(getInstance().getInternalPlaybackPanel());
+                    if (getInstance().getInternalPlaybackPanel().currentPage != null) {
+                        getInstance().getInternalPlaybackPanel().currentPage.deactivate(true);
                     }
-                    editorPanel.internalPlaybackPanel.dispose();
+                    getInstance().getInternalPlaybackPanel().dispose();
                     // editorPanel.masterSketch = editorPanel.sketches.getSketch("Master");
-                    editorPanel.internalPlaybackPanel = null;
+                    getInstance().setInternalPlaybackPanel(null);
                 }
             }
-            if (editorPanel.undoRegionActions != null) {
-                editorPanel.undoRegionActions.clear();
+            if (getInstance().getUndoRegionActions() != null) {
+                getInstance().getUndoRegionActions().clear();
             }
             SystemVariablesDialog.stop();
             ActiveRegionsFrame.closeRegionsAndActions();
             PlaybackFrame.close();
-            Workspace.referenceFrame = null;
+            Workspace.setReferenceFrame(null);
             CurvesFrame.hideFrame();
             StateDiagram.hideDiagram();
-            // SketchStatePanel.hideProperties();
+            // PageDetailsPanel.hideProperties();
             InteractionSpaceFrame.closeFrame();
             EyeFrame.hideFrame();
 
@@ -1810,50 +2597,44 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
             PlaybackPanel.pages = null;
             PlaybackPanel.history.removeAllElements();
 
-            if (editorPanel != null) {
-                editorPanel.fileDrop = null;
-                editorPanel.removeKeyListener(editorPanel);
-                editorPanel.renderer.dispose();
-                editorPanel.renderer = null;
-                editorPanel.navigationHistory.removeAllElements();
+            if (getInstance() != null) {
+                getInstance().setFileDrop(null);
+                getInstance().removeKeyListener(getInstance());
+                getInstance().getRenderer().dispose();
+                getInstance().setRenderer(null);
+                getInstance().getNavigationHistory().removeAllElements();
             }
-            if (editorPanel != null && editorPanel.currentPage.images != null) {
-                for (int i = 0; i < editorPanel.currentPage.images.length; i++) {
-                    BufferedImage img = editorPanel.currentPage.images[i];
+            if (getInstance() != null && getInstance().getCurrentPage().getImages() != null) {
+                for (int i = 0; i < getInstance().getCurrentPage().getImages().length; i++) {
+                    BufferedImage img = getInstance().getCurrentPage().getImages()[i];
                     if (img != null) {
                         img.flush();
-                        editorPanel.currentPage.images[i] = null;
+                        getInstance().getCurrentPage().getImages()[i] = null;
                     }
                 }
             }
-            editorPanel.currentPage.images = null;
-            editorPanel.penTool.dispose();
-            editorPanel.bucketTool.dispose();
-            editorPanel.transparentColorTool.dispose();
-            editorPanel.magicWandTool.dispose();
-            editorPanel.lineTool.dispose();
-            editorPanel.rectTool.dispose();
-            editorPanel.ovalTool.dispose();
-            editorPanel.eraserTool.dispose();
-            editorPanel.selectTool.dispose();
-            editorPanel.freeFormSelectTool.dispose();
-            editorPanel.activeRegionTool.dispose();
-            editorPanel.activeRegionSelectTool.dispose();
-            editorPanel.postNoteTool.dispose();
-            editorPanel.tool.dispose();
+            getInstance().getCurrentPage().setImages(null);
+            getInstance().getPenTool().dispose();
+            getInstance().getBucketTool().dispose();
+            getInstance().getTransparentColorTool().dispose();
+            getInstance().getMagicWandTool().dispose();
+            getInstance().getLineTool().dispose();
+            getInstance().getRectTool().dispose();
+            getInstance().getOvalTool().dispose();
+            getInstance().getEraserTool().dispose();
+            getInstance().getSelectTool().dispose();
+            getInstance().getFreeFormSelectTool().dispose();
+            getInstance().getActiveRegionTool().dispose();
+            getInstance().getActiveRegionSelectTool().dispose();
+            getInstance().getPostNoteTool().dispose();
+            getInstance().getTool().dispose();
 
-            if (editorPanel.g2FreeHandDraw != null) {
-                editorPanel.g2FreeHandDraw.dispose();
-                editorPanel.g2FreeHandDraw = null;
+            if (getInstance().g2SketchletEditor != null) {
+                getInstance().g2SketchletEditor.dispose();
+                getInstance().g2SketchletEditor = null;
             }
 
-            DataServer.variablesServer.removeVariablesUpdateListener(editorPanel);
-            // DataServer.variablesServer.printInfo();
-            /*
-             * if (CaptureFrame.captureFrame != null) {
-             * CaptureFrame.captureFrame.setVisible(false);
-             * CaptureFrame.captureFrame.close(); }
-             */
+            DataServer.getInstance().removeVariablesUpdateListener(getInstance());
         } catch (Throwable e) {
             log.error(e);
         }
@@ -1861,40 +2642,40 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
             SketchletEditor.copiedActions.removeAllElements();
         }
 
-        if (SketchletEditor.pages != null) {
-            SketchletEditor.pages.dispose();
-            SketchletEditor.pages = null;
+        if (SketchletEditor.getPages() != null) {
+            SketchletEditor.getPages().dispose();
+            SketchletEditor.setPages(null);
         }
 
         if (nOption == 1) { // || nOption == -1) {
-            Workspace.mainPanel.restoreOriginal();
+            Workspace.getMainPanel().restoreOriginal();
         } else {
             FileUtils.deleteDir(new File(SketchletContextUtils.getCurrentProjectOriginalDir()));
         }
 
-        if (editorPanel != null) {
+        if (getInstance() != null) {
             editorFrame.setVisible(false);
             editorFrame.dispose();
         }
         editorFrame.dispose();
-        editorPanel = null;
+        setEditorPanel(null);
         editorFrame = null;
-        Workspace.mainFrame.toFront();
+        Workspace.getMainFrame().toFront();
         final boolean _bMsg = bMsg;
         final int _nOption = nOption;
         if (!Workspace.bCloseOnPlaybackEnd) {
-            if (SketchletEditor.pages != null) {
-                SketchletEditor.pages.dispose();
+            if (SketchletEditor.getPages() != null) {
+                SketchletEditor.getPages().dispose();
             }
             if (_nOption == 1 || _nOption == -1) {
                 try {
-                    Workspace.processRunner.loadProcesses(new File(Workspace.filePath).toURL(), false);
+                    Workspace.getProcessRunner().getIoServicesHandler().loadProcesses(new File(Workspace.getFilePath()).toURL(), false);
                 } catch (Exception e) {
                     log.error(e);
                 }
             }
-            SketchletEditor.pages = new Pages();
-            Workspace.mainPanel.refreshSketches();
+            SketchletEditor.setPages(new Pages());
+            Workspace.getMainPanel().refreshSketches();
         }
 
         return true;
@@ -1906,16 +2687,16 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
 
     public void addMemoryPanel() {
         if (memoryPanel != null) {
-            editorPanel.statusPanel.remove(memoryPanel);
+            getInstance().getStatusPanel().remove(memoryPanel);
             memoryPanel.stop();
             memoryPanel = null;
             GlobalProperties.set("memory-monitor", "false");
         } else {
             memoryPanel = new MemoryPanel();
-            editorPanel.statusPanel.add(memoryPanel, BorderLayout.EAST);
+            getInstance().getStatusPanel().add(memoryPanel, BorderLayout.EAST);
             GlobalProperties.set("memory-monitor", "true");
         }
-        editorPanel.statusPanel.revalidate();
+        getInstance().getStatusPanel().revalidate();
     }
 
     public static void showExtraEditorPanel() {
@@ -1956,7 +2737,7 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
 
                     public void actionPerformed(ActionEvent event) {
                         SketchletEditor.showExtraEditorPanel(ExtraEditorPanel.indexDerivedVariables);
-                        SketchletEditor.editorPanel.extraEditorPanel.derivedVariablesExtraPanel.tabs.setSelectedIndex(index);
+                        SketchletEditor.getInstance().getExtraEditorPanel().derivedVariablesExtraPanel.tabs.setSelectedIndex(index);
                     }
                 });
                 popup.add(plugin);
@@ -1971,32 +2752,32 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public static void showExtraEditorPanel(int nTab) {
-        if (!editorPanel.bExtraEditorPanelVisible && !bUndocked) {
-            editorPanel.bExtraEditorPanelVisible = true;
-            int h = SketchletEditor.editorPanel.panelDrawingPanel.getHeight();
-            editorPanel.editorPane.remove(SketchletEditor.editorPanel.panelDrawingPanel);
+        if (!getInstance().isExtraEditorPanelVisible() && !bUndocked) {
+            getInstance().setExtraEditorPanelVisible(true);
+            int h = SketchletEditor.getInstance().getPanelDrawingPanel().getHeight();
+            getInstance().getEditorPane().remove(SketchletEditor.getInstance().getPanelDrawingPanel());
             // editorPanel.editorPane.add(editorPanel.extraEditorPanel, BorderLayout.SOUTH);
-            editorPanel.splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, SketchletEditor.editorPanel.panelDrawingPanel, editorPanel.extraEditorPanel);
-            editorPanel.splitPane.setResizeWeight(1);
-            editorPanel.splitPane.setDividerLocation(h - 195);
-            editorPanel.editorPane.add(editorPanel.splitPane);
-            editorPanel.editorPane.revalidate();
+            getInstance().setSplitPane(new JSplitPane(JSplitPane.VERTICAL_SPLIT, SketchletEditor.getInstance().getPanelDrawingPanel(), getInstance().getExtraEditorPanel()));
+            getInstance().getSplitPane().setResizeWeight(1);
+            getInstance().getSplitPane().setDividerLocation(h - 195);
+            getInstance().getEditorPane().add(getInstance().getSplitPane());
+            getInstance().getEditorPane().revalidate();
         }
 
-        if (nTab >= 0 && nTab < editorPanel.extraEditorPanel.tabs.getTabCount()) {
-            editorPanel.extraEditorPanel.tabs.setSelectedIndex(nTab);
+        if (nTab >= 0 && nTab < getInstance().getExtraEditorPanel().tabs.getTabCount()) {
+            getInstance().getExtraEditorPanel().tabs.setSelectedIndex(nTab);
         }
     }
 
     public static void showExtraEditorPanelBig(int nTab) {
-        if (!editorPanel.bExtraEditorPanelVisible && !bUndocked) {
-            editorPanel.bExtraEditorPanelVisible = true;
-            editorPanel.extraEditorPanel.setBiggerSize();
-            editorPanel.editorPane.add(editorPanel.extraEditorPanel, BorderLayout.SOUTH);
-            editorPanel.editorPane.revalidate();
+        if (!getInstance().isExtraEditorPanelVisible() && !bUndocked) {
+            getInstance().setExtraEditorPanelVisible(true);
+            getInstance().getExtraEditorPanel().setBiggerSize();
+            getInstance().getEditorPane().add(getInstance().getExtraEditorPanel(), BorderLayout.SOUTH);
+            getInstance().getEditorPane().revalidate();
         }
 
-        editorPanel.extraEditorPanel.tabs.setSelectedIndex(nTab);
+        getInstance().getExtraEditorPanel().tabs.setSelectedIndex(nTab);
     }
 
     public static boolean bUndocked = false;
@@ -2009,7 +2790,7 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
 
             public void windowClosing(WindowEvent e) {
                 bUndocked = false;
-                editorPanel.bExtraEditorPanelVisible = false;
+                getInstance().setExtraEditorPanelVisible(false);
             }
 
             public void windowActivated(WindowEvent e) {
@@ -2022,7 +2803,7 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
         });
         undockFrame.setAlwaysOnTop(true);
         undockFrame.setTitle("Editor");
-        undockFrame.add(editorPanel.extraEditorPanel);
+        undockFrame.add(getInstance().getExtraEditorPanel());
         undockFrame.pack();
         undockFrame.setIconImage(Workspace.createImageIcon("resources/editor.gif", "").getImage());
         undockFrame.setVisible(true);
@@ -2032,92 +2813,43 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     public static void dockExtraEditorPanel() {
         if (undockFrame != null) {
             undockFrame.setVisible(false);
-            editorPanel.bExtraEditorPanelVisible = false;
+            getInstance().setExtraEditorPanelVisible(false);
             bUndocked = false;
             showExtraEditorPanel(-1);
         }
     }
 
     public static void hideExtraEditorPanel() {
-        if (editorPanel.bExtraEditorPanelVisible) {
-            int index = SketchletEditor.editorPanel.tabsRight.getSelectedIndex();
+        if (getInstance().isExtraEditorPanelVisible()) {
+            int index = SketchletEditor.getInstance().getTabsRight().getSelectedIndex();
 
-            editorPanel.extraEditorPanel.onHide();
-            editorPanel.bExtraEditorPanelVisible = false;
-            editorPanel.editorPane.remove(SketchletEditor.editorPanel.splitPane);
-            editorPanel.editorPane.add(SketchletEditor.editorPanel.panelDrawingPanel);
+            getInstance().getExtraEditorPanel().onHide();
+            getInstance().setExtraEditorPanelVisible(false);
+            getInstance().getEditorPane().remove(SketchletEditor.getInstance().getSplitPane());
+            getInstance().getEditorPane().add(SketchletEditor.getInstance().getPanelDrawingPanel());
             // editorPanel.editorPane.remove(editorPanel.extraEditorPanel);
-            editorPanel.editorPane.revalidate();
-            SketchletEditor.editorPanel.timersTablePanel.model.fireTableDataChanged();
-            SketchletEditor.editorPanel.extraEditorPanel.timersExtraPanel.load();
-            SketchletEditor.editorPanel.macrosTablePanel.model.fireTableDataChanged();
-            SketchletEditor.editorPanel.extraEditorPanel.macrosExtraPanel.load();
+            getInstance().getEditorPane().revalidate();
+            SketchletEditor.getInstance().getTimersTablePanel().model.fireTableDataChanged();
+            SketchletEditor.getInstance().getExtraEditorPanel().timersExtraPanel.load();
+            SketchletEditor.getInstance().getMacrosTablePanel().model.fireTableDataChanged();
+            SketchletEditor.getInstance().getExtraEditorPanel().macrosExtraPanel.load();
 
-            SketchletEditor.editorPanel.tabsRight.setSelectedIndex(index);
+            SketchletEditor.getInstance().getTabsRight().setSelectedIndex(index);
         }
     }
 
-    public static boolean isInEntryArea(int x, int y) {
-        return Profiles.isActive("page_actions") && getEntryIconRectangle().contains(x, y);
-    }
-
-    public static boolean isInExitArea(int x, int y) {
-        return Profiles.isActive("page_actions") && getExitIconRectangle().contains(x, y);
-    }
-
-    public static boolean isInVariableInArea(int x, int y) {
-        return Profiles.isActive("page_actions,variables") && getVariableIconRectangle().contains(x, y);
-    }
-
-    /*
-     * public static boolean isInVariableOutArea(int x, int y) { return x > 0 &&
-     * x < 35 && y > 95 && y < 125; }
-     */
-    public static boolean isInKeyboardArea(int x, int y) {
-        return Profiles.isActive("page_actions") && getKeyboardIconRectangle().contains(x, y);
-    }
-
-    public static boolean isInPropertiesArea(int x, int y) {
-        return Profiles.isActive("page_properties") && getPropertiesIconRectangle().contains(x, y);
-    }
-
-    public static Rectangle getEntryIconRectangle() {
-        double s = Math.min(1, SketchletEditor.editorPanel.scale);
-        return new Rectangle(0, 0, (int) (35 / s), (int) (30 / s));
-    }
-
-    public static Rectangle getExitIconRectangle() {
-        double s = Math.min(1, SketchletEditor.editorPanel.scale);
-        return new Rectangle(0, (int) (35 / s), (int) (30 / s), (int) (30 / s));
-    }
-
-    public static Rectangle getVariableIconRectangle() {
-        double s = Math.min(1, SketchletEditor.editorPanel.scale);
-        return new Rectangle(0, (int) (65 / s), (int) (30 / s), (int) (30 / s));
-    }
-
-    public static Rectangle getKeyboardIconRectangle() {
-        double s = Math.min(1, SketchletEditor.editorPanel.scale);
-        return new Rectangle(0, (int) (95 / s), (int) (30 / s), (int) (30 / s));
-    }
-
-    public static Rectangle getPropertiesIconRectangle() {
-        double s = Math.min(1, SketchletEditor.editorPanel.scale);
-        return new Rectangle(0, (int) (125 / s), (int) (30 / s), (int) (30 / s));
-    }
-
     public void keyTyped(KeyEvent e) {
-        if (tool != null) {
-            tool.keyTyped(e);
+        if (getTool() != null) {
+            getTool().keyTyped(e);
         }
 
     }
 
     public void selectAllRegions() {
-        currentPage.regions.selectedRegions = new Vector<ActiveRegion>();
+        getCurrentPage().getRegions().setSelectedRegions(new Vector<ActiveRegion>());
 
-        for (ActiveRegion a : this.currentPage.regions.regions) {
-            currentPage.regions.addToSelection(a);
+        for (ActiveRegion a : this.getCurrentPage().getRegions().getRegions()) {
+            getCurrentPage().getRegions().addToSelection(a);
         }
         RefreshTime.update();
 
@@ -2129,19 +2861,19 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
             skipKey = false;
             return;
         }
-        if (currentPage.regions.selectedRegions != null) {
-            this.undoRegionActions.add(new RegionsDeletedUndoAction(currentPage.regions.selectedRegions));
+        if (getCurrentPage().getRegions().getSelectedRegions() != null) {
+            this.getUndoRegionActions().add(new RegionsDeletedUndoAction(getCurrentPage().getRegions().getSelectedRegions()));
             checkUndo();
             save();
 
-            for (ActiveRegion as : currentPage.regions.selectedRegions) {
+            for (ActiveRegion as : getCurrentPage().getRegions().getSelectedRegions()) {
                 as.deactivate(false);
-                currentPage.regions.regions.remove(as);
+                getCurrentPage().getRegions().getRegions().remove(as);
             }
 
-            currentPage.regions.selectedRegions = null;
+            getCurrentPage().getRegions().setSelectedRegions(null);
             ActiveRegionsFrame.reload();
-            currentPage.regions.selectedRegions = null;
+            getCurrentPage().getRegions().setSelectedRegions(null);
             RefreshTime.update();
             repaint();
 
@@ -2154,28 +2886,28 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
         }
         save();
         region.deactivate(false);
-        currentPage.regions.regions.remove(region);
-        currentPage.regions.selectedRegions = null;
+        getCurrentPage().getRegions().getRegions().remove(region);
+        getCurrentPage().getRegions().setSelectedRegions(null);
         ActiveRegionsFrame.reload();
-        currentPage.regions.selectedRegions = null;
+        getCurrentPage().getRegions().setSelectedRegions(null);
         RefreshTime.update();
         repaint();
 
     }
 
     public void groupSelectedRegion() {
-        if (currentPage.regions.selectedRegions != null) {
+        if (getCurrentPage().getRegions().getSelectedRegions() != null) {
             String strGroupId = "" + System.currentTimeMillis();
 
             boolean bGroup = false;
-            for (ActiveRegion as : currentPage.regions.selectedRegions) {
-                if (as.regionGrouping.equals("") || !as.regionGrouping.equals(currentPage.regions.selectedRegions.firstElement().regionGrouping)) {
+            for (ActiveRegion as : getCurrentPage().getRegions().getSelectedRegions()) {
+                if (as.regionGrouping.equals("") || !as.regionGrouping.equals(getCurrentPage().getRegions().getSelectedRegions().firstElement().regionGrouping)) {
                     bGroup = true;
                     break;
                 }
             }
 
-            for (ActiveRegion as : currentPage.regions.selectedRegions) {
+            for (ActiveRegion as : getCurrentPage().getRegions().getSelectedRegions()) {
                 as.regionGrouping = bGroup ? strGroupId : "";
             }
             RefreshTime.update();
@@ -2192,84 +2924,84 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
         RefreshTime.update();
 
         if ((modifiers & Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()) != 0) {
-            inCtrlMode = true;
+            setInCtrlMode(true);
         } else {
-            inCtrlMode = false;
+            setInCtrlMode(false);
         }
 
         if ((modifiers & KeyEvent.SHIFT_MASK) != 0) {
-            inShiftMode = true;
+            setInShiftMode(true);
         } else {
-            inShiftMode = false;
+            setInShiftMode(false);
         }
 
-        boolean useShortcut = mode == EditorMode.SKETCHING || mode == EditorMode.ACTIONS && (currentPage.regions.selectedRegions == null || currentPage.regions.selectedRegions.size() == 0);
+        boolean useShortcut = getMode() == SketchletEditorMode.SKETCHING || getMode() == SketchletEditorMode.ACTIONS && (getCurrentPage().getRegions().getSelectedRegions() == null || getCurrentPage().getRegions().getSelectedRegions().size() == 0);
         if ((useShortcut) && (modifiers & KeyEvent.ALT_MASK) == 0 && (modifiers & Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()) == 0) {
             if (key == KeyEvent.VK_P) {
-                SketchletEditor.editorPanel.modeToolbar.btnSketching.doClick();
+                SketchletEditor.getInstance().getModeToolbar().btnSketching.doClick();
             } else if (key == KeyEvent.VK_L) {
-                SketchletEditor.editorPanel.modeToolbar.btnLine.doClick();
+                SketchletEditor.getInstance().getModeToolbar().btnLine.doClick();
             } else if (key == KeyEvent.VK_A) {
-                SketchletEditor.editorPanel.modeToolbar.activeRegions.doClick();
+                SketchletEditor.getInstance().getModeToolbar().activeRegions.doClick();
             } else if (key == KeyEvent.VK_C) {
-                SketchletEditor.editorPanel.modeToolbar.connector.doClick();
+                SketchletEditor.getInstance().getModeToolbar().connector.doClick();
             } else if (key == KeyEvent.VK_ESCAPE) {
-                SketchletEditor.editorPanel.modeToolbar.select.doClick();
+                SketchletEditor.getInstance().getModeToolbar().select.doClick();
             } else if (key == KeyEvent.VK_R) {
-                SketchletEditor.editorPanel.modeToolbar.btnRect.doClick();
+                SketchletEditor.getInstance().getModeToolbar().btnRect.doClick();
             } else if (key == KeyEvent.VK_O) {
-                SketchletEditor.editorPanel.modeToolbar.btnOval.doClick();
+                SketchletEditor.getInstance().getModeToolbar().btnOval.doClick();
             } else if (key == KeyEvent.VK_S) {
-                SketchletEditor.editorPanel.modeToolbar.btnSelect.doClick();
+                SketchletEditor.getInstance().getModeToolbar().btnSelect.doClick();
             } else if (key == KeyEvent.VK_F) {
-                SketchletEditor.editorPanel.modeToolbar.btnFreeFormSelect.doClick();
+                SketchletEditor.getInstance().getModeToolbar().btnFreeFormSelect.doClick();
             } else if (key == KeyEvent.VK_P) {
-                SketchletEditor.editorPanel.modeToolbar.btnColorPicker.doClick();
+                SketchletEditor.getInstance().getModeToolbar().btnColorPicker.doClick();
             } else if (key == KeyEvent.VK_M) {
-                SketchletEditor.editorPanel.modeToolbar.btnMagicWand.doClick();
+                SketchletEditor.getInstance().getModeToolbar().btnMagicWand.doClick();
             } else if (key == KeyEvent.VK_B) {
-                SketchletEditor.editorPanel.modeToolbar.btnBucket.doClick();
+                SketchletEditor.getInstance().getModeToolbar().btnBucket.doClick();
             } else if (key == KeyEvent.VK_E) {
-                SketchletEditor.editorPanel.modeToolbar.btnEraser.doClick();
+                SketchletEditor.getInstance().getModeToolbar().btnEraser.doClick();
             } else if (key == KeyEvent.VK_PLUS || key == KeyEvent.VK_EQUALS || key == 107) {
-                int n = SketchletEditor.editorPanel.colorToolbar.slider.getValue();
-                SketchletEditor.editorPanel.colorToolbar.slider.setValue(n + 1);
+                int n = SketchletEditor.getInstance().getColorToolbar().slider.getValue();
+                SketchletEditor.getInstance().getColorToolbar().slider.setValue(n + 1);
             } else if (key == KeyEvent.VK_MINUS || key == 109) {
-                int n = SketchletEditor.editorPanel.colorToolbar.slider.getValue();
-                SketchletEditor.editorPanel.colorToolbar.slider.setValue(n - 1);
+                int n = SketchletEditor.getInstance().getColorToolbar().slider.getValue();
+                SketchletEditor.getInstance().getColorToolbar().slider.setValue(n - 1);
             }
-        } else if (mode == EditorMode.ACTIONS) {
+        } else if (getMode() == SketchletEditorMode.ACTIONS) {
             if (key == KeyEvent.VK_ESCAPE) {
-                if (currentPage.regions.selectedRegions != null) {
-                    ActiveRegion as = currentPage.regions.selectedRegions.lastElement();
+                if (getCurrentPage().getRegions().getSelectedRegions() != null) {
+                    ActiveRegion as = getCurrentPage().getRegions().getSelectedRegions().lastElement();
                     if (as.inTrajectoryMode && as.trajectoryType == 2) {
-                        as.mouseHandler.processTrajectory();
+                        as.getMouseHandler().processTrajectory();
                         as.inTrajectoryMode = false;
                     } else if (as.inTrajectoryMode2 && as.trajectoryType == 2) {
-                        as.mouseHandler.processTrajectory2();
+                        as.getMouseHandler().processTrajectory2();
                         as.inTrajectoryMode2 = false;
                     }
                 }
             } else if (key == KeyEvent.VK_F2) {
-                if (mode == EditorMode.SKETCHING) {
-                    setMode(EditorMode.ACTIONS);
+                if (getMode() == SketchletEditorMode.SKETCHING) {
+                    setEditorMode(SketchletEditorMode.ACTIONS);
                 } else {
-                    setMode(EditorMode.SKETCHING);
+                    setEditorMode(SketchletEditorMode.SKETCHING);
                 }
 
             } else if (key == KeyEvent.VK_F3) {
-                setMode(EditorMode.SKETCHING);
-                if (modeToolbar.layerList.getSelectedIndex() == 0) {
-                    modeToolbar.layerList.setSelectedIndex(1);
+                setEditorMode(SketchletEditorMode.SKETCHING);
+                if (getModeToolbar().layerList.getSelectedIndex() == 0) {
+                    getModeToolbar().layerList.setSelectedIndex(1);
                 } else {
-                    modeToolbar.layerList.setSelectedIndex(0);
+                    getModeToolbar().layerList.setSelectedIndex(0);
                 }
             } else if ((modifiers & KeyEvent.ALT_MASK) != 0) {
             } else if ((modifiers & Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()) != 0) {
                 switch (key) {
                     case KeyEvent.VK_B:
-                        if (currentPage.regions.selectedRegions != null) {
-                            for (ActiveRegion region : currentPage.regions.selectedRegions) {
+                        if (getCurrentPage().getRegions().getSelectedRegions() != null) {
+                            for (ActiveRegion region : getCurrentPage().getRegions().getSelectedRegions()) {
                                 if (region.fontStyle.equalsIgnoreCase("Bold Italic")) {
                                     this.setTextStyle("Italic");
                                 } else if (region.fontStyle.equalsIgnoreCase("Bold")) {
@@ -2282,8 +3014,8 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
                         }
                         break;
                     case KeyEvent.VK_I:
-                        if (currentPage.regions.selectedRegions != null) {
-                            for (ActiveRegion region : currentPage.regions.selectedRegions) {
+                        if (getCurrentPage().getRegions().getSelectedRegions() != null) {
+                            for (ActiveRegion region : getCurrentPage().getRegions().getSelectedRegions()) {
                                 if (region.fontStyle.equalsIgnoreCase("Bold Italic")) {
                                     this.setTextStyle("Bold");
                                 } else if (region.fontStyle.equalsIgnoreCase("Italic")) {
@@ -2303,7 +3035,7 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
                     */
                     /*
                      * case KeyEvent.VK_A:
-                     * SketchStatePanel.showStateProperties(currentSketch);
+                     * PageDetailsPanel.showStateProperties(currentSketch);
                      * break;
                      */
                     case KeyEvent.VK_LEFT:
@@ -2318,9 +3050,9 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
                      * case KeyEvent.VK_D: this.duplicate(); break;
                      */
                 }
-            } else if (currentPage.regions.selectedRegions != null) {
-                if (currentPage.regions.selectedRegions != null) {
-                    for (ActiveRegion region : currentPage.regions.selectedRegions) {
+            } else if (getCurrentPage().getRegions().getSelectedRegions() != null) {
+                if (getCurrentPage().getRegions().getSelectedRegions() != null) {
+                    for (ActiveRegion region : getCurrentPage().getRegions().getSelectedRegions()) {
                         switch (key) {
                             case KeyEvent.VK_LEFT:
                                 region.x1 -= 10;
@@ -2357,8 +3089,8 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
                 }
             }
         }
-        if (tool != null) {
-            tool.keyPressed(e);
+        if (getTool() != null) {
+            getTool().keyPressed(e);
         } else {
             log.info("Tool is null");
         }
@@ -2374,25 +3106,25 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
             return;
         }
 
-        if (mode == EditorMode.ACTIONS && copiedActions != null) {
-            this.editorClipboard.pasteSpecial();
+        if (getMode() == SketchletEditorMode.ACTIONS && copiedActions != null) {
+            this.getEditorClipboardController().pasteSpecial();
         } else {
-            this.editorClipboard.fromClipboard();
+            this.getEditorClipboardController().fromClipboard();
         }
 
     }
 
     public void defineClip() {
-        if (currentPage.regions.selectedRegions == null || currentPage.regions.selectedRegions.size() == 0) {
+        if (getCurrentPage().getRegions().getSelectedRegions() == null || getCurrentPage().getRegions().getSelectedRegions().size() == 0) {
             return;
         }
 
         try {
-            ActiveRegion _a = this.currentPage.regions.selectedRegions.firstElement();
+            ActiveRegion _a = this.getCurrentPage().getRegions().getSelectedRegions().firstElement();
             ActiveRegion a = new ActiveRegion(_a, _a.parent, false);
-            a.bFitToBox = false;
-            a.strHAlign = "";
-            a.strVAlign = "";
+            a.fitToBoxEnabled = false;
+            a.horizontalAlignment = "";
+            a.verticalAlignment = "";
             a.rotation = 0.0;
             a.playback_rotation = 0.0;
             a.shearX = 0.0;
@@ -2436,13 +3168,13 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
             a.resetAllProperties();
 
             a.activate(true);
-            a.strText = "";
+            a.text = "";
 
             try {
                 BufferedImage img = Workspace.createCompatibleImage(2000, 2000);
                 Graphics2D g2 = img.createGraphics();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                a.renderer.draw(g2, editorPanel, EditorMode.SKETCHING, true, false, 1.0f);
+                a.getRenderer().draw(g2, getInstance(), SketchletEditorMode.SKETCHING, true, false, 1.0f);
                 g2.dispose();
                 ImageAreaSelect.createAndShowGUI(SketchletEditor.editorFrame, img, x, y, w, h, false);
                 if (ImageAreaSelect.bSaved) {
@@ -2469,9 +3201,9 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public void extract(int index) {
-        if (mode == EditorMode.ACTIONS && this.currentPage.regions.selectedRegions != null) {
-            BufferedImage img = SketchletEditor.editorPanel.currentPage.images[SketchletEditor.editorPanel.layer];
-            ActiveRegion a = currentPage.regions.selectedRegions.lastElement();
+        if (getMode() == SketchletEditorMode.ACTIONS && this.getCurrentPage().getRegions().getSelectedRegions() != null) {
+            BufferedImage img = SketchletEditor.getInstance().getCurrentPage().getImages()[SketchletEditor.getInstance().layer];
+            ActiveRegion a = getCurrentPage().getRegions().getSelectedRegions().lastElement();
             if (index == -1) {
                 a.additionalImageFile.add("");
                 a.additionalDrawImages.add(null);
@@ -2500,7 +3232,7 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public BufferedImage extractImage(int x, int y, int w, int h) {
-        return extractImage(x, y, w, h, SketchletEditor.editorPanel);
+        return extractImage(x, y, w, h, SketchletEditor.getInstance());
     }
 
     public static BufferedImage extractImage(int x, int y, int w, int h, ToolInterface toolInterface) {
@@ -2593,36 +3325,35 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
      * this.currentSketch.actions.selectedActions != null) { try { int index =
      * Integer.parseInt(ActiveRegion.processText((String)
      * this.currentSketch.actions.selectedActions.lastElement().strImageIndex,
-     * currentSketch.strVarPrefix, currentSketch.strVarPostfix)); stamp(index -
+     * currentSketch.varPrefix, currentSketch.varPostfix)); stamp(index -
      * 1); } catch (Throwable e) { stamp(0); }
      *
      * repaint(); } }
      */
     public void stamp() {
-        if (mode == EditorMode.ACTIONS && this.currentPage.regions.selectedRegions != null) {
+        if (getMode() == SketchletEditorMode.ACTIONS && this.getCurrentPage().getRegions().getSelectedRegions() != null) {
             saveImageUndo();
-            ActiveRegion region = this.currentPage.regions.selectedRegions.lastElement();
-            Graphics2D g2 = currentPage.images[layer].createGraphics();
+            ActiveRegion region = this.getCurrentPage().getRegions().getSelectedRegions().lastElement();
+            Graphics2D g2 = getCurrentPage().getImages()[layer].createGraphics();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.rotate(region.rotation, region.x1 + (region.x2 - region.x1) * region.center_rotation_x, region.y1 + (region.y2 - region.y1) * region.center_rotation_y);
-            region.renderer.drawActive(g2, editorPanel, false, 1.0f);
+            region.getRenderer().drawActive(g2, getInstance(), false, 1.0f);
 
             g2.dispose();
             RefreshTime.update();
-            SketchletEditor.editorPanel.repaint();
+            SketchletEditor.getInstance().repaint();
 
-            this.currentPage.imageUpdated[layer] = true;
+            this.getCurrentPage().getImageUpdated()[layer] = true;
         }
 
     }
 
     public void keyReleased(KeyEvent e) {
-        inShiftMode = false;
-        inCtrlMode =
-                false;
+        setInShiftMode(false);
+        setInCtrlMode(false);
 
-        if (tool != null) {
-            tool.keyReleased(e);
+        if (getTool() != null) {
+            getTool().keyReleased(e);
         }
 
         RefreshTime.update();
@@ -2635,8 +3366,8 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     public void repaintEverything() {
         RefreshTime.update();
         this.repaint();
-        if (this.internalPlaybackPanel != null) {
-            this.internalPlaybackPanel.repaint();
+        if (this.getInternalPlaybackPanel() != null) {
+            this.getInternalPlaybackPanel().repaint();
         }
 
         PlaybackFrame.repaintAllFrames();
@@ -2646,7 +3377,7 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     int countt = 0;
 
     public void variableUpdated(String name, String varValue) {
-        if (this.currentPage == null || name.trim().equals("")) {
+        if (this.getCurrentPage() == null || name.trim().equals("")) {
             return;
         }
         if (PlaybackFrame.playbackFrame != null) {
@@ -2659,22 +3390,22 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
             return;
         }
 
-        if (this.internalPlaybackPanel != null) {
-            this.internalPlaybackPanel.variableUpdated(name, varValue);
+        if (this.getInternalPlaybackPanel() != null) {
+            this.getInternalPlaybackPanel().variableUpdated(name, varValue);
             return;
         }
 
 
         lastVariable = name;
 
-        if (this.spreadsheetPanel != null) {
-            this.spreadsheetPanel.table.repaint();
+        if (this.getSpreadsheetPanel() != null) {
+            this.getSpreadsheetPanel().table.repaint();
         }
 
-        this.currentPage.regions.changePerformed(name, varValue, false);
-        if (!currentPage.variableUpdatePageHandler.process(name, varValue)) {
-            if (masterPage != null && currentPage != masterPage) {
-                masterPage.variableUpdatePageHandler.process(name, varValue);
+        this.getCurrentPage().getRegions().changePerformed(name, varValue, false);
+        if (!getCurrentPage().getVariableUpdatePageHandler().process(name, varValue)) {
+            if (getMasterPage() != null && getCurrentPage() != getMasterPage()) {
+                getMasterPage().getVariableUpdatePageHandler().process(name, varValue);
             }
         }
 
@@ -2683,16 +3414,16 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
 
     public void saveSpreadsheetColumWidths() {
         String strWidth = "";
-        if (SketchletEditor.editorPanel != null && SketchletEditor.editorPanel.spreadsheetPanel != null) {
-            for (int ic = 0; ic < SketchletEditor.editorPanel.spreadsheetPanel.table.getColumnCount(); ic++) {
+        if (SketchletEditor.getInstance() != null && SketchletEditor.getInstance().getSpreadsheetPanel() != null) {
+            for (int ic = 0; ic < SketchletEditor.getInstance().getSpreadsheetPanel().table.getColumnCount(); ic++) {
                 if (!strWidth.isEmpty()) {
                     strWidth += ",";
                 }
-                strWidth += SketchletEditor.editorPanel.spreadsheetPanel.table.getColumnModel().getColumn(ic).getWidth();
+                strWidth += SketchletEditor.getInstance().getSpreadsheetPanel().table.getColumnModel().getColumn(ic).getWidth();
             }
         }
 
-        this.currentPage.strSpreadsheetColumnWidths = strWidth;
+        this.getCurrentPage().setStrSpreadsheetColumnWidths(strWidth);
     }
 
     public void fromFile() {
@@ -2705,7 +3436,7 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public static boolean isInPlaybackMode() {
-        return SketchletEditor.editorPanel != null && (SketchletEditor.editorPanel.internalPlaybackPanel != null || (PlaybackFrame.playbackFrame != null && PlaybackFrame.playbackFrame[0] != null));
+        return SketchletEditor.getInstance() != null && (SketchletEditor.getInstance().getInternalPlaybackPanel() != null || (PlaybackFrame.playbackFrame != null && PlaybackFrame.playbackFrame[0] != null));
     }
 
     public void fromFile(File file) {
@@ -2713,7 +3444,7 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public void fromFile(int x, int y, File file) {
-        setTool(activeRegionSelectTool, null);
+        setTool(getActiveRegionSelectTool(), null);
         try {
             saveImageUndo();
             BufferedImage newImage;
@@ -2744,9 +3475,9 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
                 newImage = Workspace.createCompatibleImageCopy(image);
             }
 
-            this.currentPage.imageUpdated[layer] = true;
-            setTool(this.selectTool, null);
-            selectTool.setClip(newImage, x, y);
+            this.getCurrentPage().getImageUpdated()[layer] = true;
+            setTool(this.getSelectTool(), null);
+            getSelectTool().setClip(newImage, x, y);
             RefreshTime.update();
 
             this.repaint();
@@ -2761,7 +3492,7 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
 
     public void previewImage(File file) {
         try {
-            currentPage.images[layer] = ImageIO.read(file);
+            getCurrentPage().getImages()[layer] = ImageIO.read(file);
             RefreshTime.update();
             this.repaint();
         } catch (Throwable e) {
@@ -2769,14 +3500,14 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
         }
 
         createGraphics();
-        setTool(activeRegionSelectTool, null);
+        setTool(getActiveRegionSelectTool(), null);
     }
 
     public boolean skipUndo = false;
 
     public void saveRegionUndo() {
-        if (!undoing && !skipUndo && currentPage.regions.selectedRegions != null && currentPage.regions.selectedRegions.size() > 0) {
-            final UndoAction ua = new RegionsChangedUndoAction(currentPage.regions.selectedRegions);
+        if (!undoing && !skipUndo && getCurrentPage().getRegions().getSelectedRegions() != null && getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
+            final UndoAction ua = new RegionsChangedUndoAction(getCurrentPage().getRegions().getSelectedRegions());
             this.addUndoAction(ua);
         }
     }
@@ -2790,7 +3521,7 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
 
     public void saveSketchUndo() {
         if (!undoing && !skipUndo) {
-            final UndoAction ua = new SketchChangedUndoAction(currentPage);
+            final UndoAction ua = new SketchChangedUndoAction(getCurrentPage());
             this.addUndoAction(ua);
         }
     }
@@ -2811,27 +3542,27 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     private void addUndoAction(UndoAction ua) {
-        this.undoRegionActions.add(ua);
+        this.getUndoRegionActions().add(ua);
         checkUndo();
         enableControls();
     }
 
     public void saveRegionUndo(final UndoAction ua) {
         if (!undoing) {
-            if (currentPage.regions.selectedRegions != null) {
+            if (getCurrentPage().getRegions().getSelectedRegions() != null) {
                 java.awt.EventQueue.invokeLater(new Runnable() {
 
                     public void run() {
-                        if (undoRegionActions.size() > 0) {
-                            UndoAction ua = (UndoAction) undoRegionActions.get(undoRegionActions.size() - 1);
+                        if (getUndoRegionActions().size() > 0) {
+                            UndoAction ua = (UndoAction) getUndoRegionActions().get(getUndoRegionActions().size() - 1);
                             if (ua instanceof RegionsChangedUndoAction) {
-                                if (((RegionsChangedUndoAction) ua).isSame(currentPage.regions.selectedRegions)) {
+                                if (((RegionsChangedUndoAction) ua).isSame(getCurrentPage().getRegions().getSelectedRegions())) {
                                     return;
                                 }
                             }
                         }
 
-                        undoRegionActions.add(ua);
+                        getUndoRegionActions().add(ua);
                         checkUndo();
                         enableControls();
                     }
@@ -2843,23 +3574,23 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     public static final int UNDO_BUFFER_SIZE = 100;
 
     public void checkUndo() {
-        if (undoRegionActions != null) {
-            if (undoRegionActions.size() > SketchletEditor.UNDO_BUFFER_SIZE) {
-                undoRegionActions.remove(0);
+        if (getUndoRegionActions() != null) {
+            if (getUndoRegionActions().size() > SketchletEditor.UNDO_BUFFER_SIZE) {
+                getUndoRegionActions().remove(0);
             }
         }
     }
 
     public void saveRegionImageUndo(BufferedImage img, ActiveRegion region, int frame) {
-        undoRegionActions.add(new RegionImageChangedUndoAction(img, region, frame));
+        getUndoRegionActions().add(new RegionImageChangedUndoAction(img, region, frame));
         checkUndo();
         enableControls();
     }
 
     public void saveNewRegionUndo() {
-        if (mode == EditorMode.ACTIONS) {
-            if (currentPage.regions.selectedRegions != null) {
-                undoRegionActions.add(new NewRegionUndoAction(currentPage.regions.selectedRegions.firstElement()));
+        if (getMode() == SketchletEditorMode.ACTIONS) {
+            if (getCurrentPage().getRegions().getSelectedRegions() != null) {
+                getUndoRegionActions().add(new NewRegionUndoAction(getCurrentPage().getRegions().getSelectedRegions().firstElement()));
                 checkUndo();
                 enableControls();
             }
@@ -2867,9 +3598,9 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public void saveImageUndo() {
-        BufferedImage img = currentPage.images[layer];
+        BufferedImage img = getCurrentPage().getImages()[layer];
         if (img != null) {
-            undoRegionActions.add(new SketchImageChangedUndoAction(this.currentPage, img, layer));
+            getUndoRegionActions().add(new SketchImageChangedUndoAction(this.getCurrentPage(), img, layer));
             checkUndo();
             enableControls();
         }
@@ -2879,17 +3610,16 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public void moveCurrentActionUpwards() {
-        if (editorPanel.currentPage.regions.selectedRegions != null && editorPanel.currentPage.regions.selectedRegions.size() > 0) {
-            for (ActiveRegion action : editorPanel.currentPage.regions.selectedRegions) {
-                int index = action.parent.regions.indexOf(action);
+        if (getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
+            for (ActiveRegion action : getInstance().getCurrentPage().getRegions().getSelectedRegions()) {
+                int index = action.parent.getRegions().indexOf(action);
                 int newIndex = index - 1;
 
                 if (newIndex >= 0) {
-                    action.parent.regions.remove(action);
-                    action.parent.regions.insertElementAt(action, newIndex);
+                    action.parent.getRegions().remove(action);
+                    action.parent.getRegions().insertElementAt(action, newIndex);
                     ActiveRegionsFrame.reload();
                     ActiveRegionsFrame.refresh(action);
-                    TutorialPanel.addLine("cmd", "Move the region upwards");
                 }
 
             }
@@ -2902,18 +3632,17 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public void moveCurrentActionToFront() {
-        if (editorPanel.currentPage.regions.selectedRegions != null && editorPanel.currentPage.regions.selectedRegions.size() > 0) {
-            for (ActiveRegion action : editorPanel.currentPage.regions.selectedRegions) {
-                int index = action.parent.regions.indexOf(action);
+        if (getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
+            for (ActiveRegion action : getInstance().getCurrentPage().getRegions().getSelectedRegions()) {
+                int index = action.parent.getRegions().indexOf(action);
 
                 if (index > 0) {
                     int newIndex = 0;
 
-                    action.parent.regions.remove(action);
-                    action.parent.regions.insertElementAt(action, newIndex);
+                    action.parent.getRegions().remove(action);
+                    action.parent.getRegions().insertElementAt(action, newIndex);
                     ActiveRegionsFrame.reload();
                     ActiveRegionsFrame.refresh(action);
-                    TutorialPanel.addLine("cmd", "Move the region to front");
                 }
 
             }
@@ -2925,48 +3654,46 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public void moveCurrentActionToBack() {
-        if (editorPanel.currentPage.regions.selectedRegions != null && editorPanel.currentPage.regions.selectedRegions.size() > 0) {
-            for (ActiveRegion action : editorPanel.currentPage.regions.selectedRegions) {
-                int index = action.parent.regions.indexOf(action);
-                int newIndex = action.parent.regions.size() - 1;
+        if (getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
+            for (ActiveRegion action : getInstance().getCurrentPage().getRegions().getSelectedRegions()) {
+                int index = action.parent.getRegions().indexOf(action);
+                int newIndex = action.parent.getRegions().size() - 1;
 
                 if (index >= 0 && index < newIndex) {
 
-                    action.parent.regions.remove(action);
-                    action.parent.regions.insertElementAt(action, newIndex);
+                    action.parent.getRegions().remove(action);
+                    action.parent.getRegions().insertElementAt(action, newIndex);
                     ActiveRegionsFrame.reload();
                     ActiveRegionsFrame.refresh(action);
-                    TutorialPanel.addLine("cmd", "Move the region to back");
                 }
             }
         }
     }
 
     public void moveCurrentActionToBackground() {
-        if (editorPanel.currentPage.regions.selectedRegions != null && editorPanel.currentPage.regions.selectedRegions.size() > 0) {
-            for (ActiveRegion action : editorPanel.currentPage.regions.selectedRegions) {
+        if (getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
+            for (ActiveRegion action : getInstance().getCurrentPage().getRegions().getSelectedRegions()) {
                 action.strX = "=0";
                 action.strY = "=0";
-                action.strWidth = Integer.toString(SketchletEditor.editorPanel.getSketchWidth());
-                action.strHeight = Integer.toString(SketchletEditor.editorPanel.getSketchHeight());
+                action.strWidth = Integer.toString(SketchletEditor.getInstance().getSketchWidth());
+                action.strHeight = Integer.toString(SketchletEditor.getInstance().getSketchHeight());
             }
             this.moveCurrentActionToBack();
-            SketchletEditor.editorPanel.forceRepaint();
+            SketchletEditor.getInstance().forceRepaint();
         }
     }
 
     public void moveCurrentActionBackwards() {
-        if (editorPanel.currentPage.regions.selectedRegions != null && editorPanel.currentPage.regions.selectedRegions.size() > 0) {
-            for (ActiveRegion action : editorPanel.currentPage.regions.selectedRegions) {
-                int index = action.parent.regions.indexOf(action);
+        if (getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
+            for (ActiveRegion action : getInstance().getCurrentPage().getRegions().getSelectedRegions()) {
+                int index = action.parent.getRegions().indexOf(action);
                 int newIndex = index + 1;
 
-                if (newIndex < action.parent.regions.size()) {
-                    action.parent.regions.remove(action);
-                    action.parent.regions.insertElementAt(action, newIndex);
+                if (newIndex < action.parent.getRegions().size()) {
+                    action.parent.getRegions().remove(action);
+                    action.parent.getRegions().insertElementAt(action, newIndex);
                     ActiveRegionsFrame.reload();
                     ActiveRegionsFrame.refresh(action);
-                    TutorialPanel.addLine("cmd", "Move the region backwards");
                 }
             }
             RefreshTime.update();
@@ -2989,9 +3716,9 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public void setShape(String shape, int index) {
-        SketchletEditor.editorPanel.saveRegionUndo();
-        if (editorPanel.currentPage.regions.selectedRegions != null && editorPanel.currentPage.regions.selectedRegions.size() > 0) {
-            for (ActiveRegion action : editorPanel.currentPage.regions.selectedRegions) {
+        SketchletEditor.getInstance().saveRegionUndo();
+        if (getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
+            for (ActiveRegion action : getInstance().getCurrentPage().getRegions().getSelectedRegions()) {
                 String strArgs = "";
                 String args[] = getShapeArgs(shape);
                 if (args != null) {
@@ -3007,260 +3734,226 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
                  * action.shapeList.setSelectedIndex(index); }
                  */
             }
-            ActiveRegionsExtraPanel.reload(SketchletEditor.editorPanel.currentPage.regions.selectedRegions.lastElement());
+            ActiveRegionsExtraPanel.reload(SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement());
             this.forceRepaint();
         }
 
     }
 
     public void setHorizontalAlignment(String strAlign) {
-        if (editorPanel.currentPage.regions.selectedRegions != null && editorPanel.currentPage.regions.selectedRegions.size() > 0) {
-            SketchletEditor.editorPanel.saveRegionUndo();
-            for (ActiveRegion action : editorPanel.currentPage.regions.selectedRegions) {
+        if (getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
+            SketchletEditor.getInstance().saveRegionUndo();
+            for (ActiveRegion action : getInstance().getCurrentPage().getRegions().getSelectedRegions()) {
                 //action.horizontalAlign.setSelectedItem(strAlign);
-                action.strHAlign = strAlign;
+                action.horizontalAlignment = strAlign;
             }
-            ActiveRegionsExtraPanel.reload(SketchletEditor.editorPanel.currentPage.regions.selectedRegions.lastElement());
+            ActiveRegionsExtraPanel.reload(SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement());
             this.forceRepaint();
         }
 
     }
 
     public void setAutomaticPerspective(String strPerspective) {
-        if (editorPanel.currentPage.regions.selectedRegions != null && editorPanel.currentPage.regions.selectedRegions.size() > 0) {
-            SketchletEditor.editorPanel.saveRegionUndo();
-            for (ActiveRegion action : editorPanel.currentPage.regions.selectedRegions) {
+        if (getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
+            SketchletEditor.getInstance().saveRegionUndo();
+            for (ActiveRegion action : getInstance().getCurrentPage().getRegions().getSelectedRegions()) {
                 action.strAutomaticPerspective = strPerspective;
-                TutorialPanel.addLine("cmd", "Set the region automatic perspective: " + strPerspective);
             }
-            ActiveRegionsExtraPanel.reload(SketchletEditor.editorPanel.currentPage.regions.selectedRegions.lastElement());
+            ActiveRegionsExtraPanel.reload(SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement());
             this.forceRepaint();
         }
 
     }
 
     public void setPerspectiveDepth(String strDepth) {
-        if (editorPanel.currentPage.regions.selectedRegions != null && editorPanel.currentPage.regions.selectedRegions.size() > 0) {
-            SketchletEditor.editorPanel.saveRegionUndo();
-            for (ActiveRegion action : editorPanel.currentPage.regions.selectedRegions) {
+        if (getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
+            SketchletEditor.getInstance().saveRegionUndo();
+            for (ActiveRegion action : getInstance().getCurrentPage().getRegions().getSelectedRegions()) {
                 action.strPerspectiveDepth = strDepth;
-                TutorialPanel.addLine("cmd", "Set the region perspective depth: " + strDepth);
             }
-            ActiveRegionsExtraPanel.reload(SketchletEditor.editorPanel.currentPage.regions.selectedRegions.lastElement());
+            ActiveRegionsExtraPanel.reload(SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement());
             this.forceRepaint();
         }
 
     }
 
     public void setVerticalAlignment(String strAlign) {
-        if (editorPanel.currentPage.regions.selectedRegions != null && editorPanel.currentPage.regions.selectedRegions.size() > 0) {
-            SketchletEditor.editorPanel.saveRegionUndo();
-            for (ActiveRegion action : editorPanel.currentPage.regions.selectedRegions) {
+        if (getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
+            SketchletEditor.getInstance().saveRegionUndo();
+            for (ActiveRegion action : getInstance().getCurrentPage().getRegions().getSelectedRegions()) {
                 // action.verticalAlign.setSelectedItem(strAlign);
-                action.strVAlign = "";
+                action.verticalAlignment = "";
             }
-            ActiveRegionsExtraPanel.reload(SketchletEditor.editorPanel.currentPage.regions.selectedRegions.lastElement());
+            ActiveRegionsExtraPanel.reload(SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement());
             this.forceRepaint();
         }
 
     }
 
     public void setLineColor(String color) {
-        if (editorPanel.currentPage.regions.selectedRegions != null && editorPanel.currentPage.regions.selectedRegions.size() > 0) {
-            SketchletEditor.editorPanel.saveRegionUndo();
-            for (ActiveRegion action : editorPanel.currentPage.regions.selectedRegions) {
-                // action.lineColor.setSelectedItem(color);
-                action.strLineColor = color;
-                ActiveRegionsExtraPanel.reload(currentPage.regions.getLastSelectedRegion());
-                TutorialPanel.addLine("cmd", "Set the region line color: " + color);
+        if (getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
+            SketchletEditor.getInstance().saveRegionUndo();
+            for (ActiveRegion action : getInstance().getCurrentPage().getRegions().getSelectedRegions()) {
+                action.lineColor = color;
+                ActiveRegionsExtraPanel.reload(getCurrentPage().getRegions().getLastSelectedRegion());
             }
-            ActiveRegionsExtraPanel.reload(SketchletEditor.editorPanel.currentPage.regions.selectedRegions.lastElement());
+            ActiveRegionsExtraPanel.reload(SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement());
             this.forceRepaint();
         }
 
     }
 
     public void setWidget(String strWidget) {
-        if (editorPanel.currentPage.regions.selectedRegions != null && editorPanel.currentPage.regions.selectedRegions.size() > 0) {
-            SketchletEditor.editorPanel.saveRegionUndo();
-            for (ActiveRegion region : editorPanel.currentPage.regions.selectedRegions) {
+        if (getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
+            SketchletEditor.getInstance().saveRegionUndo();
+            for (ActiveRegion region : getInstance().getCurrentPage().getRegions().getSelectedRegions()) {
                 region.strWidget = strWidget;
-                region.strWidgetItems = WidgetPluginFactory.getDefaultItemsText(new ActiveRegionContextImpl(region, new PageContextImpl(region.parent.page)));
-                region.strWidgetProperties = WidgetPluginFactory.getDefaultPropertiesValue(new ActiveRegionContextImpl(region, new PageContextImpl(region.parent.page)));
+                region.widgetItems = WidgetPluginFactory.getDefaultItemsText(new ActiveRegionContextImpl(region, new PageContextImpl(region.parent.getPage())));
+                region.strWidgetProperties = WidgetPluginFactory.getDefaultPropertiesValue(new ActiveRegionContextImpl(region, new PageContextImpl(region.parent.getPage())));
                 region.widgetProperties = null;
                 region.widgetEventMacros.clear();
-                /*String actions[] = WidgetPluginFactory.getActions(new ActiveRegionContextImpl(region, new PageContextImpl(region.parent.sketch)));
-                for (String action : actions) {
-                    Macro macro = new Macro();
-                    macro.name = action;
-                    region.widgetEventMacros.add(new WidgetEventMacro(action));
-                }      */
-                ActiveRegionsExtraPanel.reload(currentPage.regions.getLastSelectedRegion());
-                TutorialPanel.addLine("cmd", "Set the region widget: " + strWidget);
+
+                ActiveRegionsExtraPanel.reload(getCurrentPage().getRegions().getLastSelectedRegion());
             }
-            ActiveRegionsExtraPanel.reload(SketchletEditor.editorPanel.currentPage.regions.selectedRegions.lastElement());
+            ActiveRegionsExtraPanel.reload(SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement());
             this.forceRepaint();
         }
 
     }
 
     public void setTextColor(String color) {
-        if (editorPanel.currentPage.regions.selectedRegions != null && editorPanel.currentPage.regions.selectedRegions.size() > 0) {
-            SketchletEditor.editorPanel.saveRegionUndo();
-            for (ActiveRegion action : editorPanel.currentPage.regions.selectedRegions) {
-                /*
-                 * if (action.fontColorCombo != null) {
-                 * action.fontColorCombo.setSelectedItem(color); }
-                 */
-
+        if (getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
+            SketchletEditor.getInstance().saveRegionUndo();
+            for (ActiveRegion action : getInstance().getCurrentPage().getRegions().getSelectedRegions()) {
                 action.fontColor = color;
-                ActiveRegionsExtraPanel.reload(currentPage.regions.getLastSelectedRegion());
-                TutorialPanel.addLine("cmd", "Set the region text color: " + color);
+                ActiveRegionsExtraPanel.reload(getCurrentPage().getRegions().getLastSelectedRegion());
             }
-            ActiveRegionsExtraPanel.reload(SketchletEditor.editorPanel.currentPage.regions.selectedRegions.lastElement());
+            ActiveRegionsExtraPanel.reload(SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement());
             this.forceRepaint();
         }
 
     }
 
     public void setTextStyle(String style) {
-        if (editorPanel.currentPage.regions.selectedRegions != null && editorPanel.currentPage.regions.selectedRegions.size() > 0) {
-            SketchletEditor.editorPanel.saveRegionUndo();
-            for (ActiveRegion action : editorPanel.currentPage.regions.selectedRegions) {
-                /*
-                 * if (action.styleCombo != null) {
-                 * action.styleCombo.setSelectedItem(style); }
-                 */
-
+        if (getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
+            SketchletEditor.getInstance().saveRegionUndo();
+            for (ActiveRegion action : getInstance().getCurrentPage().getRegions().getSelectedRegions()) {
                 action.fontStyle = style;
-                ActiveRegionsExtraPanel.reload(currentPage.regions.getLastSelectedRegion());
-                TutorialPanel.addLine("cmd", "Set the region text style: " + style);
+                ActiveRegionsExtraPanel.reload(getCurrentPage().getRegions().getLastSelectedRegion());
             }
-            ActiveRegionsExtraPanel.reload(SketchletEditor.editorPanel.currentPage.regions.selectedRegions.lastElement());
+            ActiveRegionsExtraPanel.reload(SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement());
             this.forceRepaint();
         }
 
     }
 
     public void setFillColor(String color) {
-        if (editorPanel.currentPage.regions.selectedRegions != null && editorPanel.currentPage.regions.selectedRegions.size() > 0) {
-            SketchletEditor.editorPanel.saveRegionUndo();
-            for (ActiveRegion action : editorPanel.currentPage.regions.selectedRegions) {
-                // action.fillColor.setSelectedItem(color);
+        if (getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
+            SketchletEditor.getInstance().saveRegionUndo();
+            for (ActiveRegion action : getInstance().getCurrentPage().getRegions().getSelectedRegions()) {
                 action.strFillColor = color;
-                ActiveRegionsExtraPanel.reload(currentPage.regions.getLastSelectedRegion());
-                TutorialPanel.addLine("cmd", "Set the region fill color: " + color);
+                ActiveRegionsExtraPanel.reload(getCurrentPage().getRegions().getLastSelectedRegion());
             }
-            ActiveRegionsExtraPanel.reload(SketchletEditor.editorPanel.currentPage.regions.selectedRegions.lastElement());
+            ActiveRegionsExtraPanel.reload(SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement());
             this.forceRepaint();
         }
 
     }
 
     public void setTransparency(float t) {
-        if (editorPanel.currentPage.regions.selectedRegions != null && editorPanel.currentPage.regions.selectedRegions.size() > 0) {
-            SketchletEditor.editorPanel.saveRegionUndo();
-            for (ActiveRegion action : editorPanel.currentPage.regions.selectedRegions) {
+        if (getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
+            SketchletEditor.getInstance().saveRegionUndo();
+            for (ActiveRegion action : getInstance().getCurrentPage().getRegions().getSelectedRegions()) {
                 action.strTransparency = (t == 0) ? "" : "" + t;
-                TutorialPanel.addLine("cmd", "Set the region transparency: " + t);
             }
-            ActiveRegionsExtraPanel.reload(SketchletEditor.editorPanel.currentPage.regions.selectedRegions.lastElement());
+            ActiveRegionsExtraPanel.reload(SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement());
             this.forceRepaint();
         }
 
     }
 
     public void setSpeed(int s) {
-        if (editorPanel.currentPage.regions.selectedRegions != null && editorPanel.currentPage.regions.selectedRegions.size() > 0) {
-            SketchletEditor.editorPanel.saveRegionUndo();
-            for (ActiveRegion action : editorPanel.currentPage.regions.selectedRegions) {
+        if (getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
+            SketchletEditor.getInstance().saveRegionUndo();
+            for (ActiveRegion action : getInstance().getCurrentPage().getRegions().getSelectedRegions()) {
                 action.strSpeed = (s == 0) ? "" : "" + s;
-                TutorialPanel.addLine("cmd", "Set the region speed: " + s);
             }
-            ActiveRegionsExtraPanel.reload(SketchletEditor.editorPanel.currentPage.regions.selectedRegions.lastElement());
+            ActiveRegionsExtraPanel.reload(SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement());
             this.forceRepaint();
         }
 
     }
 
     public void setRotationSpeed(int s) {
-        if (editorPanel.currentPage.regions.selectedRegions != null && editorPanel.currentPage.regions.selectedRegions.size() > 0) {
-            SketchletEditor.editorPanel.saveRegionUndo();
-            for (ActiveRegion action : editorPanel.currentPage.regions.selectedRegions) {
+        if (getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
+            SketchletEditor.getInstance().saveRegionUndo();
+            for (ActiveRegion action : getInstance().getCurrentPage().getRegions().getSelectedRegions()) {
                 action.strRotationSpeed = (s == 0) ? "" : "" + s;
-                TutorialPanel.addLine("cmd", "Set the region rotation speed: " + s);
             }
-            ActiveRegionsExtraPanel.reload(SketchletEditor.editorPanel.currentPage.regions.selectedRegions.lastElement());
+            ActiveRegionsExtraPanel.reload(SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement());
             this.forceRepaint();
         }
 
     }
 
     public void setHorizontal3DRotation(int rot) {
-        if (editorPanel.currentPage.regions.selectedRegions != null && editorPanel.currentPage.regions.selectedRegions.size() > 0) {
-            SketchletEditor.editorPanel.saveRegionUndo();
-            for (ActiveRegion action : editorPanel.currentPage.regions.selectedRegions) {
+        if (getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
+            SketchletEditor.getInstance().saveRegionUndo();
+            for (ActiveRegion action : getInstance().getCurrentPage().getRegions().getSelectedRegions()) {
                 action.strRotation3DHorizontal = (rot == 0) ? "" : "" + rot;
-                TutorialPanel.addLine("cmd", "Set the region horizontal 3D rotation: " + rot);
             }
-            ActiveRegionsExtraPanel.reload(SketchletEditor.editorPanel.currentPage.regions.selectedRegions.lastElement());
+            ActiveRegionsExtraPanel.reload(SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement());
             this.forceRepaint();
         }
 
     }
 
     public void setVertical3DRotation(int rot) {
-        if (editorPanel.currentPage.regions.selectedRegions != null && editorPanel.currentPage.regions.selectedRegions.size() > 0) {
-            SketchletEditor.editorPanel.saveRegionUndo();
-            for (ActiveRegion action : editorPanel.currentPage.regions.selectedRegions) {
+        if (getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
+            SketchletEditor.getInstance().saveRegionUndo();
+            for (ActiveRegion action : getInstance().getCurrentPage().getRegions().getSelectedRegions()) {
                 action.strRotation3DVertical = (rot == 0) ? "" : "" + rot;
-                TutorialPanel.addLine("cmd", "Set the region vertical 3D rotation: " + rot);
             }
-            ActiveRegionsExtraPanel.reload(SketchletEditor.editorPanel.currentPage.regions.selectedRegions.lastElement());
+            ActiveRegionsExtraPanel.reload(SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement());
             this.forceRepaint();
         }
 
     }
 
     public void setLineStyle(String style) {
-        if (editorPanel.currentPage.regions.selectedRegions != null && editorPanel.currentPage.regions.selectedRegions.size() > 0) {
-            SketchletEditor.editorPanel.saveRegionUndo();
-            for (ActiveRegion action : editorPanel.currentPage.regions.selectedRegions) {
-                // action.lineStyle.setSelectedItem(style);
-                action.strLineStyle = style;
-                ActiveRegionsExtraPanel.reload(currentPage.regions.getLastSelectedRegion());
-                TutorialPanel.addLine("cmd", "Set the region line style: " + style);
+        if (getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
+            SketchletEditor.getInstance().saveRegionUndo();
+            for (ActiveRegion action : getInstance().getCurrentPage().getRegions().getSelectedRegions()) {
+                action.lineStyle = style;
+                ActiveRegionsExtraPanel.reload(getCurrentPage().getRegions().getLastSelectedRegion());
             }
-            ActiveRegionsExtraPanel.reload(SketchletEditor.editorPanel.currentPage.regions.selectedRegions.lastElement());
+            ActiveRegionsExtraPanel.reload(SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement());
             this.forceRepaint();
         }
 
     }
 
     public void setLineThickness(String thickness) {
-        if (editorPanel.currentPage.regions.selectedRegions != null && editorPanel.currentPage.regions.selectedRegions.size() > 0) {
-            SketchletEditor.editorPanel.saveRegionUndo();
-            for (ActiveRegion action : editorPanel.currentPage.regions.selectedRegions) {
-                // action.lineThickness.setSelectedItem(thickness);
-                action.strLineThickness = thickness;
-                ActiveRegionsExtraPanel.reload(currentPage.regions.getLastSelectedRegion());
-                TutorialPanel.addLine("cmd", "Set the region line thickness: " + thickness);
+        if (getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
+            SketchletEditor.getInstance().saveRegionUndo();
+            for (ActiveRegion action : getInstance().getCurrentPage().getRegions().getSelectedRegions()) {
+                action.lineThickness = thickness;
+                ActiveRegionsExtraPanel.reload(getCurrentPage().getRegions().getLastSelectedRegion());
             }
-            ActiveRegionsExtraPanel.reload(SketchletEditor.editorPanel.currentPage.regions.selectedRegions.lastElement());
+            ActiveRegionsExtraPanel.reload(SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement());
             this.forceRepaint();
         }
 
     }
 
     public void setPenLineThickness(String thickness) {
-        if (editorPanel.currentPage.regions.selectedRegions != null && editorPanel.currentPage.regions.selectedRegions.size() > 0) {
-            SketchletEditor.editorPanel.saveRegionUndo();
-            for (ActiveRegion action : editorPanel.currentPage.regions.selectedRegions) {
+        if (getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
+            SketchletEditor.getInstance().saveRegionUndo();
+            for (ActiveRegion action : getInstance().getCurrentPage().getRegions().getSelectedRegions()) {
                 action.strPen = thickness;
-                ActiveRegionsExtraPanel.reload(currentPage.regions.getLastSelectedRegion());
-                TutorialPanel.addLine("cmd", "Set the region pen thickness: " + thickness);
+                ActiveRegionsExtraPanel.reload(getCurrentPage().getRegions().getLastSelectedRegion());
             }
-            ActiveRegionsExtraPanel.reload(SketchletEditor.editorPanel.currentPage.regions.selectedRegions.lastElement());
+            ActiveRegionsExtraPanel.reload(SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement());
             this.forceRepaint();
         }
     }
@@ -3274,8 +3967,8 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     public void openSketch(String sketch) {
         int n = -1;
         int i = 0;
-        for (Page s : pages.pages) {
-            if (s.title.equalsIgnoreCase(sketch)) {
+        for (Page s : getPages().getPages()) {
+            if (s.getTitle().equalsIgnoreCase(sketch)) {
                 n = i;
                 break;
             }
@@ -3290,46 +3983,41 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
 
     public void openSketchAndWait(Page page) {
         this.selectSketch(page);
-        /*
-         * while (bLoading) { try { Thread.sleep(50); } catch (Exception e) { }
-         * }
-         */
     }
 
     public void openSketchByIndex(final int tabIndex) {
-        if (currentPage != null && tabIndex == pages.pages.indexOf(currentPage)) {
+        if (getCurrentPage() != null && tabIndex == getPages().getPages().indexOf(getCurrentPage())) {
             return;
         }
 
-        if (bLoading) {
+        if (isbLoading()) {
             return;
         }
 
-        if (currentPage != null && controlPanel != null) {
-            navigationHistory.add(currentPage);
-            this.controlPanel.goBack.setEnabled(true);
+        if (getCurrentPage() != null && getControlPanel() != null) {
+            getNavigationHistory().add(getCurrentPage());
+            this.getControlPanel().goBack.setEnabled(true);
         }
-        if (editorPanel.tool != null) {
-            editorPanel.tool.deactivate();
+        if (getInstance().getTool() != null) {
+            getInstance().getTool().deactivate();
         }
-        if (editorPanel.tabsModes.getSelectedIndex() == 2) {
-            editorPanel.tabsModes.setSelectedIndex(0);
+        if (getInstance().getTabsModes().getSelectedIndex() == 2) {
+            getInstance().getTabsModes().setSelectedIndex(0);
         }
 
-        bLoading = true;
+        setbLoading(true);
         if (!Workspace.bCloseOnPlaybackEnd) {
-            if (Pages.msgFrame == null) {
+            if (Pages.getMessageFrame() == null) {
                 if (PlaybackFrame.playbackFrame != null && PlaybackFrame.playbackFrame[0] != null) {
                     MessageFrame.showMessage(PlaybackFrame.playbackFrame[0], Language.translate("Opening pages..."), PlaybackFrame.playbackFrame[0].playbackPanel);
                 } else {
-                    MessageFrame.showMessage(SketchletEditor.editorFrame, Language.translate("Opening page..."), SketchletEditor.editorPanel.centralPanel);
-                    TutorialPanel.addLine("cmd", "Go to page: " + editorPanel.pages.pages.elementAt(tabIndex).title);
+                    MessageFrame.showMessage(SketchletEditor.editorFrame, Language.translate("Opening page..."), SketchletEditor.getInstance().getCentralPanel());
                 }
 
                 bCloseMsg = true;
             }
         }
-        editorPanel.save();
+        getInstance().save();
 
         try {
             SwingUtilities.invokeLater(new Runnable() {
@@ -3338,68 +4026,68 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
 
                     try {
                         SketchletEditor.editorFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                        editorPanel.flush();
+                        getInstance().flush();
 
-                        editorPanel.enableControls();
-                        editorPanel.currentPage.regions.selectedRegions = null;
+                        getInstance().enableControls();
+                        getInstance().getCurrentPage().getRegions().setSelectedRegions(null);
 
-                        if (tabIndex >= 0 && tabIndex < editorPanel.pages.pages.size()) {
+                        if (tabIndex >= 0 && tabIndex < getInstance().getPages().getPages().size()) {
                             GlobalProperties.setAndSave("last-sketch-index", "" + tabIndex);
-                            if (editorPanel.currentPage != null) {
-                                editorPanel.currentPage.deactivate(false);
+                            if (getInstance().getCurrentPage() != null) {
+                                getInstance().getCurrentPage().deactivate(false);
                             }
 
-                            editorPanel.masterPage = editorPanel.pages.getSketch("Master");
-                            editorPanel.currentPage = editorPanel.pages.pages.elementAt(tabIndex);
-                            editorPanel.editorFrame.setTitle(editorPanel.currentPage.title);
-                            editorPanel.sketchListPanel.setPageTitle(editorPanel.currentPage.getTitle());
-                            editorPanel.textArea.setText(editorPanel.currentPage.strTextAnnotation);
+                            getInstance().setMasterPage(getInstance().getPages().getSketch("Master"));
+                            getInstance().setCurrentPage(getInstance().getPages().getPages().elementAt(tabIndex));
+                            getInstance().editorFrame.setTitle(getInstance().getCurrentPage().getTitle());
+                            getInstance().getSketchListPanel().setPageTitle(getInstance().getCurrentPage().getTitle());
+                            getInstance().textArea.setText(getInstance().getCurrentPage().getTextAnnotation());
                             if (bCloseMsg) {
-                                editorPanel.refresh();
+                                getInstance().refresh();
                             }
 
-                            if (editorPanel.currentPage != null) {
-                                editorPanel.currentPage.activate(false);
-                                editorPanel.reloadPlay();
+                            if (getInstance().getCurrentPage() != null) {
+                                getInstance().getCurrentPage().activate(false);
+                                getInstance().reloadPlay();
                             }
                         }
 
-                        SketchletEditor.editorPanel.perspectivePanel.repaint();
-                        SketchletEditor.editorPanel.scrollPane.getViewport().setViewPosition(new Point(0, 0));
+                        SketchletEditor.getInstance().getPerspectivePanel().repaint();
+                        SketchletEditor.getInstance().scrollPane.getViewport().setViewPosition(new Point(0, 0));
 
                         while (bSaving) {
                             Thread.sleep(10);
                         }
 
-                        editorPanel.initImages();
+                        getInstance().initImages();
 
                         if (Workspace.bCloseOnPlaybackEnd) {
                             Workspace.closeSplashScreen();
                         }
                         ActiveRegionsFrame.reload();
-                        formulaToolbar.reload();
+                        getFormulaToolbar().reload();
 
                         editorFrame.setVisible(true);
                         SketchletEditor.editorFrame.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                        ActivityLog.log("openSketch", "" + SketchletEditor.editorPanel.currentPage.title);
+                        ActivityLog.log("openSketch", "" + SketchletEditor.getInstance().getCurrentPage().getTitle());
 
-                        SketchletEditor.editorPanel.formulaToolbar.reload();
+                        SketchletEditor.getInstance().getFormulaToolbar().reload();
                     } catch (Throwable e) {
                         log.error(e);
                     } finally {
-                        if (bCloseMsg && Pages.msgFrame != null) {
+                        if (bCloseMsg && Pages.getMessageFrame() != null) {
                             bCloseMsg = false;
-                            bLoading = false;
+                            setbLoading(false);
                             MessageFrame.closeMessage();
-                            editorPanel.repaint();
+                            getInstance().repaint();
                         }
                         RefreshTime.update();
-                        SketchletEditor.transparencyFactor = 1.0;
-                        SketchletEditor.editorPanel.repaint();
-                        SketchletEditor.editorPanel.pageVariablesPanel.refreshComponents();
+                        SketchletEditor.setTransparencyFactor(1.0);
+                        SketchletEditor.getInstance().repaint();
+                        SketchletEditor.getInstance().getPageVariablesPanel().refreshComponents();
                     }
 
-                    bLoading = false;
+                    setbLoading(false);
                 }
             });
         } catch (Throwable e2) {
@@ -3409,22 +4097,22 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public BufferedImage getImage() {
-        return currentPage.images[this.layer];
+        return getCurrentPage().getImages()[this.layer];
     }
 
     public void setImage(BufferedImage image) {
-        currentPage.images[this.layer] = image;
-        this.currentPage.imageUpdated[this.layer] = true;
-        File file = this.currentPage.getLayerImageFile(this.layer);
-        if (ImageCache.images != null && ImageCache.images.get(file) != null && image != null) {
-            ImageCache.images.put(file, image);
+        getCurrentPage().getImages()[this.layer] = image;
+        this.getCurrentPage().getImageUpdated()[this.layer] = true;
+        File file = this.getCurrentPage().getLayerImageFile(this.layer);
+        if (ImageCache.getImages() != null && ImageCache.getImages().get(file) != null && image != null) {
+            ImageCache.getImages().put(file, image);
         }
         revalidate();
 
     }
 
     public void setImageUpdated(boolean bUpdated) {
-        this.currentPage.imageUpdated[this.layer] = bUpdated;
+        this.getCurrentPage().getImageUpdated()[this.layer] = bUpdated;
     }
 
     public boolean isInShiftMode() {
@@ -3448,11 +4136,11 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public int getStrokeWidth() {
-        return (this.colorToolbar == null || this.colorToolbar.slider == null) ? 0 : this.colorToolbar.slider.getValue();
+        return (this.getColorToolbar() == null || this.getColorToolbar().slider == null) ? 0 : this.getColorToolbar().slider.getValue();
     }
 
     public Graphics2D getImageGraphics() {
-        return this.g2FreeHandDraw;
+        return this.g2SketchletEditor;
     }
 
     public SelectTool getSelectTool() {
@@ -3481,94 +4169,102 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
 
     public void resizeImage(int w, int h) {
         this.saveImageUndo();
-        for (int i = 0; i < SketchletEditor.editorPanel.currentPage.images.length; i++) {
+        for (int i = 0; i < SketchletEditor.getInstance().getCurrentPage().getImages().length; i++) {
             try {
-                currentPage.pageWidth = w;
-                currentPage.pageHeight = h;
-                if (SketchletEditor.editorPanel.currentPage.images[i] != null) {
+                getCurrentPage().setPageWidth(w);
+                getCurrentPage().setPageHeight(h);
+                if (SketchletEditor.getInstance().getCurrentPage().getImages()[i] != null) {
                     BufferedImage img = Workspace.createCompatibleImage(w, h);
                     Graphics2D g2 = img.createGraphics();
-                    g2.drawImage(SketchletEditor.editorPanel.currentPage.images[i], 0, 0, w, h, null);
+                    g2.drawImage(SketchletEditor.getInstance().getCurrentPage().getImages()[i], 0, 0, w, h, null);
                     g2.dispose();
-                    SketchletEditor.editorPanel.updateImage(i, img);
+                    SketchletEditor.getInstance().updateImage(i, img);
                 }
             } catch (Throwable e) {
             }
-            SketchletEditor.editorPanel.createGraphics();
-            SketchletEditor.editorPanel.revalidate();
+            SketchletEditor.getInstance().createGraphics();
+            SketchletEditor.getInstance().revalidate();
             RefreshTime.update();
 
-            SketchletEditor.editorPanel.repaint();
+            SketchletEditor.getInstance().repaint();
         }
 
     }
 
     public void resizeCanvas(int w, int h) {
         this.saveImageUndo();
-        for (int i = 0; i < SketchletEditor.editorPanel.currentPage.images.length; i++) {
+        for (int i = 0; i < SketchletEditor.getInstance().getCurrentPage().getImages().length; i++) {
             try {
-                currentPage.pageWidth = w;
-                currentPage.pageHeight = h;
-                if (SketchletEditor.editorPanel.currentPage.images[i] != null) {
+                getCurrentPage().setPageWidth(w);
+                getCurrentPage().setPageHeight(h);
+                if (SketchletEditor.getInstance().getCurrentPage().getImages()[i] != null) {
                     BufferedImage img = Workspace.createCompatibleImage(w, h);
                     Graphics2D g2 = img.createGraphics();
-                    g2.drawImage(SketchletEditor.editorPanel.currentPage.images[i], 0, 0, null);
+                    g2.drawImage(SketchletEditor.getInstance().getCurrentPage().getImages()[i], 0, 0, null);
                     g2.dispose();
-                    SketchletEditor.editorPanel.updateImage(i, img);
+                    SketchletEditor.getInstance().updateImage(i, img);
                 }
             } catch (Throwable e) {
             }
-            SketchletEditor.editorPanel.createGraphics();
-            SketchletEditor.editorPanel.revalidate();
+            SketchletEditor.getInstance().createGraphics();
+            SketchletEditor.getInstance().revalidate();
             RefreshTime.update();
 
-            SketchletEditor.editorPanel.repaint();
+            SketchletEditor.getInstance().repaint();
         }
 
     }
 
     public Page getSketch() {
-        return this.currentPage;
+        return this.getCurrentPage();
     }
 
     public Page getMasterPage() {
         return this.masterPage;
     }
 
+    public void setSelectedModesTabIndex(int tabIndex) {
+        this.getTabsModes().setSelectedIndex(tabIndex);
+    }
+
+    public int getSelectedModesTabIndex() {
+        return this.getTabsModes().getSelectedIndex();
+    }
+
     public BufferedImage getImage(int layer) {
-        return currentPage.images[layer];
+        return getCurrentPage().getImages()[layer];
     }
 
     public void setImage(int layer, BufferedImage img) {
-        if (currentPage.images[layer] != null) {
-            currentPage.images[layer].flush();
+        if (getCurrentPage().getImages()[layer] != null) {
+            getCurrentPage().getImages()[layer].flush();
         }
-        currentPage.images[layer] = img;
-        File file = this.currentPage.getLayerImageFile(layer);
-        if (ImageCache.images != null && ImageCache.images.get(file) != null) {
-            ImageCache.images.get(file).flush();
+        getCurrentPage().getImages()[layer] = img;
+        File file = this.getCurrentPage().getLayerImageFile(layer);
+        if (ImageCache.getImages() != null && ImageCache.getImages().get(file) != null) {
+            ImageCache.getImages().get(file).flush();
             if (img != null) {
-                ImageCache.images.put(file, img);
+                ImageCache.getImages().put(file, img);
             }
         }
     }
 
     public void updateImage(int layer, BufferedImage img) {
-        if (currentPage.images[layer] != null) {
-            currentPage.images[layer].flush();
+        if (getCurrentPage().getImages()[layer] != null) {
+            getCurrentPage().getImages()[layer].flush();
         }
-        currentPage.images[layer] = img;
-        this.currentPage.imageUpdated[layer] = true;
+        getCurrentPage().getImages()[layer] = img;
+        this.getCurrentPage().getImageUpdated()[layer] = true;
 
-        File file = this.currentPage.getLayerImageFile(layer);
-        if (ImageCache.images != null && ImageCache.images.get(file) != null && img != null) {
-            ImageCache.images.get(file).flush();
-            ImageCache.images.put(file, img);
+        File file = this.getCurrentPage().getLayerImageFile(layer);
+        if (ImageCache.getImages() != null && ImageCache.getImages().get(file) != null && img != null) {
+            ImageCache.getImages().get(file).flush();
+            ImageCache.getImages().put(file, img);
         }
     }
 
     public int getImageCount() {
-        return currentPage.images.length;
+        return getCurrentPage().getImages().length;
     }
 
     public BufferedImage getMasterImage() {
@@ -3579,11 +4275,15 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
         this.masterImage = image;
     }
 
+    public void setLayer(int layer) {
+        this.layer = layer;
+    }
+
     public int getLayer() {
         return this.layer;
     }
 
-    public EditorMode getMode() {
+    public SketchletEditorMode getMode() {
         return this.mode;
     }
 
@@ -3596,11 +4296,11 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public double getScaleX() {
-        return this.scale;
+        return this.getScale();
     }
 
     public double getScaleY() {
-        return this.scale;
+        return this.getScale();
     }
 
     public void parentPaintComponent(Graphics2D g2) {
@@ -3608,8 +4308,8 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public void repaintInternalPlaybackPanel() {
-        if (this.internalPlaybackPanel != null) {
-            this.internalPlaybackPanel.repaint();
+        if (this.getInternalPlaybackPanel() != null) {
+            this.getInternalPlaybackPanel().repaint();
         }
     }
 
@@ -3618,37 +4318,37 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
     }
 
     public boolean shouldShapeFill() {
-        return outlineType == 1 || outlineType == 2;
+        return getOutlineType() == 1 || getOutlineType() == 2;
     }
 
     public boolean shouldShapeOutline() {
-        return outlineType == 0 || outlineType == -1;
+        return getOutlineType() == 0 || getOutlineType() == -1;
     }
 
     public void goToTrajectoryMode() {
-        if (tabsModes.getTabCount() == 3) {
-            tabsModes.removeTabAt(2);
+        if (getTabsModes().getTabCount() == 3) {
+            getTabsModes().removeTabAt(2);
         }
 
-        tabsModes.addTab("", Workspace.createImageIcon("resources/trajectory.png"), new JPanel());
-        tabsModes.setSelectedIndex(2);
-        this.mode = EditorMode.SKETCHING;
-        this.modeToolbar.addComponents(EditorMode.TRAJECTORY);
-        SketchletEditor.editorPanel.setTool(SketchletEditor.editorPanel.trajectoryPointsTool, null);
-        SketchletEditor.editorPanel.createGraphics();
-        SketchletEditor.editorPanel.setCursor();
-        SketchletEditor.editorPanel.revalidate();
+        getTabsModes().addTab("", Workspace.createImageIcon("resources/trajectory.png"), new JPanel());
+        getTabsModes().setSelectedIndex(2);
+        this.setEditorMode(SketchletEditorMode.SKETCHING);
+        this.getModeToolbar().addComponents(SketchletEditorMode.TRAJECTORY);
+        SketchletEditor.getInstance().setTool(SketchletEditor.getInstance().getTrajectoryPointsTool(), null);
+        SketchletEditor.getInstance().createGraphics();
+        SketchletEditor.getInstance().setCursor();
+        SketchletEditor.getInstance().revalidate();
         RefreshTime.update();
 
-        SketchletEditor.editorPanel.repaint();
+        SketchletEditor.getInstance().repaint();
     }
 
     public void openByID(String strID) {
-        this.helpViewer.showHelpByID(strID);
+        this.getHelpViewer().showHelpByID(strID);
     }
 
     public Component getPanel() {
-        return SketchletEditor.editorPanel.scrollPane;
+        return SketchletEditor.getInstance().scrollPane;
     }
 
     public String getName() {

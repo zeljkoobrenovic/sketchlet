@@ -13,15 +13,15 @@ import net.sf.sketchlet.context.VariableUpdateListener;
 import net.sf.sketchlet.designer.ApplicationLifecycleCentre;
 import net.sf.sketchlet.designer.GlobalProperties;
 import net.sf.sketchlet.designer.Workspace;
-import net.sf.sketchlet.designer.data.Page;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.designer.programming.macros.Commands;
-import net.sf.sketchlet.designer.ui.MessageFrame;
-import net.sf.sketchlet.designer.ui.connectors.PluginsFrame;
-import net.sf.sketchlet.designer.ui.playback.PlaybackFrame;
-import net.sf.sketchlet.designer.ui.playback.PlaybackPanel;
-import net.sf.sketchlet.parser.JEParser;
-import net.sf.sketchlet.pluginloader.PluginLoader;
+import net.sf.sketchlet.designer.editor.ui.MessageFrame;
+import net.sf.sketchlet.designer.editor.ui.connectors.PluginsFrame;
+import net.sf.sketchlet.designer.playback.ui.PlaybackFrame;
+import net.sf.sketchlet.designer.playback.ui.PlaybackPanel;
+import net.sf.sketchlet.model.evaluator.JEParser;
+import net.sf.sketchlet.loaders.pluginloader.PluginLoader;
+import net.sf.sketchlet.model.Page;
+import net.sf.sketchlet.model.programming.macros.Commands;
 import net.sf.sketchlet.script.ScriptPluginProxy;
 
 import javax.swing.*;
@@ -37,10 +37,10 @@ import java.util.Vector;
 public class SketchletContextImpl extends SketchletContext {
 
     private boolean stopped;
-    Object script;
-    public static BufferedImage image = Workspace.createCompatibleImage(2000, 2000);
-    Graphics2D g2;
-    static JFileChooser fc;
+    private Object script;
+    private static BufferedImage image = Workspace.createCompatibleImage(2000, 2000);
+    private Graphics2D g2;
+    private static JFileChooser fc;
 
     private static String getFilePath(String title, int selectionMode, boolean bAllFiles) {
         if (fc == null) {
@@ -68,6 +68,14 @@ public class SketchletContextImpl extends SketchletContext {
 
     public SketchletContextImpl(Object script) {
         this.script = script;
+    }
+
+    public static BufferedImage getImage() {
+        return image;
+    }
+
+    public static void setImage(BufferedImage image) {
+        SketchletContextImpl.image = image;
     }
 
     @Override
@@ -112,10 +120,10 @@ public class SketchletContextImpl extends SketchletContext {
 
     private Page getSketch() {
         Page page;
-        if ((PlaybackFrame.playbackFrame != null || SketchletEditor.editorPanel.internalPlaybackPanel != null) && PlaybackPanel.currentPage != null) {
+        if ((PlaybackFrame.playbackFrame != null || SketchletEditor.getInstance().getInternalPlaybackPanel() != null) && PlaybackPanel.currentPage != null) {
             page = PlaybackPanel.currentPage;
         } else {
-            page = SketchletEditor.editorPanel.currentPage;
+            page = SketchletEditor.getInstance().getCurrentPage();
         }
         return page;
     }
@@ -127,7 +135,7 @@ public class SketchletContextImpl extends SketchletContext {
 
     @Override
     public boolean isApplicationReady() {
-        return DataServer.variablesServer != null;
+        return DataServer.getInstance() != null;
     }
 
     @Override
@@ -137,37 +145,37 @@ public class SketchletContextImpl extends SketchletContext {
 
     @Override
     public void startMacro(String name) {
-        Commands.execute(this, "Start action", name, "", getSketch().activeTimers, getSketch().activeMacros, "", "", null);
+        Commands.execute(this, "Start action", name, "", getSketch().getActiveTimers(), getSketch().getActiveMacros(), "", "", null);
     }
 
     @Override
     public void startCommandSequence(String name) {
-        Commands.execute(this, "Start sequence", name, "", getSketch().activeTimers, getSketch().activeMacros, "", "", null);
+        Commands.execute(this, "Start sequence", name, "", getSketch().getActiveTimers(), getSketch().getActiveMacros(), "", "", null);
     }
 
     @Override
     public void stopMacro(String name) {
-        Commands.execute(this, "Stop action", name, "", getSketch().activeTimers, getSketch().activeMacros, "", "", null);
+        Commands.execute(this, "Stop action", name, "", getSketch().getActiveTimers(), getSketch().getActiveMacros(), "", "", null);
     }
 
     @Override
     public void startTimer(String name) {
-        Commands.execute(this, "Start timer", name, "", getSketch().activeTimers, getSketch().activeMacros, "", "", null);
+        Commands.execute(this, "Start timer", name, "", getSketch().getActiveTimers(), getSketch().getActiveMacros(), "", "", null);
     }
 
     @Override
     public void stopTimer(String name) {
-        Commands.execute(this, "Stop timer", name, "", getSketch().activeTimers, getSketch().activeMacros, "", "", null);
+        Commands.execute(this, "Stop timer", name, "", getSketch().getActiveTimers(), getSketch().getActiveMacros(), "", "", null);
     }
 
     @Override
     public void pauseTimer(String name) {
-        Commands.execute(this, "Pause timer", name, "", getSketch().activeTimers, getSketch().activeMacros, "", "", null);
+        Commands.execute(this, "Pause timer", name, "", getSketch().getActiveTimers(), getSketch().getActiveMacros(), "", "", null);
     }
 
     @Override
     public void pause(double seconds) {
-        if (DataServer.variablesServer == null || DataServer.paused || stopped) {
+        if (DataServer.getInstance() == null || DataServer.isPaused() || stopped) {
             return;
         }
         try {
@@ -180,7 +188,7 @@ public class SketchletContextImpl extends SketchletContext {
 
     @Override
     public void waitForVariableUpdate(final String variable) {
-        if (DataServer.variablesServer == null || DataServer.paused || stopped) {
+        if (DataServer.getInstance() == null || DataServer.isPaused() || stopped) {
             waiting = false;
             return;
         }
@@ -199,17 +207,17 @@ public class SketchletContextImpl extends SketchletContext {
                 }
             }
         };
-        DataServer.variablesServer.addVariablesUpdateListener(ch);
+        DataServer.getInstance().addVariablesUpdateListener(ch);
         try {
             while (waiting) {
                 Thread.sleep(20);
             }
         } catch (Exception e) {
         }
-        DataServer.variablesServer.removeVariablesUpdateListener(ch);
+        DataServer.getInstance().removeVariablesUpdateListener(ch);
 
         if (script != null && script instanceof ScriptPluginProxy) {
-            ((ScriptPluginProxy) script).updateContext(variable, DataServer.variablesServer.getVariableValue(variable));
+            ((ScriptPluginProxy) script).updateContext(variable, DataServer.getInstance().getVariableValue(variable));
         }
     }
 
@@ -235,7 +243,7 @@ public class SketchletContextImpl extends SketchletContext {
 
     @Override
     public void updateVariable(String variable, String value) {
-        if (DataServer.variablesServer == null || DataServer.paused || stopped) {
+        if (DataServer.getInstance() == null || DataServer.isPaused() || stopped) {
             return;
         }
         Commands.updateVariableOrProperty(this, variable, value, Commands.ACTION_VARIABLE_UPDATE);
@@ -308,14 +316,14 @@ public class SketchletContextImpl extends SketchletContext {
 
     @Override
     public String getVariableValue(String variable) {
-        if (DataServer.variablesServer == null || DataServer.paused || stopped) {
+        if (DataServer.getInstance() == null || DataServer.isPaused() || stopped) {
             return null;
         }
 
         if (script != null && script instanceof ScriptPluginProxy) {
-            ((ScriptPluginProxy) script).updateContext(variable, DataServer.variablesServer.getVariableValue(variable));
+            ((ScriptPluginProxy) script).updateContext(variable, DataServer.getInstance().getVariableValue(variable));
         }
-        return DataServer.variablesServer.getVariableValue(variable);
+        return DataServer.getInstance().getVariableValue(variable);
     }
 
     @Override
@@ -366,15 +374,15 @@ public class SketchletContextImpl extends SketchletContext {
 
     @Override
     public void repaint() {
-        if (SketchletEditor.editorPanel != null) {
-            SketchletEditor.editorPanel.repaintEverything();
+        if (SketchletEditor.getInstance() != null) {
+            SketchletEditor.getInstance().repaintEverything();
         }
     }
 
     @Override
     public void requestFocus() {
-        if (SketchletEditor.editorPanel.internalPlaybackPanel != null) {
-            SketchletEditor.editorPanel.internalPlaybackPanel.requestFocus();
+        if (SketchletEditor.getInstance().getInternalPlaybackPanel() != null) {
+            SketchletEditor.getInstance().getInternalPlaybackPanel().requestFocus();
         }
 
         if (PlaybackFrame.playbackFrame != null) {
@@ -390,7 +398,7 @@ public class SketchletContextImpl extends SketchletContext {
 
     @Override
     public JFrame getMainFrame() {
-        return Workspace.mainFrame;
+        return Workspace.getMainFrame();
     }
 
     @Override
@@ -405,13 +413,13 @@ public class SketchletContextImpl extends SketchletContext {
 
     @Override
     public int getPageCount() {
-        return SketchletEditor.pages.pages.size();
+        return SketchletEditor.getPages().getPages().size();
     }
 
     @Override
     public Vector<PageContext> getPages() {
         Vector<PageContext> regionsContext = new Vector<PageContext>();
-        for (Page s : SketchletEditor.pages.pages) {
+        for (Page s : SketchletEditor.getPages().getPages()) {
             regionsContext.add(new PageContextImpl(s));
         }
 
@@ -420,26 +428,31 @@ public class SketchletContextImpl extends SketchletContext {
 
     @Override
     public boolean isInPlaybackMode() {
-        return (PlaybackFrame.playbackFrame != null || (SketchletEditor.editorPanel != null && SketchletEditor.editorPanel.internalPlaybackPanel != null))
+        return (PlaybackFrame.playbackFrame != null || (SketchletEditor.getInstance() != null && SketchletEditor.getInstance().getInternalPlaybackPanel() != null))
                 && PlaybackPanel.currentPage != null;
     }
 
+    @Override
     public boolean isMessageShowing() {
         return MessageFrame.isOpen();
     }
 
+    @Override
     public ClassLoader getPluginClassLoader() {
-        return PluginLoader.classLoader;
+        return PluginLoader.getClassLoader();
     }
 
+    @Override
     public void addPageEventsListener(PageEventsListener listener) {
-        ApplicationLifecycleCentre.pageListeners.add(listener);
+        ApplicationLifecycleCentre.getPageListeners().add(listener);
     }
 
+    @Override
     public void removePageEventsListener(PageEventsListener listener) {
-        ApplicationLifecycleCentre.pageListeners.remove(listener);
+        ApplicationLifecycleCentre.getPageListeners().remove(listener);
     }
 
+    @Override
     public String getUserDirectory() {
         return SketchletContextUtils.getDefaultProjectsRootLocation();
     }

@@ -45,14 +45,14 @@ public class RemoteBackup extends RemoteCopy {
         totalNumberOfFiles = getNumberOfFiles(directory);
 
         try {
-            if (!userInfo.username.trim().equals("")) {
+            if (!userInfo.getUsername().trim().equals("")) {
                 if (!PasswordDialog.showPasswordDialog(frame, userInfo)) {
                     this.feedback.setProgress(0, 0, "Canceled", true);
                     return;
                 }
             }
 
-            StaticUserAuthenticator auth = new StaticUserAuthenticator("", userInfo.username, userInfo.password);
+            StaticUserAuthenticator auth = new StaticUserAuthenticator("", userInfo.getUsername(), userInfo.getPassword());
             FileSystemOptions opts = new FileSystemOptions();
             SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(opts, "no");
             DefaultFileSystemConfigBuilder.getInstance().setUserAuthenticator(opts, auth);
@@ -61,7 +61,7 @@ public class RemoteBackup extends RemoteCopy {
             this.feedback.setProgress(1, 1, "Done.", true);
         } catch (Exception e) {
             e.printStackTrace();
-            stopped = true;
+            setStopped(true);
             feedback.error("Could not copy files.\nTry again and check username and password.");
         }
     }
@@ -71,20 +71,20 @@ public class RemoteBackup extends RemoteCopy {
         totalNumberOfFiles = getNumberOfFiles(directory, files);
 
         try {
-            if (!userInfo.username.trim().equals("")) {
+            if (!userInfo.getUsername().trim().equals("")) {
                 if (!PasswordDialog.showPasswordDialog(frame, userInfo)) {
                     this.feedback.setProgress(0, 0, "Canceled", true);
                     return;
                 }
             }
 
-            StaticUserAuthenticator auth = new StaticUserAuthenticator("", userInfo.username, userInfo.password);
+            StaticUserAuthenticator auth = new StaticUserAuthenticator("", userInfo.getUsername(), userInfo.getPassword());
             FileSystemOptions opts = new FileSystemOptions();
             SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(opts, "no");
             DefaultFileSystemConfigBuilder.getInstance().setUserAuthenticator(opts, auth);
 
             for (int i = 0; i < files.length; i++) {
-                if (!stopped) {
+                if (!isStopped()) {
                     doRemoteBackup(remoteFolder, directory, files[i].replace("[", "").replace("]", ""), opts, frame, strExclude);
                 }
             }
@@ -92,7 +92,7 @@ public class RemoteBackup extends RemoteCopy {
             this.feedback.setProgress(1, 1, "Finished", true);
         } catch (Exception e) {
             e.printStackTrace();
-            stopped = true;
+            setStopped(true);
             feedback.error("Could not copy files.\nTry again and check username and password.");
         }
     }
@@ -163,7 +163,7 @@ public class RemoteBackup extends RemoteCopy {
             String filenames[] = file.list();
 
             for (int i = 0; i < filenames.length; i++) {
-                if (stopped) {
+                if (isStopped()) {
                     return;
                 }
                 if (!filenames[i].equalsIgnoreCase("index")) {
@@ -211,7 +211,7 @@ public class RemoteBackup extends RemoteCopy {
 
             } catch (Exception e) {
                 e.printStackTrace();
-                stopped = true;
+                setStopped(true);
                 feedback.error("Could not copy files.\nTry again and check username and password.");
             }
         }
@@ -224,7 +224,7 @@ public class RemoteBackup extends RemoteCopy {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            stopped = true;
+            setStopped(true);
             feedback.error("Could not copy files.\nTry again and check username and password.");
         }
     }

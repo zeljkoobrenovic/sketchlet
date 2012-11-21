@@ -13,14 +13,14 @@ import java.util.concurrent.CountDownLatch;
 
 class ZipThread implements Runnable {
 
-    Thread t = new Thread(this);
-    String zipFile;
-    String directory;
-    String files[];
-    String strExclude;
-    ZipProgressFeedback feedback;
-    JFrame frame;
-    CountDownLatch countDownLatch = new CountDownLatch(1);
+    private Thread t = new Thread(this);
+    private String zipFile;
+    private String directory;
+    private String files[];
+    private String strExclude;
+    private ZipProgressFeedback feedback;
+    private JFrame frame;
+    private CountDownLatch countDownLatch = new CountDownLatch(1);
 
     public ZipThread(String zipFile, String directory, ZipProgressFeedback feedback, JFrame frame, String strExclude) {
         this.feedback = feedback;

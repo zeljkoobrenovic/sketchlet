@@ -5,7 +5,7 @@
 package net.sf.sketchlet.designer.playback.displays;
 
 import net.sf.sketchlet.common.context.SketchletContextUtils;
-import net.sf.sketchlet.designer.ui.playback.displays.InteractionSpaceFrame;
+import net.sf.sketchlet.designer.playback.ui.InteractionSpaceFrame;
 
 import java.awt.*;
 import java.io.File;
@@ -18,24 +18,24 @@ import java.util.Vector;
  */
 public class InteractionSpace {
 
-    public static double sketchWidth = Toolkit.getDefaultToolkit().getScreenSize().getWidth();
-    public static double sketchHeight = Toolkit.getDefaultToolkit().getScreenSize().getHeight();
-    public static double left = 0.0;
-    public static double right = Toolkit.getDefaultToolkit().getScreenSize().getWidth();
-    public static double top = 0.0;
-    public static double bottom = Toolkit.getDefaultToolkit().getScreenSize().getHeight();
-    public static double angleStart = 0.0;
-    public static double angleEnd = 360;
-    public static int gridSpacing = 30;
-    public static Vector<ScreenMapping> displays = new Vector<ScreenMapping>();
+    private static double sketchWidth = Toolkit.getDefaultToolkit().getScreenSize().getWidth();
+    private static double sketchHeight = Toolkit.getDefaultToolkit().getScreenSize().getHeight();
+    private static double left = 0.0;
+    private static double right = Toolkit.getDefaultToolkit().getScreenSize().getWidth();
+    private static double top = 0.0;
+    private static double bottom = Toolkit.getDefaultToolkit().getScreenSize().getHeight();
+    private static double angleStart = 0.0;
+    private static double angleEnd = 360;
+    private static int gridSpacing = 30;
+    private static Vector<ScreenMapping> displays = new Vector<ScreenMapping>();
 
     public static void createDisplaySpace() {
-        displays.removeAllElements();
-        displays.add(new ScreenMapping());
-        displays.add(new ScreenMapping(false));
-        displays.add(new ScreenMapping(false));
-        displays.add(new ScreenMapping(false));
-        displays.add(new ScreenMapping(false));
+        getDisplays().removeAllElements();
+        getDisplays().add(new ScreenMapping());
+        getDisplays().add(new ScreenMapping(false));
+        getDisplays().add(new ScreenMapping(false));
+        getDisplays().add(new ScreenMapping(false));
+        getDisplays().add(new ScreenMapping(false));
     }
 
     public static double getPhysicalX(double sketchX) {
@@ -53,19 +53,19 @@ public class InteractionSpace {
     }
 
     public static double wrapPhysicalAngle(double physicalAngle) {
-        if (angleStart < angleEnd) {
-            while (physicalAngle < angleStart) {
-                physicalAngle += Math.abs(angleStart - angleEnd);
+        if (getAngleStart() < getAngleEnd()) {
+            while (physicalAngle < getAngleStart()) {
+                physicalAngle += Math.abs(getAngleStart() - getAngleEnd());
             }
-            while (physicalAngle > angleEnd) {
-                physicalAngle -= Math.abs(angleStart - angleEnd);
+            while (physicalAngle > getAngleEnd()) {
+                physicalAngle -= Math.abs(getAngleStart() - getAngleEnd());
             }
         } else {
-            while (physicalAngle > angleStart) {
-                physicalAngle -= Math.abs(angleStart - angleEnd);
+            while (physicalAngle > getAngleStart()) {
+                physicalAngle -= Math.abs(getAngleStart() - getAngleEnd());
             }
-            while (physicalAngle < angleEnd) {
-                physicalAngle += Math.abs(angleStart - angleEnd);
+            while (physicalAngle < getAngleEnd()) {
+                physicalAngle += Math.abs(getAngleStart() - getAngleEnd());
             }
         }
         return physicalAngle;
@@ -73,22 +73,22 @@ public class InteractionSpace {
 
     public static double toRadians(double physicalAngle) {
         double value;
-        if (angleStart < angleEnd) {
-            while (physicalAngle < angleStart) {
-                physicalAngle += Math.abs(angleStart - angleEnd);
+        if (getAngleStart() < getAngleEnd()) {
+            while (physicalAngle < getAngleStart()) {
+                physicalAngle += Math.abs(getAngleStart() - getAngleEnd());
             }
-            while (physicalAngle > angleEnd) {
-                physicalAngle -= Math.abs(angleStart - angleEnd);
+            while (physicalAngle > getAngleEnd()) {
+                physicalAngle -= Math.abs(getAngleStart() - getAngleEnd());
             }
-            value = 0 + (physicalAngle - angleStart) * Math.PI * 2 / Math.abs(angleStart - angleEnd);
+            value = 0 + (physicalAngle - getAngleStart()) * Math.PI * 2 / Math.abs(getAngleStart() - getAngleEnd());
         } else {
-            while (physicalAngle > angleStart) {
-                physicalAngle -= Math.abs(angleStart - angleEnd);
+            while (physicalAngle > getAngleStart()) {
+                physicalAngle -= Math.abs(getAngleStart() - getAngleEnd());
             }
-            while (physicalAngle < angleEnd) {
-                physicalAngle += Math.abs(angleStart - angleEnd);
+            while (physicalAngle < getAngleEnd()) {
+                physicalAngle += Math.abs(getAngleStart() - getAngleEnd());
             }
-            value = 0 + (angleStart - physicalAngle) * Math.PI * 2 / Math.abs(angleStart - angleEnd);
+            value = 0 + (getAngleStart() - physicalAngle) * Math.PI * 2 / Math.abs(getAngleStart() - getAngleEnd());
         }
 
         return value;
@@ -102,10 +102,10 @@ public class InteractionSpace {
             radians -= Math.PI * 2;
         }
         double value;
-        if (angleStart < angleEnd) {
-            value = angleStart + radians * Math.abs(angleStart - angleEnd) / (Math.PI * 2);
+        if (getAngleStart() < getAngleEnd()) {
+            value = getAngleStart() + radians * Math.abs(getAngleStart() - getAngleEnd()) / (Math.PI * 2);
         } else {
-            value = angleStart - radians * Math.abs(angleStart - angleEnd) / (Math.PI * 2);
+            value = getAngleStart() - radians * Math.abs(getAngleStart() - getAngleEnd()) / (Math.PI * 2);
         }
 
         return value;
@@ -159,17 +159,17 @@ public class InteractionSpace {
 
             out.println("<interaction-space>");
 
-            out.println("   <sketch-width>" + sketchWidth + "</sketch-width>\r\n");
-            out.println("   <sketch-height>" + sketchHeight + "</sketch-height>\r\n");
-            out.println("   <sketch-left>" + left + "</sketch-left>\r\n");
-            out.println("   <sketch-top>" + top + "</sketch-top>\r\n");
-            out.println("   <sketch-right>" + right + "</sketch-right>\r\n");
-            out.println("   <sketch-bottom>" + bottom + "</sketch-bottom>\r\n");
-            out.println("   <start-angle>" + angleStart + "</start-angle>\r\n");
-            out.println("   <end-angle>" + angleEnd + "</end-angle>\r\n");
-            out.println("   <grid-spacing>" + gridSpacing + "</grid-spacing>\r\n");
+            out.println("   <sketch-width>" + getSketchWidth() + "</sketch-width>\r\n");
+            out.println("   <sketch-height>" + getSketchHeight() + "</sketch-height>\r\n");
+            out.println("   <sketch-left>" + getLeft() + "</sketch-left>\r\n");
+            out.println("   <sketch-top>" + getTop() + "</sketch-top>\r\n");
+            out.println("   <sketch-right>" + getRight() + "</sketch-right>\r\n");
+            out.println("   <sketch-bottom>" + getBottom() + "</sketch-bottom>\r\n");
+            out.println("   <start-angle>" + getAngleStart() + "</start-angle>\r\n");
+            out.println("   <end-angle>" + getAngleEnd() + "</end-angle>\r\n");
+            out.println("   <grid-spacing>" + getGridSpacing() + "</grid-spacing>\r\n");
 
-            for (ScreenMapping dm : displays) {
+            for (ScreenMapping dm : getDisplays()) {
                 dm.save(out);
             }
 
@@ -188,31 +188,111 @@ public class InteractionSpace {
             File file = new File(SketchletContextUtils.getCurrentProjectSkecthletsDir() + "interaction_space.xml");
 
             if (file.exists()) {
-                InteractionSpaceSaxLoader.getScreens(file.getPath(), displays);
-                for (int i = 0; i < 5 - displays.size(); i++) {
+                InteractionSpaceSaxLoader.getScreens(file.getPath(), getDisplays());
+                for (int i = 0; i < 5 - getDisplays().size(); i++) {
                     ScreenMapping dm = new ScreenMapping();
                     dm.enable.setSelected(false);
-                    displays.add(dm);
+                    getDisplays().add(dm);
                 }
             } else {
-                sketchWidth = Toolkit.getDefaultToolkit().getScreenSize().getWidth();
-                sketchHeight = Toolkit.getDefaultToolkit().getScreenSize().getHeight();
-                left = 0.0;
-                right = Toolkit.getDefaultToolkit().getScreenSize().getWidth();
-                top = 0.0;
-                bottom = Toolkit.getDefaultToolkit().getScreenSize().getHeight();
-                angleStart = 0.0;
-                angleEnd = 360;
-                displays = new Vector<ScreenMapping>();
+                setSketchWidth(Toolkit.getDefaultToolkit().getScreenSize().getWidth());
+                setSketchHeight(Toolkit.getDefaultToolkit().getScreenSize().getHeight());
+                setLeft(0.0);
+                setRight(Toolkit.getDefaultToolkit().getScreenSize().getWidth());
+                setTop(0.0);
+                setBottom(Toolkit.getDefaultToolkit().getScreenSize().getHeight());
+                setAngleStart(0.0);
+                setAngleEnd(360);
+                setDisplays(new Vector<ScreenMapping>());
 
-                displays.add(new ScreenMapping());
-                displays.add(new ScreenMapping(false));
-                displays.add(new ScreenMapping(false));
-                displays.add(new ScreenMapping(false));
-                displays.add(new ScreenMapping(false));
+                getDisplays().add(new ScreenMapping());
+                getDisplays().add(new ScreenMapping(false));
+                getDisplays().add(new ScreenMapping(false));
+                getDisplays().add(new ScreenMapping(false));
+                getDisplays().add(new ScreenMapping(false));
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static double getSketchWidth() {
+        return sketchWidth;
+    }
+
+    public static void setSketchWidth(double sketchWidth) {
+        InteractionSpace.sketchWidth = sketchWidth;
+    }
+
+    public static double getSketchHeight() {
+        return sketchHeight;
+    }
+
+    public static void setSketchHeight(double sketchHeight) {
+        InteractionSpace.sketchHeight = sketchHeight;
+    }
+
+    public static double getLeft() {
+        return left;
+    }
+
+    public static void setLeft(double left) {
+        InteractionSpace.left = left;
+    }
+
+    public static double getRight() {
+        return right;
+    }
+
+    public static void setRight(double right) {
+        InteractionSpace.right = right;
+    }
+
+    public static double getTop() {
+        return top;
+    }
+
+    public static void setTop(double top) {
+        InteractionSpace.top = top;
+    }
+
+    public static double getBottom() {
+        return bottom;
+    }
+
+    public static void setBottom(double bottom) {
+        InteractionSpace.bottom = bottom;
+    }
+
+    public static double getAngleStart() {
+        return angleStart;
+    }
+
+    public static void setAngleStart(double angleStart) {
+        InteractionSpace.angleStart = angleStart;
+    }
+
+    public static double getAngleEnd() {
+        return angleEnd;
+    }
+
+    public static void setAngleEnd(double angleEnd) {
+        InteractionSpace.angleEnd = angleEnd;
+    }
+
+    public static int getGridSpacing() {
+        return gridSpacing;
+    }
+
+    public static void setGridSpacing(int gridSpacing) {
+        InteractionSpace.gridSpacing = gridSpacing;
+    }
+
+    public static Vector<ScreenMapping> getDisplays() {
+        return displays;
+    }
+
+    public static void setDisplays(Vector<ScreenMapping> displays) {
+        InteractionSpace.displays = displays;
     }
 }

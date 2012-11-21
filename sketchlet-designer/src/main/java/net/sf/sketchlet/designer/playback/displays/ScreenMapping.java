@@ -7,7 +7,7 @@ package net.sf.sketchlet.designer.playback.displays;
 import net.sf.sketchlet.common.filter.Filters;
 import net.sf.sketchlet.common.filter.PerspectiveFilter;
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.designer.data.Evaluator;
+import net.sf.sketchlet.model.evaluator.Evaluator;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,7 +20,7 @@ import java.io.PrintWriter;
  */
 public class ScreenMapping {
 
-    public Object[][] cutFromSketch = {
+    public Object[][] pageClip = {
             {"screen x", "", Language.translate("position of display on the screen (left)")},
             {"screen y", "", Language.translate("position of display on the screen (top)")},
             {"screen width", "", Language.translate("width of the screen")},
@@ -87,7 +87,7 @@ public class ScreenMapping {
     public String showOnDisplay = "1";
     public String strName = "";
     public PerspectiveFilter perspectiveFilter = new PerspectiveFilter();
-    public boolean bDoPerspective = false;
+    public boolean inPerspective = false;
     public int p_x, p_y;
 
     public ScreenMapping() {
@@ -123,11 +123,11 @@ public class ScreenMapping {
             out.println("      <showOnDisplay>" + showOnDisplay + "</showOnDisplay>");
 
             out.println("         <cutFromSketch>");
-            for (int i = 0; i < cutFromSketch.length; i++) {
+            for (int i = 0; i < pageClip.length; i++) {
                 out.println("            <cut>");
-                out.println("               <cut-action>" + cutFromSketch[i][0] + "</cut-action>");
-                out.println("               <cut-param1>" + cutFromSketch[i][1] + "</cut-param1>");
-                out.println("               <cut-param2>" + cutFromSketch[i][2] + "</cut-param2>");
+                out.println("               <cut-action>" + pageClip[i][0] + "</cut-action>");
+                out.println("               <cut-param1>" + pageClip[i][1] + "</cut-param1>");
+                out.println("               <cut-param2>" + pageClip[i][2] + "</cut-param2>");
                 out.println("            </cut>");
             }
             out.println("         </cutFromSketch>");
@@ -160,8 +160,8 @@ public class ScreenMapping {
                 return true;
             }
         }
-        for (int i = 8; i < this.cutFromSketch.length; i++) {
-            if (!((String) cutFromSketch[i][1]).isEmpty()) {
+        for (int i = 8; i < this.pageClip.length; i++) {
+            if (!((String) pageClip[i][1]).isEmpty()) {
                 return true;
             }
         }
@@ -176,14 +176,14 @@ public class ScreenMapping {
     public BufferedImage doPerspective(BufferedImage image, int width, int height) {
         if (!this.fitToScreen.isSelected()) {
             for (int i = 8; i <= 15; i++) {
-                if (this.cutFromSketch[i][1].toString().length() == 0) {
-                    this.bDoPerspective = false;
+                if (this.pageClip[i][1].toString().length() == 0) {
+                    this.inPerspective = false;
                     return image;
                 }
             }
         }
 
-        this.bDoPerspective = true;
+        this.inPerspective = true;
 
         float x0 = 0.0f;
         float y0 = 0.0f;
@@ -193,51 +193,51 @@ public class ScreenMapping {
         float y2 = 1.0f;
         float x3 = 0.0f;
         float y3 = 1.0f;
-        if (!cutFromSketch[8][1].toString().isEmpty()) {
+        if (!pageClip[8][1].toString().isEmpty()) {
             try {
-                x0 = Float.parseFloat(Evaluator.processText(cutFromSketch[8][1].toString(), "", ""));
+                x0 = Float.parseFloat(Evaluator.processText(pageClip[8][1].toString(), "", ""));
             } catch (Exception e) {
             }
         }
-        if (!cutFromSketch[9][1].toString().isEmpty()) {
+        if (!pageClip[9][1].toString().isEmpty()) {
             try {
-                y0 = Float.parseFloat(Evaluator.processText(cutFromSketch[9][1].toString(), "", ""));
+                y0 = Float.parseFloat(Evaluator.processText(pageClip[9][1].toString(), "", ""));
             } catch (Exception e) {
             }
         }
-        if (!cutFromSketch[10][1].toString().isEmpty()) {
+        if (!pageClip[10][1].toString().isEmpty()) {
             try {
-                x1 = Float.parseFloat(Evaluator.processText(cutFromSketch[10][1].toString(), "", ""));
+                x1 = Float.parseFloat(Evaluator.processText(pageClip[10][1].toString(), "", ""));
             } catch (Exception e) {
             }
         }
-        if (!cutFromSketch[11][1].toString().isEmpty()) {
+        if (!pageClip[11][1].toString().isEmpty()) {
             try {
-                y1 = Float.parseFloat(Evaluator.processText(cutFromSketch[11][1].toString(), "", ""));
+                y1 = Float.parseFloat(Evaluator.processText(pageClip[11][1].toString(), "", ""));
             } catch (Exception e) {
             }
         }
-        if (!cutFromSketch[12][1].toString().isEmpty()) {
+        if (!pageClip[12][1].toString().isEmpty()) {
             try {
-                x2 = Float.parseFloat(Evaluator.processText(cutFromSketch[12][1].toString(), "", ""));
+                x2 = Float.parseFloat(Evaluator.processText(pageClip[12][1].toString(), "", ""));
             } catch (Exception e) {
             }
         }
-        if (!cutFromSketch[13][1].toString().isEmpty()) {
+        if (!pageClip[13][1].toString().isEmpty()) {
             try {
-                y2 = Float.parseFloat(Evaluator.processText(cutFromSketch[13][1].toString(), "", ""));
+                y2 = Float.parseFloat(Evaluator.processText(pageClip[13][1].toString(), "", ""));
             } catch (Exception e) {
             }
         }
-        if (!cutFromSketch[14][1].toString().isEmpty()) {
+        if (!pageClip[14][1].toString().isEmpty()) {
             try {
-                x3 = Float.parseFloat(Evaluator.processText(cutFromSketch[14][1].toString(), "", ""));
+                x3 = Float.parseFloat(Evaluator.processText(pageClip[14][1].toString(), "", ""));
             } catch (Exception e) {
             }
         }
-        if (!cutFromSketch[15][1].toString().isEmpty()) {
+        if (!pageClip[15][1].toString().isEmpty()) {
             try {
-                y3 = Float.parseFloat(Evaluator.processText(cutFromSketch[15][1].toString(), "", ""));
+                y3 = Float.parseFloat(Evaluator.processText(pageClip[15][1].toString(), "", ""));
             } catch (Exception e) {
             }
         }
@@ -286,9 +286,9 @@ public class ScreenMapping {
     }
 
     public boolean isEmpty(String strDimension) {
-        for (int i = 0; i < this.cutFromSketch.length; i++) {
-            if (((String) this.cutFromSketch[i][0]).equalsIgnoreCase(strDimension)) {
-                return ((String) this.cutFromSketch[i][1]).equals("");
+        for (int i = 0; i < this.pageClip.length; i++) {
+            if (((String) this.pageClip[i][0]).equalsIgnoreCase(strDimension)) {
+                return ((String) this.pageClip[i][1]).equals("");
             }
         }
 
@@ -296,10 +296,10 @@ public class ScreenMapping {
     }
 
     public double getValue(String strDimension) {
-        for (int i = 0; i < this.cutFromSketch.length; i++) {
-            if (((String) this.cutFromSketch[i][0]).equalsIgnoreCase(strDimension)) {
+        for (int i = 0; i < this.pageClip.length; i++) {
+            if (((String) this.pageClip[i][0]).equalsIgnoreCase(strDimension)) {
                 try {
-                    return Double.parseDouble(Evaluator.processText((String) cutFromSketch[i][1], "", ""));
+                    return Double.parseDouble(Evaluator.processText((String) pageClip[i][1], "", ""));
                 } catch (Exception e) {
                 }
             }
@@ -309,9 +309,9 @@ public class ScreenMapping {
     }
 
     public String getString(String strDimension) {
-        for (int i = 0; i < this.cutFromSketch.length; i++) {
-            if (((String) this.cutFromSketch[i][0]).equalsIgnoreCase(strDimension)) {
-                return (String) cutFromSketch[i][1];
+        for (int i = 0; i < this.pageClip.length; i++) {
+            if (((String) this.pageClip[i][0]).equalsIgnoreCase(strDimension)) {
+                return (String) pageClip[i][1];
             }
         }
 
@@ -324,9 +324,9 @@ public class ScreenMapping {
         double clipW = 0;
         double clipH = 0;
 
-        for (int i = 0; i < this.cutFromSketch.length; i++) {
-            String strTranform = Evaluator.processText((String) cutFromSketch[i][0], "", "");
-            String strParam = Evaluator.processText((String) cutFromSketch[i][1], "", "");
+        for (int i = 0; i < this.pageClip.length; i++) {
+            String strTranform = Evaluator.processText((String) pageClip[i][0], "", "");
+            String strParam = Evaluator.processText((String) pageClip[i][1], "", "");
 
             if (strTranform.length() == 0 || strParam.length() == 0) {
                 continue;
@@ -357,12 +357,6 @@ public class ScreenMapping {
     }
 
     public void clip(Graphics2D g2) {
-        /*
-        double dClip[] = getClipRect(g2);
-        if (dClip[2] > 0 && dClip[3] > 0) {
-        g2.setClip(0, 0, (int) dClip[2], (int) dClip[3]);
-        }
-         */
     }
 
     public AffineTransform transform(AffineTransform g2) {

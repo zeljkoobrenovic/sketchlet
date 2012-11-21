@@ -140,7 +140,7 @@ class TCPClientConnection extends ClientLineProcessingThread {
     }
 
     public void processLine(String line, BufferedReader in, PrintWriter out) throws IOException {
-        if (line == null || this.templateHandler == null || DataServer.variablesServer == null) {
+        if (line == null || this.templateHandler == null || DataServer.getInstance() == null) {
             return;
         }
 
@@ -154,39 +154,39 @@ class TCPClientConnection extends ClientLineProcessingThread {
         if (line.startsWith("ADD TEMPLATE ")) {
             this.templateHandler.processTemplateCommand(line);
         } else if (line.startsWith("REGISTER ")) {
-            this.encode = false;
+            this.setEncode(false);
             this.templateHandler.processTemplateCommand(line);
         } else if (line.startsWith("SET ENCODING OFF")) {
-            this.encode = false;
+            this.setEncode(false);
         } else if (line.startsWith("SET ENCODING ON")) {
-            this.encode = true;
+            this.setEncode(true);
         } else if (line.startsWith("POPULATE TEMPLATE ")) {
             String template = line.substring(18).trim();
-            template = DataServer.populateTemplate(template, this.encode);
+            template = DataServer.populateTemplate(template, this.isEncode());
             out.println(template);
             out.flush();
         } else if (line.startsWith("GET ")) {
             String variableList = line.substring(4);
-            String values = DataServer.variablesServer.getVariableValues(variableList);
+            String values = DataServer.getInstance().getVariableValues(variableList);
             out.println(values);
             out.flush();
         } else if (line.startsWith("GETXML ")) {
             String variableList = line.substring(7);
-            String values = DataServer.variablesServer.getVariableValues(variableList, true);
+            String values = DataServer.getInstance().getVariableValues(variableList, true);
             out.println(values);
             out.flush();
         } else if (line.startsWith("GETALLXML")) {
-            String values = DataServer.variablesServer.getAllVariableValues();
+            String values = DataServer.getInstance().getAllVariableValues();
             out.println(values);
             out.flush();
         } else if (line.startsWith("GETXMLFULL")) {
-            String values = DataServer.variablesServer.getAllVariableValuesXml();
+            String values = DataServer.getInstance().getAllVariableValuesXml();
             out.println(values);
             out.flush();
         } else if (line.startsWith("SET ENDING 0")) {
             this.endString = "\0";
         } else if (line.startsWith("UPDATE") || line.startsWith("DELETE ")) {
-            dataReceiver.updateVariable(line, this.encode);
+            dataReceiver.updateVariable(line, this.isEncode());
         } else {
             StandardNetInterfaces.processCommand(line);
         }
@@ -195,7 +195,7 @@ class TCPClientConnection extends ClientLineProcessingThread {
     class TCPTemplateHandler extends TemplateHandler {
 
         public void sendTemplate(Template template) {
-            String populatedTemplate = DataServer.populateTemplate(template.template, encode);
+            String populatedTemplate = DataServer.populateTemplate(template.template, isEncode());
             sendResponse(populatedTemplate);
         }
 

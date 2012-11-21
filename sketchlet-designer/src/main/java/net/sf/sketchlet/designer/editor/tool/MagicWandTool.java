@@ -8,14 +8,9 @@ package net.sf.sketchlet.designer.editor.tool;
  *
  * @author zobrenovic
  */
-// MagicWandTool.java
-/**
- * Demonstrates how to extract a shape from a BufferedImage.
- **/
 
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
-import net.sf.sketchlet.designer.help.TutorialPanel;
 import net.sf.sketchlet.designer.tools.log.ActivityLog;
 import org.apache.log4j.Logger;
 
@@ -28,10 +23,13 @@ import java.util.Vector;
 public class MagicWandTool extends Tool {
     private static final Logger log = Logger.getLogger(MagicWandTool.class);
 
+    private Image cursorImage = Workspace.createImageIcon("resources/cursor_magicwand.gif").getImage();
+
     public MagicWandTool(ToolInterface toolInterface) {
         super(toolInterface);
     }
 
+    @Override
     public void draw(Graphics2D g2) {
         g2.setColor(Color.BLACK);
 
@@ -40,12 +38,13 @@ public class MagicWandTool extends Tool {
         }
     }
 
+    @Override
     public void mouseReleased(int x, int y, int modifiers) {
         super.mouseReleased(x, y, modifiers);
         ActivityLog.log("toolResult", "Draw a line in " + toolInterface.getName(), "line_1.png", toolInterface.getPanel());
-        TutorialPanel.addLine("cmd", "Select a region by freeform dragging in " + toolInterface.getName(), "", toolInterface.getPanel());
     }
 
+    @Override
     public void mousePressed(int x, int y, int modifiers) {
         Polygon polygon = new Polygon();
         Vector<int[]> pixels = new Vector<int[]>();
@@ -99,8 +98,7 @@ public class MagicWandTool extends Tool {
         toolInterface.getSelectTool().setClip(image, x1, y1);
     }
 
-    Image cursorImage = Workspace.createImageIcon("resources/cursor_magicwand.gif").getImage();
-
+    @Override
     public Cursor getCursor() {
         Toolkit toolkit = Toolkit.getDefaultToolkit();
         Point hotSpot = new Point(9, 9);
@@ -108,7 +106,22 @@ public class MagicWandTool extends Tool {
         return toolkit.createCustomCursor(cursorImage, hotSpot, "Magic Wand");
     }
 
-    public static boolean floodFill(Polygon polygon, Vector<int[]> pixels, BufferedImage img, Color fillColor, Point loc) {
+    @Override
+    public ImageIcon getIcon() {
+        return Workspace.createImageIcon("resources/magicwand.gif");
+    }
+
+    @Override
+    public String getIconFileName() {
+        return "magicwand.gif";
+    }
+
+    @Override
+    public String getName() {
+        return Language.translate("Magic Wand");
+    }
+
+    private static boolean floodFill(Polygon polygon, Vector<int[]> pixels, BufferedImage img, Color fillColor, Point loc) {
         if (loc.x < 0 || loc.x >= img.getWidth() || loc.y < 0 || loc.y >= img.getHeight()) {
             throw new IllegalArgumentException();
         }
@@ -179,17 +192,5 @@ public class MagicWandTool extends Tool {
 
     private static boolean isEqualRgba(int[] pix1, int[] pix2) {
         return Math.abs(pix1[0] - pix2[0]) < 25 && Math.abs(pix1[1] - pix2[1]) < 25 && Math.abs(pix1[2] - pix2[2]) < 25 && Math.abs(pix1[3] - pix2[3]) < 250;
-    }
-
-    public ImageIcon getIcon() {
-        return Workspace.createImageIcon("resources/magicwand.gif");
-    }
-
-    public String getIconFileName() {
-        return "magicwand.gif";
-    }
-
-    public String getName() {
-        return Language.translate("Magic Wand");
     }
 }

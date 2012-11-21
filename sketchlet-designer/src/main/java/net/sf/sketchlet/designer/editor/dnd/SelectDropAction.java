@@ -5,7 +5,6 @@
 package net.sf.sketchlet.designer.editor.dnd;
 
 import net.sf.sketchlet.designer.Workspace;
-import net.sf.sketchlet.designer.help.TutorialPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,8 +16,8 @@ import java.awt.event.ActionListener;
  */
 public class SelectDropAction extends JDialog {
 
-    JTextField textArea = new JTextField(15);
-    String[] transformations = new String[]{
+    private JTextField textArea = new JTextField(15);
+    private String[] transformations = new String[]{
             "Region text",
             "Image URL",
             "Image frame",
@@ -39,7 +38,6 @@ public class SelectDropAction extends JDialog {
             "Transparency",
             "Speed",
             "Direction",
-            //"Rotation speed",
             "Pen thickness",
             "Perspective x1",
             "Perspective y1",
@@ -53,10 +51,10 @@ public class SelectDropAction extends JDialog {
             "Perspective depth",
             "Horizontal 3d rotation",
             "Vertical 3d rotation"};
-    JButton okButton = new JButton("OK", Workspace.createImageIcon("resources/ok.png"));
-    JButton cancelButton = new JButton("Cancel", Workspace.createImageIcon("resources/cancel.png"));
+    private JButton okButton = new JButton("OK", Workspace.createImageIcon("resources/ok.png"));
+    private JButton cancelButton = new JButton("Cancel", Workspace.createImageIcon("resources/cancel.png"));
 
-    public SelectDropAction(JFrame frame, String strText, final net.sf.sketchlet.designer.data.ActiveRegion region) {
+    public SelectDropAction(JFrame frame, String strText, final net.sf.sketchlet.model.ActiveRegion region) {
         super(frame);
         setModal(true);
         setTitle("Set Region Property");
@@ -90,18 +88,13 @@ public class SelectDropAction extends JDialog {
             public void actionPerformed(ActionEvent ae) {
                 if (region != null) {
                     String strText = textArea.getText();
-                    TutorialPanel.addLine("cmd", "Set the region property '" + combo.getSelectedItem() + "' to '" + strText + "' and press OK", "arrow_cursor.png", thisDialog);
                     int index = combo.getSelectedIndex();
                     if (index >= 0) {
                         if (index == 0) {
-                            region.strText = strText;
-                            /*} else if (index == 1) {
-                            region.htmlSpecification.setText(strText);*/
+                            region.text = strText;
                         } else if (index == 1) {
-                            //region.imageUrlField.setSelectedItem(strText);
                             region.strImageUrlField = strText;
                         } else if (index == 2) {
-                            // region.imageIndex.setSelectedItem(strText);
                             region.strImageIndex = strText;
                         } else if (index < _n) {
                             String strItem = (String) combo.getSelectedItem();
@@ -109,53 +102,27 @@ public class SelectDropAction extends JDialog {
                         } else {
                             String strItem = (String) combo.getSelectedItem();
                             if (strItem.equalsIgnoreCase("Line Style")) {
-                                /*if (region.lineStyle != null) {
-                                region.lineStyle.setSelectedItem(strText);
-                                }*/
-                                region.strLineStyle = strText;
+                                region.lineStyle = strText;
                             }
                             if (strItem.equalsIgnoreCase("Line Thickness")) {
-                                /*if (region.lineThickness != null) {
-                                region.lineThickness.setSelectedItem(strText);
-                                }*/
-                                region.strLineThickness = strText;
+                                region.lineThickness = strText;
                             }
                             if (strItem.equalsIgnoreCase("Line Color")) {
-                                /*if (region.lineColor != null) {
-                                region.lineColor.setSelectedItem(strText);
-                                }*/
-
-                                region.strLineColor = strText;
+                                region.lineColor = strText;
                             }
                             if (strItem.equalsIgnoreCase("Fill Color")) {
-                                /*if (region.fillColor != null) {
-                                region.fillColor.setSelectedItem(strText);
-                                }*/
-
                                 region.strFillColor = strText;
                             }
                             if (strItem.equalsIgnoreCase("Font Name")) {
-                                /*if (region.fontListCombo != null) {
-                                region.fontListCombo.setSelectedItem(strText);
-                                }*/
                                 region.fontName = strText;
                             }
                             if (strItem.equalsIgnoreCase("Font Style")) {
-                                /*if (region.styleCombo != null) {
-                                region.styleCombo.setSelectedItem(strText);
-                                }*/
                                 region.fontStyle = strText;
                             }
                             if (strItem.equalsIgnoreCase("Font Size")) {
-                                /*if (region.fontSizeCombo != null) {
-                                region.fontSizeCombo.setSelectedItem(strText);
-                                }*/
                                 region.fontSize = strText;
                             }
                             if (strItem.equalsIgnoreCase("Text Color")) {
-                                /*if (region.fontColorCombo != null) {
-                                region.fontColorCombo.setSelectedItem(strText);
-                                }*/
                                 region.fontColor = strText;
                             }
 
@@ -171,12 +138,7 @@ public class SelectDropAction extends JDialog {
                 setVisible(false);
             }
         });
-
         textArea.setText(strText);
-        //textArea.setFont(new Font("Arial", Font.PLAIN, 9));
-        // textArea.setEditable(false);
-        //textArea.setLineWrap(true);
-        //textArea.setWrapStyleWord(true);
 
         JPanel panel = new JPanel();
         panel.add(new JLabel("Set "));

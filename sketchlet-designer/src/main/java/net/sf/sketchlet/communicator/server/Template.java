@@ -32,7 +32,7 @@ public class Template {
             return true;
         }
 
-        String value = DataServer.variablesServer.getVariableValue(this.variable, this.test);
+        String value = DataServer.getInstance().getVariableValue(this.variable, this.test);
         return !value.trim().equals("");
     }
 }
