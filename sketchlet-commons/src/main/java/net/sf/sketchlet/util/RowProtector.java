@@ -12,7 +12,7 @@ import java.util.Vector;
  */
 public class RowProtector {
 
-    Vector<Integer> ignoreRows = new Vector<Integer>();
+    private Vector<Integer> ignoreRows = new Vector<Integer>();
 
     public void protectRow(int row) {
         this.ignoreRows.add(new Integer(row));

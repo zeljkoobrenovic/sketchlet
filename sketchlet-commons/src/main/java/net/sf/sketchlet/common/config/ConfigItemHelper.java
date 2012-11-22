@@ -16,11 +16,11 @@ import java.util.*;
  * @author cuypers
  */
 public class ConfigItemHelper {
-    Vector<ConfigItem> data;
-    Hashtable itemsHashtable = new Hashtable();
+    private Vector<ConfigItem> data;
+    private Hashtable itemsHashtable = new Hashtable();
     
     public ConfigItemHelper( Vector<ConfigItem> data ) {
-        this.data = data;
+        this.setData(data);
         Enumeration<ConfigItem> elements = data.elements();
         
         int i = 0;
@@ -28,17 +28,17 @@ public class ConfigItemHelper {
             ConfigItem item = elements.nextElement();
             
             if (item instanceof ConfigModule) {
-                itemsHashtable.put( item.name.toLowerCase() + "_" + i + "_value", item.value);
-                itemsHashtable.put( item.name.toLowerCase() + "_" + i, new ConfigItemHelper(((ConfigModule) item).moduleItems ));
+                getItemsHashtable().put(item.getName().toLowerCase() + "_" + i + "_value", item.getValue());
+                getItemsHashtable().put(item.getName().toLowerCase() + "_" + i, new ConfigItemHelper(((ConfigModule) item).getModuleItems()));
                 i++;
             } else {
-                itemsHashtable.put( item.name.toLowerCase(), item.value );
+                getItemsHashtable().put(item.getName().toLowerCase(), item.getValue());
             }
         }
     }
     
     public String getString( String name ) {
-        Object str = this.itemsHashtable.get( name.toLowerCase() );
+        Object str = this.getItemsHashtable().get(name.toLowerCase());
         
         if (str != null && str instanceof String)
             return (String) str;
@@ -83,7 +83,7 @@ public class ConfigItemHelper {
     }
     
     public String getString( String name, int index ) {
-        Object str = this.itemsHashtable.get( name.toLowerCase() + "_" + index + "_value" );
+        Object str = this.getItemsHashtable().get(name.toLowerCase() + "_" + index + "_value");
         
         if (str != null && str instanceof String)
             return (String) str;
@@ -92,7 +92,7 @@ public class ConfigItemHelper {
     }
     
     public String getString( String structName, int index, String name ) {
-        Object o = this.itemsHashtable.get( structName.toLowerCase() + "_" + index );
+        Object o = this.getItemsHashtable().get(structName.toLowerCase() + "_" + index);
         
         if (o != null && o instanceof ConfigItemHelper)
             return ((ConfigItemHelper) o).getString( name );
@@ -102,5 +102,21 @@ public class ConfigItemHelper {
     
     public String getString( String structName, String name ) {
         return getString( structName, 0, name );
+    }
+
+    public Vector<ConfigItem> getData() {
+        return data;
+    }
+
+    public void setData(Vector<ConfigItem> data) {
+        this.data = data;
+    }
+
+    public Hashtable getItemsHashtable() {
+        return itemsHashtable;
+    }
+
+    public void setItemsHashtable(Hashtable itemsHashtable) {
+        this.itemsHashtable = itemsHashtable;
     }
 }

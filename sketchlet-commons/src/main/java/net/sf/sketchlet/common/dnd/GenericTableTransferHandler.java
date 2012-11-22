@@ -4,19 +4,17 @@
  */
 package net.sf.sketchlet.common.dnd;
 
-import net.sf.sketchlet.common.dnd.StringTransferHandler;
 import javax.swing.*;
-import javax.swing.table.*;
 
 public class GenericTableTransferHandler extends StringTransferHandler {
 
     private int[] rows = null;
-    public String prefix = "";
-    public int column = 0;
+    private String prefix = "";
+    private int column = 0;
 
     public GenericTableTransferHandler(String prefix, int column) {
-        this.prefix = prefix;
-        this.column = column;
+        this.setPrefix(prefix);
+        this.setColumn(column);
     }
 
     protected String exportString(JComponent c) {
@@ -27,7 +25,7 @@ public class GenericTableTransferHandler extends StringTransferHandler {
 
         for (int i = 0; i < rows.length; i++) {
             Object val;
-            val = prefix + table.getValueAt(rows[i], column);
+            val = getPrefix() + table.getValueAt(rows[i], getColumn());
             buff.append(val == null ? "" : val.toString());
             if (i != rows.length - 1) {
                 buff.append("\n");
@@ -49,5 +47,21 @@ public class GenericTableTransferHandler extends StringTransferHandler {
 
     protected void cleanup(JComponent c, boolean remove) {
         rows = null;
+    }
+
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
+    }
+
+    public int getColumn() {
+        return column;
+    }
+
+    public void setColumn(int column) {
+        this.column = column;
     }
 }

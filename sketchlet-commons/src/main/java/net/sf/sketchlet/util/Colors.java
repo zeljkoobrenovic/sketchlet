@@ -4,9 +4,9 @@
  */
 package net.sf.sketchlet.util;
 
-import java.awt.Color;
+import javax.swing.*;
+import java.awt.*;
 import java.util.Hashtable;
-import javax.swing.JComboBox;
 
 /**
  *
@@ -14,22 +14,22 @@ import javax.swing.JComboBox;
  */
 public class Colors {
 
-    static Hashtable<String, Color> colors = new Hashtable<String, Color>();
+    private static Hashtable<String, Color> colors = new Hashtable<String, Color>();
 
     static {
-        colors.put("white", Color.WHITE);
-        colors.put("black", Color.BLACK);
-        colors.put("red", Color.RED);
-        colors.put("blue", Color.BLUE);
-        colors.put("green", Color.GREEN);
-        colors.put("yellow", Color.YELLOW);
-        colors.put("gray", Color.GRAY);
-        colors.put("dark gray", Color.DARK_GRAY);
-        colors.put("light gray", Color.LIGHT_GRAY);
-        colors.put("magenta", Color.MAGENTA);
-        colors.put("orange", Color.ORANGE);
-        colors.put("cyan", Color.CYAN);
-        colors.put("pink", Color.PINK);
+        getColors().put("white", Color.WHITE);
+        getColors().put("black", Color.BLACK);
+        getColors().put("red", Color.RED);
+        getColors().put("blue", Color.BLUE);
+        getColors().put("green", Color.GREEN);
+        getColors().put("yellow", Color.YELLOW);
+        getColors().put("gray", Color.GRAY);
+        getColors().put("dark gray", Color.DARK_GRAY);
+        getColors().put("light gray", Color.LIGHT_GRAY);
+        getColors().put("magenta", Color.MAGENTA);
+        getColors().put("orange", Color.ORANGE);
+        getColors().put("cyan", Color.CYAN);
+        getColors().put("pink", Color.PINK);
     }
 
     public static Color getColor(String name, Color defaultColor) {
@@ -61,7 +61,7 @@ public class Colors {
             } catch (Exception e) {
             }
         } else {
-            return colors.get(name.toLowerCase());
+            return getColors().get(name.toLowerCase());
         }
 
         return null;
@@ -93,5 +93,13 @@ public class Colors {
         combo.addItem("orange");
         combo.addItem("cyan");
         combo.addItem("pink");
+    }
+
+    public static Hashtable<String, Color> getColors() {
+        return colors;
+    }
+
+    public static void setColors(Hashtable<String, Color> colors) {
+        Colors.colors = colors;
     }
 }

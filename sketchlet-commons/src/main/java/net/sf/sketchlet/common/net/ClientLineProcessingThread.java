@@ -30,7 +30,7 @@ public abstract class ClientLineProcessingThread extends ClientConnectionThread 
     protected PrintWriter out;
     protected String endString = "";
     Vector onDisconnectCommands = new Vector();
-    public boolean encode = true;
+    private boolean encode = true;
 
     public ClientLineProcessingThread(Socket socket) {
         this(socket, null);
@@ -123,5 +123,13 @@ public abstract class ClientLineProcessingThread extends ClientConnectionThread 
                 e.printStackTrace(System.out);
             }
         }
+    }
+
+    public boolean isEncode() {
+        return encode;
+    }
+
+    public void setEncode(boolean encode) {
+        this.encode = encode;
     }
 }

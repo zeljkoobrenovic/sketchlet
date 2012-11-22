@@ -9,9 +9,9 @@
  */
 package net.sf.sketchlet.common.net;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 
 /**
  *
@@ -21,7 +21,7 @@ public abstract class UDPDataReceiverThread implements Runnable {
 
     protected DatagramSocket socket = null;
     protected boolean receiveData = true;
-    Thread thread = new Thread(this);
+    private Thread thread = new Thread(this);
 
     public UDPDataReceiverThread(int port) {
         try {

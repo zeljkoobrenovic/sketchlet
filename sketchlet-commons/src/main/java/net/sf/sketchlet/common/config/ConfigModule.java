@@ -9,9 +9,10 @@
 
 package net.sf.sketchlet.common.config;
 
+import net.sf.sketchlet.common.EscapeChars;
+
 import java.util.Enumeration;
 import java.util.Vector;
-import net.sf.sketchlet.common.EscapeChars;
 
 
 /**
@@ -19,16 +20,16 @@ import net.sf.sketchlet.common.EscapeChars;
  * @author cuypers
  */
 public class ConfigModule extends ConfigItem {
-    public Vector<ConfigItem> moduleItems = new Vector<ConfigItem>();
+    private Vector<ConfigItem> moduleItems = new Vector<ConfigItem>();
     
     public String toString() {
         String str = super.toString() + " (";
         
-        Enumeration<ConfigItem> items = moduleItems.elements();
+        Enumeration<ConfigItem> items = getModuleItems().elements();
         
         while (items.hasMoreElements()) {
             ConfigItem item = items.nextElement();
-            str += item.name + "=" + item.value + ";";
+            str += item.getName() + "=" + item.getValue() + ";";
         }
         
         str += ")";
@@ -37,17 +38,25 @@ public class ConfigModule extends ConfigItem {
     }
     
     public String toXML() {
-        String str = "<" + this.name.toLowerCase() + " id=\"" + EscapeChars.prepareForXML( value )  + "\">";
+        String str = "<" + this.getName().toLowerCase() + " id=\"" + EscapeChars.prepareForXML(getValue())  + "\">";
         
-        Enumeration<ConfigItem> items = moduleItems.elements();
+        Enumeration<ConfigItem> items = getModuleItems().elements();
         
         while (items.hasMoreElements()) {
             ConfigItem item = items.nextElement();
             str += item.toXML();
         }
         
-        str += "</" + this.name.toLowerCase() + ">";
+        str += "</" + this.getName().toLowerCase() + ">";
         
         return str;
+    }
+
+    public Vector<ConfigItem> getModuleItems() {
+        return moduleItems;
+    }
+
+    public void setModuleItems(Vector<ConfigItem> moduleItems) {
+        this.moduleItems = moduleItems;
     }
 }

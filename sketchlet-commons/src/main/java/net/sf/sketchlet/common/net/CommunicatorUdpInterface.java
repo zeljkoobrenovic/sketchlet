@@ -8,13 +8,14 @@
  */
 package net.sf.sketchlet.common.net;
 
+import net.sf.sketchlet.common.DefaultSettings;
+
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.net.DatagramSocket;
 import java.net.Socket;
 import java.net.URLEncoder;
 import java.util.Vector;
-import net.sf.sketchlet.common.DefaultSettings;
 
 
 /**
@@ -23,11 +24,11 @@ import net.sf.sketchlet.common.DefaultSettings;
  */
 public class CommunicatorUdpInterface implements CommunicatorInterface {
     
-    public Socket communicator;
-    public BufferedReader in;
-    public PrintWriter out;
+    private Socket communicator;
+    private BufferedReader in;
+    private PrintWriter out;
     Vector templates = new Vector();
-    public boolean connected = false;
+    private boolean connected = false;
     String host = "localhost";
     int port = 3320;
     int receivePort = 3339;
@@ -178,5 +179,37 @@ public class CommunicatorUdpInterface implements CommunicatorInterface {
         send(strCommand);
         
         return "";
+    }
+
+    public Socket getCommunicator() {
+        return communicator;
+    }
+
+    public void setCommunicator(Socket communicator) {
+        this.communicator = communicator;
+    }
+
+    public BufferedReader getIn() {
+        return in;
+    }
+
+    public void setIn(BufferedReader in) {
+        this.in = in;
+    }
+
+    public PrintWriter getOut() {
+        return out;
+    }
+
+    public void setOut(PrintWriter out) {
+        this.out = out;
+    }
+
+    public boolean isConnected() {
+        return connected;
+    }
+
+    public void setConnected(boolean connected) {
+        this.connected = connected;
     }
 }

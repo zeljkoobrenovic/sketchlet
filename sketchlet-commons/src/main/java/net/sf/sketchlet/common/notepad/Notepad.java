@@ -49,6 +49,32 @@ public class Notepad extends JPanel {
     private final static String EXIT_AFTER_PAINT = new String("-exit");
     private static boolean exitAfterFirstPaint;
 
+    private File file = null;
+    /**
+     * Suffix applied to the key used in resource file
+     * lookups for an image.
+     */
+    public static final String imageSuffix = "Image";
+    /**
+     * Suffix applied to the key used in resource file
+     * lookups for a label.
+     */
+    public static final String labelSuffix = "Label";
+    /**
+     * Suffix applied to the key used in resource file
+     * lookups for an action.
+     */
+    public static final String actionSuffix = "Action";
+    /**
+     * Suffix applied to the key used in resource file
+     * lookups for tooltip text.
+     */
+    public static final String OPEN_ACTION = "open";
+    public static final String NEW_ACTION = "new";
+    public static final String SAVE_ACTION = "save";
+    public static final String EXIT_ACTION = "exit";
+    public static final String SHOW_ELEMENT_TREE_ACTION = "showElementTree";
+
     static {
         try {
             resources = ResourceBundle.getBundle("net.sf.sketchlet.workspace.resources.Notepad", Locale.getDefault());
@@ -60,8 +86,6 @@ public class Notepad extends JPanel {
     public void paintChildren(Graphics g) {
         super.paintChildren(g);
     }
-
-    File file = null;
 
     public void openFile(String strPath) {
         Frame frame = getFrame();
@@ -329,30 +353,6 @@ public class Notepad extends JPanel {
      * UndoManager that we add edits to.
      */
     protected UndoManager undo = new UndoManager();
-    /**
-     * Suffix applied to the key used in resource file
-     * lookups for an image.
-     */
-    public static final String imageSuffix = "Image";
-    /**
-     * Suffix applied to the key used in resource file
-     * lookups for a label.
-     */
-    public static final String labelSuffix = "Label";
-    /**
-     * Suffix applied to the key used in resource file
-     * lookups for an action.
-     */
-    public static final String actionSuffix = "Action";
-    /**
-     * Suffix applied to the key used in resource file
-     * lookups for tooltip text.
-     */
-    public static final String openAction = "open";
-    public static final String newAction = "new";
-    public static final String saveAction = "save";
-    public static final String exitAction = "exit";
-    public static final String showElementTreeAction = "showElementTree";
 
     class UndoHandler implements UndoableEditListener {
 
@@ -459,7 +459,7 @@ public class Notepad extends JPanel {
     class OpenAction extends NewAction {
 
         OpenAction() {
-            super(openAction);
+            super(OPEN_ACTION);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -487,7 +487,7 @@ public class Notepad extends JPanel {
     class SaveAction extends AbstractAction {
 
         SaveAction() {
-            super(saveAction);
+            super(SAVE_ACTION);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -512,7 +512,7 @@ public class Notepad extends JPanel {
     class NewAction extends AbstractAction {
 
         NewAction() {
-            super(newAction);
+            super(NEW_ACTION);
         }
 
         NewAction(String nm) {
@@ -535,7 +535,7 @@ public class Notepad extends JPanel {
     class ExitAction extends AbstractAction {
 
         ExitAction() {
-            super(exitAction);
+            super(EXIT_ACTION);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -551,7 +551,7 @@ public class Notepad extends JPanel {
     class ShowElementTreeAction extends AbstractAction {
 
         ShowElementTreeAction() {
-            super(showElementTreeAction);
+            super(SHOW_ELEMENT_TREE_ACTION);
         }
 
         ShowElementTreeAction(String nm) {

@@ -9,7 +9,6 @@
 
 package net.sf.sketchlet.common.mail;
 
-import net.sf.sketchlet.common.mail.UserInfo;
 import java.awt.*;
 import java.awt.event.*;
 
@@ -75,15 +74,15 @@ public class PasswordDialog extends JDialog implements ActionListener {
     }
     
     public boolean showDialog(UserInfo transfer) {
-        username.setText(transfer.username);
-        password.setText(transfer.password);
+        username.setText(transfer.getUsername());
+        password.setText(transfer.getPassword());
         okPressed = false;
         
         setVisible( true );
         
         if (okPressed) {
-            transfer.username = username.getText();
-            transfer.password = new String(password.getPassword());
+            transfer.setUsername(username.getText());
+            transfer.setPassword(new String(password.getPassword()));
         }
         
         return okPressed;

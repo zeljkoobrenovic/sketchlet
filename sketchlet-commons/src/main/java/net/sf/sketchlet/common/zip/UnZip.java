@@ -4,11 +4,16 @@
  */
 package net.sf.sketchlet.common.zip;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-
 
 
 public class UnZip {
@@ -18,7 +23,7 @@ public class UnZip {
             return;
         }
         ZipFile zipfile = new ZipFile(archive);
-        for (Enumeration e = zipfile.entries(); e.hasMoreElements();) {
+        for (Enumeration e = zipfile.entries(); e.hasMoreElements(); ) {
             if (stopped) {
                 break;
             }
@@ -81,5 +86,6 @@ public class UnZip {
         in.close();
         out.close();
     }
+
     public static boolean stopped = false;
 }

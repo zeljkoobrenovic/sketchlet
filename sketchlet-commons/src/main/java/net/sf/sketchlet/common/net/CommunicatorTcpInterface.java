@@ -27,11 +27,11 @@ import java.util.Vector;
  */
 public class CommunicatorTcpInterface implements CommunicatorInterface {
     private static final Logger log = Logger.getLogger(CommunicatorTcpInterface.class);
-    public Socket communicator;
-    public BufferedReader in;
-    public PrintWriter out;
+    private Socket communicator;
+    private BufferedReader in;
+    private PrintWriter out;
     Vector templates = new Vector();
-    public boolean connected = false;
+    private boolean connected = false;
     String host = "localhost";
     int port = 3320;
 
@@ -91,30 +91,30 @@ public class CommunicatorTcpInterface implements CommunicatorInterface {
     }
 
     public boolean connect() {
-        if (this.connected) {
+        if (this.isConnected()) {
             return true;
 
 
         }
         try {
-            this.communicator = new Socket(this.host, this.port);
-            this.communicator.setTcpNoDelay(true);
-            this.in = new BufferedReader(new InputStreamReader(this.communicator.getInputStream()));
-            this.out = new PrintWriter(new OutputStreamWriter(this.communicator.getOutputStream()));
+            this.setCommunicator(new Socket(this.host, this.port));
+            this.getCommunicator().setTcpNoDelay(true);
+            this.setIn(new BufferedReader(new InputStreamReader(this.getCommunicator().getInputStream())));
+            this.setOut(new PrintWriter(new OutputStreamWriter(this.getCommunicator().getOutputStream())));
             log.info("CommunicatorTcpInterface: Connected to the communicator at " + this.host + ":" + this.port);
 
             Iterator iterator = this.templates.iterator();
             while (iterator.hasNext()) {
                 String template = (String) iterator.next();
-                this.out.println(template);
-                this.out.flush();
+                this.getOut().println(template);
+                this.getOut().flush();
             }
         } catch (Exception e) {
-            this.connected = false;
+            this.setConnected(false);
             return false;
         }
 
-        this.connected = true;
+        this.setConnected(true);
         return true;
     }
 
@@ -123,10 +123,10 @@ public class CommunicatorTcpInterface implements CommunicatorInterface {
             return;
         }
         try {
-            out.println(strCommand);
-            out.flush();
+            getOut().println(strCommand);
+            getOut().flush();
         } catch (Exception e) {
-            this.connected = false;
+            this.setConnected(false);
             e.printStackTrace(System.out);
         }
     }
@@ -137,11 +137,11 @@ public class CommunicatorTcpInterface implements CommunicatorInterface {
         }
         String result = "";
         try {
-            out.println(strCommand);
-            out.flush();
-            result = in.readLine();
+            getOut().println(strCommand);
+            getOut().flush();
+            result = getIn().readLine();
         } catch (Exception e) {
-            this.connected = false;
+            this.setConnected(false);
             e.printStackTrace(System.out);
         }
 
@@ -158,7 +158,7 @@ public class CommunicatorTcpInterface implements CommunicatorInterface {
         String addTemplateCommand = "ADD TEMPLATE " + triggerVariable + " " + template;
         this.templates.add(addTemplateCommand);
 
-        if (this.connected) {
+        if (this.isConnected()) {
             this.send(addTemplateCommand);
         } else {    // try to connect, and templates will be send after connection is established;
             this.connect();
@@ -184,7 +184,7 @@ public class CommunicatorTcpInterface implements CommunicatorInterface {
         String addTemplateCommand = "ADD TEMPLATE " + trigger + " " + template;
         this.templates.add(addTemplateCommand);
 
-        if (this.connected) {
+        if (this.isConnected()) {
             this.send(addTemplateCommand);
         } else {    // try to connect, and templates will be send after connection is established;
             this.connect();
@@ -199,10 +199,10 @@ public class CommunicatorTcpInterface implements CommunicatorInterface {
         }
         try {
             String strCommand = "UPDATE " + variableName + " " + URLEncoder.encode(variableValue, "UTF-8");
-            out.println(strCommand);
-            out.flush();
+            getOut().println(strCommand);
+            getOut().flush();
         } catch (Exception e) {
-            this.connected = false;
+            this.setConnected(false);
             e.printStackTrace(System.out);
         }
 
@@ -217,10 +217,10 @@ public class CommunicatorTcpInterface implements CommunicatorInterface {
         }
         try {
             String strCommand = "SET " + variableName + " " + variableValue;
-            out.println(strCommand);
-            out.flush();
+            getOut().println(strCommand);
+            getOut().flush();
         } catch (Exception e) {
-            this.connected = false;
+            this.setConnected(false);
             e.printStackTrace(System.out);
         }
 
@@ -236,10 +236,10 @@ public class CommunicatorTcpInterface implements CommunicatorInterface {
             strCommand += " " + URLEncoder.encode(strGroup, "UTF-8");
             strCommand += " " + URLEncoder.encode(strDescription, "UTF-8");
 
-            out.println(strCommand);
-            out.flush();
+            getOut().println(strCommand);
+            getOut().flush();
         } catch (Exception e) {
-            this.connected = false;
+            this.setConnected(false);
             e.printStackTrace(System.out);
         }
 
@@ -276,10 +276,10 @@ public class CommunicatorTcpInterface implements CommunicatorInterface {
         }
         try {
             String strCommand = "DELETE " + variableName;
-            out.println(strCommand);
-            out.flush();
+            getOut().println(strCommand);
+            getOut().flush();
         } catch (Exception e) {
-            this.connected = false;
+            this.setConnected(false);
             e.printStackTrace(System.out);
         }
 
@@ -294,10 +294,10 @@ public class CommunicatorTcpInterface implements CommunicatorInterface {
         }
         try {
             String strCommand = "LOAD TRANSFORMATION " + transformationURL;
-            out.println(strCommand);
-            out.flush();
+            getOut().println(strCommand);
+            getOut().flush();
         } catch (Exception e) {
-            this.connected = false;
+            this.setConnected(false);
             e.printStackTrace(System.out);
         }
 
@@ -312,10 +312,10 @@ public class CommunicatorTcpInterface implements CommunicatorInterface {
         }
         try {
             String strCommand = "REMOVE TRANSFORMATION " + transformationURL;
-            out.println(strCommand);
-            out.flush();
+            getOut().println(strCommand);
+            getOut().flush();
         } catch (Exception e) {
-            this.connected = false;
+            this.setConnected(false);
             e.printStackTrace(System.out);
         }
 
@@ -331,11 +331,11 @@ public class CommunicatorTcpInterface implements CommunicatorInterface {
         String result = "";
         try {
             String strCommand = "POPULATE TEMPLATE " + template;
-            out.println(strCommand);
-            out.flush();
-            result = in.readLine();
+            getOut().println(strCommand);
+            getOut().flush();
+            result = getIn().readLine();
         } catch (Exception e) {
-            this.connected = false;
+            this.setConnected(false);
             e.printStackTrace(System.out);
         }
 
@@ -349,11 +349,11 @@ public class CommunicatorTcpInterface implements CommunicatorInterface {
         String result = "";
         try {
             String strCommand = "GET " + listOfVariables;
-            out.println(strCommand);
-            out.flush();
-            result = in.readLine();
+            getOut().println(strCommand);
+            getOut().flush();
+            result = getIn().readLine();
         } catch (Exception e) {
-            this.connected = false;
+            this.setConnected(false);
             e.printStackTrace(System.out);
         }
 
@@ -369,11 +369,11 @@ public class CommunicatorTcpInterface implements CommunicatorInterface {
         String result = "";
         try {
             String strCommand = "GETXML " + listOfVariables;
-            out.println(strCommand);
-            out.flush();
-            result = in.readLine();
+            getOut().println(strCommand);
+            getOut().flush();
+            result = getIn().readLine();
         } catch (Exception e) {
-            this.connected = false;
+            this.setConnected(false);
             e.printStackTrace(System.out);
         }
 
@@ -389,11 +389,11 @@ public class CommunicatorTcpInterface implements CommunicatorInterface {
         String result = "";
         try {
             String strCommand = "GETALLXML " + listOfVariables;
-            out.println(strCommand);
-            out.flush();
-            result = in.readLine();
+            getOut().println(strCommand);
+            getOut().flush();
+            result = getIn().readLine();
         } catch (Exception e) {
-            this.connected = false;
+            this.setConnected(false);
             e.printStackTrace(System.out);
         }
 
@@ -407,7 +407,7 @@ public class CommunicatorTcpInterface implements CommunicatorInterface {
         String line = null;
 
         try {
-            line = this.in.readLine();
+            line = this.getIn().readLine();
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }
@@ -425,7 +425,7 @@ public class CommunicatorTcpInterface implements CommunicatorInterface {
         String addTemplateCommand = "REGISTER " + triggerVariable + " " + template;
         this.templates.add(addTemplateCommand);
 
-        if (this.connected) {
+        if (this.isConnected()) {
             this.send(addTemplateCommand);
         } else {    // try to connect, and templates will be send after connection is established;
             this.connect();
@@ -451,7 +451,7 @@ public class CommunicatorTcpInterface implements CommunicatorInterface {
         String addTemplateCommand = "REGISTER " + trigger + " " + template;
         this.templates.add(addTemplateCommand);
 
-        if (this.connected) {
+        if (this.isConnected()) {
             this.send(addTemplateCommand);
         } else {    // try to connect, and templates will be send after connection is established;
             this.connect();
@@ -464,10 +464,10 @@ public class CommunicatorTcpInterface implements CommunicatorInterface {
         }
         try {
             String strCommand = "ADDVAR " + variableName + "|" + strGroup + "|" + strDescription;
-            out.println(strCommand);
-            out.flush();
+            getOut().println(strCommand);
+            getOut().flush();
         } catch (Exception e) {
-            this.connected = false;
+            this.setConnected(false);
             e.printStackTrace(System.out);
         }
 
@@ -480,17 +480,49 @@ public class CommunicatorTcpInterface implements CommunicatorInterface {
         }
         try {
             String strCommand = "ADDVAR " + variableName + "|" + strGroup + "|" + strDescription;
-            out.println(strCommand);
-            out.flush();
+            getOut().println(strCommand);
+            getOut().flush();
             Thread.sleep(50);
             strCommand = "SET " + variableName + " " + initValue;
-            out.println(strCommand);
-            out.flush();
+            getOut().println(strCommand);
+            getOut().flush();
         } catch (Exception e) {
-            this.connected = false;
+            this.setConnected(false);
             e.printStackTrace(System.out);
         }
 
         return "";
+    }
+
+    public Socket getCommunicator() {
+        return communicator;
+    }
+
+    public void setCommunicator(Socket communicator) {
+        this.communicator = communicator;
+    }
+
+    public BufferedReader getIn() {
+        return in;
+    }
+
+    public void setIn(BufferedReader in) {
+        this.in = in;
+    }
+
+    public PrintWriter getOut() {
+        return out;
+    }
+
+    public void setOut(PrintWriter out) {
+        this.out = out;
+    }
+
+    public boolean isConnected() {
+        return connected;
+    }
+
+    public void setConnected(boolean connected) {
+        this.connected = connected;
     }
 }

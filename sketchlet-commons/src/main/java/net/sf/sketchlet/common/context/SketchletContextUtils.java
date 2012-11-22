@@ -36,9 +36,9 @@ import java.util.zip.ZipFile;
  */
 public class SketchletContextUtils {
     private static final Logger log = Logger.getLogger(SketchletContextUtils.class);
-    public static String projectFolder;
-    public static int httpBlogPort = 8090;
-    public static int httpProjectPort = 8091;
+    private static String projectFolder;
+    private static int httpBlogPort = 8090;
+    private static int httpProjectPort = 8091;
     private static String sketchletDir = ".amico";
 
     /**
@@ -216,18 +216,18 @@ public class SketchletContextUtils {
     }
 
     public static String getCurrentProjectDir() {
-        return projectFolder;
+        return getProjectFolder();
     }
 
     public static String getCurrentProjectDirName() {
-        if (projectFolder == null) {
+        if (getProjectFolder() == null) {
             return "";
         }
-        return new File(projectFolder).getName();
+        return new File(getProjectFolder()).getName();
     }
 
     public static String getCurrentProjectFile() {
-        if (projectFolder == null) {
+        if (getProjectFolder() == null) {
             return null;
         } else {
             return getCurrentProjectDir() + sketchletDataDir() + File.separator + "workspace.txt";
@@ -235,48 +235,48 @@ public class SketchletContextUtils {
     }
 
     public static String getCurrentProjectConfDir() {
-        if (projectFolder == null) {
+        if (getProjectFolder() == null) {
             return "";
         }
 
-        return projectFolder + sketchletDataDir() + File.separator + "conf" + File.separator;
+        return getProjectFolder() + sketchletDataDir() + File.separator + "conf" + File.separator;
     }
 
     public static String getCurrentProjectScriptsDir() {
-        if (projectFolder == null) {
+        if (getProjectFolder() == null) {
             return "";
         }
 
-        return projectFolder + sketchletDataDir() + File.separator + "scripts" + File.separator;
+        return getProjectFolder() + sketchletDataDir() + File.separator + "scripts" + File.separator;
     }
 
     public static String getCurrentProjectLogDir() {
-        if (projectFolder == null) {
+        if (getProjectFolder() == null) {
             return "";
         }
 
-        return projectFolder + sketchletDataDir() + File.separator + "sessions" + File.separator;
+        return getProjectFolder() + sketchletDataDir() + File.separator + "sessions" + File.separator;
     }
 
     public static String getCurrentProjectTeamDir() {
-        if (projectFolder == null) {
+        if (getProjectFolder() == null) {
             return "";
         }
 
-        return projectFolder + sketchletDataDir() + File.separator + "team" + File.separator;
+        return getProjectFolder() + sketchletDataDir() + File.separator + "team" + File.separator;
     }
 
     public static String getCurrentProjectNotebookDir() {
-        if (projectFolder == null) {
+        if (getProjectFolder() == null) {
             return "";
         }
 
-        String legacyDir = projectFolder + sketchletDataDir() + File.separator + "sketchbook" + File.separator;
+        String legacyDir = getProjectFolder() + sketchletDataDir() + File.separator + "sketchbook" + File.separator;
         if (new File(legacyDir).exists()) {
             return legacyDir;
         }
 
-        String strDir = projectFolder + sketchletDataDir() + File.separator + "blog" + File.separator;
+        String strDir = getProjectFolder() + sketchletDataDir() + File.separator + "blog" + File.separator;
 
         if (!new File(strDir).exists()) {
             new File(strDir).mkdirs();
@@ -286,11 +286,11 @@ public class SketchletContextUtils {
     }
 
     public static String getCurrentProjectMouseAndKeyboardActionsDir() {
-        if (projectFolder == null) {
+        if (getProjectFolder() == null) {
             return "";
         }
 
-        return projectFolder + sketchletDataDir() + File.separator + "mouse_keyboard" + File.separator;
+        return getProjectFolder() + sketchletDataDir() + File.separator + "mouse_keyboard" + File.separator;
     }
 
     /*
@@ -318,7 +318,7 @@ public class SketchletContextUtils {
     }*/
 
     public static String getCurrentProjectOriginalDir() {
-        if (projectFolder == null) {
+        if (getProjectFolder() == null) {
             return "";
         }
         String strDir = getCurrentProjectDir() + ".original" + File.separator;
@@ -330,7 +330,7 @@ public class SketchletContextUtils {
     }
 
     public static String getCurrentProjectTempDir() {
-        if (projectFolder == null) {
+        if (getProjectFolder() == null) {
             return "";
         }
         String strDir = getCurrentProjectDir() + ".temp" + File.separator;
@@ -342,7 +342,7 @@ public class SketchletContextUtils {
     }
 
     public static String getCurrentProjectOriginalDir2() {
-        if (projectFolder == null) {
+        if (getProjectFolder() == null) {
             return "";
         }
         String strDir = getCurrentProjectDir() + ".original" + File.separator;
@@ -354,11 +354,11 @@ public class SketchletContextUtils {
     }
 
     public static String getCurrentProjectSkecthletsDir() {
-        if (projectFolder == null) {
+        if (getProjectFolder() == null) {
             return "";
         }
 
-        String strDir = projectFolder + sketchletDataDir() + File.separator + "sketches" + File.separator;
+        String strDir = getProjectFolder() + sketchletDataDir() + File.separator + "sketches" + File.separator;
 
         if (!new File(strDir).exists()) {
             new File(strDir).mkdirs();
@@ -552,5 +552,29 @@ public class SketchletContextUtils {
         commandLine = commandLine.replace("\\/", "/");
 
         return commandLine;
+    }
+
+    public static String getProjectFolder() {
+        return projectFolder;
+    }
+
+    public static void setProjectFolder(String projectFolder) {
+        SketchletContextUtils.projectFolder = projectFolder;
+    }
+
+    public static int getHttpBlogPort() {
+        return httpBlogPort;
+    }
+
+    public static void setHttpBlogPort(int httpBlogPort) {
+        SketchletContextUtils.httpBlogPort = httpBlogPort;
+    }
+
+    public static int getHttpProjectPort() {
+        return httpProjectPort;
+    }
+
+    public static void setHttpProjectPort(int httpProjectPort) {
+        SketchletContextUtils.httpProjectPort = httpProjectPort;
     }
 }

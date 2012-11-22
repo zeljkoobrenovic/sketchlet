@@ -210,10 +210,26 @@ public abstract class GenericAdapter {
 class Command {
 
     public Command(String command, int delayMs) {
-        this.command = command;
-        this.delayMs = delayMs;
+        this.setCommand(command);
+        this.setDelayMs(delayMs);
     }
 
-    String command;
-    int delayMs = 0;
+    private String command;
+    private int delayMs = 0;
+
+    public String getCommand() {
+        return command;
+    }
+
+    public void setCommand(String command) {
+        this.command = command;
+    }
+
+    public int getDelayMs() {
+        return delayMs;
+    }
+
+    public void setDelayMs(int delayMs) {
+        this.delayMs = delayMs;
+    }
 }

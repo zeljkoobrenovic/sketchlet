@@ -4,9 +4,10 @@
  */
 package net.sf.sketchlet.script;
 
-import java.awt.*;
-import java.awt.event.*;
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /**
  *
@@ -14,9 +15,9 @@ import javax.swing.*;
  */
 public class ScriptConsole extends JFrame {
 
-    public JTextArea textArea = new JTextArea(4, 80);
-    public static ScriptConsole console = new ScriptConsole();
-    JButton clearButton;
+    private JTextArea textArea = new JTextArea(4, 80);
+    private static ScriptConsole console = new ScriptConsole();
+    private JButton clearButton;
 
     public ScriptConsole() {
         super("Script Console");
@@ -25,17 +26,17 @@ public class ScriptConsole extends JFrame {
         clearButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                textArea.setText("");
+                getTextArea().setText("");
             }
         });
         JPanel buttons = new JPanel();
         buttons.add(this.clearButton);
 
         Font font = new Font("Verdana", Font.PLAIN, 9);
-        textArea.setFont(font);
-        textArea.setForeground(Color.RED);
+        getTextArea().setFont(font);
+        getTextArea().setForeground(Color.RED);
 
-        textArea.setLineWrap(true);
+        getTextArea().setLineWrap(true);
 
         //JScrollPane scrollPane = new JScrollPane(this.textArea);
 
@@ -44,12 +45,12 @@ public class ScriptConsole extends JFrame {
     }
 
     public static void showConsole() {
-        if (ScriptConsole.console == null) {
-            ScriptConsole.console = new ScriptConsole();
+        if (ScriptConsole.getConsole() == null) {
+            ScriptConsole.setConsole(new ScriptConsole());
         }
 
-        ScriptConsole.console.pack();
-        ScriptConsole.console.setVisible(!ScriptConsole.console.isVisible());
+        ScriptConsole.getConsole().pack();
+        ScriptConsole.getConsole().setVisible(!ScriptConsole.getConsole().isVisible());
     }
 
     public static void main(String args[]) {
@@ -58,12 +59,28 @@ public class ScriptConsole extends JFrame {
     }
 
     public static void addLine(String line) {
-        if (ScriptConsole.console == null) {
-            ScriptConsole.console = new ScriptConsole();
+        if (ScriptConsole.getConsole() == null) {
+            ScriptConsole.setConsole(new ScriptConsole());
         }
 
-        ScriptConsole.console.textArea.append(line + "\n");
-        ScriptConsole.console.textArea.setSelectionStart(ScriptConsole.console.textArea.getText().length() - line.length());
-        ScriptConsole.console.textArea.setSelectionEnd(ScriptConsole.console.textArea.getText().length());
+        ScriptConsole.getConsole().getTextArea().append(line + "\n");
+        ScriptConsole.getConsole().getTextArea().setSelectionStart(ScriptConsole.getConsole().getTextArea().getText().length() - line.length());
+        ScriptConsole.getConsole().getTextArea().setSelectionEnd(ScriptConsole.getConsole().getTextArea().getText().length());
+    }
+
+    public static ScriptConsole getConsole() {
+        return console;
+    }
+
+    public static void setConsole(ScriptConsole console) {
+        ScriptConsole.console = console;
+    }
+
+    public JTextArea getTextArea() {
+        return textArea;
+    }
+
+    public void setTextArea(JTextArea textArea) {
+        this.textArea = textArea;
     }
 }

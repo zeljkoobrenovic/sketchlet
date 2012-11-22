@@ -69,9 +69,9 @@ public abstract class GenericAdapterClientLineProcessingThread extends ClientLin
             while (iterator.hasNext()) {
                 Command command = ((Command) iterator.next());
                 
-                if (command.delayMs > 0) Thread.sleep( command.delayMs );
+                if (command.getDelayMs() > 0) Thread.sleep(command.getDelayMs());
                 
-                out.println( command.command.trim() );
+                out.println( command.getCommand().trim() );
                 out.flush();
             }
         } catch (Exception e) {

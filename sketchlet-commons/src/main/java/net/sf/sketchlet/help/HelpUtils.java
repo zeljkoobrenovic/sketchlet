@@ -17,15 +17,15 @@ import java.util.Map;
  */
 public class HelpUtils {
     private static final Logger log = Logger.getLogger(HelpUtils.class);
-    public static HelpInterface helpInterface;
+    private static HelpInterface helpInterface;
 
     public static void openHelpFile(String strID) {
         openHelpFile("Help", strID);
     }
 
     public static void openHelpFile(String title, String strID) {
-        if (helpInterface != null) {
-            helpInterface.openByID(strID);
+        if (getHelpInterface() != null) {
+            getHelpInterface().openByID(strID);
             return;
         }
         String strPath = HelpUtils.getAMICOHelpDir() + strID + ".html";
@@ -133,5 +133,13 @@ public class HelpUtils {
 
     public static String getAMICOConfDir() {
         return getAMICOHome() + "conf" + File.separator;
+    }
+
+    public static HelpInterface getHelpInterface() {
+        return helpInterface;
+    }
+
+    public static void setHelpInterface(HelpInterface helpInterface) {
+        HelpUtils.helpInterface = helpInterface;
     }
 }

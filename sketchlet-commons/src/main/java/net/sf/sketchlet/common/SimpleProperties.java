@@ -8,25 +8,28 @@
  */
 package net.sf.sketchlet.common;
 
+import net.sf.sketchlet.common.config.ConfigItem;
+import net.sf.sketchlet.common.config.ConfigModule;
+import org.w3c.dom.NodeList;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import net.sf.sketchlet.common.config.ConfigItem;
-import net.sf.sketchlet.common.config.ConfigModule;
-import org.w3c.dom.NodeList;
 
 /**
- *
  * @author obrenovi
  */
 public class SimpleProperties {
 
-    /** Creates a new instance of GenericAdapter */
+    /**
+     * Creates a new instance of GenericAdapter
+     */
     public SimpleProperties() {
     }
-    XPathEvaluator xpath;
+
+    private XPathEvaluator xpath;
 
     public String loadData(String configURLs[], String structureNames[]) {
         String strXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
@@ -145,8 +148,8 @@ public class SimpleProperties {
                             }
 
                             currentModule = new ConfigModule();
-                            currentModule.name = structureNames[i];
-                            currentModule.value = l2;
+                            currentModule.setName(structureNames[i]);
+                            currentModule.setValue(l2);
 
                             continue mainLoop;
                         }
@@ -159,10 +162,10 @@ public class SimpleProperties {
                     l2 = Utils.replaceSystemVariables(l2);
                     strXML += loadDataToXML(l2, structureNames);
                 } else {
-                    currentItem.name = l1;
-                    currentItem.value = l2;
+                    currentItem.setName(l1);
+                    currentItem.setValue(l2);
                     if (currentModule != null) {
-                        currentModule.moduleItems.add(currentItem);
+                        currentModule.getModuleItems().add(currentItem);
                     } else {
                         strXML += currentItem.toXML();
                     }

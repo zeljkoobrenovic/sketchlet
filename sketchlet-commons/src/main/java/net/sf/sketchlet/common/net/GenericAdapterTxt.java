@@ -8,6 +8,11 @@
  */
 package net.sf.sketchlet.common.net;
 
+import net.sf.sketchlet.common.Utils;
+import net.sf.sketchlet.common.config.ConfigItem;
+import net.sf.sketchlet.common.config.ConfigItemHelper;
+import net.sf.sketchlet.common.config.ConfigModule;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -16,10 +21,6 @@ import java.net.Socket;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Vector;
-import net.sf.sketchlet.common.config.ConfigItem;
-import net.sf.sketchlet.common.config.ConfigModule;
-import net.sf.sketchlet.common.config.ConfigItemHelper;
-import net.sf.sketchlet.common.Utils;
 
 /**
  *
@@ -112,8 +113,8 @@ public class GenericAdapterTxt extends GenericAdapter {
                 for (int i = 0; i < structureNames.length; i++) {
                     if (l1.toLowerCase().equals(structureNames[i].toLowerCase())) {
                         currentModule = new ConfigModule();
-                        currentModule.name = structureNames[i];
-                        currentModule.value = l2;
+                        currentModule.setName(structureNames[i]);
+                        currentModule.setValue(l2);
                         data.add(currentModule);
                         continue mainLoop;
                     }
@@ -125,10 +126,10 @@ public class GenericAdapterTxt extends GenericAdapter {
                     l2 = Utils.replaceSystemVariables(l2);
                     loadData(l2, data, structureNames);
                 } else {
-                    currentItem.name = l1;
-                    currentItem.value = l2;
+                    currentItem.setName(l1);
+                    currentItem.setValue(l2);
                     if (currentModule != null) {
-                        currentModule.moduleItems.add(currentItem);
+                        currentModule.getModuleItems().add(currentItem);
                     } else {
                         data.add(currentItem);
                     }
@@ -144,22 +145,22 @@ public class GenericAdapterTxt extends GenericAdapter {
                 if (!(item instanceof ConfigModule)) {
                     ConfigItem ci = (ConfigItem) item;
 
-                    if (ci.name.toLowerCase().equals("statevariable")) {
-                        this.stateVariable = ci.value;
-                    } else if (ci.name.toLowerCase().equals("amicohost")) {
-                        this.communicatorHost = ci.value;
-                    } else if (ci.name.toLowerCase().equals("amicoport")) {
-                        this.communicatorPort = Integer.parseInt(ci.value);
-                    } else if (ci.name.toLowerCase().equals("amicocommand")) {
+                    if (ci.getName().toLowerCase().equals("statevariable")) {
+                        this.stateVariable = ci.getValue();
+                    } else if (ci.getName().toLowerCase().equals("amicohost")) {
+                        this.communicatorHost = ci.getValue();
+                    } else if (ci.getName().toLowerCase().equals("amicoport")) {
+                        this.communicatorPort = Integer.parseInt(ci.getValue());
+                    } else if (ci.getName().toLowerCase().equals("amicocommand")) {
                         int delayMs = 0;
-                        String value = ci.value;
+                        String value = ci.getValue();
 
-                        if (isNumeric("" + ci.value.charAt(0))) {
-                            int n = ci.value.indexOf(" ");
+                        if (isNumeric("" + ci.getValue().charAt(0))) {
+                            int n = ci.getValue().indexOf(" ");
 
                             if (n > 0) {
-                                delayMs = Integer.parseInt(ci.value.substring(0, n));
-                                value = ci.value.substring(n + 1);
+                                delayMs = Integer.parseInt(ci.getValue().substring(0, n));
+                                value = ci.getValue().substring(n + 1);
                             }
                         }
 
@@ -216,8 +217,8 @@ public class GenericAdapterTxt extends GenericAdapter {
                 for (int i = 0; i < structureNames.length; i++) {
                     if (l1.toLowerCase().equals(structureNames[i].toLowerCase())) {
                         currentModule = new ConfigModule();
-                        currentModule.name = structureNames[i];
-                        currentModule.value = l2;
+                        currentModule.setName(structureNames[i]);
+                        currentModule.setValue(l2);
                         data.add(currentModule);
                         continue mainLoop;
                     }
@@ -229,10 +230,10 @@ public class GenericAdapterTxt extends GenericAdapter {
                     l2 = Utils.replaceSystemVariables(l2);
                     loadData(l2, data, structureNames);
                 } else {
-                    currentItem.name = l1;
-                    currentItem.value = l2;
+                    currentItem.setName(l1);
+                    currentItem.setValue(l2);
                     if (currentModule != null) {
-                        currentModule.moduleItems.add(currentItem);
+                        currentModule.getModuleItems().add(currentItem);
                     } else {
                         data.add(currentItem);
                     }
@@ -248,22 +249,22 @@ public class GenericAdapterTxt extends GenericAdapter {
                 if (!(item instanceof ConfigModule)) {
                     ConfigItem ci = (ConfigItem) item;
 
-                    if (ci.name.toLowerCase().equals("statevariable")) {
-                        this.stateVariable = ci.value;
-                    } else if (ci.name.toLowerCase().equals("amicohost")) {
-                        this.communicatorHost = ci.value;
-                    } else if (ci.name.toLowerCase().equals("amicoport")) {
-                        this.communicatorPort = Integer.parseInt(ci.value);
-                    } else if (ci.name.toLowerCase().equals("amicocommand")) {
+                    if (ci.getName().toLowerCase().equals("statevariable")) {
+                        this.stateVariable = ci.getValue();
+                    } else if (ci.getName().toLowerCase().equals("amicohost")) {
+                        this.communicatorHost = ci.getValue();
+                    } else if (ci.getName().toLowerCase().equals("amicoport")) {
+                        this.communicatorPort = Integer.parseInt(ci.getValue());
+                    } else if (ci.getName().toLowerCase().equals("amicocommand")) {
                         int delayMs = 0;
-                        String value = ci.value;
+                        String value = ci.getValue();
 
-                        if (isNumeric("" + ci.value.charAt(0))) {
-                            int n = ci.value.indexOf(" ");
+                        if (isNumeric("" + ci.getValue().charAt(0))) {
+                            int n = ci.getValue().indexOf(" ");
 
                             if (n > 0) {
-                                delayMs = Integer.parseInt(ci.value.substring(0, n));
-                                value = ci.value.substring(n + 1);
+                                delayMs = Integer.parseInt(ci.getValue().substring(0, n));
+                                value = ci.getValue().substring(n + 1);
                             }
                         }
 

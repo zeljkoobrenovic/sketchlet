@@ -16,10 +16,11 @@ limitations under the License.
 
 package net.sf.sketchlet.common.filter;
 
-import java.awt.*;
-import java.util.*;
 import net.sf.sketchlet.common.filter.math.Function2D;
 import net.sf.sketchlet.common.filter.math.Noise;
+
+import java.awt.*;
+import java.util.Random;
 
 /**
  * A filter which produces an image with a cellular texture.
@@ -29,12 +30,12 @@ public class CellularFilter extends WholeImageFilter implements Function2D, Clon
 	protected float scale = 32;
 	protected float stretch = 1.0f;
 	protected float angle = 0.0f;
-	public float amount = 1.0f;
-	public float turbulence = 1.0f;
-	public float gain = 0.5f;
-	public float bias = 0.5f;
-	public float distancePower = 2;
-	public boolean useColor = false;
+	private float amount = 1.0f;
+	private float turbulence = 1.0f;
+	private float gain = 0.5f;
+	private float bias = 0.5f;
+	private float distancePower = 2;
+	private boolean useColor = false;
 	protected Colormap colormap = new Gradient();
 	protected float[] coefficients = { 1, 0, 0, 0 };
 	protected float angleCoefficient;
@@ -282,7 +283,31 @@ public class CellularFilter extends WholeImageFilter implements Function2D, Clon
 		return amount;
 	}
 
-	public class Point {
+    public float getGain() {
+        return gain;
+    }
+
+    public void setGain(float gain) {
+        this.gain = gain;
+    }
+
+    public float getBias() {
+        return bias;
+    }
+
+    public void setBias(float bias) {
+        this.bias = bias;
+    }
+
+    public boolean isUseColor() {
+        return useColor;
+    }
+
+    public void setUseColor(boolean useColor) {
+        this.useColor = useColor;
+    }
+
+    public class Point {
 		public int index;
 		public float x, y;
 		public float dx, dy;
@@ -372,12 +397,12 @@ public class CellularFilter extends WholeImageFilter implements Function2D, Clon
 			float d;
 			dx *= weight;
 			dy *= weight;
-			if (distancePower == 1.0f)
+			if (getDistancePower() == 1.0f)
 				d = dx + dy;
-			else if (distancePower == 2.0f)
+			else if (getDistancePower() == 2.0f)
 				d = (float)Math.sqrt(dx*dx + dy*dy);
 			else
-				d = (float)Math.pow((float)Math.pow(dx, distancePower) + (float)Math.pow(dy, distancePower), 1/distancePower);
+				d = (float)Math.pow((float)Math.pow(dx, getDistancePower()) + (float)Math.pow(dy, getDistancePower()), 1/ getDistancePower());
 
 			// Insertion sort the long way round to speed it up a bit
 			if (d < results[0].distance) {
@@ -472,16 +497,16 @@ public class CellularFilter extends WholeImageFilter implements Function2D, Clon
 		ny /= scale * stretch;
 		nx += 1000;
 		ny += 1000;	// Reduce artifacts around 0,0
-		float f = turbulence == 1.0f ? evaluate(nx, ny) : turbulence2(nx, ny, turbulence);
+		float f = getTurbulence() == 1.0f ? evaluate(nx, ny) : turbulence2(nx, ny, getTurbulence());
 		// Normalize to 0..1
 //		f = (f-min)/(max-min);
 		f *= 2;
-		f *= amount;
+		f *= getAmount();
 		int a = 0xff000000;
 		int v;
 		if (colormap != null) {
 			v = colormap.getColor(f);
-			if (useColor) {
+			if (isUseColor()) {
 				int srcx = ImageMath.clamp((int)((results[0].x-1000)*scale), 0, width-1);
 				int srcy = ImageMath.clamp((int)((results[0].y-1000)*scale), 0, height-1);
 				v = inPixels[srcy * width + srcx];

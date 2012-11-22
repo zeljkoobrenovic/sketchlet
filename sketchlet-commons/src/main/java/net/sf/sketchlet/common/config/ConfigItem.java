@@ -16,14 +16,30 @@ import net.sf.sketchlet.common.EscapeChars;
  * @author cuypers
  */
 public class ConfigItem {
-    public String name;
-    public String value;
+    private String name;
+    private String value;
     
     public String toString() {
-        return name + "=" + value;
+        return getName() + "=" + getValue();
     }
     
     public String toXML() {
-        return "<" + name.toLowerCase() + ">" + EscapeChars.forHTMLTag( value ) + "</" + name.toLowerCase() + ">";
+        return "<" + getName().toLowerCase() + ">" + EscapeChars.forHTMLTag(getValue()) + "</" + getName().toLowerCase() + ">";
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
     }
 }

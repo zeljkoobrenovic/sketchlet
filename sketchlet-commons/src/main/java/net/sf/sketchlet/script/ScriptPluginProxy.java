@@ -28,19 +28,16 @@ import java.util.Vector;
  */
 public class ScriptPluginProxy implements RunInterface {
 
-    public String status = "";
-    public String strFile = "";
-    public String scriptFilePath = null;
-    //public boolean updating = false;
-    public boolean error = false;
-    public File scriptFile;
-    //public boolean stopped = false;
-    // public static SketchletContext apiFactory;
-    SketchletContext api;
-    SketchletGraphicsContext graphicsApi;
-    protected ScriptEngine engine;
-    protected List<String> contextVariableTypes = new Vector<String>();
-    protected List<String> contextVariables = new Vector<String>();
+    private String status = "";
+    private String strFile = "";
+    private String scriptFilePath = null;
+    private boolean error = false;
+    private File scriptFile;
+    private SketchletContext api;
+    private SketchletGraphicsContext graphicsApi;
+    private ScriptEngine engine;
+    private List<String> contextVariableTypes = new Vector<String>();
+    private List<String> contextVariables = new Vector<String>();
 
     /**
      * Creates a new instance of ScriptPluginProxy
@@ -50,7 +47,7 @@ public class ScriptPluginProxy implements RunInterface {
     }
 
     public void init(File scriptFile) {
-        this.scriptFile = scriptFile;
+        this.setScriptFile(scriptFile);
         if (SketchletContext.getInstance() != null) {
             api = SketchletContext.getInstance();
         }
@@ -58,47 +55,47 @@ public class ScriptPluginProxy implements RunInterface {
             graphicsApi = SketchletGraphicsContext.getInstance();
         }
         if (SketchletContext.getInstance().isApplicationReady()) {
-            this.scriptFilePath = scriptFile.getPath();
-            this.strFile = scriptFile.getName();
+            this.setScriptFilePath(scriptFile.getPath());
+            this.setStrFile(scriptFile.getName());
         }
     }
 
     @Override
     public void start() {
-        this.status = "running";
+        this.setStatus("running");
 
-        if (scriptFile != null) {
-            load(scriptFile);
+        if (getScriptFile() != null) {
+            load(getScriptFile());
         }
-        this.status = "done";
+        this.setStatus("done");
     }
 
     @Override
     public void stop() {
         // api.stopped = true;
-        status = "stopped";
+        setStatus("stopped");
     }
 
     public String getName() {
-        if (this.scriptFile != null) {
-            return "Script:" + scriptFile.getName();
+        if (this.getScriptFile() != null) {
+            return "Script:" + getScriptFile().getName();
         }
         return "";
     }
 
     public void addVariableToContextDescription(String type, String name) {
-        contextVariables.add(name);
-        contextVariableTypes.add(type);
+        getContextVariables().add(name);
+        getContextVariableTypes().add(type);
     }
 
     public void showContext(JFrame frame) {
         setContext(null);
-        Object[][] data = new Object[contextVariables.size()][2];
+        Object[][] data = new Object[getContextVariables().size()][2];
         Object[] columnNames = new String[]{"Type", "Variable"};
 
         for (int i = 0; i < data.length; i++) {
-            data[i][0] = contextVariableTypes.get(i);
-            data[i][1] = contextVariables.get(i);
+            data[i][0] = getContextVariableTypes().get(i);
+            data[i][1] = getContextVariables().get(i);
         }
 
         JTable table = new JTable(data, columnNames);
@@ -151,15 +148,15 @@ public class ScriptPluginProxy implements RunInterface {
     }
 
     public void updateContext(String variable, String strValue) {
-        if (engine != null) {
+        if (getEngine() != null) {
             variable = getUniqueName(variable);
-            updateAutoType(variable, strValue, engine);
+            updateAutoType(variable, strValue, getEngine());
         }
     }
 
     public void setContext(ScriptEngine engine) {
-        contextVariables.clear();
-        contextVariableTypes.clear();
+        getContextVariables().clear();
+        getContextVariableTypes().clear();
         if (engine != null) {
             engine.put("amico", api);
             engine.put("sketchify", api);
@@ -230,25 +227,25 @@ public class ScriptPluginProxy implements RunInterface {
         FileReader in = null;
         try {
             in = new FileReader(file);
-            int n = strFile.lastIndexOf("/");
+            int n = getStrFile().lastIndexOf("/");
             if (n >= 0) {
-                strFile = strFile.substring(n + 1);
+                setStrFile(getStrFile().substring(n + 1));
             }
 
             loadScript(in);
             // new LoadScriptThread( this, in );
 
-            error = false;
+            setError(false);
         } catch (Exception ex) {
-            error = true;
+            setError(true);
 
             ex.printStackTrace();
             ScriptConsole.addLine("");
-            ScriptConsole.addLine("* ERROR in " + strFile);
+            ScriptConsole.addLine("* ERROR in " + getStrFile());
             ScriptConsole.addLine("    " + ex.getMessage() + " " + ex.getLocalizedMessage());
-            ScriptConsole.addLine("    Script '" + strFile + "' stopped. To restart the script, edit '" + strFile + "' and fix the error.");
+            ScriptConsole.addLine("    Script '" + getStrFile() + "' stopped. To restart the script, edit '" + getStrFile() + "' and fix the error.");
 
-            this.status = "ERROR (see console)";
+            this.setStatus("ERROR (see console)");
             UtilContext.getInstance().refreshScriptTable();
         }
 
@@ -330,13 +327,77 @@ public class ScriptPluginProxy implements RunInterface {
     public void stopTimer(String name) {
         api.stopTimer(name);
     }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getStrFile() {
+        return strFile;
+    }
+
+    public void setStrFile(String strFile) {
+        this.strFile = strFile;
+    }
+
+    public String getScriptFilePath() {
+        return scriptFilePath;
+    }
+
+    public void setScriptFilePath(String scriptFilePath) {
+        this.scriptFilePath = scriptFilePath;
+    }
+
+    public boolean isError() {
+        return error;
+    }
+
+    public void setError(boolean error) {
+        this.error = error;
+    }
+
+    public File getScriptFile() {
+        return scriptFile;
+    }
+
+    public void setScriptFile(File scriptFile) {
+        this.scriptFile = scriptFile;
+    }
+
+    public ScriptEngine getEngine() {
+        return engine;
+    }
+
+    public void setEngine(ScriptEngine engine) {
+        this.engine = engine;
+    }
+
+    public List<String> getContextVariableTypes() {
+        return contextVariableTypes;
+    }
+
+    public void setContextVariableTypes(List<String> contextVariableTypes) {
+        this.contextVariableTypes = contextVariableTypes;
+    }
+
+    public List<String> getContextVariables() {
+        return contextVariables;
+    }
+
+    public void setContextVariables(List<String> contextVariables) {
+        this.contextVariables = contextVariables;
+    }
 }
 
 class LoadScriptThread implements Runnable {
 
-    ScriptPluginProxy script;
-    FileReader file;
-    Thread t = new Thread(this);
+    private ScriptPluginProxy script;
+    private FileReader file;
+    private Thread t = new Thread(this);
 
     public LoadScriptThread(ScriptPluginProxy script, FileReader file) {
         this.script = script;
@@ -349,15 +410,15 @@ class LoadScriptThread implements Runnable {
         try {
             this.script.loadScript(file);
         } catch (Exception ex) {
-            this.script.error = true;
+            this.script.setError(true);
 
             ex.printStackTrace();
             ScriptConsole.addLine("");
-            ScriptConsole.addLine("* ERROR in " + this.script.strFile);
+            ScriptConsole.addLine("* ERROR in " + this.script.getStrFile());
             ScriptConsole.addLine("    " + ex.getMessage());
-            ScriptConsole.addLine("    Script '" + this.script.strFile + "' stopped. To restart the script, edit '" + this.script.strFile + "' and fix the error.");
+            ScriptConsole.addLine("    Script '" + this.script.getStrFile() + "' stopped. To restart the script, edit '" + this.script.getStrFile() + "' and fix the error.");
 
-            this.script.status = "ERROR (see console)";
+            this.script.setStatus("ERROR (see console)");
             UtilContext.getInstance().refreshScriptTable();
         }
     }

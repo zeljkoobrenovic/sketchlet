@@ -41,7 +41,7 @@ public class CodeGenUtils {
         
         {"image", "", ""},
         {"graphics", "", ""},};
-    public static Hashtable<String, String[]> extraControls = new Hashtable<String, String[]>();
+    private static Hashtable<String, String[]> extraControls = new Hashtable<String, String[]>();
 
     public static String[] getControlTypeIDs() {
         String typeIDs[] = new String[STANDARD_WIDGET_IDs.length];
@@ -194,5 +194,13 @@ public class CodeGenUtils {
         System.out.println(CodeGenUtils.getJavaIdentifier("a bb ccc", false));
         System.out.println(CodeGenUtils.getJavaIdentifier("zeljko-obren", true));
         System.out.println(CodeGenUtils.getJavaIdentifier("z.kllo/ko", true));
+    }
+
+    public static Hashtable<String, String[]> getExtraControls() {
+        return extraControls;
+    }
+
+    public static void setExtraControls(Hashtable<String, String[]> extraControls) {
+        CodeGenUtils.extraControls = extraControls;
     }
 }

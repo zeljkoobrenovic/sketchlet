@@ -16,14 +16,13 @@ limitations under the License.
 
 package net.sf.sketchlet.common.filter.math;
 
-import java.awt.image.*;
 import java.util.*;
 
 public class CellularFunction2D implements Function2D {
 
-	public float distancePower = 2;
-	public boolean cells = false;
-	public boolean angular = false;
+	private float distancePower = 2;
+	private boolean cells = false;
+	private boolean angular = false;
 	private float[] coefficients = { 1, 0, 0, 0 };
 	private Random random = new Random();
 	private Point[] results = null;
@@ -41,8 +40,32 @@ public class CellularFunction2D implements Function2D {
 	public float getCoefficient(int c) {
 		return coefficients[c];
 	}
-	
-	class Point {
+
+    public float getDistancePower() {
+        return distancePower;
+    }
+
+    public void setDistancePower(float distancePower) {
+        this.distancePower = distancePower;
+    }
+
+    public boolean isCells() {
+        return cells;
+    }
+
+    public void setCells(boolean cells) {
+        this.cells = cells;
+    }
+
+    public boolean isAngular() {
+        return angular;
+    }
+
+    public void setAngular(boolean angular) {
+        this.angular = angular;
+    }
+
+    class Point {
 		int index;
 		float x, y;
 		float distance;
@@ -59,12 +82,12 @@ public class CellularFunction2D implements Function2D {
 			float dx = Math.abs(x-px);
 			float dy = Math.abs(y-py);
 			float d;
-			if (distancePower == 1.0f)
+			if (getDistancePower() == 1.0f)
 				d = dx + dy;
-			else if (distancePower == 2.0f)
+			else if (getDistancePower() == 2.0f)
 				d = (float)Math.sqrt(dx*dx + dy*dy);
 			else
-				d = (float)Math.pow(Math.pow(dx, distancePower) + Math.pow(dy, distancePower), 1/distancePower);
+				d = (float)Math.pow(Math.pow(dx, getDistancePower()) + Math.pow(dy, getDistancePower()), 1/ getDistancePower());
 
 			// Insertion sort
 			for (int j = 0; j < results.length; j++) {
@@ -122,7 +145,7 @@ public class CellularFunction2D implements Function2D {
 		float t = 0;
 		for (int i = 0; i < 2; i++)
 			t += coefficients[i] * results[i].distance;
-		if (angular)
+		if (isAngular())
 			t += Math.atan2(fy-results[0].y, fx-results[0].x) / (2*Math.PI) + 0.5;
 		return t;
 	}

@@ -5,8 +5,6 @@
 package net.sf.sketchlet.common.translation;
 
 import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.PrintWriter;
 import java.util.Hashtable;
 import java.util.Properties;
 
@@ -16,8 +14,8 @@ import java.util.Properties;
  */
 public class Language {
 
-    static Properties translation;
-    static Hashtable<String, String> hash = new Hashtable<String, String>();
+    private static Properties translation;
+    private static Hashtable<String, String> hash = new Hashtable<String, String>();
 
     public static void loadTranslation(String strFile) {
         if (strFile == null) {

@@ -54,7 +54,7 @@ import javax.activation.*;
  *
  * @author	Christopher Cotton
  */
-public class sendfile {
+public class SendFile {
 
     public static void main(String[] args) {
 	if (args.length != 5) {

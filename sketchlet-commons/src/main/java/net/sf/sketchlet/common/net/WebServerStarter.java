@@ -9,27 +9,24 @@
 
 package net.sf.sketchlet.common.net;
 
-import java.awt.*;
-import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.event.*;
-import java.net.*;
+import java.awt.*;
+import java.awt.event.WindowEvent;
 
 //file: WebServerStarter.java
 //declare a class wich inherit JFrame
-public class WebServerStarter
-        extends JFrame {
+public class WebServerStarter extends JFrame {
     //declare some panel, scrollpanel, textarea for gui
-    JPanel jPanel1 = new JPanel();
-    JScrollPane jScrollPane1 = new JScrollPane();
-    JTextArea jTextArea2 = new JTextArea();
-    static Integer listen_port = null;
-    static String rootDirectory = null;
+    private JPanel jPanel1 = new JPanel();
+    private JScrollPane jScrollPane1 = new JScrollPane();
+    private JTextArea jTextArea2 = new JTextArea();
+    private static Integer listen_port = null;
+    private static String rootDirectory = null;
 
-    public WebServerStarter( int port, String rootDirectory ) {
+    public WebServerStarter(int port, String rootDirectory) {
         new WebServer(listen_port.intValue(), this, rootDirectory);
     }
-    
+
     //basic class constructor
     public WebServerStarter() {
         try {
@@ -38,7 +35,7 @@ public class WebServerStarter
             e.printStackTrace();
         }
     }
-    
+
     //the JavaAPI entry point
     //where it starts this class if run
     public static void main(String[] args) {
@@ -55,7 +52,7 @@ public class WebServerStarter
         //create an instance of this class
         WebServerStarter webserver = new WebServerStarter();
     }
-    
+
     //set up the user interface
     private void jbInit() throws Exception {
         //oh the pretty colors
@@ -78,7 +75,7 @@ public class WebServerStarter
         jScrollPane1.getViewport().add(jTextArea2);
         jPanel1.add(jScrollPane1);
         this.getContentPane().add(jPanel1, BorderLayout.EAST);
-        
+
         //tveak the apearance
         this.setVisible(true);
         this.setSize(420, 350);
@@ -89,16 +86,17 @@ public class WebServerStarter
         //all that is implemented in another class
         new WebServer(listen_port.intValue(), this, rootDirectory);
     }
-    
+
     //exit program when "X" is pressed.
     void this_windowClosed(WindowEvent e) {
         System.exit(1);
     }
-    
+
     //this is a method to get messages from the actual
     //server to the window
     public void send_message_to_window(String s) {
-        if (jTextArea2 != null)
+        if (jTextArea2 != null) {
             jTextArea2.append(s);
+        }
     }
 } //class end

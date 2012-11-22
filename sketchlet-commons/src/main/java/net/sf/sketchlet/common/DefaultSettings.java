@@ -9,31 +9,20 @@
 package net.sf.sketchlet.common;
 
 /**
- *
  * @author obrenovi
  */
 public class DefaultSettings {
 
     private DefaultSettings() {
     }
-    static String sketchletDesignerRoot = null;
-    static String sketchletDesignerHost = "localhost";
-    static int sketchletDesignerPortBase = 3300;
-    static int numOfTransformationSteps = 4;
-    static String httpUserAgent = "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.8) Gecko/20050511";
 
-    /** Creates a new instance of DefaultSettings */
+    private static String sketchletDesignerRoot = null;
+    private static String sketchletDesignerHost = "localhost";
+    private static int sketchletDesignerPortBase = 3300;
+    private static int numOfTransformationSteps = 4;
+    private static String httpUserAgent = "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.8) Gecko/20050511";
+
     static {
-        /*DefaultSettings.sketchletDesignerRoot = System.getenv("AMICO_HOME");
-        if (DefaultSettings.sketchletDesignerRoot == null || DefaultSettings.sketchletDesignerRoot.isEmpty()) {
-            DefaultSettings.sketchletDesignerRoot = System.getenv("SKETCHLET_HOME");
-            if (DefaultSettings.sketchletDesignerRoot == null || DefaultSettings.sketchletDesignerRoot.isEmpty()) {
-            }
-        }
-        if (DefaultSettings.sketchletDesignerRoot != null && (!DefaultSettings.sketchletDesignerRoot.endsWith("\\") || !DefaultSettings.sketchletDesignerRoot.endsWith("/"))) {
-            DefaultSettings.sketchletDesignerRoot += "/";
-        }*/
-
         DefaultSettings.loadDefaultSettings();
     }
 
@@ -42,7 +31,7 @@ public class DefaultSettings {
             XPathEvaluator xpath = new XPathEvaluator();
             xpath.createDocumentFromFile("file:" + DefaultSettings.sketchletDesignerRoot + "conf/default_settings.xml");
 
-            if (xpath.document != null) {
+            if (xpath.getDocument() != null) {
                 String host = xpath.getString("/amico-default-settings/variable[@name='AMICO_HOST']");
                 int portBase = xpath.getInteger("/amico-default-settings/variable[@name='AMICO_PORT_BASE']");
                 int numOfTransSteps = xpath.getInteger("/amico-default-settings/variable[@name='NUMBER_OF_TRANSFORMATION_STEPS']");

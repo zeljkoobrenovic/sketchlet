@@ -4,9 +4,10 @@
  */
 package net.sf.sketchlet.codegen;
 
-import java.util.Vector;
 import net.sf.sketchlet.context.PageContext;
 import net.sf.sketchlet.context.SketchletContext;
+
+import java.util.Vector;
 
 /**
  *
@@ -17,7 +18,7 @@ public abstract class PagedAppCodeGen extends CodeExporter {
     protected SketchletContext sketchletContext;
     // public Vector<CodeFile> applicationFiles = new Vector<CodeFile>();
     // public Vector<PageCodeFile> pageCodeFiles = new Vector<PageCodeFile>();
-    public Vector<PageCodeFile> pageFiles = new Vector<PageCodeFile>();
+    private Vector<PageCodeFile> pageFiles = new Vector<PageCodeFile>();
 
     public PagedAppCodeGen() {
         this.sketchletContext = SketchletContext.getInstance();
@@ -26,11 +27,11 @@ public abstract class PagedAppCodeGen extends CodeExporter {
     public void dispose() {
         this.sketchletContext = null;
 
-        for (PageCodeFile pf : this.pageFiles) {
+        for (PageCodeFile pf : this.getPageFiles()) {
             pf.dispose();
         }
 
-        this.pageFiles.removeAllElements();
+        this.getPageFiles().removeAllElements();
     }
 
     public abstract Vector<CodeFile> getPageGeneratorInstances(PageContext page);
@@ -41,7 +42,7 @@ public abstract class PagedAppCodeGen extends CodeExporter {
             Vector<CodeFile> pg = this.getPageGeneratorInstances(page);
             this.addFile(pg);
             for (CodeFile p : pg) {
-                this.pageFiles.add((PageCodeFile) p);
+                this.getPageFiles().add((PageCodeFile) p);
             }
         }
         super.prepare();
@@ -69,4 +70,12 @@ public abstract class PagedAppCodeGen extends CodeExporter {
     }
     }
     }*/
+
+    public Vector<PageCodeFile> getPageFiles() {
+        return pageFiles;
+    }
+
+    public void setPageFiles(Vector<PageCodeFile> pageFiles) {
+        this.pageFiles = pageFiles;
+    }
 }

@@ -4,14 +4,6 @@
  */
 package net.sf.sketchlet.common.html;
 
-import java.awt.image.BufferedImage;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.tidy.Configuration;
 import org.w3c.tidy.Tidy;
 import org.xhtmlrenderer.swing.Java2DRenderer;
@@ -19,12 +11,19 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+
 /**
  */
 public class HTMLImageRenderer {
 
-    static DocumentBuilderFactory factory;
-    static DocumentBuilder builder;
+    private static DocumentBuilderFactory factory;
+    private static DocumentBuilder builder;
 
     public static BufferedImage getImage(String strHTML, int w, int h) {
         BufferedImage img = null;

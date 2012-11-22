@@ -9,14 +9,22 @@
 
 package net.sf.sketchlet.common.net;
 
-import net.sf.sketchlet.common.net.CommunicatorTcpInterface;
-import java.net.*;
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.Hashtable;
+import java.util.StringTokenizer;
 
 //file: server.java
 public class WebServer extends Thread {
-    CommunicatorTcpInterface communicator;
+    private CommunicatorTcpInterface communicator;
     private static final String SKETCHLET_COMMAND_PREFIX = "amico?command=";
     private static final String SKETCHLET_WRITE_COMMAND_PREFIX = "amico_write";
     
@@ -327,7 +335,7 @@ public class WebServer extends Thread {
 } //class phhew caffeine yes please!
 
 class MimeTypes {
-    Hashtable mimeHashtable = new Hashtable();
+    private Hashtable mimeHashtable = new Hashtable();
     
     public MimeTypes() {
         this.loadHashtable();

@@ -25,7 +25,7 @@ import java.util.Vector;
 
 public class FileUtils {
     private static final Logger log = Logger.getLogger(FileUtils.class);
-    public static boolean stopped = false;
+    private static boolean stopped = false;
 
     public static void copyFile(File in, File out) {
         try {
@@ -190,7 +190,7 @@ public class FileUtils {
             try {
                 byte[] buf = new byte[1024];
                 int i = 0;
-                while ((i = fis.read(buf)) != -1 && !stopped) {
+                while ((i = fis.read(buf)) != -1 && !isStopped()) {
                     counter += i;
                     status.setText(strPrefix + " " + (counter / (1024 * 1024) + 1) + "m " + strPostfix);
                     fos.write(buf, 0, i);
@@ -354,5 +354,13 @@ public class FileUtils {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static boolean isStopped() {
+        return stopped;
+    }
+
+    public static void setStopped(boolean stopped) {
+        FileUtils.stopped = stopped;
     }
 }

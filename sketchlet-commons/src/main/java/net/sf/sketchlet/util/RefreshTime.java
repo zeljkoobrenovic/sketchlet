@@ -10,8 +10,8 @@ package net.sf.sketchlet.util;
  */
 public class RefreshTime {
 
-    static long lastRefreshed = 0;
-    static long expirationTimeMs = 1000;
+    private static long lastRefreshed = 0;
+    private static long expirationTimeMs = 1000;
 
     public static boolean shouldRefresh() {
         return System.currentTimeMillis() - lastRefreshed < expirationTimeMs;

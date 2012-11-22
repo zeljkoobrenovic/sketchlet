@@ -4,25 +4,29 @@
  */
 package net.sf.sketchlet.common;
 
-import java.io.*;
-
-import javax.xml.parsers.*;
-import javax.xml.xpath.*;
-import javax.xml.transform.*;
 import net.sf.sketchlet.common.context.SketchletContextUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
-import org.w3c.dom.*;
-import org.xml.sax.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
- *
  * @author cuypers
  */
 public class WorkspaceFileUtils {
-
-    public static void main(String args[]) {
-        createNewFiles( new File( "C:\\obren\\projects\\amico\\examples" ), "run.xml" );
-    }
 
     public static void createNewFiles(File dir, String fileName) {
         File oldFile = new File(dir.getAbsolutePath() + File.separator + fileName);
@@ -37,7 +41,7 @@ public class WorkspaceFileUtils {
                 transform(oldFile, out);
                 out.flush();
                 out.close();
-                
+
                 oldFile.delete();
                 oldFile2.delete();
             } catch (Exception e) {
@@ -46,8 +50,10 @@ public class WorkspaceFileUtils {
         } else {
             File files[] = dir.listFiles();
 
-            if (files != null) for (int i = 0; i < files.length; i++) {
-                createNewFiles(files[i], fileName);
+            if (files != null) {
+                for (int i = 0; i < files.length; i++) {
+                    createNewFiles(files[i], fileName);
+                }
             }
         }
     }
@@ -106,8 +112,10 @@ public class WorkspaceFileUtils {
 
                 String description = (String) xpath.evaluate("@description", process, XPathConstants.STRING);
                 String command = (String) xpath.evaluate(".", process, XPathConstants.STRING);
-                
-                if (command.contains( "amico.jar" )) continue;
+
+                if (command.contains("amico.jar")) {
+                    continue;
+                }
 
                 int offset = 0;
                 String strOffset = (String) xpath.evaluate("@timeOffsetMs", process, XPathConstants.STRING);

@@ -14,8 +14,8 @@ import java.util.Vector;
  * @author zobrenovic
  */
 public class Filters {
-    public static Hashtable<String,ImageFilter> imageFilters = new Hashtable<String,ImageFilter>();
-    public static Vector<String> imageFiltersVector = new Vector<String>();
+    private static Hashtable<String,ImageFilter> imageFilters = new Hashtable<String,ImageFilter>();
+    private static Vector<String> imageFiltersVector = new Vector<String>();
 
     static {
         // addFilter("Color Filter", new ColorFilter());
@@ -24,7 +24,7 @@ public class Filters {
         addFilter("Blur Filter", new BlurFilter());
         addFilter("Sharpen Filter", new SharpenFilter());
         addFilter("Emboss Filter", new EmbossFilter());
-        imageFiltersVector.add("- - - -");
+        getImageFiltersVector().add("- - - -");
         addFilter("Glass Distrosion Filter", new DisplaceFilter());
         addFilter("Under Water Filter", new SwimFilter());
         addFilter("Water Wave Filter", new WaterFilter());
@@ -38,15 +38,15 @@ public class Filters {
     }
 
     public static void addFilter(String strName, ImageFilter filter) {
-        imageFilters.put(strName, filter);
-        imageFiltersVector.add(strName);
+        getImageFilters().put(strName, filter);
+        getImageFiltersVector().add(strName);
     }
 
     public static String[] getFilterNames() {
-        String strFilters[] = new String[imageFilters.size()];
+        String strFilters[] = new String[getImageFilters().size()];
         
         int i = 0;
-        for (String strName : imageFilters.keySet()) {
+        for (String strName : getImageFilters().keySet()) {
             strFilters[i] = strName;
             i++;
         }
@@ -54,12 +54,28 @@ public class Filters {
     }
 
     public static BufferedImage filter( String strFilter, String strParams, BufferedImage image ) {
-        ImageFilter filter = imageFilters.get(strFilter);
+        ImageFilter filter = getImageFilters().get(strFilter);
 
         if (filter != null) {
             image = filter.processImage(image);
         }
 
         return image;
+    }
+
+    public static Hashtable<String, ImageFilter> getImageFilters() {
+        return imageFilters;
+    }
+
+    public static void setImageFilters(Hashtable<String, ImageFilter> imageFilters) {
+        Filters.imageFilters = imageFilters;
+    }
+
+    public static Vector<String> getImageFiltersVector() {
+        return imageFiltersVector;
+    }
+
+    public static void setImageFiltersVector(Vector<String> imageFiltersVector) {
+        Filters.imageFiltersVector = imageFiltersVector;
     }
 }

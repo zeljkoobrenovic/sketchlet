@@ -53,16 +53,16 @@ import java.io.Reader;
  */
 public class FileDrop {
 
-    public static int mouseX = -1000;
-    public static int mouseY = -1000;
-    public static String currentString = "";
+    private static int mouseX = -1000;
+    private static int mouseY = -1000;
+    private static String currentString = "";
     private transient javax.swing.border.Border normalBorder;
     private transient java.awt.dnd.DropTargetListener dropListener;
     /** Discover if the running JVM is modern enough to have drag and drop. */
     private static Boolean supportsDnD;
     // Default border color
     private static java.awt.Color defaultBorderColor = new java.awt.Color(0f, 0f, 1f, 0.25f);
-    public static boolean bDragging = false;
+    private static boolean dragging = false;
 
     /**
      * Constructs a {@link FileDrop} with a default light-blue border
@@ -256,7 +256,7 @@ public class FileDrop {
                     log(out, "FileDrop: dragEnter event.");
                     // Is this an acceptable drag event?
                     if (isDragOk(out, evt)) {
-                        bDragging = true;
+                        setDragging(true);
                         // If it's a Swing component, set its border
                         if (c instanceof javax.swing.JComponent) {
                             javax.swing.JComponent jc = (javax.swing.JComponent) c;
@@ -278,20 +278,20 @@ public class FileDrop {
                 }   // end dragEnter
 
                 public void dragOver(java.awt.dnd.DropTargetDragEvent evt) {   // This is called continually as long as the mouse is
-                    FileDrop.mouseX = evt.getLocation().x;
-                    FileDrop.mouseY = evt.getLocation().y;
+                    FileDrop.setMouseX(evt.getLocation().x);
+                    FileDrop.setMouseY(evt.getLocation().y);
                     if (evt.isDataFlavorSupported(java.awt.datatransfer.DataFlavor.stringFlavor)) {
                         try {
-                            currentString = (String) evt.getTransferable().getTransferData(java.awt.datatransfer.DataFlavor.stringFlavor);
+                            setCurrentString((String) evt.getTransferable().getTransferData(DataFlavor.stringFlavor));
                         } catch (Exception ee) {
                         }
                     }
-                    listener.dragOver(mouseX, mouseY);
+                    listener.dragOver(getMouseX(), getMouseY());
                     // over the drag target.
                 }   // end dragOver
 
                 public void drop(java.awt.dnd.DropTargetDropEvent evt) {
-                    bDragging = false;
+                    setDragging(false);
                     log(out, "FileDrop: drop event.");
                     try {   // Get whatever was dropped
                         java.awt.datatransfer.Transferable tr = evt.getTransferable();
@@ -363,8 +363,8 @@ public class FileDrop {
                             }
                             // END 2007-09-12 Nathan Blomquist -- Linux (KDE/Gnome) support added.
                         }   // end else: not a file list
-                        mouseX = -1000;
-                        mouseY = -1000;
+                        setMouseX(-1000);
+                        setMouseY(-1000);
                     } // end try
                     catch (java.io.IOException io) {
                         log(out, "FileDrop: IOException - abort:");
@@ -387,7 +387,7 @@ public class FileDrop {
                 }   // end drop
 
                 public void dragExit(java.awt.dnd.DropTargetEvent evt) {
-                    bDragging = false;
+                    setDragging(false);
                     log(out, "FileDrop: dragExit event.");
                     // If it's a Swing component, reset its border
                     if (c instanceof javax.swing.JComponent) {
@@ -459,6 +459,38 @@ public class FileDrop {
             log(out, "FileDrop: IOException");
         }
         return new File[0];
+    }
+
+    public static int getMouseX() {
+        return mouseX;
+    }
+
+    public static void setMouseX(int mouseX) {
+        FileDrop.mouseX = mouseX;
+    }
+
+    public static int getMouseY() {
+        return mouseY;
+    }
+
+    public static void setMouseY(int mouseY) {
+        FileDrop.mouseY = mouseY;
+    }
+
+    public static String getCurrentString() {
+        return currentString;
+    }
+
+    public static void setCurrentString(String currentString) {
+        FileDrop.currentString = currentString;
+    }
+
+    public static boolean isDragging() {
+        return dragging;
+    }
+
+    public static void setDragging(boolean dragging) {
+        FileDrop.dragging = dragging;
     }
     // END 2007-09-12 Nathan Blomquist -- Linux (KDE/Gnome) support added.
 

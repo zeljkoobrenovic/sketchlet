@@ -9,10 +9,14 @@
  */
 package net.sf.sketchlet.common;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
 import javax.swing.*;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.Iterator;
+import java.util.Vector;
 
 /**
  *
@@ -20,9 +24,9 @@ import javax.swing.*;
  */
 public class AcceptPushConnectionsThread implements Runnable {
 
-    Vector clients = new Vector();
-    Thread thread = new Thread(this);
-    int port;
+    private Vector clients = new Vector();
+    private Thread thread = new Thread(this);
+    private int port;
 
     /** Creates a new instance of ConnectionServerThread */
     public AcceptPushConnectionsThread(int port) {
