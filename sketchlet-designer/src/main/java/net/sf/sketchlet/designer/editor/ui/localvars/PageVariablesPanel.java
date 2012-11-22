@@ -2,8 +2,8 @@ package net.sf.sketchlet.designer.editor.ui.localvars;
 
 import net.sf.sketchlet.common.file.FileDrop;
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.communicator.server.DataServer;
-import net.sf.sketchlet.communicator.server.Variable;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.blackboard.Variable;
 import net.sf.sketchlet.context.PageContext;
 import net.sf.sketchlet.context.SketchletContext;
 import net.sf.sketchlet.context.VariablesBlackboardContext;
@@ -110,8 +110,8 @@ public class PageVariablesPanel extends JPanel {
                     variableName = page().getPageVariableNames().get(row);
                 } else if (row == page().getPageVariableCount() && col == 0) {
                     addVariable(value.toString(), "");
-                    DataServer.getInstance().notifyChange(value.toString(), "", "");
-                    DataServer.getInstance().notifyChange(value.toString(), "", "");
+                    VariablesBlackboard.getInstance().notifyChange(value.toString(), "", "");
+                    VariablesBlackboard.getInstance().notifyChange(value.toString(), "", "");
                     fireTableDataChanged();
                     return;
                 }
@@ -120,11 +120,11 @@ public class PageVariablesPanel extends JPanel {
                     switch (col) {
                         case 1:
                             SketchletContext.getInstance().getCurrentPageContext().setPageVariableValue(variableName, value.toString());
-                            DataServer.getInstance().notifyChange(variableName, value.toString(), value.toString());
+                            VariablesBlackboard.getInstance().notifyChange(variableName, value.toString(), value.toString());
                             break;
                         case 2:
                             SketchletContext.getInstance().getCurrentPageContext().setPageVariableFormat(variableName, value.toString());
-                            DataServer.getInstance().notifyChange(variableName, value.toString(), value.toString());
+                            VariablesBlackboard.getInstance().notifyChange(variableName, value.toString(), value.toString());
                             break;
                     }
                     fireTableCellUpdated(row, col);
@@ -188,11 +188,11 @@ public class PageVariablesPanel extends JPanel {
             public void stringDropped(Point p, String strText) {
                 if (strText.startsWith("=") && strText.length() > 1) {
                     String variableName = strText.substring(1).trim();
-                    Variable variable = DataServer.getInstance().getVariable(variableName);
+                    Variable variable = VariablesBlackboard.getInstance().getVariable(variableName);
                     String format = variable.getFormat();
                     String value = variable.getValue();
 
-                    DataServer.getInstance().removeVariable(variableName);
+                    VariablesBlackboard.getInstance().removeVariable(variableName);
 
                     addVariable(variableName, value, format);
                 }

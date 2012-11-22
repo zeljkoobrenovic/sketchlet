@@ -11,9 +11,9 @@ package net.sf.sketchlet.designer.editor.ui.variables;
 
 import net.sf.sketchlet.common.file.FileDrop;
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.communicator.VariableOperationsListener;
-import net.sf.sketchlet.communicator.server.DataServer;
-import net.sf.sketchlet.communicator.server.Variable;
+import net.sf.sketchlet.blackboard.VariableOperationsListener;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.blackboard.Variable;
 import net.sf.sketchlet.context.PageContext;
 import net.sf.sketchlet.context.SketchletContext;
 import net.sf.sketchlet.designer.Workspace;
@@ -115,7 +115,7 @@ public class VariablesTablePanel extends JPanel {
         final JButton removeButton = new JButton(Language.translate("Remove"));
         removeButton.setEnabled(false);
 
-        if (DataServer.isPaused()) {
+        if (VariablesBlackboard.isPaused()) {
             stopButton = new JButton(Language.translate("Continue updates"));
             stopButton.setToolTipText(Language.translate("Continues to receive and process updates of variables send by modules"));
         } else {
@@ -233,8 +233,8 @@ public class VariablesTablePanel extends JPanel {
 
                     page.deletePageVariable(variableName);
 
-                    DataServer.getInstance().updateVariable(variableName, value);
-                    Variable variable = DataServer.getInstance().getVariable(variableName);
+                    VariablesBlackboard.getInstance().updateVariable(variableName, value);
+                    Variable variable = VariablesBlackboard.getInstance().getVariable(variableName);
                     variable.setFormat(format);
                 }
             }
@@ -418,12 +418,12 @@ public class VariablesTablePanel extends JPanel {
     }
 
     public void pauseUpdates() {
-        DataServer.setPaused(!DataServer.isPaused());
+        VariablesBlackboard.setPaused(!VariablesBlackboard.isPaused());
 
         JMenuItem mi = (JMenuItem) mainFrame.menuItems.get("pausecomm");
         JButton b = (JButton) mainFrame.toolbarButtons.get("pausecomm");
 
-        if (DataServer.isPaused()) {
+        if (VariablesBlackboard.isPaused()) {
             stopButton.setText(Language.translate("Continue updates"));
             stopButton.setToolTipText(Language.translate("Continues to receive and process updates of variables send by modules"));
 
@@ -553,8 +553,8 @@ public class VariablesTablePanel extends JPanel {
         variablesTableModel.fireTableDataChanged();
     }
 
-    public DataServer getDataServer() {
-        return DataServer.getInstance();
+    public VariablesBlackboard getDataServer() {
+        return VariablesBlackboard.getInstance();
     }
 
     public void enableControls() {

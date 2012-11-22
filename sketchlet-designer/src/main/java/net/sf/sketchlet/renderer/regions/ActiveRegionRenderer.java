@@ -12,7 +12,7 @@ import net.sf.sketchlet.designer.editor.SketchletEditorMode;
 import net.sf.sketchlet.designer.playback.displays.InteractionSpace;
 import net.sf.sketchlet.designer.playback.ui.PlaybackPanel;
 import net.sf.sketchlet.designer.editor.ui.profiles.Profiles;
-import net.sf.sketchlet.model.evaluator.Evaluator;
+import net.sf.sketchlet.blackboard.evaluator.Evaluator;
 import net.sf.sketchlet.model.ActiveRegion;
 import net.sf.sketchlet.model.ActiveRegions;
 import net.sf.sketchlet.model.events.region.ActiveRegionMouseHandler;

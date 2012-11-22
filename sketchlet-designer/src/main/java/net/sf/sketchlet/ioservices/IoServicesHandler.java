@@ -2,6 +2,7 @@ package net.sf.sketchlet.ioservices;
 
 import net.sf.sketchlet.common.SimpleProperties;
 import net.sf.sketchlet.common.context.SketchletContextUtils;
+import net.sf.sketchlet.net.NetUtils;
 import net.sf.sketchlet.designer.ApplicationLifecycleCentre;
 import net.sf.sketchlet.designer.RecentFilesManager;
 import net.sf.sketchlet.designer.Workspace;
@@ -151,7 +152,7 @@ public class IoServicesHandler extends JPanel {
 
         if (!append) {
             try {
-                net.sf.sketchlet.communicator.Global.setWorkingDirectory(SketchletContextUtils.getCurrentProjectDir());
+                NetUtils.setWorkingDirectory(SketchletContextUtils.getCurrentProjectDir());
                 Workspace.getMainPanel().sketchletPanel.restart(URLDecoder.decode(new File(SketchletContextUtils.getCurrentProjectConfDir() + "communicator/config.xml").toURL().toString(), "UTF8"));
                 ApplicationLifecycleCentre.afterProjectOpening();
             } catch (Exception e) {

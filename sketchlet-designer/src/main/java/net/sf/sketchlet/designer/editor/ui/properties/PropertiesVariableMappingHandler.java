@@ -5,7 +5,7 @@
 package net.sf.sketchlet.designer.editor.ui.properties;
 
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.context.VariableUpdateListener;
 import net.sf.sketchlet.model.PropertiesInterface;
 import net.sf.sketchlet.model.programming.macros.Commands;
@@ -123,7 +123,7 @@ public class PropertiesVariableMappingHandler implements VariableUpdateListener 
         for (int i = 0; i < data.length; i++) {
             String strVar = data[i][3].toString();
             if (!strVar.isEmpty()) {
-                String value = DataServer.getInstance().getVariableValue(strVar);
+                String value = VariablesBlackboard.getInstance().getVariableValue(strVar);
                 if (value != null && !value.isEmpty()) {
                     changePerformed(strVar, value);
                 }
@@ -133,7 +133,7 @@ public class PropertiesVariableMappingHandler implements VariableUpdateListener 
     }
 
     public void changePerformed(String var, String value) {
-        if (/*DataServer.paused || bUpdating || */ignoreVars.contains(var) || data == null) {
+        if (/*VariablesBlackboard.paused || bUpdating || */ignoreVars.contains(var) || data == null) {
             return;
         }
         ignoreVars.add(var);
@@ -249,22 +249,22 @@ public class PropertiesVariableMappingHandler implements VariableUpdateListener 
                         String strNumber = strFormat.length() > 0 ? df.format(newValue) : "" + newValue;
 
                         if (var.equals(property)) {
-                            if (DataServer.getInstance() != null) {
+                            if (VariablesBlackboard.getInstance() != null) {
                                 String strOldValue = lastUpdateVariable.get(_var);
                                 if (strOldValue == null || !strNumber.equals(strOldValue)) {
                                     Integer intValue = new Integer(i);
                                     ignoreRows.add(intValue);
-                                    // DataServer.variablesServer.updateVariableIfDifferent(_var, strNumber);
+                                    // VariablesBlackboard.variablesServer.updateVariableIfDifferent(_var, strNumber);
                                     Commands.updateVariableOrProperty(this.properties, _var, strNumber, Commands.ACTION_VARIABLE_UPDATE, true);
                                     ignoreRows.remove(intValue);
                                 }
                                 lastUpdateVariable.put(_var, strNumber);
                             }
                         } else {
-                            if (DataServer.getInstance() != null) {
+                            if (VariablesBlackboard.getInstance() != null) {
                                 String strOldValue = lastUpdateVariable.get(property);
                                 if (strOldValue == null || !strNumber.equals(strOldValue)) {
-                                    // DataServer.variablesServer.updateVariable(property, strNumber);
+                                    // VariablesBlackboard.variablesServer.updateVariable(property, strNumber);
                                     ignoreRows.add(new Integer(i));
                                     properties.setProperty(property.replace("@property:", ""), strNumber);
                                     this.changePerformed(property, strNumber);

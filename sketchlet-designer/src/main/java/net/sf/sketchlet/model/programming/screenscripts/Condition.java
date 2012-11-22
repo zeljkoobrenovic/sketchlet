@@ -1,7 +1,7 @@
 package net.sf.sketchlet.model.programming.screenscripts;
 
 import net.sf.sketchlet.common.template.TemplateMarkers;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.editor.ui.page.VariableUpdatePageHandler;
 
 /*
@@ -21,10 +21,10 @@ public class Condition {
     public boolean conditionSatisfied() {
         String var = getVariable();
         if (TemplateMarkers.containsStartMarker(var)) {
-            var = DataServer.populateTemplate(var);
+            var = VariablesBlackboard.populateTemplate(var);
         }
 
-        return conditionSatisfied(var, DataServer.getInstance().getVariableValue(var));
+        return conditionSatisfied(var, VariablesBlackboard.getInstance().getVariableValue(var));
     }
 
     public boolean conditionSatisfied(String variable, String value) {

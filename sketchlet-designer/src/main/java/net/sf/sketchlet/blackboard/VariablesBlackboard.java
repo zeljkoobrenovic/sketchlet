@@ -6,19 +6,17 @@
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
-package net.sf.sketchlet.communicator.server;
+package net.sf.sketchlet.blackboard;
 
 import net.sf.sketchlet.common.EscapeChars;
 import net.sf.sketchlet.common.XPathEvaluator;
 import net.sf.sketchlet.common.template.TemplateMarkers;
-import net.sf.sketchlet.communicator.ConfigurationData;
-import net.sf.sketchlet.communicator.Global;
-import net.sf.sketchlet.communicator.VariableOperationsListener;
+import net.sf.sketchlet.net.NetUtils;
 import net.sf.sketchlet.context.SketchletContext;
 import net.sf.sketchlet.context.VariableUpdateListener;
-import net.sf.sketchlet.model.evaluator.JEParser;
 import net.sf.sketchlet.loaders.pluginloader.PluginInstance;
 import net.sf.sketchlet.loaders.pluginloader.ScriptPluginFactory;
+import net.sf.sketchlet.blackboard.evaluator.JEParser;
 import net.sf.sketchlet.script.ScriptConsole;
 import net.sf.sketchlet.script.ScriptPluginProxy;
 import net.sf.sketchlet.util.RefreshTime;
@@ -29,7 +27,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import javax.swing.*;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
@@ -39,49 +36,25 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.StringTokenizer;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * @author Zeljko
  */
-public class DataServer {
-    private static final Logger log = Logger.getLogger(DataServer.class);
+public class VariablesBlackboard {
+    private static final Logger log = Logger.getLogger(VariablesBlackboard.class);
 
-    public Hashtable<String, Variable> variablesHastable = new Hashtable<String, Variable>();
-    public List<String> variablesVector = new Vector<String>();
-    public static List<ScriptPluginProxy> scripts = new Vector<ScriptPluginProxy>();
-    public static List scriptFiles = new Vector();
+    private Map<String, Variable> variablesMap = new HashMap<String, Variable>();
+    private List<String> variablesList = new Vector<String>();
+    private static List<ScriptPluginProxy> scripts = new Vector<ScriptPluginProxy>();
+    private static List scriptFiles = new Vector();
     private static boolean paused = false;
-    public static boolean drawExternal = false;
-    private static DataServer instance = null;
+    private static boolean imageDrawnByExternalProcess = false;
+    private static VariablesBlackboard instance = null;
     private static long startingTime = System.currentTimeMillis();
     private List changeClients = new Vector();
     private List<VariableOperationsListener> operationsListeners = new Vector<VariableOperationsListener>();
     private List<AdditionalVariables> additionalVariables = new Vector<AdditionalVariables>();
-
-    public static boolean isPaused() {
-        return paused;
-    }
-
-    public static void setPaused(boolean paused) {
-        DataServer.paused = paused;
-    }
-
-    public static DataServer getInstance() {
-        return instance;
-    }
-
-    public static void setInstance(DataServer instance) {
-        DataServer.instance = instance;
-    }
 
 
     enum FileImportMarkers {
@@ -105,11 +78,8 @@ public class DataServer {
         }
     }
 
-    /**
-     * Creates a new instance of DataServer
-     */
-    public DataServer() {
-        this.buildInitialVariableDom();
+    public VariablesBlackboard() {
+        this.loadVariables();
     }
 
     public static Vector<String> variablesInProcessing = new Vector<String>();
@@ -186,7 +156,7 @@ public class DataServer {
         while (variable != null) {
             strName = strPrefix + "_" + i;
             i++;
-            variable = DataServer.getInstance().getVariable(strName);
+            variable = VariablesBlackboard.getInstance().getVariable(strName);
         }
 
         return strName;
@@ -226,7 +196,7 @@ public class DataServer {
                 if (n1 >= 0) {
                     int n2 = expression.indexOf("'", n1 + 1);
                     if (n2 > n1) {
-                        String str = DataServer.getInstance().getVariableValue(expression.substring(n1 + 1, n2));
+                        String str = VariablesBlackboard.getInstance().getVariableValue(expression.substring(n1 + 1, n2));
                         boolean bNum = true;
                         try {
                             double d = Double.parseDouble(str);
@@ -254,7 +224,7 @@ public class DataServer {
     }
 
     public static String populateTemplateSimple(String template, boolean encode) {
-        if (DataServer.getInstance() == null || template == null) {
+        if (VariablesBlackboard.getInstance() == null || template == null) {
             return template;
         }
 
@@ -266,7 +236,7 @@ public class DataServer {
                     if (pos1 >= 0 && pos2 > pos1) {
                         String variable = template.substring(pos1, pos2 + m.end().length());
                         String variableName = template.substring(pos1 + m.start().length(), pos2).trim();
-                        String value = DataServer.processForFormulas("=" + variableName);// DataServer.variablesServer.getVariableValue(variableName);
+                        String value = VariablesBlackboard.processForFormulas("=" + variableName);// VariablesBlackboard.variablesServer.getVariableValue(variableName);
 
                         if (encode) {
                             value = URLEncoder.encode(value, "UTF-8");
@@ -290,7 +260,7 @@ public class DataServer {
                     String strFileUrl = template.substring(pos1 + FileImportMarkers.IMPORT.start().length(), pos2).trim().trim();
                     strFileUrl = strFileUrl.replace("\"", "");
                     strFileUrl = strFileUrl.replace("'", "");
-                    strFileUrl = populateTemplateSimple(strFileUrl, encode);// DataServer.variablesServer.getVariableValue(variableName);
+                    strFileUrl = populateTemplateSimple(strFileUrl, encode);// VariablesBlackboard.variablesServer.getVariableValue(variableName);
                     String content = FileCache.getContent(strFileUrl);
                     if (encode) {
                         content = URLEncoder.encode(content, "UTF-8");
@@ -311,7 +281,7 @@ public class DataServer {
     }
 
     public static String populateTemplateVelocity(String template) {
-        if (DataServer.getInstance() == null || template == null) {
+        if (VariablesBlackboard.getInstance() == null || template == null) {
             return template;
         }
 
@@ -345,7 +315,7 @@ public class DataServer {
     }
 
     public static String populateTemplate(String template, boolean encode) {
-        if (DataServer.getInstance() == null || template == null) {
+        if (VariablesBlackboard.getInstance() == null || template == null) {
             return template;
         }
 
@@ -360,8 +330,8 @@ public class DataServer {
 
     public static String processForFormulas(String template) {
         String varName = template.substring(1);
-        if (varName.startsWith("{") || DataServer.getInstance().getVariable(varName) != null) {
-            template = DataServer.getInstance().getVariableValue(varName);
+        if (varName.startsWith("{") || VariablesBlackboard.getInstance().getVariable(varName) != null) {
+            template = VariablesBlackboard.getInstance().getVariableValue(varName);
         } else if (varName.startsWith("sequence{") || varName.startsWith("seq{") || varName.startsWith("sequence {") || varName.startsWith("seq {")) {
             int n = varName.indexOf("{");
             try {
@@ -374,17 +344,17 @@ public class DataServer {
 
                 int n2 = commands.lastIndexOf(";");
                 if (n2 > 0) {
-                    return DataServer.populateTemplate(commands.substring(n2 + 1));
+                    return VariablesBlackboard.populateTemplate(commands.substring(n2 + 1));
                 } else {
-                    return DataServer.populateTemplate(commands);
+                    return VariablesBlackboard.populateTemplate(commands);
                 }
             } catch (Throwable e) {
             }
 
             return "";
         } else {
-            varName = DataServer.getTemplateFromApostrophes(varName);
-            varName = DataServer.populateTemplate(varName);
+            varName = VariablesBlackboard.getTemplateFromApostrophes(varName);
+            varName = VariablesBlackboard.populateTemplate(varName);
             Object result = JEParser.getValue(varName);
 
             if (result == null) {
@@ -413,7 +383,7 @@ public class DataServer {
 
     public static Vector<String> getVariablesInTemplate(String template) {
         Vector<String> vars = new Vector<String>();
-        if (DataServer.getInstance() == null || template == null) {
+        if (VariablesBlackboard.getInstance() == null || template == null) {
             return vars;
         }
 
@@ -471,7 +441,7 @@ public class DataServer {
         final Object array[] = changeClients.toArray();
         final int n = array.length;
         if (newThread) {
-            if (DataServer.isInProcessing(triggerVariable)) {
+            if (VariablesBlackboard.isInProcessing(triggerVariable)) {
                 return;
             }
             protectVariable(triggerVariable);
@@ -487,7 +457,7 @@ public class DataServer {
                 }
             }).start();
         } else {
-            if (DataServer.isInProcessing(triggerVariable)) {
+            if (VariablesBlackboard.isInProcessing(triggerVariable)) {
                 return;
             }
             protectVariable(triggerVariable);
@@ -523,11 +493,11 @@ public class DataServer {
             differentVariables = new String[]{variableName};
         }
 
-        if (Global.getServerTCP() != null) {
-            Global.getServerTCP().processTemplates(changedVariables, differentVariables);
+        if (NetUtils.getServerTCP() != null) {
+            NetUtils.getServerTCP().processTemplates(changedVariables, differentVariables);
         }
-        if (Global.getServerUDP() != null) {
-            Global.getServerUDP().processUDPTemplates(changedVariables, differentVariables);
+        if (NetUtils.getServerUDP() != null) {
+            NetUtils.getServerUDP().processUDPTemplates(changedVariables, differentVariables);
         }
 
     }
@@ -537,13 +507,13 @@ public class DataServer {
         try {
             PluginInstance script = ScriptPluginFactory.getScriptPluginInstance(new File(scriptFile));
             if (script != null) {
-                scripts.add((ScriptPluginProxy) script.getInstance());
+                getScripts().add((ScriptPluginProxy) script.getInstance());
             } else {
                 success = false;
                 log.info("Cannot load script '" + scriptFile + "'");
             }
 
-            DataServer.getInstance().notifyChange("sajfh87435987", "", "");
+            VariablesBlackboard.getInstance().notifyChange("sajfh87435987", "", "");
 
             log.info("Communicator: added script '" + scriptFile + "'");
         } catch (Exception e) {
@@ -555,17 +525,17 @@ public class DataServer {
     }
 
     public static void createScripts() {
-        DataServer.scripts.clear();
-        DataServer.scriptFiles.clear();
+        VariablesBlackboard.getScripts().clear();
+        VariablesBlackboard.getScriptFiles().clear();
 
-        for (int i = 0; i < ConfigurationData.scriptFiles.size(); i++) {
+        for (int i = 0; i < ConfigurationData.getScriptFiles().size(); i++) {
             String scriptURL = "";
             try {
-                scriptURL = (String) ConfigurationData.scriptFiles.get(i);
+                scriptURL = (String) ConfigurationData.getScriptFiles().get(i);
                 PluginInstance script = ScriptPluginFactory.getScriptPluginInstance(new File(scriptURL));
                 if (script != null) {
-                    DataServer.scriptFiles.add(scriptURL);
-                    DataServer.scripts.add((ScriptPluginProxy) script.getInstance());
+                    VariablesBlackboard.getScriptFiles().add(scriptURL);
+                    VariablesBlackboard.getScripts().add((ScriptPluginProxy) script.getInstance());
                 }
             } catch (Exception e) {
                 ScriptConsole.addLine("");
@@ -580,7 +550,7 @@ public class DataServer {
         try {
             PluginInstance script = ScriptPluginFactory.getScriptPluginInstance(scriptFile);
             if (script != null) {
-                DataServer.scripts.set(index, (ScriptPluginProxy) script.getInstance());
+                VariablesBlackboard.getScripts().set(index, (ScriptPluginProxy) script.getInstance());
             }
 
             return (ScriptPluginProxy) script.getInstance();
@@ -593,23 +563,17 @@ public class DataServer {
         return null;
     }
 
-    public static void initScripts() {
-        for (ScriptPluginProxy script : DataServer.scripts) {
-            script.start();
-        }
-    }
-
-    public void buildInitialVariableDom() {
+    public void loadVariables() {
         String strMessage = "";
         try {
-            long time = System.currentTimeMillis() - DataServer.startingTime;
+            long time = System.currentTimeMillis() - VariablesBlackboard.startingTime;
 
-            Document documents[] = new Document[ConfigurationData.initialVariablesURLs.size()];
+            Document documents[] = new Document[ConfigurationData.getInitialVariablesURLs().size()];
 
-            Iterator iterator = ConfigurationData.initialVariablesURLs.iterator();
+            Iterator iterator = ConfigurationData.getInitialVariablesURLs().iterator();
 
-            this.variablesHastable.clear();
-            this.variablesVector.clear();
+            this.getVariablesMap().clear();
+            this.getVariablesList().clear();
 
             while (iterator.hasNext()) {
                 String initVariablesFileURL = (String) iterator.next();
@@ -636,16 +600,13 @@ public class DataServer {
                     v.setMin((String) xp.evaluate("@min", varNode, XPathConstants.STRING));
                     v.setMax((String) xp.evaluate("@max", varNode, XPathConstants.STRING));
 
-                    this.variablesHastable.put(v.getName(), v);
-                    this.variablesVector.add(v.getName());
+                    this.getVariablesMap().put(v.getName(), v);
+                    this.getVariablesList().add(v.getName());
                 }
 
             }
 
             this.notifyChange("", "", "");
-
-            //NodeList variableNodes = this.variablesDom.getDocumentElement().getElementsByTagName( "variable" );
-            //this.setTime( variableNodes, time );
         } catch (Exception e) {
             log.info("Cannot open " + strMessage);
         }
@@ -675,15 +636,6 @@ public class DataServer {
         RefreshTime.update();
     }
 
-    public void waitForVariable(String variableName) {
-        try {
-            while (isInProcessing(variableName)) {
-                Thread.sleep(10);
-            }
-        } catch (Exception e) {
-        }
-    }
-
     public void updateVariable(String variableName, String value) {
         RefreshTime.update();
         updateVariable(variableName, value, false);
@@ -700,7 +652,6 @@ public class DataServer {
             return;
         }
 
-        // protectVariable(variableName);
         Variable v = this.getVariable(variableName);
 
         if (v == null) {
@@ -724,7 +675,7 @@ public class DataServer {
                 this.notifyVariableUpdated(variableName, value);
             }
         }
-        // unprotectVariable(variableName);
+
         RefreshTime.update();
     }
 
@@ -848,10 +799,8 @@ public class DataServer {
         Variable v = this.getVariable(variableName);
         if (v == null) {
             this.updateVariable(variableName, "", group, "");
-//            this.notifyChange(variableName, "", "");
         } else {
             v.setGroup(group);
-            //          this.notifyChange(variableName, v.value, v.value);
         }
         RefreshTime.update();
     }
@@ -860,10 +809,8 @@ public class DataServer {
         Variable v = this.getVariable(variableName);
         if (v == null) {
             this.updateVariable(variableName, "", "", description);
-//            this.notifyChange(variableName, "", "");
         } else {
             v.setDescription(description);
-//            this.notifyChange(variableName, v.value, v.value);
         }
         RefreshTime.update();
     }
@@ -909,9 +856,9 @@ public class DataServer {
                 }
                 v.setTimestamp(System.currentTimeMillis());
 
-                this.variablesHastable.put(v.getName(), v);
-                if (!this.variablesVector.contains(v.getName())) {
-                    this.variablesVector.add(v.getName());
+                this.getVariablesMap().put(v.getName(), v);
+                if (!this.getVariablesList().contains(v.getName())) {
+                    this.getVariablesList().add(v.getName());
                 }
 
                 this.notifyChange(variableName, value, oldValue, newThread);
@@ -956,9 +903,9 @@ public class DataServer {
                 }
                 v.setTimestamp(System.currentTimeMillis());
 
-                this.variablesHastable.put(v.getName(), v);
-                if (!this.variablesVector.contains(v.getName())) {
-                    this.variablesVector.add(v.getName());
+                this.getVariablesMap().put(v.getName(), v);
+                if (!this.getVariablesList().contains(v.getName())) {
+                    this.getVariablesList().add(v.getName());
                 }
 
                 if (oldVariable == null) {
@@ -976,17 +923,17 @@ public class DataServer {
 
     public void removeAll() {
         try {
-            this.variablesHastable.clear();
-            this.variablesVector.clear();
+            this.getVariablesMap().clear();
+            this.getVariablesList().clear();
 
             this.notifyChange("", "", "");
             this.notifyVariableDeleted("");
 
-            ConfigurationData.initialVariablesURLs.clear();
-            ConfigurationData.scriptFiles.clear();
+            ConfigurationData.getInitialVariablesURLs().clear();
+            ConfigurationData.getScriptFiles().clear();
 
-            DataServer.scriptFiles.clear();
-            DataServer.scripts.clear();
+            VariablesBlackboard.getScriptFiles().clear();
+            VariablesBlackboard.getScripts().clear();
         } catch (Exception e) {
             log.error(e);
         }
@@ -995,8 +942,8 @@ public class DataServer {
 
     public void removeVariable(String variableName) {
         try {
-            this.variablesHastable.remove(variableName);
-            this.variablesVector.remove(variableName);
+            this.getVariablesMap().remove(variableName);
+            this.getVariablesList().remove(variableName);
 
             this.notifyChange(variableName, "", "");
             this.notifyVariableDeleted(variableName);
@@ -1006,51 +953,26 @@ public class DataServer {
         RefreshTime.update();
     }
 
-    public void removeVariable(int index) {
-        try {
-            String name = this.variablesVector.get(index);
-
-            this.variablesHastable.remove(name);
-            this.variablesVector.remove(name);
-
-            this.notifyChange(name, "", "");
-            this.notifyVariableDeleted(name);
-        } catch (Exception e) {
-            log.error(e);
-        }
-        RefreshTime.update();
-    }
-
-    public void removeVariableNoNotify(String variableName) {
-        try {
-            this.variablesHastable.remove(variableName);
-            this.variablesVector.remove(variableName);
-        } catch (Exception e) {
-            log.error(e);
-        }
-        RefreshTime.update();
-    }
-
-    public void removeVariables(String strVariableNamePattern) {
+    public void removeVariables(String variableNamePattern) {
         try {
             String stringFunction;
 
-            if (strVariableNamePattern.startsWith("*") && strVariableNamePattern.endsWith("*")) {
+            if (variableNamePattern.startsWith("*") && variableNamePattern.endsWith("*")) {
                 stringFunction = "contains";
-            } else if (strVariableNamePattern.endsWith("*")) {
+            } else if (variableNamePattern.endsWith("*")) {
                 stringFunction = "starts-with";
-            } else if (strVariableNamePattern.startsWith("*")) {
+            } else if (variableNamePattern.startsWith("*")) {
                 stringFunction = "ends-with";
             } else {
                 return;
             }
 
-            String strVariableNameFragment = strVariableNamePattern.replace("*", "");
+            String strVariableNameFragment = variableNamePattern.replace("*", "");
 
-            String variables[] = new String[this.variablesVector.size()];
+            String variables[] = new String[this.getVariablesList().size()];
 
             int i = 0;
-            for (String variableName : this.variablesVector) {
+            for (String variableName : this.getVariablesList()) {
                 variables[i++] = variableName;
             }
 
@@ -1073,7 +995,7 @@ public class DataServer {
     }
 
     public int getNumberOfVariables() {
-        return this.variablesHastable.size();
+        return this.getVariablesMap().size();
     }
 
     public String getVariableValues(String listOfVariables) {
@@ -1114,7 +1036,7 @@ public class DataServer {
 
         values += "<variables>";
 
-        for (String variableName : this.variablesVector) {
+        for (String variableName : this.getVariablesList()) {
             Variable v = this.getVariable(variableName);
 
             values += "    <variable name='" + v.getName() + "'";
@@ -1131,7 +1053,7 @@ public class DataServer {
     public String getAllVariableValues() {
         String values = "";
 
-        for (String variableName : this.variablesVector) {
+        for (String variableName : this.getVariablesList()) {
             Variable v = this.getVariable(variableName);
 
             values += "    <variable name='" + v.getName() + "'";
@@ -1148,7 +1070,7 @@ public class DataServer {
 
     public String getVariableValue(String name) {
         if (name.startsWith("{")) {
-            return this.getVariableValuesVector(name);
+            return this.getVariableValuesList(name);
         } else {
             Variable v = this.getVariable(name);
 
@@ -1168,8 +1090,8 @@ public class DataServer {
         }
     }
 
-    public String getVariableValuesVector(String name) {
-        Vector<Variable> variables = this.getVariables(name);
+    public String getVariableValuesList(String name) {
+        List<Variable> variables = this.getVariables(name);
         Collections.sort(variables, new Comparator<Variable>() {
 
             public int compare(Variable v1, Variable v2) {
@@ -1195,24 +1117,12 @@ public class DataServer {
         return str.toString();
     }
 
-    public int getVariableCount(String name) {
-        Variable v = this.getVariable(name);
-
-        return v == null ? 0 : v.getCount();
-    }
-
-    public long getVariableTimestamp(String name) {
-        Variable v = this.getVariable(name);
-
-        return v == null ? 0 : v.getTimestamp();
-    }
-
     public Variable getVariable(int index) {
-        return this.getVariable(this.variablesVector.get(index));
+        return this.getVariable(this.getVariablesList().get(index));
     }
 
     public Variable getVariable(String name) {
-        Variable var = this.variablesHastable.get(name);
+        Variable var = this.getVariablesMap().get(name);
         if (var == null && additionalVariables != null) {
             for (AdditionalVariables vars : additionalVariables) {
                 var = vars.getVariable(name);
@@ -1232,9 +1142,9 @@ public class DataServer {
 
         if (n1 >= 0 && n2 > n1) {
             prefix = prefix.substring(n1 + 1, n2);
-            for (String name : this.variablesVector) {
+            for (String name : this.getVariablesList()) {
                 if (name.startsWith(prefix)) {
-                    Variable var = this.variablesHastable.get(name);
+                    Variable var = this.getVariablesMap().get(name);
                     if (var == null && additionalVariables != null) {
                         for (AdditionalVariables vars : additionalVariables) {
                             var = vars.getVariable(name);
@@ -1276,7 +1186,7 @@ public class DataServer {
     }
 
     public void printAll() {
-        for (String variableName : this.variablesVector) {
+        for (String variableName : this.getVariablesList()) {
             Variable v = this.getVariable(variableName);
 
             String values = "";
@@ -1287,24 +1197,9 @@ public class DataServer {
             values += " description='" + v.getDescription() + "'>";
             values += v.getValue();
             values += "</variable>";
+
+            log.info(values);
         }
-    }
-
-    public void test() {
-        DataServer s = new DataServer();
-        DataServer.setInstance(s);
-
-        s.updateVariable("a", "AAA");
-        s.updateVariable("c", "bBb");
-
-        log.info(s.populateTemplate("${a} != ${c}"));
-        log.info(s.populateTemplate("<%=a%> != <%=c%>"));
-
-        s.printAll();
-    }
-
-    public static void main(String args[]) {
-        new DataServer().test();
     }
 
     public static String processText(String strText) {
@@ -1317,39 +1212,21 @@ public class DataServer {
 
             if (strText.length() > 1) {
                 String strVariable = strText.substring(1);
-                strText = DataServer.getInstance().getVariableValue(strVariable);
+                strText = VariablesBlackboard.getInstance().getVariableValue(strVariable);
             }
 
         } else {
-            strText = DataServer.populateTemplate(strText, false);
+            strText = VariablesBlackboard.populateTemplate(strText, false);
         }
 
         return strText;
-    }
-
-    public static void populateVariablesCombo(JComboBox comboBox, boolean addEquals) {
-        Object selectedItem = comboBox.getSelectedItem();
-
-        comboBox.removeAllItems();
-        comboBox.setEditable(true);
-        comboBox.addItem("");
-
-        for (String strVar : DataServer.getInstance().variablesVector) {
-            comboBox.addItem((addEquals ? "=" : "") + strVar);
-        }
-
-        if (selectedItem != null) {
-            comboBox.setSelectedItem(selectedItem);
-        } else {
-            comboBox.setSelectedIndex(0);
-        }
     }
 
     public List<String> getGroups() {
         List<String> groups = new ArrayList<String>();
         groups.add("");
 
-        for (String strVariable : this.variablesVector) {
+        for (String strVariable : this.getVariablesList()) {
             Variable v = this.getVariable(strVariable);
             if (!groups.contains(v.getGroup())) {
                 groups.add(v.getGroup());
@@ -1357,5 +1234,61 @@ public class DataServer {
         }
 
         return groups;
+    }
+
+    public static boolean isPaused() {
+        return paused;
+    }
+
+    public static void setPaused(boolean paused) {
+        VariablesBlackboard.paused = paused;
+    }
+
+    public static VariablesBlackboard getInstance() {
+        return instance;
+    }
+
+    public static void setInstance(VariablesBlackboard instance) {
+        VariablesBlackboard.instance = instance;
+    }
+
+    public static List<ScriptPluginProxy> getScripts() {
+        return scripts;
+    }
+
+    public static void setScripts(List<ScriptPluginProxy> scripts) {
+        VariablesBlackboard.scripts = scripts;
+    }
+
+    public static List getScriptFiles() {
+        return scriptFiles;
+    }
+
+    public static void setScriptFiles(List scriptFiles) {
+        VariablesBlackboard.scriptFiles = scriptFiles;
+    }
+
+    public static boolean isImageDrawnByExternalProcess() {
+        return imageDrawnByExternalProcess;
+    }
+
+    public static void setImageDrawnByExternalProcess(boolean imageDrawnByExternalProcess) {
+        VariablesBlackboard.imageDrawnByExternalProcess = imageDrawnByExternalProcess;
+    }
+
+    public Map<String, Variable> getVariablesMap() {
+        return variablesMap;
+    }
+
+    public void setVariablesMap(Hashtable<String, Variable> variablesMap) {
+        this.variablesMap = variablesMap;
+    }
+
+    public List<String> getVariablesList() {
+        return variablesList;
+    }
+
+    public void setVariablesList(List<String> variablesList) {
+        this.variablesList = variablesList;
     }
 }

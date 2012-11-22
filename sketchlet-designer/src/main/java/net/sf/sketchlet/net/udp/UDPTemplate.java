@@ -7,16 +7,17 @@
  * and open the template in the editor.
  */
 
-package net.sf.sketchlet.communicator.server.udp;
+package net.sf.sketchlet.net.udp;
 
 import net.sf.sketchlet.common.net.UDPUtils;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.net.Template;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 
-public class UDPTemplate extends net.sf.sketchlet.communicator.server.Template {
-    public String host;
-    public int port;
+public class UDPTemplate extends Template {
+    private String host;
+    private int port;
 
-    public static boolean encode = true;
+    private static boolean encodingEnabled = true;
 
     public UDPTemplate(String host, int udpPort) {
         this.host = host;
@@ -29,15 +30,23 @@ public class UDPTemplate extends net.sf.sketchlet.communicator.server.Template {
         this.port = udpPort;
     }
 
+    public static boolean isEncodingEnabled() {
+        return encodingEnabled;
+    }
+
+    public static void setEncodingEnabled(boolean encodingEnabled) {
+        UDPTemplate.encodingEnabled = encodingEnabled;
+    }
+
     // this is used when we delete UDP template,
     // removing UDP template has to be made explicitely as there is no connection
     public boolean equals(String test) {
-        String signature = host + " " + port + " " + variable + " " + template;
+        String signature = host + " " + port + " " + getVariable() + " " + getTemplate();
         return signature.startsWith(test);
     }
 
     public void send() {
-        String populatedTemplate = DataServer.populateTemplate(this.template, encode);
+        String populatedTemplate = VariablesBlackboard.populateTemplate(this.getTemplate(), isEncodingEnabled());
         UDPUtils.sendPacket(this.host, this.port, populatedTemplate);
     }
 }

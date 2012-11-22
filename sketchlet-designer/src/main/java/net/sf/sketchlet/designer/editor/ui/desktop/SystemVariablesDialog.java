@@ -5,7 +5,7 @@
 package net.sf.sketchlet.designer.editor.ui.desktop;
 
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.util.SpringUtilities;
 import net.sf.sketchlet.util.XMLHelper;
@@ -219,25 +219,25 @@ public class SystemVariablesDialog extends JDialog {
 
     public static void processMouseEvent(int x, int y, String event) {
         if (((String) data[0][0]).equalsIgnoreCase("true")) {
-            DataServer.getInstance().updateVariableIfDifferent((String) data[0][1], "" + x);
+            VariablesBlackboard.getInstance().updateVariableIfDifferent((String) data[0][1], "" + x);
         }
         if (((String) data[1][0]).equalsIgnoreCase("true")) {
-            DataServer.getInstance().updateVariableIfDifferent((String) data[1][1], "" + y);
+            VariablesBlackboard.getInstance().updateVariableIfDifferent((String) data[1][1], "" + y);
         }
         if (((String) data[2][0]).equalsIgnoreCase("true")) {
-            DataServer.getInstance().updateVariable((String) data[2][1], event);
+            VariablesBlackboard.getInstance().updateVariable((String) data[2][1], event);
         }
     }
 
     public static void processKeyboardEvent(KeyEvent e, String key, String event) {
         if (((String) data[3][0]).equalsIgnoreCase("true")) {
-            DataServer.getInstance().updateVariableIfDifferent((String) data[3][1], key);
+            VariablesBlackboard.getInstance().updateVariableIfDifferent((String) data[3][1], key);
         }
         if (((String) data[9][0]).equalsIgnoreCase("true")) {
-            DataServer.getInstance().updateVariableIfDifferent((String) data[9][1], e.getKeyCode() + "");
+            VariablesBlackboard.getInstance().updateVariableIfDifferent((String) data[9][1], e.getKeyCode() + "");
         }
         if (((String) data[4][0]).equalsIgnoreCase("true")) {
-            DataServer.getInstance().updateVariable((String) data[4][1], event);
+            VariablesBlackboard.getInstance().updateVariable((String) data[4][1], event);
         }
     }
 
@@ -270,22 +270,22 @@ public class SystemVariablesDialog extends JDialog {
                 boolean bT = data[8][0].toString().equalsIgnoreCase("true") && !strT.isEmpty();
 
                 if (bH || bM || bS || bT) {
-                    if (!DataServer.getInstance().isPaused()) {
+                    if (!VariablesBlackboard.getInstance().isPaused()) {
                         Calendar cal = Calendar.getInstance();
                         if (bH) {
                             int hod = cal.get(Calendar.HOUR_OF_DAY);
-                            DataServer.getInstance().updateVariableIfDifferent(strH, "" + (hod > 9 ? hod : "0" + hod));
+                            VariablesBlackboard.getInstance().updateVariableIfDifferent(strH, "" + (hod > 9 ? hod : "0" + hod));
                         }
                         if (bM) {
                             int min = cal.get(Calendar.MINUTE);
-                            DataServer.getInstance().updateVariableIfDifferent(strM, "" + (min > 9 ? min : "0" + min));
+                            VariablesBlackboard.getInstance().updateVariableIfDifferent(strM, "" + (min > 9 ? min : "0" + min));
                         }
                         if (bS) {
                             int sec = cal.get(Calendar.SECOND);
-                            DataServer.getInstance().updateVariableIfDifferent(strS, "" + (sec > 9 ? sec : "0" + sec));
+                            VariablesBlackboard.getInstance().updateVariableIfDifferent(strS, "" + (sec > 9 ? sec : "0" + sec));
                         }
                         if (bT) {
-                            DataServer.getInstance().updateVariableIfDifferent(strT, "" + cal.getTimeInMillis());
+                            VariablesBlackboard.getInstance().updateVariableIfDifferent(strT, "" + cal.getTimeInMillis());
                         }
                     }
                 } else {

@@ -5,12 +5,12 @@
 package net.sf.sketchlet.model.programming.timers.events;
 
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.ui.macros.MacroPanel;
 import net.sf.sketchlet.designer.playback.ui.PlaybackFrame;
 import net.sf.sketchlet.designer.playback.ui.PlaybackPanel;
-import net.sf.sketchlet.model.evaluator.Evaluator;
+import net.sf.sketchlet.blackboard.evaluator.Evaluator;
 import net.sf.sketchlet.model.Page;
 import net.sf.sketchlet.model.programming.macros.Commands;
 import net.sf.sketchlet.model.programming.macros.MacroThread;
@@ -324,7 +324,7 @@ public class Timeline {
             return;
         }
 
-        if (DataServer.getInstance() != null) {
+        if (VariablesBlackboard.getInstance() != null) {
             Commands.updateVariableOrProperty(this, variable, value, Commands.ACTION_VARIABLE_UPDATE);
         }
     }

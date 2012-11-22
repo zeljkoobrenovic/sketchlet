@@ -9,11 +9,11 @@
  */
 package net.sf.sketchlet.designer.editor.ui.variables;
 
-import net.sf.sketchlet.communicator.ConfigurationData;
-import net.sf.sketchlet.communicator.Global;
-import net.sf.sketchlet.communicator.server.DataServer;
-import net.sf.sketchlet.communicator.server.tcp.TCPServer;
-import net.sf.sketchlet.communicator.server.udp.UDPServer;
+import net.sf.sketchlet.blackboard.ConfigurationData;
+import net.sf.sketchlet.net.NetUtils;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.net.tcp.TCPServer;
+import net.sf.sketchlet.net.udp.UDPServer;
 import net.sf.sketchlet.designer.ApplicationLifecycleCentre;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.ui.script.ScriptsTablePanel;
@@ -40,8 +40,8 @@ public class VariablesPanel extends JPanel {
     public VariablesPanel parent = this;
     public static JFrame frame;
     public static JFrame referenceFrame;
-    public DataServer dataServer;
-    // public DataServer dataServerDerived;
+    public VariablesBlackboard variablesBlackboard;
+    // public VariablesBlackboard dataServerDerived;
     public Hashtable menuItems;
     public Hashtable toolbarButtons;
     public static VariablesPanel mainFrame;
@@ -189,21 +189,21 @@ public class VariablesPanel extends JPanel {
     }
 
     public void initMainFrame(String configURL) {
-        boolean paused = DataServer.isPaused();
-        DataServer.setPaused(true);
+        boolean paused = VariablesBlackboard.isPaused();
+        VariablesBlackboard.setPaused(true);
 
-        DataServer.setInstance(null);
+        VariablesBlackboard.setInstance(null);
 
         ConfigurationData.loadFromURL(configURL);
 
-        dataServer = new DataServer();
-        DataServer.setInstance(dataServer);
+        variablesBlackboard = new VariablesBlackboard();
+        VariablesBlackboard.setInstance(variablesBlackboard);
 
-        if (Global.getServerUDP() == null) {
-            Global.setServerUDP(new UDPServer(ConfigurationData.getUdpPort()));
+        if (NetUtils.getServerUDP() == null) {
+            NetUtils.setServerUDP(new UDPServer(ConfigurationData.getUdpPort()));
         }
-        if (Global.getServerTCP() == null) {
-            Global.setServerTCP(new TCPServer(ConfigurationData.getTcpPort()));
+        if (NetUtils.getServerTCP() == null) {
+            NetUtils.setServerTCP(new TCPServer(ConfigurationData.getTcpPort()));
         }
 
 
@@ -211,8 +211,8 @@ public class VariablesPanel extends JPanel {
             this.globalVariablesPanel.register();
         }
 
-        DataServer.createScripts();
-        //DataServer.initScripts();
+        VariablesBlackboard.createScripts();
+        //VariablesBlackboard.initScripts();
 
         globalVariablesPanel.variablesTableModel.fireTableDataChanged();
         if (panel2 != null && panel2.scriptsTableModel != null) {
@@ -220,7 +220,7 @@ public class VariablesPanel extends JPanel {
             panel2.enableControls();
         }
 
-        DataServer.setPaused(paused);
+        VariablesBlackboard.setPaused(paused);
     }
 
     public void saveAs() {
@@ -230,7 +230,7 @@ public class VariablesPanel extends JPanel {
 
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             try {
-                ConfigurationData.configURL = fc.getSelectedFile().toURL().toString();
+                ConfigurationData.setConfigURL(fc.getSelectedFile().toURL().toString());
             } catch (Exception e) {
                 e.printStackTrace(System.out);
             }
@@ -239,8 +239,8 @@ public class VariablesPanel extends JPanel {
     }
 
     public void pause() {
-        if (!DataServer.isPaused()) {
-            DataServer.setPaused(true);
+        if (!VariablesBlackboard.isPaused()) {
+            VariablesBlackboard.setPaused(true);
             // pauseButton.setText( "Start" );
             pauseButton.setIcon(createImageIcon(this, "resources/start.gif", ""));
             pauseButton.setToolTipText("Continues to receive and process updates of variables send by modules");
@@ -248,9 +248,9 @@ public class VariablesPanel extends JPanel {
             pauseMenuItem.setText("Start");
             pauseMenuItem.setToolTipText("Continues to receive and process updates of variables send by modules");
 
-            DataServer.unprotectAllVariables();
+            VariablesBlackboard.unprotectAllVariables();
         } else {
-            DataServer.setPaused(false);
+            VariablesBlackboard.setPaused(false);
             // pauseButton.setText( "Pause" );
             pauseButton.setIcon(createImageIcon(this, "resources/stop.gif", ""));
             pauseButton.setToolTipText("Pause processing and ignores updates of variables send by modules");

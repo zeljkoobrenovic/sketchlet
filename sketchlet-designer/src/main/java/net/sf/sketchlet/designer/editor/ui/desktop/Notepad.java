@@ -1,7 +1,7 @@
 package net.sf.sketchlet.designer.editor.ui.desktop;
 
 import net.sf.sketchlet.common.file.FileUtils;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.context.VariableUpdateListener;
 import net.sf.sketchlet.context.VariablesBlackboardContext;
 import net.sf.sketchlet.designer.Workspace;
@@ -365,7 +365,7 @@ public class Notepad extends JPanel {
         Executors.newCachedThreadPool().execute(new Runnable() {
             @Override
             public void run() {
-                while (DataServer.getInstance() == null) {
+                while (VariablesBlackboard.getInstance() == null) {
                     try {
                         Thread.sleep(500);
                     } catch (InterruptedException e) {

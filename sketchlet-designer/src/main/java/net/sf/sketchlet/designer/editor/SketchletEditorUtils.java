@@ -7,7 +7,7 @@ package net.sf.sketchlet.designer.editor;
 import net.sf.sketchlet.common.context.SketchletContextUtils;
 import net.sf.sketchlet.common.file.FileUtils;
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.GlobalProperties;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.model.ActiveRegion;
@@ -113,11 +113,11 @@ public class SketchletEditorUtils {
                 String _strXVar = "x";
                 String _strYVar = "y";
                 int temp = 2;
-                while (DataServer.getInstance().getVariable(_strXVar) != null) {
+                while (VariablesBlackboard.getInstance().getVariable(_strXVar) != null) {
                     _strXVar = strXVar + "_" + (temp++);
                 }
                 temp = 2;
-                while (DataServer.getInstance().getVariable(_strYVar) != null) {
+                while (VariablesBlackboard.getInstance().getVariable(_strYVar) != null) {
                     _strYVar = strYVar + "_" + (temp++);
                 }
 

@@ -5,9 +5,9 @@
 package net.sf.sketchlet.model.programming.timers;
 
 import net.sf.sketchlet.common.QuotedStringTokenizer;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.editor.ui.ProgressMonitor;
-import net.sf.sketchlet.model.evaluator.Evaluator;
+import net.sf.sketchlet.blackboard.evaluator.Evaluator;
 import net.sf.sketchlet.model.programming.macros.Commands;
 import net.sf.sketchlet.model.programming.macros.MacroThread;
 import net.sf.sketchlet.model.programming.timers.curves.Curve;
@@ -346,7 +346,7 @@ public class TimerThread implements Runnable {
         }
         String oldValue = this.lastUpdateVariable.get(variable);
         if (oldValue == null || !oldValue.equals(value)) {
-            if (DataServer.getInstance() != null) {
+            if (VariablesBlackboard.getInstance() != null) {
                 Commands.updateVariableOrProperty(this, variable, value, Commands.ACTION_VARIABLE_UPDATE);
             }
         }

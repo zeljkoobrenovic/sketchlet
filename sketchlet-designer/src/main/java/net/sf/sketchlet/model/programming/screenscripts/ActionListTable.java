@@ -10,7 +10,7 @@ package net.sf.sketchlet.model.programming.screenscripts;
  */
 
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.model.evaluator.Evaluator;
+import net.sf.sketchlet.blackboard.evaluator.Evaluator;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;

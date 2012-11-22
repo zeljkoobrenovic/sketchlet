@@ -4,7 +4,7 @@
  */
 package net.sf.sketchlet.designer.editor.ui.wizard;
 
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.util.SpringUtilities;
 import org.netbeans.spi.wizard.WizardPage;
 
@@ -39,7 +39,7 @@ public class VariableUpdateEventPage extends WizardPage {
         operatorCombo.addItem("not in");
         operatorCombo.addItem("updated");
 
-        for (String strVar : DataServer.getInstance().variablesVector) {
+        for (String strVar : VariablesBlackboard.getInstance().getVariablesList()) {
             variableCombo.addItem(strVar);
         }
 

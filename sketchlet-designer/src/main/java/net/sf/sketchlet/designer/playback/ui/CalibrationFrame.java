@@ -7,7 +7,7 @@ package net.sf.sketchlet.designer.playback.ui;
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.playback.displays.ScreenMapping;
-import net.sf.sketchlet.model.evaluator.Evaluator;
+import net.sf.sketchlet.blackboard.evaluator.Evaluator;
 
 import javax.swing.*;
 import java.awt.*;

@@ -6,7 +6,7 @@ package net.sf.sketchlet.designer.editor.ui.timers;
 
 import net.sf.sketchlet.common.file.FileDrop;
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.ui.ProgressMonitor;
 import net.sf.sketchlet.designer.editor.ui.UIUtils;
@@ -403,7 +403,7 @@ public class TimerPanel extends JPanel implements ProgressMonitor {
                     String strValue = (String) timer.getVariables()[i][1];
 
                     if (strVar.length() > 0) {
-//                        DataServer.variablesServer.updateVariable(strVar, strValue);
+//                        VariablesBlackboard.variablesServer.updateVariable(strVar, strValue);
                         Commands.updateVariableOrProperty(this, strVar, strValue, Commands.ACTION_VARIABLE_UPDATE);
                     }
                 }
@@ -581,7 +581,7 @@ public class TimerPanel extends JPanel implements ProgressMonitor {
         comboBox.setEditable(true);
         comboBox.addItem("");
 
-        for (String strVar : DataServer.getInstance().variablesVector) {
+        for (String strVar : VariablesBlackboard.getInstance().getVariablesList()) {
             comboBox.addItem(strVar);
         }
         varTable.getColumnModel().getColumn(0).setCellEditor(new DefaultCellEditor(comboBox));
@@ -590,7 +590,7 @@ public class TimerPanel extends JPanel implements ProgressMonitor {
         comboBox2.setEditable(true);
         comboBox2.addItem("");
 
-        for (String strVar : DataServer.getInstance().variablesVector) {
+        for (String strVar : VariablesBlackboard.getInstance().getVariablesList()) {
             comboBox2.addItem("=" + strVar);
         }
 

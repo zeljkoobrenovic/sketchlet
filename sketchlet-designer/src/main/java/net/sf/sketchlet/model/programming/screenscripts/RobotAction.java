@@ -5,10 +5,10 @@ package net.sf.sketchlet.model.programming.screenscripts;
  * and open the template in the editorPanel.
  */
 
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.playback.ui.PlaybackFrame;
-import net.sf.sketchlet.model.evaluator.Evaluator;
+import net.sf.sketchlet.blackboard.evaluator.Evaluator;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -354,7 +354,7 @@ class CaptureScreenAction extends RobotAction {
             BufferedImage image = AWTRobotUtil.getRobot().createScreenCapture(rectScreenSize);
             File file = File.createTempFile("capture_image_temp", ".png");
             ImageIO.write(image, "PNG", file);
-            DataServer.getInstance().updateVariable(strVar, file.getAbsolutePath());
+            VariablesBlackboard.getInstance().updateVariable(strVar, file.getAbsolutePath());
             file.deleteOnExit();
         } catch (Exception e) {
         }
@@ -375,7 +375,7 @@ class UpdateVariableAction extends RobotAction {
         if (n > 0 && n < strParams.length() - 1) {
             String variable = Evaluator.processText(strParams.substring(0, n).trim(), "", "");
             String value = Evaluator.processText(strParams.substring(n + 1), "", "");
-            DataServer.getInstance().updateVariable(variable, value);
+            VariablesBlackboard.getInstance().updateVariable(variable, value);
         }
     }
 }

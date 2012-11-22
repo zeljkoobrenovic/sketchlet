@@ -7,8 +7,8 @@ package net.sf.sketchlet.model.programming.macros;
 import net.sf.sketchlet.common.QuotedStringTokenizer;
 import net.sf.sketchlet.common.context.SketchletContextUtils;
 import net.sf.sketchlet.common.system.PlatformManager;
-import net.sf.sketchlet.communicator.server.DataServer;
-import net.sf.sketchlet.communicator.server.Variable;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.blackboard.Variable;
 import net.sf.sketchlet.context.VariableUpdateListener;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
@@ -16,8 +16,8 @@ import net.sf.sketchlet.designer.editor.ui.desktop.ProcessConsolePanel;
 import net.sf.sketchlet.designer.playback.ui.InteractionRecorder;
 import net.sf.sketchlet.designer.playback.ui.PlaybackFrame;
 import net.sf.sketchlet.designer.playback.ui.PlaybackPanel;
-import net.sf.sketchlet.model.evaluator.Evaluator;
-import net.sf.sketchlet.model.evaluator.JEParser;
+import net.sf.sketchlet.blackboard.evaluator.Evaluator;
+import net.sf.sketchlet.blackboard.evaluator.JEParser;
 import net.sf.sketchlet.loaders.pluginloader.PluginInstance;
 import net.sf.sketchlet.loaders.pluginloader.ScriptPluginFactory;
 import net.sf.sketchlet.model.Page;
@@ -59,7 +59,7 @@ public class Commands {
         }
 
         if (action.startsWith("Variable") && param2.equals("?")) {
-            Variable v = DataServer.getInstance().getVariable(param1);
+            Variable v = VariablesBlackboard.getInstance().getVariable(param1);
             String strDescription = "Enter value: ";
             if (v != null && !v.getDescription().trim().equals("")) {
                 strDescription = "Enter value (" + v.getDescription() + "): ";
@@ -100,8 +100,8 @@ public class Commands {
             if (!param1.equals("")) {
                 try {
                     while (true) {
-                        param1 = DataServer.getTemplateFromApostrophes(param1);
-                        param1 = DataServer.populateTemplate(param1);
+                        param1 = VariablesBlackboard.getTemplateFromApostrophes(param1);
+                        param1 = VariablesBlackboard.populateTemplate(param1);
                         Object result = JEParser.getValue(param1);
                         if (result == null || !(result instanceof Double) || ((Double) result).doubleValue() == 0.0) {
                             Thread.sleep(100);
@@ -125,14 +125,14 @@ public class Commands {
                     }
                 }
             };
-            DataServer.getInstance().addVariablesUpdateListener(ch);
+            VariablesBlackboard.getInstance().addVariablesUpdateListener(ch);
             try {
                 while (waiting.waiting) {
                     Thread.sleep(20);
                 }
             } catch (Exception e) {
             }
-            DataServer.getInstance().removeVariablesUpdateListener(ch);
+            VariablesBlackboard.getInstance().removeVariablesUpdateListener(ch);
 
         } else if (action.equalsIgnoreCase("Variable append")) {
             if (!param1.equals("")) {
@@ -387,12 +387,12 @@ public class Commands {
                     }
                     if (!bDifferent) {
                         properties.setProperty(strProperty, param2);
-                        DataServer.getInstance().notifyChange(param1, param2, "");
+                        VariablesBlackboard.getInstance().notifyChange(param1, param2, "");
                     } else {
                         String strCurrentValue = properties.getProperty(strProperty);
                         if (!strCurrentValue.equals(param2)) {
                             properties.setProperty(strProperty, param2);
-                            DataServer.getInstance().notifyChange(param1, param2, "");
+                            VariablesBlackboard.getInstance().notifyChange(param1, param2, "");
                         }
                     }
                 }
@@ -407,23 +407,23 @@ public class Commands {
             switch (actionType) {
                 case Commands.ACTION_VARIABLE_UPDATE:
                     if (!bDifferent) {
-                        DataServer.getInstance().updateVariable(param1, param2);
+                        VariablesBlackboard.getInstance().updateVariable(param1, param2);
                     } else {
-                        DataServer.getInstance().updateVariableIfDifferent(param1, param2);
+                        VariablesBlackboard.getInstance().updateVariableIfDifferent(param1, param2);
                     }
                     break;
                 case Commands.ACTION_VARIABLE_APPEND:
-                    DataServer.getInstance().appendVariable(param1, param2);
+                    VariablesBlackboard.getInstance().appendVariable(param1, param2);
                     break;
                 case Commands.ACTION_VARIABLE_INCREMENT:
                     if (param2.trim().equals("")) {
                         param2 = "1";
                     }
-                    DataServer.getInstance().incrementVariable(param1, param2);
+                    VariablesBlackboard.getInstance().incrementVariable(param1, param2);
                     break;
                 case Commands.ACTION_VARIABLE_CUT_RIGHT:
                     try {
-                        DataServer.getInstance().cutVariableRight(param1, Integer.parseInt(param2));
+                        VariablesBlackboard.getInstance().cutVariableRight(param1, Integer.parseInt(param2));
                     } catch (Exception e) {
                     }
                     break;
@@ -464,7 +464,7 @@ public class Commands {
                 double dur = 2.0;
 
                 if (params.length == 2) {
-                    start = Double.parseDouble(DataServer.getInstance().getVariableValue(param1));
+                    start = Double.parseDouble(VariablesBlackboard.getInstance().getVariableValue(param1));
                     end = Double.parseDouble(params[0]);
                     dur = Double.parseDouble(params[1]);
                 } else if (params.length == 3) {

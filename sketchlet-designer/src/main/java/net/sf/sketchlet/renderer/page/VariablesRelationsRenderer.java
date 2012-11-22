@@ -1,7 +1,7 @@
 package net.sf.sketchlet.renderer.page;
 
-import net.sf.sketchlet.communicator.server.DataServer;
-import net.sf.sketchlet.communicator.server.Variable;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.blackboard.Variable;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.playback.ui.PlaybackPanel;
 import net.sf.sketchlet.model.ActiveRegion;
@@ -170,7 +170,7 @@ public class VariablesRelationsRenderer {
         for (ActiveRegion region : regions.getRegions()) {
             String strValue = region.strTextField;
             if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
-                String strVar = DataServer.populateTemplate(strValue.substring(1));
+                String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                 processString(variables, region, strVar, "[in] text");
             }
 
@@ -178,80 +178,80 @@ public class VariablesRelationsRenderer {
             for (int i = 0; i < lines.length; i++) {
                 strValue = lines[i];
                 if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
-                    String strVar = DataServer.populateTemplate(strValue.substring(1));
+                    String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                     processString(variables, region, strVar, "[in] text");
                 }
             }
             strValue = region.horizontalAlignment;
 
             if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
-                String strVar = DataServer.populateTemplate(strValue.substring(1));
+                String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                 processString(variables, region, strVar, "[in] horizontal alignment");
             }
             strValue = region.verticalAlignment;
             if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
-                String strVar = DataServer.populateTemplate(strValue.substring(1));
+                String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                 processString(variables, region, strVar, "[in] vertical alignment");
             }
             strValue = region.shape;
             if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
-                String strVar = DataServer.populateTemplate(strValue.substring(1));
+                String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                 processString(variables, region, strVar, "[in] shape");
             }
             strValue = region.lineColor;
             if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
-                String strVar = DataServer.populateTemplate(strValue.substring(1));
+                String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                 processString(variables, region, strVar, "[in] line color");
             }
             strValue = region.lineThickness;
             if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
-                String strVar = DataServer.populateTemplate(strValue.substring(1));
+                String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                 processString(variables, region, strVar, "[in] line thickness");
             }
             strValue = region.lineStyle;
             if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
-                String strVar = DataServer.populateTemplate(strValue.substring(1));
+                String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                 processString(variables, region, strVar, "[in] line style");
             }
             strValue = region.strFillColor;
             if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
-                String strVar = DataServer.populateTemplate(strValue.substring(1));
+                String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                 processString(variables, region, strVar, "[in] fill color");
             }
             strValue = region.strCaptureScreenX;
             if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
-                String strVar = DataServer.populateTemplate(strValue.substring(1));
+                String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                 processString(variables, region, strVar, "[in] capture screen x (left)");
             }
             strValue = region.strCaptureScreenY;
             if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
-                String strVar = DataServer.populateTemplate(strValue.substring(1));
+                String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                 processString(variables, region, strVar, "[in] capture screen x (top)");
             }
             strValue = region.strCaptureScreenWidth;
             if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
-                String strVar = DataServer.populateTemplate(strValue.substring(1));
+                String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                 processString(variables, region, strVar, "[in] capture screen width");
             }
             strValue = region.strCaptureScreenHeight;
             if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
-                String strVar = DataServer.populateTemplate(strValue.substring(1));
+                String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                 processString(variables, region, strVar, "[in] capture screen height");
             }
 
             strValue = region.strEmbeddedSketch;
             if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
-                String strVar = DataServer.populateTemplate(strValue.substring(1));
+                String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                 processString(variables, region, strVar, "[in] embedded sketch");
             }
             strValue = region.strEmbeddedSketchVarPrefix;
             if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
-                String strVar = DataServer.populateTemplate(strValue.substring(1));
+                String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                 processString(variables, region, strVar, "[in] embedded sketch variable prefix");
             }
             strValue = region.strEmbeddedSketchVarPostfix;
             if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
-                String strVar = DataServer.populateTemplate(strValue.substring(1));
+                String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                 processString(variables, region, strVar, "[in] embedded sketch variable postfix");
             }
 
@@ -259,7 +259,7 @@ public class VariablesRelationsRenderer {
                 String property = ActiveRegion.propertiesInfo[i][0];
                 strValue = region.getProperty(property);
                 if (strValue.startsWith("=") && strValue.length() > 1) {
-                    String strVar = DataServer.populateTemplate(strValue.substring(1));
+                    String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                     processString(variables, region, strVar, "[in] " + property.toLowerCase());
                 }
             }
@@ -374,9 +374,9 @@ public class VariablesRelationsRenderer {
         Enumeration<DrawVariableInfo> info = variables.elements();
         while (info.hasMoreElements()) {
             DrawVariableInfo vi = info.nextElement();
-            Variable var = DataServer.getInstance().getVariable(vi.getName());
+            Variable var = VariablesBlackboard.getInstance().getVariable(vi.getName());
 
-            String strVarValue = DataServer.getInstance().getVariableValue(vi.getName());
+            String strVarValue = VariablesBlackboard.getInstance().getVariableValue(vi.getName());
             String strVarText = " " + vi.getName() + " : " + strVarValue + " >";
 
             infoTexts.add(strVarText);

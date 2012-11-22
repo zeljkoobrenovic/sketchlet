@@ -7,15 +7,15 @@
  * the Source Creation and Management node. Right-click the template and choose
  * Open. You can then make changes to the template in the Source Editor.
  */
-package net.sf.sketchlet.communicator.server.udp;
+package net.sf.sketchlet.net.udp;
 
 import net.sf.sketchlet.common.net.ProcessPacket;
 import net.sf.sketchlet.common.net.UDPDataReceiverThread;
-import net.sf.sketchlet.communicator.server.DataReceiver;
-import net.sf.sketchlet.communicator.server.DataServer;
-import net.sf.sketchlet.communicator.server.StandardNetInterfaces;
-import net.sf.sketchlet.communicator.server.Template;
-import net.sf.sketchlet.communicator.server.TemplateHandler;
+import net.sf.sketchlet.net.DataReceiver;
+import net.sf.sketchlet.net.SketchletNetworkProtocol;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.net.Template;
+import net.sf.sketchlet.net.TemplateHandler;
 import org.apache.log4j.Logger;
 
 import java.util.Enumeration;
@@ -27,25 +27,25 @@ import java.util.Vector;
  */
 public class UDPServer extends DataReceiver {
 
-    UDPCommandDataReceiverThread receiveUpdatePacketThread;
+    private UDPCommandDataReceiverThread receiveUpdatePacketThread;
 
     public UDPServer(int port) {
         receiveUpdatePacketThread = new UDPCommandDataReceiverThread(this, port);
     }
 
     public void processUDPTemplates(String updatedVariables[], String diffVariables[]) {
-        this.receiveUpdatePacketThread.templateHandler.processTemplates(updatedVariables);
-        this.receiveUpdatePacketThread.templateHandler.processDiffTemplates(diffVariables);
-        this.receiveUpdatePacketThread.templateHandler.processDiffTemplatesFirstTime(updatedVariables);
+        this.receiveUpdatePacketThread.getTemplateHandler().processTemplates(updatedVariables);
+        this.receiveUpdatePacketThread.getTemplateHandler().processDiffTemplates(diffVariables);
+        this.receiveUpdatePacketThread.getTemplateHandler().processDiffTemplatesFirstTime(updatedVariables);
     }
 }
 
 class UDPCommandDataReceiverThread extends UDPDataReceiverThread {
     private static final Logger log = Logger.getLogger(UDPCommandDataReceiverThread.class);
 
-    UDPServer dataReceiver;
-    UDPTemplateHandler templateHandler = new UDPTemplateHandler();
-    public boolean encode = true;
+    private UDPServer dataReceiver;
+    private UDPTemplateHandler templateHandler = new UDPTemplateHandler();
+    private boolean encode = true;
 
     public UDPCommandDataReceiverThread(UDPServer dataReceiver, int port) {
         super(port);
@@ -59,45 +59,53 @@ class UDPCommandDataReceiverThread extends UDPDataReceiverThread {
                 String command = new String(data).trim();
                 if (command.startsWith("ADD TEMPLATE")) {
                     try {
-                        templateHandler.removeUDPTemplates(command.substring(13));
-                        templateHandler.processTemplateCommand(command);
+                        getTemplateHandler().removeUDPTemplates(command.substring(13));
+                        getTemplateHandler().processTemplateCommand(command);
                     } catch (Exception e) {
                         log.error(e);
                     }
                 } else if (command.startsWith("REGISTER ")) {
                     try {
-                        UDPTemplate.encode = false;
-                        templateHandler.removeUDPTemplates(command.substring(9));
-                        templateHandler.processTemplateCommand(command);
+                        UDPTemplate.setEncodingEnabled(false);
+                        getTemplateHandler().removeUDPTemplates(command.substring(9));
+                        getTemplateHandler().processTemplateCommand(command);
                     } catch (Exception e) {
                         log.error(e);
                     }
                 } else if (command.startsWith("SET ENCODING OFF")) {
-                    UDPTemplate.encode = false;
+                    UDPTemplate.setEncodingEnabled(false);
                 } else if (command.startsWith("SET ENCODING ON")) {
-                    UDPTemplate.encode = true;
+                    UDPTemplate.setEncodingEnabled(true);
                 } else if (command.startsWith("REMOVE TEMPLATE ")) {
-                    templateHandler.removeUDPTemplates(command.substring(16));
+                    getTemplateHandler().removeUDPTemplates(command.substring(16));
                 } else if (command.startsWith("UNREGISTER ")) {
-                    templateHandler.removeUDPTemplates(command.substring(11));
+                    getTemplateHandler().removeUDPTemplates(command.substring(11));
                 } else if (command.startsWith("UPDATE") || command.startsWith("DELETE ")) {
                     dataReceiver.updateVariable(command, encode);
                 } else {
-                    if (DataServer.isPaused()) {
+                    if (VariablesBlackboard.isPaused()) {
                         return;
                     }
-                    StandardNetInterfaces.processCommand(command);
+                    SketchletNetworkProtocol.processCommand(command);
                 }
             }
         };
+    }
+
+    public UDPTemplateHandler getTemplateHandler() {
+        return templateHandler;
+    }
+
+    public void setTemplateHandler(UDPTemplateHandler templateHandler) {
+        this.templateHandler = templateHandler;
     }
 }
 
 class UDPTemplateHandler extends TemplateHandler {
     private static final Logger log = Logger.getLogger(UDPTemplateHandler.class);
 
-    String currentHost;
-    int currentPort;
+    private String currentHost;
+    private int currentPort;
 
     public void sendTemplate(Template template) {
         ((UDPTemplate) template).send();
@@ -130,9 +138,9 @@ class UDPTemplateHandler extends TemplateHandler {
     }
 
     public synchronized void removeUDPTemplates(String signature) {
-        this.removeUDPTemplates(this.commandTemplates, signature);
-        this.removeUDPTemplates(this.commandDiffTemplates, signature);
-        this.removeUDPTemplates(this.commandDiffTemplatesFirstTime, signature);
+        this.removeUDPTemplates(this.getCommandTemplates(), signature);
+        this.removeUDPTemplates(this.getCommandDiffTemplates(), signature);
+        this.removeUDPTemplates(this.getCommandDiffTemplatesFirstTime(), signature);
     }
 
     public void removeUDPTemplates(Hashtable<String, Vector<Template>> templatesVector, String signature) {

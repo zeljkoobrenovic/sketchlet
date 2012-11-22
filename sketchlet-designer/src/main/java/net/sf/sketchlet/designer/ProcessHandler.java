@@ -10,6 +10,7 @@ package net.sf.sketchlet.designer;
 
 import net.sf.sketchlet.common.QuotedStringTokenizer;
 import net.sf.sketchlet.common.system.PlatformManager;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.editor.ui.desktop.ProcessConsolePanel;
 import org.apache.log4j.Logger;
 
@@ -122,7 +123,7 @@ public class ProcessHandler implements Runnable, net.sf.sketchlet.context.Variab
                 }
             }
         }
-        // DataServer.unprotectVariable(triggerVariable);
+        // VariablesBlackboard.unprotectVariable(triggerVariable);
     }
 
     public void run() {
@@ -174,8 +175,8 @@ public class ProcessHandler implements Runnable, net.sf.sketchlet.context.Variab
             BufferedReader inStream = new BufferedReader(new InputStreamReader(getProcess().getInputStream()));
             outStream = new PrintWriter(new OutputStreamWriter(getProcess().getOutputStream()));
 
-            if (net.sf.sketchlet.communicator.server.DataServer.getInstance() != null) {
-                net.sf.sketchlet.communicator.server.DataServer.getInstance().addVariablesUpdateListener(this);
+            if (VariablesBlackboard.getInstance() != null) {
+                VariablesBlackboard.getInstance().addVariablesUpdateListener(this);
             }
 
             this.setStatus("running");
@@ -210,8 +211,8 @@ public class ProcessHandler implements Runnable, net.sf.sketchlet.context.Variab
 
         running = false;
 
-        if (net.sf.sketchlet.communicator.server.DataServer.getInstance() != null) {
-            net.sf.sketchlet.communicator.server.DataServer.getInstance().removeVariablesUpdateListener(this);
+        if (VariablesBlackboard.getInstance() != null) {
+            VariablesBlackboard.getInstance().removeVariablesUpdateListener(this);
         }
     }
 
@@ -234,7 +235,7 @@ public class ProcessHandler implements Runnable, net.sf.sketchlet.context.Variab
 
             String outVariable = this.processConsolePanel.outVariableField.getText().trim();
             if (!outVariable.equals("")) {
-                net.sf.sketchlet.communicator.server.DataServer.getInstance().updateVariable(outVariable, line, this.id, "Console output of process " + this.processConsolePanel.titleField.getText());
+                VariablesBlackboard.getInstance().updateVariable(outVariable, line, this.id, "Console output of process " + this.processConsolePanel.titleField.getText());
             }
         } else {
             log.info("[" + this.id + "]: " + line);

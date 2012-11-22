@@ -7,7 +7,7 @@ package net.sf.sketchlet.designer.animation;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.playback.displays.InteractionSpace;
 import net.sf.sketchlet.designer.playback.ui.PlaybackFrame;
-import net.sf.sketchlet.model.evaluator.Evaluator;
+import net.sf.sketchlet.blackboard.evaluator.Evaluator;
 import net.sf.sketchlet.model.ActiveRegion;
 import net.sf.sketchlet.model.ActiveRegions;
 import net.sf.sketchlet.model.Page;

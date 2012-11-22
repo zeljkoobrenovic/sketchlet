@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package net.sf.sketchlet.communicator.server;
+package net.sf.sketchlet.blackboard;
 
 /**
  * @author zobrenovic
@@ -26,8 +26,8 @@ public class CommandHandler {
             desc = varDesc[2].trim();
         }
 
-        if (DataServer.getInstance() != null && !DataServer.getInstance().isPaused()) {
-            DataServer.getInstance().addVariable(name, group, desc);
+        if (VariablesBlackboard.getInstance() != null && !VariablesBlackboard.getInstance().isPaused()) {
+            VariablesBlackboard.getInstance().addVariable(name, group, desc);
         }
     }
 
@@ -51,8 +51,8 @@ public class CommandHandler {
             name = strLine;
         }
 
-        if (DataServer.getInstance() != null && !DataServer.getInstance().isPaused()) {
-            DataServer.getInstance().updateVariable(name, value, newThread);
+        if (VariablesBlackboard.getInstance() != null && !VariablesBlackboard.getInstance().isPaused()) {
+            VariablesBlackboard.getInstance().updateVariable(name, value, newThread);
         }
     }
 
@@ -79,14 +79,9 @@ public class CommandHandler {
                 name = strCommand;
             }
 
-            if (DataServer.getInstance() != null && !DataServer.getInstance().isPaused()) {
-                DataServer.getInstance().updateVariable(name, value, newThread);
+            if (VariablesBlackboard.getInstance() != null && !VariablesBlackboard.getInstance().isPaused()) {
+                VariablesBlackboard.getInstance().updateVariable(name, value, newThread);
             }
         }
-    }
-
-    public static void main(String args[]) {
-        processAddVarCommand("ADDVAR test|tre|pro");
-        processSetCommand("SET test 6\\r\\n", true);
     }
 }

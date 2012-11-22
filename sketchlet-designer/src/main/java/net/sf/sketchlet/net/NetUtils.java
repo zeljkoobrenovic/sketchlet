@@ -7,10 +7,10 @@
  * and open the template in the editor.
  */
 
-package net.sf.sketchlet.communicator;
+package net.sf.sketchlet.net;
 
-import net.sf.sketchlet.communicator.server.tcp.TCPServer;
-import net.sf.sketchlet.communicator.server.udp.UDPServer;
+import net.sf.sketchlet.net.tcp.TCPServer;
+import net.sf.sketchlet.net.udp.UDPServer;
 import org.apache.log4j.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -21,8 +21,8 @@ import javax.xml.transform.TransformerFactory;
 /**
  * @author obrenovi
  */
-public class Global {
-    private static final Logger log = Logger.getLogger(Global.class);
+public class NetUtils {
+    private static final Logger log = Logger.getLogger(NetUtils.class);
     private static UDPServer serverUDP;
     private static TCPServer serverTCP;
     private static String workingDirectory;
@@ -66,14 +66,14 @@ public class Global {
     }
 
     public static void setServerUDP(UDPServer serverUDP) {
-        Global.serverUDP = serverUDP;
+        NetUtils.serverUDP = serverUDP;
     }
 
     public static void setServerTCP(TCPServer serverTCP) {
-        Global.serverTCP = serverTCP;
+        NetUtils.serverTCP = serverTCP;
     }
 
     public static void setWorkingDirectory(String workingDirectory) {
-        Global.workingDirectory = workingDirectory;
+        NetUtils.workingDirectory = workingDirectory;
     }
 }

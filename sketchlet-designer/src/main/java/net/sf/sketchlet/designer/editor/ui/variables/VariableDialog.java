@@ -9,7 +9,7 @@
 package net.sf.sketchlet.designer.editor.ui.variables;
 
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 
 import javax.swing.*;
 import java.awt.*;
@@ -56,7 +56,7 @@ public class VariableDialog extends JDialog {
                 accepted = true;
                 strName = name.getText();
                 strValue = value.getText();
-                if (DataServer.getInstance().isAdditionalVariable(strName)) {
+                if (VariablesBlackboard.getInstance().isAdditionalVariable(strName)) {
                     JOptionPane.showMessageDialog(frame, Language.translate("You cannot use '") + strName + Language.translate("' as a variable name.") + "\n" + Language.translate("This name is being used to reference a spreadhseet cell."),
                             Language.translate("Reserved Variable Name"), JOptionPane.ERROR_MESSAGE);
                 } else {

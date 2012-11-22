@@ -9,7 +9,7 @@
 package net.sf.sketchlet.designer.editor.ui.script;
 
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.script.ScriptPluginProxy;
 import org.apache.log4j.Logger;
 
@@ -46,7 +46,7 @@ public class ScriptsTableModel extends AbstractTableModel {
     }
 
     public int getRowCount() {
-        return DataServer.scripts.size();
+        return VariablesBlackboard.getScripts().size();
     }
 
     public String getColumnName(int col) {
@@ -54,17 +54,17 @@ public class ScriptsTableModel extends AbstractTableModel {
     }
 
     public Object getValueAt(int row, int col) {
-        if (DataServer.scripts.size() == 0) {
+        if (VariablesBlackboard.getScripts().size() == 0) {
             return "";
         }
-        ScriptPluginProxy script = DataServer.scripts.get(row);
+        ScriptPluginProxy script = VariablesBlackboard.getScripts().get(row);
 
         if (script == null) {
             return "";
         }
 
         if (col == 0) {
-            String strValue = (String) DataServer.scriptFiles.get(row);
+            String strValue = (String) VariablesBlackboard.getScriptFiles().get(row);
 
             try {
                 strValue = new File(strValue).getName();

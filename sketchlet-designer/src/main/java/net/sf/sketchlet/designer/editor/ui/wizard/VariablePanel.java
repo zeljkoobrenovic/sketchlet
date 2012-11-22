@@ -4,7 +4,7 @@
  */
 package net.sf.sketchlet.designer.editor.ui.wizard;
 
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.util.SpringUtilities;
 
 import javax.swing.*;
@@ -28,7 +28,7 @@ public class VariablePanel extends JPanel {
         variableCombo.setEditable(true);
         variableCombo.addItem("");
 
-        for (String strVar : DataServer.getInstance().variablesVector) {
+        for (String strVar : VariablesBlackboard.getInstance().getVariablesList()) {
             variableCombo.addItem(strVar);
         }
 

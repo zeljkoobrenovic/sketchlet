@@ -6,7 +6,7 @@
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
-package net.sf.sketchlet.communicator.server;
+package net.sf.sketchlet.blackboard;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;

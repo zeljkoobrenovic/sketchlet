@@ -4,8 +4,8 @@
  */
 package net.sf.sketchlet.designer.animation;
 
-import net.sf.sketchlet.communicator.server.DataServer;
-import net.sf.sketchlet.communicator.server.Variable;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.blackboard.Variable;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.playback.displays.InteractionSpace;
@@ -283,11 +283,11 @@ public class AnimationTimer extends JDialog {
     public String getVariableName(String strName) {
         String exisitingVariable = action.getProperty(strName).trim();
         if (exisitingVariable.startsWith("=") && exisitingVariable.length() > 1) {
-            return DataServer.populateTemplate(exisitingVariable.substring(1));
+            return VariablesBlackboard.populateTemplate(exisitingVariable.substring(1));
         }
         strName = strName.replace(' ', '_');
 
-        Variable variable = DataServer.getInstance().getVariable(strName);
+        Variable variable = VariablesBlackboard.getInstance().getVariable(strName);
 
         String strPrefix = strName;
 
@@ -295,7 +295,7 @@ public class AnimationTimer extends JDialog {
         while (variable != null) {
             strName = strPrefix + "_" + i;
             i++;
-            variable = DataServer.getInstance().getVariable(strName);
+            variable = VariablesBlackboard.getInstance().getVariable(strName);
         }
 
         return strName;
@@ -395,7 +395,7 @@ public class AnimationTimer extends JDialog {
                     region.parent.getPage().getOnExitMacro().getActions()[macroStopIndex + index][1] = field.getText();
                     region.parent.getPage().getOnExitMacro().getActions()[macroStopIndex + index][2] = fieldStart.getText();
 
-                    // DataServer.variablesServer.updateVariable(field.getText(), fieldStart.getText());
+                    // VariablesBlackboard.variablesServer.updateVariable(field.getText(), fieldStart.getText());
                     Commands.updateVariableOrProperty(region, field.getText(), fieldStart.getText(), Commands.ACTION_VARIABLE_UPDATE);
 
                     index++;

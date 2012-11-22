@@ -12,7 +12,7 @@ import net.sf.sketchlet.common.context.SketchletContextUtils;
 import net.sf.sketchlet.common.file.FileDrop;
 import net.sf.sketchlet.common.file.FileUtils;
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.context.SketchletContext;
 import net.sf.sketchlet.context.SketchletPainter;
 import net.sf.sketchlet.context.VariableUpdateListener;
@@ -273,7 +273,7 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
 
         SketchletEditor.statusBar.setText("Sketching mode");
 
-        DataServer.getInstance().addVariablesUpdateListener(this);
+        VariablesBlackboard.getInstance().addVariablesUpdateListener(this);
         setCursor();
 
         this.setDesktopManager(new NoteDesktopManager());
@@ -2077,7 +2077,7 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
             shouldActivate = true;
             getInstance().getCurrentPage().deactivate(true);
             getInstance().getDrawingPanel().remove(getInstance().getInternalPlaybackPanelScrollPane());
-            DataServer.getInstance().removeVariablesUpdateListener(getInstance().getInternalPlaybackPanel());
+            VariablesBlackboard.getInstance().removeVariablesUpdateListener(getInstance().getInternalPlaybackPanel());
             if (getInstance().getInternalPlaybackPanel() != null) {
                 getInstance().getInternalPlaybackPanel().dispose();
                 getInstance().setMasterPage(getInstance().getPages().getSketch("Master"));
@@ -2570,7 +2570,7 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
 //                FileUtils.saveFileText(SketchletContextUtils.getDefaultProjectsRootLocation() + "editor_window_size.txt", w + "," + h);
                 getInstance().editorFrame.remove(getInstance());
                 if (getInstance().getInternalPlaybackPanel() != null) {
-                    DataServer.getInstance().removeVariablesUpdateListener(getInstance().getInternalPlaybackPanel());
+                    VariablesBlackboard.getInstance().removeVariablesUpdateListener(getInstance().getInternalPlaybackPanel());
                     if (getInstance().getInternalPlaybackPanel().currentPage != null) {
                         getInstance().getInternalPlaybackPanel().currentPage.deactivate(true);
                     }
@@ -2634,7 +2634,7 @@ public class SketchletEditor extends JDesktopPane implements KeyListener, Variab
                 getInstance().g2SketchletEditor = null;
             }
 
-            DataServer.getInstance().removeVariablesUpdateListener(getInstance());
+            VariablesBlackboard.getInstance().removeVariablesUpdateListener(getInstance());
         } catch (Throwable e) {
             log.error(e);
         }

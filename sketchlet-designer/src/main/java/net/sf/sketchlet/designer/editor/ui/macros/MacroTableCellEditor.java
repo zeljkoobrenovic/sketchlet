@@ -4,7 +4,7 @@
  */
 package net.sf.sketchlet.designer.editor.ui.macros;
 
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.model.Page;
 import net.sf.sketchlet.model.programming.macros.Macro;
@@ -68,7 +68,7 @@ public class MacroTableCellEditor extends AbstractCellEditor implements TableCel
                     comboBoxParam1.addItem(i + "");
                 }
             } else if (strCommand.startsWith("variable")) {
-                for (String strVar : DataServer.getInstance().variablesVector) {
+                for (String strVar : VariablesBlackboard.getInstance().getVariablesList()) {
                     comboBoxParam1.addItem(strVar);
                 }
             } else if (strCommand.endsWith("timer") && Timers.getGlobalTimers() != null) {
@@ -86,7 +86,7 @@ public class MacroTableCellEditor extends AbstractCellEditor implements TableCel
                 if (ScreenScripts.getPublicScriptRunner() != null) {
                     ScreenScripts.getPublicScriptRunner().setCombos(comboBoxParam1);
                 }
-                for (ScriptPluginProxy script : DataServer.scripts) {
+                for (ScriptPluginProxy script : VariablesBlackboard.getScripts()) {
                     comboBoxParam1.addItem("Script:" + script.getScriptFile().getName());
                 }
             } else if (strCommand.equalsIgnoreCase("repeat")) {

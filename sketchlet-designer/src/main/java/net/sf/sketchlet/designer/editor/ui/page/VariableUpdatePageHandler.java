@@ -1,9 +1,9 @@
 package net.sf.sketchlet.designer.editor.ui.page;
 
 import net.sf.sketchlet.common.QuotedStringTokenizer;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.Workspace;
-import net.sf.sketchlet.model.evaluator.Evaluator;
+import net.sf.sketchlet.blackboard.evaluator.Evaluator;
 import net.sf.sketchlet.model.Page;
 import net.sf.sketchlet.model.VariableUpdateEventMacro;
 import net.sf.sketchlet.model.events.hold.HoldData;
@@ -47,13 +47,13 @@ public class VariableUpdatePageHandler {
             String var = variableUpdateEventMacro.getVariable();
             String operator = variableUpdateEventMacro.getOperator();
             String val = variableUpdateEventMacro.getValue();
-            Vector<String> vars1 = DataServer.getVariablesInTemplate(var);
-            Vector<String> vars2 = DataServer.getVariablesInTemplate(val);
+            Vector<String> vars1 = VariablesBlackboard.getVariablesInTemplate(var);
+            Vector<String> vars2 = VariablesBlackboard.getVariablesInTemplate(val);
 
             var = Evaluator.processText(var, page.getVarPrefix(), page.getVarPostfix());
             val = Evaluator.processText(val, page.getVarPrefix(), page.getVarPostfix());
 
-            value = DataServer.getInstance().getVariableValue(var);
+            value = VariablesBlackboard.getInstance().getVariableValue(var);
 
             if (!var.isEmpty() && (var.equals(variable) || vars1.contains(variable) || vars2.contains(variable))) {
                 boolean bDoIt = false;

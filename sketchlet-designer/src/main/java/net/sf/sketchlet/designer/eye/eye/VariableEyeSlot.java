@@ -4,7 +4,7 @@
  */
 package net.sf.sketchlet.designer.eye.eye;
 
-import net.sf.sketchlet.communicator.server.Variable;
+import net.sf.sketchlet.blackboard.Variable;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 

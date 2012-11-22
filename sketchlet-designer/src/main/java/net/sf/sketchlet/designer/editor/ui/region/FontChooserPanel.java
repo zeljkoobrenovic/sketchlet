@@ -4,7 +4,7 @@
  */
 package net.sf.sketchlet.designer.editor.ui.region;
 
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.util.Colors;
@@ -66,7 +66,7 @@ public class FontChooserPanel extends JPanel {
         fontSizeCombo.addItem("----------");
         fontColorCombo.addItem("----------");
         styleCombo.addItem("----------");
-        for (String strVar : DataServer.getInstance().variablesVector) {
+        for (String strVar : VariablesBlackboard.getInstance().getVariablesList()) {
             fontListCombo.addItem("=" + strVar);
             fontSizeCombo.addItem("=" + strVar);
             fontColorCombo.addItem("=" + strVar);

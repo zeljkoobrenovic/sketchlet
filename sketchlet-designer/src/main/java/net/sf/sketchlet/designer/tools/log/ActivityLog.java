@@ -4,8 +4,8 @@
  */
 package net.sf.sketchlet.designer.tools.log;
 
-import net.sf.sketchlet.communicator.server.DataServer;
-import net.sf.sketchlet.communicator.server.Variable;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.blackboard.Variable;
 
 import java.awt.*;
 import java.util.Vector;
@@ -29,8 +29,8 @@ public class ActivityLog {
     public static Vector<String> getObjects() {
         Vector<String> objects = new Vector<String>();
 
-        for (String variableName : DataServer.getInstance().variablesVector) {
-            Variable v = DataServer.getInstance().getVariable(variableName);
+        for (String variableName : VariablesBlackboard.getInstance().getVariablesList()) {
+            Variable v = VariablesBlackboard.getInstance().getVariable(variableName);
             String strObject = "variable " + v.getName() + "," + v.getCount() + "," + v.getValue();
             objects.add(strObject);
         }

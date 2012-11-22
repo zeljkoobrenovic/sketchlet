@@ -5,8 +5,8 @@
 package net.sf.sketchlet.designer.playback.ui;
 
 import net.sf.sketchlet.common.base64.Base64Coder;
-import net.sf.sketchlet.communicator.server.DataServer;
-import net.sf.sketchlet.communicator.server.Variable;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.blackboard.Variable;
 import net.sf.sketchlet.context.SketchletContext;
 import net.sf.sketchlet.context.SketchletPainter;
 import net.sf.sketchlet.context.VariableUpdateListener;
@@ -17,7 +17,7 @@ import net.sf.sketchlet.designer.playback.displays.InteractionSpace;
 import net.sf.sketchlet.designer.playback.displays.ScreenMapping;
 import net.sf.sketchlet.designer.tools.imagecache.ImageCache;
 import net.sf.sketchlet.designer.editor.ui.desktop.SystemVariablesDialog;
-import net.sf.sketchlet.model.evaluator.Evaluator;
+import net.sf.sketchlet.blackboard.evaluator.Evaluator;
 import net.sf.sketchlet.model.ActiveRegion;
 import net.sf.sketchlet.model.MouseProcessor;
 import net.sf.sketchlet.model.Page;
@@ -643,7 +643,7 @@ public class PlaybackPanel extends JPanel implements VariableUpdateListener, Mou
                         BufferedImage image = paintImage(x, y, w, h);
                         if (image != null) {
                             String strValue = new String(Base64Coder.encode(Base64Coder.getCompressedImageBytes(image, w, h)));
-                            DataServer.getInstance().updateVariable(strVar, strValue);
+                            VariablesBlackboard.getInstance().updateVariable(strVar, strValue);
                         }
                     }
                 } catch (Throwable e) {
@@ -664,11 +664,11 @@ public class PlaybackPanel extends JPanel implements VariableUpdateListener, Mou
                         if (image != null && strFile == null || strFile.equals("")) {
                             File file = File.createTempFile("capture_image_temp", ".png");
                             ImageIO.write(image, "PNG", file);
-                            DataServer.getInstance().updateVariable(strVar, file.getAbsolutePath());
+                            VariablesBlackboard.getInstance().updateVariable(strVar, file.getAbsolutePath());
                             file.deleteOnExit();
                         } else if (image != null) {
                             ImageIO.write(image, "PNG", new File(strFile));
-                            DataServer.getInstance().updateVariable(strVar, strFile);
+                            VariablesBlackboard.getInstance().updateVariable(strVar, strFile);
                         }
                     }
                 } catch (Throwable e) {
@@ -778,7 +778,7 @@ public class PlaybackPanel extends JPanel implements VariableUpdateListener, Mou
     public void processAction(Object source, String strGoTo, String strVariable, String strOperation, String strValue) {
         if (strVariable != null && !strVariable.equals("")) {
             if (strValue.equals("?")) {
-                Variable v = DataServer.getInstance().getVariable(strVariable);
+                Variable v = VariablesBlackboard.getInstance().getVariable(strVariable);
                 String strDescription = "Enter value: ";
                 if (v != null && !v.getDescription().trim().equals("")) {
                     strDescription = "Enter value (" + v.getDescription() + "): ";
@@ -924,7 +924,7 @@ public class PlaybackPanel extends JPanel implements VariableUpdateListener, Mou
         }
 
         if (currentPage == null || currentPage.getRegions() == null || currentPage.getVariableUpdateEventMacros().size() == 0) {
-            DataServer.getInstance().removeVariablesUpdateListener(this);
+            VariablesBlackboard.getInstance().removeVariablesUpdateListener(this);
             return;
         }
 

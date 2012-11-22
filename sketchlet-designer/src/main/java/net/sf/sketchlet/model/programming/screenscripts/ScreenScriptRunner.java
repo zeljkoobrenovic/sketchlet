@@ -5,7 +5,7 @@
 package net.sf.sketchlet.model.programming.screenscripts;
 
 import net.sf.sketchlet.common.template.TemplateMarkers;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.context.VariableUpdateListener;
 
 import javax.swing.*;
@@ -33,9 +33,9 @@ public class ScreenScriptRunner implements VariableUpdateListener {
         if (triggerVariable.trim().equals("")) {
             return;
         }
-        //DataServer.protectVariable(triggerVariable);
+        //VariablesBlackboard.protectVariable(triggerVariable);
         if (TemplateMarkers.containsStartMarker(triggerVariable)) {
-            triggerVariable = DataServer.populateTemplate(triggerVariable);
+            triggerVariable = VariablesBlackboard.populateTemplate(triggerVariable);
         }
 
         for (ScreenScript ss : getScripts()) {
@@ -66,7 +66,7 @@ public class ScreenScriptRunner implements VariableUpdateListener {
                 ss.run();
             }
         }
-        //DataServer.unprotectVariable(triggerVariable);
+        //VariablesBlackboard.unprotectVariable(triggerVariable);
     }
 
     public void executeScreenAction(String strAction) {

@@ -18,7 +18,7 @@ import net.sf.sketchlet.designer.tools.imagecache.ImageCache;
 import net.sf.sketchlet.designer.playback.ui.PlaybackFrame;
 import net.sf.sketchlet.designer.editor.ui.profiles.Profiles;
 import net.sf.sketchlet.designer.editor.ui.toolbars.ColorToolbar;
-import net.sf.sketchlet.model.evaluator.Evaluator;
+import net.sf.sketchlet.blackboard.evaluator.Evaluator;
 import net.sf.sketchlet.loaders.pluginloader.WidgetPluginFactory;
 import net.sf.sketchlet.model.events.region.ActiveRegionMotionHandler;
 import net.sf.sketchlet.model.events.region.ActiveRegionMouseHandler;

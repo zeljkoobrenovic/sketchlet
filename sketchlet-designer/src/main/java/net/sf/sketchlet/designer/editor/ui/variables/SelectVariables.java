@@ -4,8 +4,8 @@
  */
 package net.sf.sketchlet.designer.editor.ui.variables;
 
-import net.sf.sketchlet.communicator.server.DataServer;
-import net.sf.sketchlet.communicator.server.Variable;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.blackboard.Variable;
 import net.sf.sketchlet.designer.Workspace;
 
 import javax.swing.*;
@@ -22,7 +22,7 @@ import java.util.Vector;
 public class SelectVariables extends JDialog {
 
     String columnNames[] = new String[]{"", "Variable"};
-    Boolean selectedVariables[] = new Boolean[DataServer.getInstance().getNumberOfVariables()];
+    Boolean selectedVariables[] = new Boolean[VariablesBlackboard.getInstance().getNumberOfVariables()];
     AbstractTableModel tableModel = new AbstractTableModel() {
 
         public String getColumnName(int col) {
@@ -30,7 +30,7 @@ public class SelectVariables extends JDialog {
         }
 
         public int getRowCount() {
-            return DataServer.getInstance().getNumberOfVariables();
+            return VariablesBlackboard.getInstance().getNumberOfVariables();
         }
 
         public int getColumnCount() {
@@ -38,7 +38,7 @@ public class SelectVariables extends JDialog {
         }
 
         public Object getValueAt(int row, int col) {
-            Variable v = DataServer.getInstance().getVariable(row);
+            Variable v = VariablesBlackboard.getInstance().getVariable(row);
             if (v != null) {
                 switch (col) {
                     case 0:
@@ -77,7 +77,7 @@ public class SelectVariables extends JDialog {
         setLayout(new BorderLayout());
 
         for (int i = 0; i < selectedVariables.length; i++) {
-            Variable v = DataServer.getInstance().getVariable(i);
+            Variable v = VariablesBlackboard.getInstance().getVariable(i);
             if (variables == null || !variables.contains(v.getName())) {
                 selectedVariables[i] = new Boolean(false);
             } else {
@@ -98,7 +98,7 @@ public class SelectVariables extends JDialog {
                 result = "";
                 for (int i = selectedVariables.length - 1; i >= 0; i--) {
                     if (selectedVariables[i].booleanValue()) {
-                        result = DataServer.getInstance().getVariable(i).getName() + (result.length() > 0 ? "," + result : "");
+                        result = VariablesBlackboard.getInstance().getVariable(i).getName() + (result.length() > 0 ? "," + result : "");
                     }
                 }
 

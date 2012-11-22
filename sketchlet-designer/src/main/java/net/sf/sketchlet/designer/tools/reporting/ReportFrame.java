@@ -6,7 +6,7 @@ package net.sf.sketchlet.designer.tools.reporting;
 
 import net.sf.sketchlet.common.context.SketchletContextUtils;
 import net.sf.sketchlet.common.file.FileUtils;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.ui.MessageFrame;
@@ -524,7 +524,7 @@ public class ReportFrame extends JDialog {
     }
 
     public void getScriptsHTMLCode(PrintWriter out) {
-        for (ScriptPluginProxy script : DataServer.getInstance().scripts) {
+        for (ScriptPluginProxy script : VariablesBlackboard.getInstance().getScripts()) {
             out.println("<h3>" + XMLUtils.prepareForXML(script.getScriptFile().getName()) + "</h3>");
             out.println("<pre>");
             int n = 0;

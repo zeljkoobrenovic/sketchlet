@@ -13,7 +13,7 @@ import net.sf.sketchlet.common.context.SketchletContextUtils;
 import net.sf.sketchlet.common.file.FileUtils;
 import net.sf.sketchlet.common.system.PlatformManager;
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.communicator.Global;
+import net.sf.sketchlet.net.NetUtils;
 import net.sf.sketchlet.context.SketchletContext;
 import net.sf.sketchlet.context.SketchletGraphicsContext;
 import net.sf.sketchlet.designer.GlobalProperties;
@@ -1963,11 +1963,11 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
                     Workspace.getProcessRunner().getIoServicesHandler().killProcesses();
                 }
 
-                if (net.sf.sketchlet.communicator.Global.getWorkingDirectory() != null) {
+                if (NetUtils.getWorkingDirectory() != null) {
                     Workspace.getMainPanel().refreshData(false);
                 }
 
-                net.sf.sketchlet.communicator.Global.setWorkingDirectory(SketchletContextUtils.getCurrentProjectDir());
+                NetUtils.setWorkingDirectory(SketchletContextUtils.getCurrentProjectDir());
                 sketchletPanel.restart(SketchletContextUtils.getCurrentProjectConfDir() + "communicator/config.xml");
 
                 saveConfiguration(false);
@@ -1987,7 +1987,7 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
                 Workspace.getMainPanel().refreshData(false);
 
-                net.sf.sketchlet.communicator.Global.setWorkingDirectory(SketchletContextUtils.getCurrentProjectDir());
+                NetUtils.setWorkingDirectory(SketchletContextUtils.getCurrentProjectDir());
                 sketchletPanel.restart(SketchletContextUtils.getCurrentProjectConfDir() + "communicator/config.xml");
 
                 saveConfiguration(false);
@@ -2066,7 +2066,7 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
             Workspace.getMainPanel().refreshData(false);
 
-            net.sf.sketchlet.communicator.Global.setWorkingDirectory(SketchletContextUtils.getCurrentProjectDir());
+            NetUtils.setWorkingDirectory(SketchletContextUtils.getCurrentProjectDir());
             sketchletPanel.restart(SketchletContextUtils.getCurrentProjectConfDir() + "communicator/config.xml");
 
             saveConfiguration(false);
@@ -2120,11 +2120,11 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
                         projectFolderField.setText(SketchletContextUtils.getProjectFolder());
 
-                        if (Global.getWorkingDirectory() != null) {
+                        if (NetUtils.getWorkingDirectory() != null) {
                             Workspace.getMainPanel().refreshData(false);
                         }
 
-                        Global.setWorkingDirectory(SketchletContextUtils.getCurrentProjectDir());
+                        NetUtils.setWorkingDirectory(SketchletContextUtils.getCurrentProjectDir());
                         sketchletPanel.restart(SketchletContextUtils.getCurrentProjectConfDir() + "communicator/config.xml");
 
                         saveConfiguration(false);
@@ -2177,11 +2177,11 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
                 this.projectFolderField.setText(SketchletContextUtils.getProjectFolder());
 
-                if (net.sf.sketchlet.communicator.Global.getWorkingDirectory() != null) {
+                if (NetUtils.getWorkingDirectory() != null) {
                     Workspace.getMainPanel().refreshData(false);
                 }
 
-                net.sf.sketchlet.communicator.Global.setWorkingDirectory(SketchletContextUtils.getCurrentProjectDir());
+                NetUtils.setWorkingDirectory(SketchletContextUtils.getCurrentProjectDir());
                 sketchletPanel.restart(SketchletContextUtils.getCurrentProjectConfDir() + "communicator/config.xml");
 
                 saveConfiguration(false);
@@ -2253,7 +2253,7 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
     }
 
     public void saveCommunicator() {
-        net.sf.sketchlet.communicator.ConfigurationData.saveConfiguration(SketchletContextUtils.getCurrentProjectConfDir() + "communicator/config.xml", SketchletContextUtils.getCurrentProjectDir() + SketchletContextUtils.sketchletDataDir() + "/init-variables.xml");
+        net.sf.sketchlet.blackboard.ConfigurationData.saveConfiguration(SketchletContextUtils.getCurrentProjectConfDir() + "communicator/config.xml", SketchletContextUtils.getCurrentProjectDir() + SketchletContextUtils.sketchletDataDir() + "/init-variables.xml");
     }
 
     public void exportProcesses(File file, boolean isXML) {

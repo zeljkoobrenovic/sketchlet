@@ -5,7 +5,7 @@
 package net.sf.sketchlet.designer.context;
 
 import net.sf.sketchlet.common.context.SketchletContextUtils;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.context.PageContext;
 import net.sf.sketchlet.context.PageEventsListener;
 import net.sf.sketchlet.context.SketchletContext;
@@ -18,7 +18,7 @@ import net.sf.sketchlet.designer.editor.ui.MessageFrame;
 import net.sf.sketchlet.designer.editor.ui.connectors.PluginsFrame;
 import net.sf.sketchlet.designer.playback.ui.PlaybackFrame;
 import net.sf.sketchlet.designer.playback.ui.PlaybackPanel;
-import net.sf.sketchlet.model.evaluator.JEParser;
+import net.sf.sketchlet.blackboard.evaluator.JEParser;
 import net.sf.sketchlet.loaders.pluginloader.PluginLoader;
 import net.sf.sketchlet.model.Page;
 import net.sf.sketchlet.model.programming.macros.Commands;
@@ -135,7 +135,7 @@ public class SketchletContextImpl extends SketchletContext {
 
     @Override
     public boolean isApplicationReady() {
-        return DataServer.getInstance() != null;
+        return VariablesBlackboard.getInstance() != null;
     }
 
     @Override
@@ -175,7 +175,7 @@ public class SketchletContextImpl extends SketchletContext {
 
     @Override
     public void pause(double seconds) {
-        if (DataServer.getInstance() == null || DataServer.isPaused() || stopped) {
+        if (VariablesBlackboard.getInstance() == null || VariablesBlackboard.isPaused() || stopped) {
             return;
         }
         try {
@@ -188,7 +188,7 @@ public class SketchletContextImpl extends SketchletContext {
 
     @Override
     public void waitForVariableUpdate(final String variable) {
-        if (DataServer.getInstance() == null || DataServer.isPaused() || stopped) {
+        if (VariablesBlackboard.getInstance() == null || VariablesBlackboard.isPaused() || stopped) {
             waiting = false;
             return;
         }
@@ -207,17 +207,17 @@ public class SketchletContextImpl extends SketchletContext {
                 }
             }
         };
-        DataServer.getInstance().addVariablesUpdateListener(ch);
+        VariablesBlackboard.getInstance().addVariablesUpdateListener(ch);
         try {
             while (waiting) {
                 Thread.sleep(20);
             }
         } catch (Exception e) {
         }
-        DataServer.getInstance().removeVariablesUpdateListener(ch);
+        VariablesBlackboard.getInstance().removeVariablesUpdateListener(ch);
 
         if (script != null && script instanceof ScriptPluginProxy) {
-            ((ScriptPluginProxy) script).updateContext(variable, DataServer.getInstance().getVariableValue(variable));
+            ((ScriptPluginProxy) script).updateContext(variable, VariablesBlackboard.getInstance().getVariableValue(variable));
         }
     }
 
@@ -226,8 +226,8 @@ public class SketchletContextImpl extends SketchletContext {
         if (!expression.equals("")) {
             try {
                 while (true) {
-                    expression = DataServer.getTemplateFromApostrophes(expression);
-                    expression = DataServer.populateTemplate(expression);
+                    expression = VariablesBlackboard.getTemplateFromApostrophes(expression);
+                    expression = VariablesBlackboard.populateTemplate(expression);
                     Object result = JEParser.getValue(expression);
                     if (result == null || !(result instanceof Double) || ((Double) result).doubleValue() == 0.0) {
                         Thread.sleep(100);
@@ -243,7 +243,7 @@ public class SketchletContextImpl extends SketchletContext {
 
     @Override
     public void updateVariable(String variable, String value) {
-        if (DataServer.getInstance() == null || DataServer.isPaused() || stopped) {
+        if (VariablesBlackboard.getInstance() == null || VariablesBlackboard.isPaused() || stopped) {
             return;
         }
         Commands.updateVariableOrProperty(this, variable, value, Commands.ACTION_VARIABLE_UPDATE);
@@ -316,14 +316,14 @@ public class SketchletContextImpl extends SketchletContext {
 
     @Override
     public String getVariableValue(String variable) {
-        if (DataServer.getInstance() == null || DataServer.isPaused() || stopped) {
+        if (VariablesBlackboard.getInstance() == null || VariablesBlackboard.isPaused() || stopped) {
             return null;
         }
 
         if (script != null && script instanceof ScriptPluginProxy) {
-            ((ScriptPluginProxy) script).updateContext(variable, DataServer.getInstance().getVariableValue(variable));
+            ((ScriptPluginProxy) script).updateContext(variable, VariablesBlackboard.getInstance().getVariableValue(variable));
         }
-        return DataServer.getInstance().getVariableValue(variable);
+        return VariablesBlackboard.getInstance().getVariableValue(variable);
     }
 
     @Override

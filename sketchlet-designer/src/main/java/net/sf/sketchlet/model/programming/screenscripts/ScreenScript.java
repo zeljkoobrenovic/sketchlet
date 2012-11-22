@@ -5,7 +5,7 @@
 package net.sf.sketchlet.model.programming.screenscripts;
 
 import net.sf.sketchlet.designer.playback.ui.PlaybackPanel;
-import net.sf.sketchlet.model.evaluator.Evaluator;
+import net.sf.sketchlet.blackboard.evaluator.Evaluator;
 
 import java.util.Vector;
 

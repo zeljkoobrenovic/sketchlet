@@ -1,6 +1,6 @@
 package net.sf.sketchlet.model;
 
-import net.sf.sketchlet.model.evaluator.Evaluator;
+import net.sf.sketchlet.blackboard.evaluator.Evaluator;
 import net.sf.sketchlet.model.events.KeyboardEventMacro;
 
 import java.awt.*;

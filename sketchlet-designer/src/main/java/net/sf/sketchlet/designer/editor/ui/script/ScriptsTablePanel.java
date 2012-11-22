@@ -12,9 +12,9 @@ package net.sf.sketchlet.designer.editor.ui.script;
 import net.sf.sketchlet.common.QuotedStringTokenizer;
 import net.sf.sketchlet.common.context.SketchletContextUtils;
 import net.sf.sketchlet.common.file.FileUtils;
-import net.sf.sketchlet.communicator.ConfigurationData;
-import net.sf.sketchlet.communicator.Global;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.ConfigurationData;
+import net.sf.sketchlet.net.NetUtils;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.ui.TextTransfer;
 import net.sf.sketchlet.designer.editor.ui.variables.VariablesPanel;
@@ -76,7 +76,7 @@ public class ScriptsTablePanel extends JPanel {
         commandsPanel.setLayout(new FlowLayout());
         JButton loadButton = new JButton("Load...");
         reloadAllButton = new JButton("Reload All");
-        reloadAllButton.setEnabled(DataServer.scriptFiles.size() > 0);
+        reloadAllButton.setEnabled(VariablesBlackboard.getScriptFiles().size() > 0);
         final JButton removeButton = new JButton("Remove");
 
         removeButton.setEnabled(false);
@@ -112,14 +112,14 @@ public class ScriptsTablePanel extends JPanel {
                     File file = fc.getSelectedFile();
 
                     try {
-                        DataServer.addScript(file.getPath());
+                        VariablesBlackboard.addScript(file.getPath());
                         scriptsTableModel.fireTableDataChanged();
                     } catch (Exception e) {
                         e.printStackTrace(System.out);
                     }
                 }
 
-                reloadAllButton.setEnabled(DataServer.scriptFiles.size() > 0);
+                reloadAllButton.setEnabled(VariablesBlackboard.getScriptFiles().size() > 0);
             }
         });
 
@@ -251,12 +251,12 @@ public class ScriptsTablePanel extends JPanel {
 
     public File createNewScript(String fileName, File templateFile, String strTriggers, boolean bReload) {
         File file;
-        if (Global.getWorkingDirectory() == null) {
+        if (NetUtils.getWorkingDirectory() == null) {
             file = new File(SketchletContextUtils.sketchletDataDir() + "/scripts/" + fileName);
         } else {
-            File dir = new File(Global.getWorkingDirectory() + SketchletContextUtils.sketchletDataDir() + "/scripts");
+            File dir = new File(NetUtils.getWorkingDirectory() + SketchletContextUtils.sketchletDataDir() + "/scripts");
             dir.mkdirs();
-            file = new File(Global.getWorkingDirectory() + SketchletContextUtils.sketchletDataDir() + "/scripts/" + fileName);
+            file = new File(NetUtils.getWorkingDirectory() + SketchletContextUtils.sketchletDataDir() + "/scripts/" + fileName);
         }
 
         if (file.exists()) {
@@ -287,7 +287,7 @@ public class ScriptsTablePanel extends JPanel {
     }
 
     public void renameScript(String newName) {
-        File file = new File((String) DataServer.getInstance().scriptFiles.get(selectedRow));
+        File file = new File((String) VariablesBlackboard.getInstance().getScriptFiles().get(selectedRow));
 
         String strOldName = file.getName();
 
@@ -302,7 +302,7 @@ public class ScriptsTablePanel extends JPanel {
 
     public void editScript() {
         try {
-            ScriptPluginProxy script = DataServer.scripts.get(selectedRow);
+            ScriptPluginProxy script = VariablesBlackboard.getScripts().get(selectedRow);
             editScript(script.getScriptFile());
         } catch (Exception t) {
             log.error("uncaught exception", t);
@@ -321,7 +321,7 @@ public class ScriptsTablePanel extends JPanel {
     }
 
     public void editScriptExternal() {
-        editScriptExternal(new File((String) DataServer.getInstance().scriptFiles.get(selectedRow)));
+        editScriptExternal(new File((String) VariablesBlackboard.getInstance().getScriptFiles().get(selectedRow)));
     }
 
     public static void editScriptExternal(File file) {
@@ -358,9 +358,9 @@ public class ScriptsTablePanel extends JPanel {
         try {
             ScriptConsole.getConsole().getTextArea().setText("");
 
-            ConfigurationData.scriptFiles.clear();
+            ConfigurationData.getScriptFiles().clear();
 
-            File files[] = new File(Global.getWorkingDirectory() + SketchletContextUtils.sketchletDataDir() + "/scripts").listFiles();
+            File files[] = new File(NetUtils.getWorkingDirectory() + SketchletContextUtils.sketchletDataDir() + "/scripts").listFiles();
 
             if (files != null) {
                 for (int i = 0; i < files.length; i++) {
@@ -371,11 +371,11 @@ public class ScriptsTablePanel extends JPanel {
                 }
             }
 
-            DataServer.createScripts();
-            //DataServer.initScripts();
+            VariablesBlackboard.createScripts();
+            //VariablesBlackboard.initScripts();
 
-            DataServer.getInstance().updateVariable("amico-transformations", "", "", "");
-            DataServer.getInstance().removeVariable("amico-transformations");
+            VariablesBlackboard.getInstance().updateVariable("amico-transformations", "", "", "");
+            VariablesBlackboard.getInstance().removeVariable("amico-transformations");
 
             if (operations != null) {
                 operations.reloadAll();
@@ -392,16 +392,16 @@ public class ScriptsTablePanel extends JPanel {
 
             public void run() {
                 try {
-                    File scriptFile = new File((String) DataServer.getInstance().scriptFiles.get(selectedRow));
+                    File scriptFile = new File((String) VariablesBlackboard.getInstance().getScriptFiles().get(selectedRow));
 
-                    if (DataServer.scripts != null) {
-                        if (selectedRow >= 0 && selectedRow < DataServer.getInstance().scripts.size()) {
-                            ScriptPluginProxy script = DataServer.getInstance().scripts.get(selectedRow);
+                    if (VariablesBlackboard.getScripts() != null) {
+                        if (selectedRow >= 0 && selectedRow < VariablesBlackboard.getInstance().getScripts().size()) {
+                            ScriptPluginProxy script = VariablesBlackboard.getInstance().getScripts().get(selectedRow);
                             if (script != null) {
                                 ClassLoader oldCL = Thread.currentThread().getContextClassLoader();
                                 Thread.currentThread().setContextClassLoader(PluginLoader.getClassLoader());
 
-                                script = DataServer.createScript(selectedRow, scriptFile);
+                                script = VariablesBlackboard.createScript(selectedRow, scriptFile);
                                 if (script != null) {
                                     script.start();
                                 }
@@ -421,10 +421,10 @@ public class ScriptsTablePanel extends JPanel {
 
     public void stopScript() {
         try {
-            File scriptFile = new File((String) DataServer.getInstance().scriptFiles.get(selectedRow));
+            File scriptFile = new File((String) VariablesBlackboard.getInstance().getScriptFiles().get(selectedRow));
 
-            if (DataServer.scripts != null) {
-                ScriptPluginProxy script = DataServer.getInstance().scripts.get(selectedRow);
+            if (VariablesBlackboard.getScripts() != null) {
+                ScriptPluginProxy script = VariablesBlackboard.getInstance().getScripts().get(selectedRow);
                 script.stop();
             }
         } catch (Exception e) {
@@ -440,11 +440,11 @@ public class ScriptsTablePanel extends JPanel {
 
     public void removeScript(int row) {
         try {
-            File scriptFile = new File((String) DataServer.getInstance().scriptFiles.get(row));
-            File triggerFile = new File(((String) DataServer.getInstance().scriptFiles.get(row)) + ".triggers");
+            File scriptFile = new File((String) VariablesBlackboard.getInstance().getScriptFiles().get(row));
+            File triggerFile = new File(((String) VariablesBlackboard.getInstance().getScriptFiles().get(row)) + ".triggers");
 
-            DataServer.scripts.clear();
-            DataServer.scriptFiles.clear();
+            VariablesBlackboard.getScripts().clear();
+            VariablesBlackboard.getScriptFiles().clear();
             System.gc();
 
             scriptFile.delete();
@@ -460,7 +460,7 @@ public class ScriptsTablePanel extends JPanel {
 
     public void enableControls() {
         mainFrame.enableMenuAndToolbar(new String[]{"editscript", "editscriptexternal", "removescript", "startscript", "stopscript"}, selectedRow >= 0);
-        mainFrame.enableMenuAndToolbar(new String[]{"reloadallscripts"}, DataServer.scriptFiles.size() > 0);
+        mainFrame.enableMenuAndToolbar(new String[]{"reloadallscripts"}, VariablesBlackboard.getScriptFiles().size() > 0);
     }
 
     JPopupMenu popupMenu = new JPopupMenu();

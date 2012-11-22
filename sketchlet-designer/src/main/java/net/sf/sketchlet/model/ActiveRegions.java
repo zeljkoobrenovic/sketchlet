@@ -4,7 +4,7 @@
  */
 package net.sf.sketchlet.model;
 
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.context.SketchletContext;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.SketchletEditorMode;
@@ -699,7 +699,7 @@ public class ActiveRegions {
             }
             processEmbeddedSketch(a, triggerVariable, varValue, bPlayback);*/
         }
-        //DataServer.unprotectVariable(triggerVariable);
+        //VariablesBlackboard.unprotectVariable(triggerVariable);
     }
 
     public static void findNonOverlapingLocationPlayback(ActiveRegion a) {
@@ -944,7 +944,7 @@ public class ActiveRegions {
                     //String strPrefix = a.processText((String) a.updateTransformations[i][4]);
                     //String strPostfix = a.processText((String) a.updateTransformations[i][5]);
 
-                    String varValue = DataServer.getInstance().getVariableValue(strVar);
+                    String varValue = VariablesBlackboard.getInstance().getVariableValue(strVar);
 
                     if (varValue == null || varValue.equals("")) {
                         continue;
@@ -1003,8 +1003,8 @@ public class ActiveRegions {
 
         for (String strVar : variables) {
             if (strVar != null) {
-                if (!mayBeFormula(strVar) && DataServer.getInstance().getVariable(strVar) == null && !strVar.startsWith("[")) {
-                    DataServer.getInstance().updateVariable(strVar, " ");
+                if (!mayBeFormula(strVar) && VariablesBlackboard.getInstance().getVariable(strVar) == null && !strVar.startsWith("[")) {
+                    VariablesBlackboard.getInstance().updateVariable(strVar, " ");
                 }
             }
         }

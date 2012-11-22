@@ -2,8 +2,10 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package net.sf.sketchlet.communicator.server;
+package net.sf.sketchlet.net;
 
+import net.sf.sketchlet.blackboard.CommandHandler;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.context.SketchletContext;
 import net.sf.sketchlet.context.SketchletGraphicsContext;
 import org.apache.log4j.Logger;
@@ -11,8 +13,8 @@ import org.apache.log4j.Logger;
 /**
  * @author zobrenovic
  */
-public class StandardNetInterfaces {
-    private static final Logger log = Logger.getLogger(StandardNetInterfaces.class);
+public class SketchletNetworkProtocol {
+    private static final Logger log = Logger.getLogger(SketchletNetworkProtocol.class);
 
     public static void processCommand(String line) {
         if (line.startsWith("ADDVAR ")) {
@@ -54,10 +56,10 @@ public class StandardNetInterfaces {
                 SketchletContext.getInstance().stopTimer(strTimer);
             }
         } else if (line.startsWith("IMAGE ")) {
-            DataServer.drawExternal = true;
+            VariablesBlackboard.setImageDrawnByExternalProcess(true);
             String strCommand = line.substring(6).trim();
             String params[] = strCommand.split(" ");
-            StandardNetInterfaces.processDrawCommand(strCommand, params);
+            SketchletNetworkProtocol.processDrawCommand(strCommand, params);
         } else {
             log.info("Command '" + line + "' not recognized.");
         }

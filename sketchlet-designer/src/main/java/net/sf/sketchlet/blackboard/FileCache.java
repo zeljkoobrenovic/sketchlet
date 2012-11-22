@@ -2,29 +2,30 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package net.sf.sketchlet.communicator.server;
+package net.sf.sketchlet.blackboard;
 
 import net.sf.sketchlet.common.file.FileUtils;
 import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.net.URL;
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author zobrenovic
  */
 public class FileCache {
     private static final Logger log = Logger.getLogger(FileCache.class);
-    static Hashtable<String, FileCacheEntry> hashtable = new Hashtable<String, FileCacheEntry>();
+    private static Map<String, FileCacheEntry> fileMap = new HashMap<String, FileCacheEntry>();
 
     public static String getContent(String strFileURL) {
-        FileCacheEntry fce = hashtable.get(strFileURL);
+        FileCacheEntry fce = fileMap.get(strFileURL);
         if (fce == null) {
             fce = new FileCacheEntry();
-            fce.strFileURL = strFileURL;
-            if (hashtable.size() < 1000) {
-                hashtable.put(strFileURL, fce);
+            fce.setFileURL(strFileURL);
+            if (fileMap.size() < 1000) {
+                fileMap.put(strFileURL, fce);
             }
 
             log.info("loading file " + strFileURL);
@@ -37,9 +38,9 @@ public class FileCache {
 class FileCacheEntry {
     private static final Logger log = Logger.getLogger(FileCacheEntry.class);
 
-    String strFileURL = "";
-    long timestamp = 0l;
-    String strContent = null;
+    private String fileURL = "";
+    private long timestamp = 0l;
+    private String content = null;
 
     public FileCacheEntry() {
     }
@@ -49,36 +50,44 @@ class FileCacheEntry {
     }
 
     public String getContent() {
-        File file = new File(strFileURL);
-        if (strContent == null) {
+        File file = new File(getFileURL());
+        if (content == null) {
             try {
                 if (file.exists()) {
-                    strContent = FileUtils.getFileText(strFileURL);
+                    content = FileUtils.getFileText(getFileURL());
                     this.timestamp = file.lastModified();
                 } else {
-                    strContent = FileUtils.getStringFromInputStream(new URL(strFileURL).openStream());
+                    content = FileUtils.getStringFromInputStream(new URL(getFileURL()).openStream());
                 }
             } catch (Exception e) {
-                log.info("Error while reading the file '" + strFileURL + "'");
+                log.info("Error while reading the file '" + getFileURL() + "'");
                 this.timestamp = file.lastModified() + 86400000;
-                strContent = "Error while reading the file '" + strFileURL + "'";
+                content = "Error while reading the file '" + getFileURL() + "'";
                 return "";
             }
         } else {
             try {
                 if (file.exists() && file.lastModified() > this.timestamp) {
-                    strContent = FileUtils.getFileText(strFileURL);
+                    content = FileUtils.getFileText(getFileURL());
                     this.timestamp = file.lastModified();
                 }
             } catch (Exception e) {
                 this.timestamp = file.lastModified() + 86400000;
-                strContent = "Error while reading the file '" + strFileURL + "'";
+                content = "Error while reading the file '" + getFileURL() + "'";
                 return "";
             }
         }
-        if (strContent != null && strContent.length() > 100000) {
-            strContent = strContent.substring(0, 100000);
+        if (content != null && content.length() > 100000) {
+            content = content.substring(0, 100000);
         }
-        return strContent == null ? "" : strContent;
+        return content == null ? "" : content;
+    }
+
+    public String getFileURL() {
+        return fileURL;
+    }
+
+    public void setFileURL(String fileURL) {
+        this.fileURL = fileURL;
     }
 }

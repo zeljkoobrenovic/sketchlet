@@ -9,9 +9,9 @@
 package net.sf.sketchlet.designer.editor.ui.variables;
 
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.communicator.server.DataServer;
-import net.sf.sketchlet.communicator.server.Variable;
-import net.sf.sketchlet.communicator.server.VariableGroupComparator;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.blackboard.Variable;
+import net.sf.sketchlet.blackboard.VariableGroupComparator;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -57,23 +57,23 @@ public class VariablesTableModel extends AbstractTableModel {
             return;
         }
         bSorting = true;
-        boolean paused = DataServer.isPaused();
-        DataServer.setPaused(true);
+        boolean paused = VariablesBlackboard.isPaused();
+        VariablesBlackboard.setPaused(true);
         variableRows.removeAllElements();
 
-        if (DataServer.getInstance() == null || DataServer.getInstance().variablesVector == null) {
-            DataServer.setPaused(paused);
+        if (VariablesBlackboard.getInstance() == null || VariablesBlackboard.getInstance().getVariablesList() == null) {
+            VariablesBlackboard.setPaused(paused);
             bSorting = false;
             return;
         }
 
         Vector<Variable> _variables = new Vector<Variable>();
-        synchronized (DataServer.getInstance().variablesVector) {
-            if (DataServer.getInstance() != null) {
+        synchronized (VariablesBlackboard.getInstance().getVariablesList()) {
+            if (VariablesBlackboard.getInstance() != null) {
                 String prevGroup = "";
-                for (String strVar : DataServer.getInstance().variablesVector) {
+                for (String strVar : VariablesBlackboard.getInstance().getVariablesList()) {
                     if (strFilter.length() == 0 || strVar.contains(strFilter)) {
-                        Variable v = DataServer.getInstance().getVariable(strVar);
+                        Variable v = VariablesBlackboard.getInstance().getVariable(strVar);
                         _variables.add(v);
                     }
                 }
@@ -109,7 +109,7 @@ public class VariablesTableModel extends AbstractTableModel {
             }
         }
 
-        DataServer.setPaused(paused);
+        VariablesBlackboard.setPaused(paused);
         bSorting = false;
     }
 
@@ -208,18 +208,18 @@ public class VariablesTableModel extends AbstractTableModel {
                         return;
                     }
                 }
-                DataServer.getInstance().addVariable(value.toString(), "", "");
+                VariablesBlackboard.getInstance().addVariable(value.toString(), "", "");
             }
         } else {
             Variable v = this.variableRows.elementAt(row);
-            DataServer.getInstance().updateVariable(v, col, value.toString());
+            VariablesBlackboard.getInstance().updateVariable(v, col, value.toString());
             if (VariablesTablePanel.variablesTableInterface != null) {
                 VariablesTablePanel.variablesTableInterface.variableTableUpdate(v.getName(), value.toString(), mainFrame.globalVariablesPanel.scrollPane);
             }
         }
     }
 
-    public DataServer getDataServer() {
-        return DataServer.getInstance();
+    public VariablesBlackboard getDataServer() {
+        return VariablesBlackboard.getInstance();
     }
 }

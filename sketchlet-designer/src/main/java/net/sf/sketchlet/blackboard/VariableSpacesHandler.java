@@ -1,13 +1,10 @@
-package net.sf.sketchlet.model.varspaces;
+package net.sf.sketchlet.blackboard;
 
-import net.sf.sketchlet.communicator.server.AdditionalVariables;
-import net.sf.sketchlet.communicator.server.DataServer;
-import net.sf.sketchlet.communicator.server.Variable;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.model.evaluator.CellReferenceResolver;
-import net.sf.sketchlet.model.evaluator.Evaluator;
-import net.sf.sketchlet.model.evaluator.JEParser;
+import net.sf.sketchlet.blackboard.evaluator.CellReferenceResolver;
+import net.sf.sketchlet.blackboard.evaluator.Evaluator;
+import net.sf.sketchlet.blackboard.evaluator.JEParser;
 import net.sf.sketchlet.loaders.pluginloader.PluginInstance;
 import net.sf.sketchlet.model.ActiveRegions;
 import net.sf.sketchlet.model.LocalVariable;
@@ -28,7 +25,7 @@ public class VariableSpacesHandler {
 
     public void prepareAdditionalVariables() {
 
-        DataServer.getInstance().addAdditionalVariables(new AdditionalVariables() {
+        VariablesBlackboard.getInstance().addAdditionalVariables(new AdditionalVariables() {
             public Variable getVariable(String variableName) {
                 Page page = Workspace.getPage();
                 for (LocalVariable localVariable : page.getLocalVariables()) {
@@ -55,7 +52,7 @@ public class VariableSpacesHandler {
                 savePageVariable(variableName, value);
             }
         });
-        DataServer.getInstance().addAdditionalVariables(new AdditionalVariables() {
+        VariablesBlackboard.getInstance().addAdditionalVariables(new AdditionalVariables() {
 
             @Override
             public Variable getVariable(String name) {
@@ -96,7 +93,7 @@ public class VariableSpacesHandler {
         });
 
 
-        DataServer.getInstance().addAdditionalVariables(new AdditionalVariables() {
+        VariablesBlackboard.getInstance().addAdditionalVariables(new AdditionalVariables() {
 
             @Override
             public Variable getVariable(String id) {
@@ -136,7 +133,7 @@ public class VariableSpacesHandler {
             }
         });
 
-        DataServer.getInstance().addAdditionalVariables(new AdditionalVariables() {
+        VariablesBlackboard.getInstance().addAdditionalVariables(new AdditionalVariables() {
 
             @Override
             public Variable getVariable(String name) {
@@ -171,14 +168,14 @@ public class VariableSpacesHandler {
                 if (!strReference.isEmpty() && SketchletEditor.getInstance() != null) {
                     ActiveRegions regions = Workspace.getPage().getRegions();
 
-                    strReference = DataServer.populateTemplateSimple(strReference, false);
+                    strReference = VariablesBlackboard.populateTemplateSimple(strReference, false);
                     strReference = Evaluator.processRegionReferences(regions, strReference);
                     try {
                         String expression = "";
                         int col = 0;
                         int row = 0;
-                        if (DataServer.getInstance().variableExists(strReference)) {
-                            return DataServer.getInstance().getVariableValue(strReference);
+                        if (VariablesBlackboard.getInstance().variableExists(strReference)) {
+                            return VariablesBlackboard.getInstance().getVariableValue(strReference);
                         }
                         String prevValue = Workspace.getPage().getSpreadsheetCellValue(row, col);
                         if (!expression.equals(prevValue)) {

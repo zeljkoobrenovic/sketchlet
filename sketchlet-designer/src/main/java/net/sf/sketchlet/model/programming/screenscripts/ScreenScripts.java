@@ -7,7 +7,7 @@ package net.sf.sketchlet.model.programming.screenscripts;
 
 import net.sf.sketchlet.common.dnd.GenericTableTransferHandler;
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.help.HelpUtils;
 
@@ -250,17 +250,17 @@ public class ScreenScripts extends JPanel {
 
             if (scriptRunner != null) {
                 scriptRunner.setStopped(true);
-                DataServer.getInstance().removeVariablesUpdateListener(scriptRunner);
+                VariablesBlackboard.getInstance().removeVariablesUpdateListener(scriptRunner);
             }
 
             scriptRunner = new ScreenScriptRunner(getScriptDir());
-            DataServer.getInstance().addVariablesUpdateListener(scriptRunner);
+            VariablesBlackboard.getInstance().addVariablesUpdateListener(scriptRunner);
         } else {
             // btnRun.setText("Start");
             // btnRun.setIcon(Workspace.createImageIcon("resources/start.gif", ""));
             if (scriptRunner != null) {
                 scriptRunner.setStopped(true);
-                DataServer.getInstance().removeVariablesUpdateListener(scriptRunner);
+                VariablesBlackboard.getInstance().removeVariablesUpdateListener(scriptRunner);
             }
 
             scriptRunner = null;

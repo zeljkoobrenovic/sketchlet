@@ -5,8 +5,8 @@
 package net.sf.sketchlet.designer.editor.ui.variables;
 
 import net.sf.sketchlet.common.context.SketchletContextUtils;
-import net.sf.sketchlet.communicator.server.DataServer;
-import net.sf.sketchlet.communicator.server.Variable;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.blackboard.Variable;
 import net.sf.sketchlet.designer.editor.ui.TextTransfer;
 
 import javax.swing.*;
@@ -116,8 +116,8 @@ public class CopyExpression {
             return "";
         }
 
-        boolean paused = DataServer.getInstance().isPaused();
-        DataServer.getInstance().setPaused(true);
+        boolean paused = VariablesBlackboard.getInstance().isPaused();
+        VariablesBlackboard.getInstance().setPaused(true);
 
         int start, end;
 
@@ -174,7 +174,7 @@ public class CopyExpression {
             }
         }
 
-        DataServer.getInstance().setPaused(paused);
+        VariablesBlackboard.getInstance().setPaused(paused);
 
         clipboard.setClipboardContents(strCopy);
 

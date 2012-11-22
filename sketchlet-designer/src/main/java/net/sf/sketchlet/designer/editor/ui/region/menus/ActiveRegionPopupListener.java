@@ -5,7 +5,7 @@
 package net.sf.sketchlet.designer.editor.ui.region.menus;
 
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.animation.AnimationTimer;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
@@ -152,7 +152,7 @@ public class ActiveRegionPopupListener extends MouseAdapter {
                         t.getPanel().fieldDuration.setText(t.getStrDurationInSec() + "");
                     }
                 }
-                String newVariable = DataServer.getInstance().getUniqueVariableName("trajectory");
+                String newVariable = VariablesBlackboard.getInstance().getUniqueVariableName("trajectory");
                 t.getVariables()[0][0] = newVariable;
                 t.getVariables()[0][1] = "0.0";
                 t.getVariables()[0][2] = "1.0";
@@ -1571,7 +1571,7 @@ public class ActiveRegionPopupListener extends MouseAdapter {
                                 }
                             }
                             if (variable == null) {
-                                variable = DataServer.getInstance().getUniqueVariableName("trajectory");
+                                variable = VariablesBlackboard.getInstance().getUniqueVariableName("trajectory");
                                 for (int i = 0; i < reg.updateTransformations.length; i++) {
                                     String dim = reg.updateTransformations[i][0].toString();
                                     String var = reg.updateTransformations[i][1].toString();
@@ -1626,7 +1626,7 @@ public class ActiveRegionPopupListener extends MouseAdapter {
                                     }
                                 }
                                 if (variable == null) {
-                                    variable = DataServer.getInstance().getUniqueVariableName("trajectory");
+                                    variable = VariablesBlackboard.getInstance().getUniqueVariableName("trajectory");
                                     for (int i = 0; i < reg.updateTransformations.length; i++) {
                                         String dim = reg.updateTransformations[i][0].toString();
                                         String var = reg.updateTransformations[i][1].toString();

@@ -5,8 +5,8 @@
 package net.sf.sketchlet.designer.editor.ui.wizard;
 
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.communicator.server.DataServer;
-import net.sf.sketchlet.communicator.server.Variable;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.blackboard.Variable;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.playback.displays.InteractionSpace;
 import net.sf.sketchlet.model.ActiveRegion;
@@ -224,13 +224,13 @@ public class ActiveRegionAnimatePanel extends JPanel {
         if (region != null) {
             String exisitingVariable = region.getProperty(strName).trim();
             if (exisitingVariable != null && exisitingVariable.startsWith("=") && exisitingVariable.length() > 1) {
-                return DataServer.populateTemplate(exisitingVariable);
+                return VariablesBlackboard.populateTemplate(exisitingVariable);
             }
         }
         strName = strName.replace(' ', '_');
 
-        if (DataServer.getInstance() != null) {
-            Variable variable = DataServer.getInstance().getVariable(strName);
+        if (VariablesBlackboard.getInstance() != null) {
+            Variable variable = VariablesBlackboard.getInstance().getVariable(strName);
 
             String strPrefix = strName;
 
@@ -238,7 +238,7 @@ public class ActiveRegionAnimatePanel extends JPanel {
             while (variable != null) {
                 strName = strPrefix + "_" + i;
                 i++;
-                variable = DataServer.getInstance().getVariable(strName);
+                variable = VariablesBlackboard.getInstance().getVariable(strName);
             }
         }
 

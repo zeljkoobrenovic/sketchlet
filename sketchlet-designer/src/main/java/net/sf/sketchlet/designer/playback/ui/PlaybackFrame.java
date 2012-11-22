@@ -5,7 +5,7 @@
 package net.sf.sketchlet.designer.playback.ui;
 
 import net.sf.sketchlet.common.awt.AWTUtilitiesWrapper;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.playback.displays.InteractionSpace;
@@ -289,7 +289,7 @@ public class PlaybackFrame extends JFrame {
             for (int i = 0; i < playbackFrame.length; i++) {
                 if (playbackFrame[i] != null && playbackFrame[i].isVisible()) {
                     playbackFrame[i].setVisible(false);
-                    DataServer.getInstance().removeVariablesUpdateListener(playbackFrame[i].playbackPanel);
+                    VariablesBlackboard.getInstance().removeVariablesUpdateListener(playbackFrame[i].playbackPanel);
                     playbackFrame[i].playbackPanel.dispose();
                     playbackFrame[i].dispose();
                     playbackFrame[i] = null;

@@ -6,7 +6,7 @@
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
-package net.sf.sketchlet.communicator.server;
+package net.sf.sketchlet.net;
 
 import java.io.IOException;
 import java.net.URLDecoder;
@@ -17,9 +17,9 @@ import java.util.Vector;
 
 public abstract class TemplateHandler {
 
-    public Hashtable<String, Vector<Template>> commandTemplates = new Hashtable<String, Vector<Template>>();
-    public Hashtable<String, Vector<Template>> commandDiffTemplates = new Hashtable<String, Vector<Template>>();
-    public Hashtable<String, Vector<Template>> commandDiffTemplatesFirstTime = new Hashtable<String, Vector<Template>>();
+    private Hashtable<String, Vector<Template>> commandTemplates = new Hashtable<String, Vector<Template>>();
+    private Hashtable<String, Vector<Template>> commandDiffTemplates = new Hashtable<String, Vector<Template>>();
+    private Hashtable<String, Vector<Template>> commandDiffTemplatesFirstTime = new Hashtable<String, Vector<Template>>();
 
     public TemplateHandler() {
     }
@@ -35,7 +35,7 @@ public abstract class TemplateHandler {
     }
 
     public void processTemplates(String triggerVariable) {
-        this.processTemplates(this.commandTemplates.get(triggerVariable));
+        this.processTemplates(this.getCommandTemplates().get(triggerVariable));
     }
 
     /**
@@ -54,7 +54,7 @@ public abstract class TemplateHandler {
     }
 
     public void processDiffTemplates(String triggerVariable) {
-        this.processTemplates(this.commandDiffTemplates.get(triggerVariable));
+        this.processTemplates(this.getCommandDiffTemplates().get(triggerVariable));
     }
 
     /**
@@ -73,13 +73,13 @@ public abstract class TemplateHandler {
     }
 
     public void processDiffTemplatesFirstTime(String triggerVariable) {
-        Vector<Template> templates = this.commandDiffTemplatesFirstTime.get(triggerVariable);
+        Vector<Template> templates = this.getCommandDiffTemplatesFirstTime().get(triggerVariable);
 
         if (templates != null) {
             this.processTemplates(templates);
 
-            this.commandDiffTemplatesFirstTime.remove(triggerVariable);
-            this.commandDiffTemplates.put(triggerVariable, templates);
+            this.getCommandDiffTemplatesFirstTime().remove(triggerVariable);
+            this.getCommandDiffTemplates().put(triggerVariable, templates);
         }
     }
 
@@ -110,16 +110,16 @@ public abstract class TemplateHandler {
 
             if (line.startsWith("ADD TEMPLATE DIFF ")) {
                 commandTemplate = line.substring(17).trim();
-                templateHashtable = this.commandDiffTemplatesFirstTime;
+                templateHashtable = this.getCommandDiffTemplatesFirstTime();
             } else if (line.startsWith("ADD TEMPLATE ")) {
                 commandTemplate = line.substring(13).trim();
-                templateHashtable = this.commandTemplates;
+                templateHashtable = this.getCommandTemplates();
             } else if (line.startsWith("REGISTER DIFF ")) {
                 commandTemplate = line.substring(14).trim();
-                templateHashtable = this.commandDiffTemplatesFirstTime;
+                templateHashtable = this.getCommandDiffTemplatesFirstTime();
             } else if (line.startsWith("REGISTER ")) {
                 commandTemplate = line.substring(9).trim();
-                templateHashtable = this.commandTemplates;
+                templateHashtable = this.getCommandTemplates();
             } else {
                 return;
             }
@@ -152,9 +152,9 @@ public abstract class TemplateHandler {
 
                     Template newTemplate = this.createTemplate();
 
-                    newTemplate.template = template;
-                    newTemplate.variable = triggerVariable;
-                    newTemplate.test = test;
+                    newTemplate.setTemplate(template);
+                    newTemplate.setVariable(triggerVariable);
+                    newTemplate.setTest(test);
 
                     templates.add(newTemplate);
 
@@ -184,9 +184,9 @@ public abstract class TemplateHandler {
 
                     Template newTemplate = this.createTemplate();
 
-                    newTemplate.template = template;
-                    newTemplate.variable = triggerVariable;
-                    newTemplate.test = test;
+                    newTemplate.setTemplate(template);
+                    newTemplate.setVariable(triggerVariable);
+                    newTemplate.setTest(test);
 
                     templates.add(newTemplate);
 
@@ -194,5 +194,29 @@ public abstract class TemplateHandler {
                 }
             }
         }
+    }
+
+    public Hashtable<String, Vector<Template>> getCommandTemplates() {
+        return commandTemplates;
+    }
+
+    public void setCommandTemplates(Hashtable<String, Vector<Template>> commandTemplates) {
+        this.commandTemplates = commandTemplates;
+    }
+
+    public Hashtable<String, Vector<Template>> getCommandDiffTemplates() {
+        return commandDiffTemplates;
+    }
+
+    public void setCommandDiffTemplates(Hashtable<String, Vector<Template>> commandDiffTemplates) {
+        this.commandDiffTemplates = commandDiffTemplates;
+    }
+
+    public Hashtable<String, Vector<Template>> getCommandDiffTemplatesFirstTime() {
+        return commandDiffTemplatesFirstTime;
+    }
+
+    public void setCommandDiffTemplatesFirstTime(Hashtable<String, Vector<Template>> commandDiffTemplatesFirstTime) {
+        this.commandDiffTemplatesFirstTime = commandDiffTemplatesFirstTime;
     }
 }

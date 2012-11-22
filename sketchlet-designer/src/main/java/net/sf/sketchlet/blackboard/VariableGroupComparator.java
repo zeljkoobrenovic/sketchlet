@@ -6,7 +6,7 @@
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
-package net.sf.sketchlet.communicator.server;
+package net.sf.sketchlet.blackboard;
 
 import java.util.Comparator;
 
@@ -15,9 +15,6 @@ import java.util.Comparator;
  */
 public class VariableGroupComparator implements Comparator {
 
-    /**
-     * Creates a new instance of Variable
-     */
     public VariableGroupComparator() {
     }
 

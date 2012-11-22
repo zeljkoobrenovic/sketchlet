@@ -7,7 +7,7 @@ package net.sf.sketchlet.model.events.region;
 import net.sf.sketchlet.common.file.FileDrop;
 import net.sf.sketchlet.common.filter.PerspectiveFilter;
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.animation.AnimationTimer;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.playback.displays.InteractionSpace;
@@ -556,7 +556,7 @@ public class ActiveRegionMouseHandler {
                     }
                 }
                 // t.defaultCurve = c.name;
-                String newVariable = DataServer.getInstance().getUniqueVariableName("trajectory");
+                String newVariable = VariablesBlackboard.getInstance().getUniqueVariableName("trajectory");
                 if (curveCheck.isSelected()) {
                     Curve c = Curves.getGlobalCurves().addNewCurve();
 

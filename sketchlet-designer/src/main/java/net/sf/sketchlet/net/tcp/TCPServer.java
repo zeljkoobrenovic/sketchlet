@@ -7,16 +7,16 @@
  * the Source Creation and Management node. Right-click the template and choose
  * Open. You can then make changes to the template in the Source Editor.
  */
-package net.sf.sketchlet.communicator.server.tcp;
+package net.sf.sketchlet.net.tcp;
 
 import net.sf.sketchlet.common.AcceptConnectionsThread;
 import net.sf.sketchlet.common.net.ClientConnectionThread;
 import net.sf.sketchlet.common.net.ClientLineProcessingThread;
-import net.sf.sketchlet.communicator.server.DataReceiver;
-import net.sf.sketchlet.communicator.server.DataServer;
-import net.sf.sketchlet.communicator.server.StandardNetInterfaces;
-import net.sf.sketchlet.communicator.server.Template;
-import net.sf.sketchlet.communicator.server.TemplateHandler;
+import net.sf.sketchlet.net.DataReceiver;
+import net.sf.sketchlet.net.SketchletNetworkProtocol;
+import net.sf.sketchlet.net.Template;
+import net.sf.sketchlet.net.TemplateHandler;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -32,9 +32,6 @@ public class TCPServer extends DataReceiver {
 
     protected AcceptTCPClientConnections acceptTCPClientConnections;
 
-    /**
-     * Creates a new instance of DataQueryServer
-     */
     public TCPServer(int port) {
         this.acceptTCPClientConnections = new AcceptTCPClientConnections(this, port);
     }
@@ -84,7 +81,7 @@ public class TCPServer extends DataReceiver {
 
 class AcceptTCPClientConnections extends AcceptConnectionsThread {
 
-    TCPServer dataReceiver;
+    private TCPServer dataReceiver;
 
     public AcceptTCPClientConnections(TCPServer dataReceiver, int port) {
         super(port);
@@ -97,7 +94,7 @@ class AcceptTCPClientConnections extends AcceptConnectionsThread {
 
             while (iterator.hasNext()) {
                 TCPClientConnection client = (TCPClientConnection) iterator.next();
-                client.templateHandler.processTemplates(triggerVariable);
+                client.getTemplateHandler().processTemplates(triggerVariable);
             }
         }
     }
@@ -108,7 +105,7 @@ class AcceptTCPClientConnections extends AcceptConnectionsThread {
 
             while (iterator.hasNext()) {
                 TCPClientConnection client = (TCPClientConnection) iterator.next();
-                client.templateHandler.processDiffTemplates(triggerVariable);
+                client.getTemplateHandler().processDiffTemplates(triggerVariable);
             }
         }
     }
@@ -119,7 +116,7 @@ class AcceptTCPClientConnections extends AcceptConnectionsThread {
 
             while (iterator.hasNext()) {
                 TCPClientConnection client = (TCPClientConnection) iterator.next();
-                client.templateHandler.processDiffTemplatesFirstTime(triggerVariable);
+                client.getTemplateHandler().processDiffTemplatesFirstTime(triggerVariable);
             }
         }
     }
@@ -131,8 +128,8 @@ class AcceptTCPClientConnections extends AcceptConnectionsThread {
 
 class TCPClientConnection extends ClientLineProcessingThread {
 
-    public TemplateHandler templateHandler = new TCPTemplateHandler();
-    TCPServer dataReceiver;
+    private TemplateHandler templateHandler = new TCPTemplateHandler();
+    private TCPServer dataReceiver;
 
     public TCPClientConnection(TCPServer dataReceiver, Socket socket, Vector clients) {
         super(socket, clients, false);
@@ -140,7 +137,7 @@ class TCPClientConnection extends ClientLineProcessingThread {
     }
 
     public void processLine(String line, BufferedReader in, PrintWriter out) throws IOException {
-        if (line == null || this.templateHandler == null || DataServer.getInstance() == null) {
+        if (line == null || this.getTemplateHandler() == null || VariablesBlackboard.getInstance() == null) {
             return;
         }
 
@@ -152,35 +149,35 @@ class TCPClientConnection extends ClientLineProcessingThread {
         }
 
         if (line.startsWith("ADD TEMPLATE ")) {
-            this.templateHandler.processTemplateCommand(line);
+            this.getTemplateHandler().processTemplateCommand(line);
         } else if (line.startsWith("REGISTER ")) {
             this.setEncode(false);
-            this.templateHandler.processTemplateCommand(line);
+            this.getTemplateHandler().processTemplateCommand(line);
         } else if (line.startsWith("SET ENCODING OFF")) {
             this.setEncode(false);
         } else if (line.startsWith("SET ENCODING ON")) {
             this.setEncode(true);
         } else if (line.startsWith("POPULATE TEMPLATE ")) {
             String template = line.substring(18).trim();
-            template = DataServer.populateTemplate(template, this.isEncode());
+            template = VariablesBlackboard.populateTemplate(template, this.isEncode());
             out.println(template);
             out.flush();
         } else if (line.startsWith("GET ")) {
             String variableList = line.substring(4);
-            String values = DataServer.getInstance().getVariableValues(variableList);
+            String values = VariablesBlackboard.getInstance().getVariableValues(variableList);
             out.println(values);
             out.flush();
         } else if (line.startsWith("GETXML ")) {
             String variableList = line.substring(7);
-            String values = DataServer.getInstance().getVariableValues(variableList, true);
+            String values = VariablesBlackboard.getInstance().getVariableValues(variableList, true);
             out.println(values);
             out.flush();
         } else if (line.startsWith("GETALLXML")) {
-            String values = DataServer.getInstance().getAllVariableValues();
+            String values = VariablesBlackboard.getInstance().getAllVariableValues();
             out.println(values);
             out.flush();
         } else if (line.startsWith("GETXMLFULL")) {
-            String values = DataServer.getInstance().getAllVariableValuesXml();
+            String values = VariablesBlackboard.getInstance().getAllVariableValuesXml();
             out.println(values);
             out.flush();
         } else if (line.startsWith("SET ENDING 0")) {
@@ -188,14 +185,22 @@ class TCPClientConnection extends ClientLineProcessingThread {
         } else if (line.startsWith("UPDATE") || line.startsWith("DELETE ")) {
             dataReceiver.updateVariable(line, this.isEncode());
         } else {
-            StandardNetInterfaces.processCommand(line);
+            SketchletNetworkProtocol.processCommand(line);
         }
+    }
+
+    public TemplateHandler getTemplateHandler() {
+        return templateHandler;
+    }
+
+    public void setTemplateHandler(TemplateHandler templateHandler) {
+        this.templateHandler = templateHandler;
     }
 
     class TCPTemplateHandler extends TemplateHandler {
 
         public void sendTemplate(Template template) {
-            String populatedTemplate = DataServer.populateTemplate(template.template, isEncode());
+            String populatedTemplate = VariablesBlackboard.populateTemplate(template.getTemplate(), isEncode());
             sendResponse(populatedTemplate);
         }
 

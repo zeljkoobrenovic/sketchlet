@@ -1,14 +1,14 @@
 package net.sf.sketchlet.model.programming.macros;
 
 import net.sf.sketchlet.common.QuotedStringTokenizer;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.context.SketchletContext;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.ui.ProgressMonitor;
 import net.sf.sketchlet.designer.playback.ui.PlaybackFrame;
 import net.sf.sketchlet.designer.playback.ui.PlaybackPanel;
-import net.sf.sketchlet.model.evaluator.Evaluator;
-import net.sf.sketchlet.model.evaluator.JEParser;
+import net.sf.sketchlet.blackboard.evaluator.Evaluator;
+import net.sf.sketchlet.blackboard.evaluator.JEParser;
 import net.sf.sketchlet.model.Page;
 import net.sf.sketchlet.script.RunInterface;
 
@@ -250,8 +250,8 @@ public class MacroThread implements Runnable, RunInterface {
             if (action.equalsIgnoreCase("end") || action.equalsIgnoreCase("")) {
                 return i;
             } else if (action.equalsIgnoreCase("if")) {
-                param1 = DataServer.getTemplateFromApostrophes(param1);
-                param1 = DataServer.populateTemplate(param1);
+                param1 = VariablesBlackboard.getTemplateFromApostrophes(param1);
+                param1 = VariablesBlackboard.populateTemplate(param1);
                 Object result = JEParser.getValue(param1);
                 if (result == null || !(result instanceof Double) || ((Double) result).doubleValue() == 0.0) {
                     int l = macro.getLevels()[i];

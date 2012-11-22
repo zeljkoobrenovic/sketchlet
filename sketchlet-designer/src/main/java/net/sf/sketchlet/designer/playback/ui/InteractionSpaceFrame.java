@@ -6,7 +6,7 @@ package net.sf.sketchlet.designer.playback.ui;
 
 import net.sf.sketchlet.common.filter.Filters;
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.playback.displays.InteractionSpace;
@@ -581,7 +581,7 @@ public class InteractionSpaceFrame extends JFrame {
         comboBox.setEditable(true);
         comboBox.addItem("");
 
-        for (String strVar : DataServer.getInstance().variablesVector) {
+        for (String strVar : VariablesBlackboard.getInstance().getVariablesList()) {
             comboBox.addItem("=" + strVar);
         }
 

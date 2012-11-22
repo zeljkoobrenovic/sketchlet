@@ -6,7 +6,7 @@ package net.sf.sketchlet.designer.editor.ui.extraeditor;
 
 import net.sf.sketchlet.common.file.FileUtils;
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.ui.desktop.Notepad;
@@ -145,7 +145,7 @@ public class ScriptEditorPanel extends JPanel {
 
             public void actionPerformed(ActionEvent ae) {
                 int index = SketchletEditor.getInstance().getExtraEditorPanel().scriptEditorExtraPanel.tabs.getSelectedIndex();
-                ScriptPluginProxy s = DataServer.scripts.get(index);
+                ScriptPluginProxy s = VariablesBlackboard.getScripts().get(index);
                 s.showContext(SketchletEditor.editorFrame);
             }
         });
@@ -153,7 +153,7 @@ public class ScriptEditorPanel extends JPanel {
 
             public void actionPerformed(ActionEvent ae) {
                 int index = SketchletEditor.getInstance().getExtraEditorPanel().scriptEditorExtraPanel.tabs.getSelectedIndex();
-                ScriptPluginProxy s = DataServer.scripts.get(index);
+                ScriptPluginProxy s = VariablesBlackboard.getScripts().get(index);
                 s.showExtensions(SketchletEditor.editorFrame);
             }
         });
@@ -161,7 +161,7 @@ public class ScriptEditorPanel extends JPanel {
 
             public void actionPerformed(ActionEvent ae) {
                 int index = SketchletEditor.getInstance().getExtraEditorPanel().scriptEditorExtraPanel.tabs.getSelectedIndex();
-                ScriptPluginProxy s = DataServer.scripts.get(index);
+                ScriptPluginProxy s = VariablesBlackboard.getScripts().get(index);
                 openFile(s.getScriptFile());
             }
         });

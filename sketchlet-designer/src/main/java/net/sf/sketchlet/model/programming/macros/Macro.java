@@ -5,7 +5,7 @@
 package net.sf.sketchlet.model.programming.macros;
 
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.ui.ProgressMonitor;
@@ -446,7 +446,7 @@ public class Macro extends MacroProgrammingUnit {
                 comboBoxParam1.addItem(i + "");
             }
         } else if (strCommand.startsWith("variable") || strCommand.startsWith("wait for update")) {
-            for (String strVar : DataServer.getInstance().variablesVector) {
+            for (String strVar : VariablesBlackboard.getInstance().getVariablesList()) {
                 comboBoxParam1.addItem(strVar);
             }
         } else if (strCommand.endsWith("timer") && Timers.getGlobalTimers() != null) {
@@ -468,7 +468,7 @@ public class Macro extends MacroProgrammingUnit {
                 ScreenScripts.getPublicScriptRunner().setCombos(comboBoxParam1);
             }
 
-            for (ScriptPluginProxy script : DataServer.scripts) {
+            for (ScriptPluginProxy script : VariablesBlackboard.getScripts()) {
                 comboBoxParam1.addItem("Script:" + script.getScriptFile().getName());
             }
         } else if (strCommand.equalsIgnoreCase("repeat")) {

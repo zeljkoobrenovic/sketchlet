@@ -5,9 +5,9 @@
 package net.sf.sketchlet.designer.editor.ui.extraeditor;
 
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.communicator.server.DataServer;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
+import net.sf.sketchlet.designer.editor.ui.UIUtils;
 import net.sf.sketchlet.loaders.pluginloader.GenericPluginFactory;
 import net.sf.sketchlet.loaders.pluginloader.PluginInstance;
 import net.sf.sketchlet.plugin.SketchletPluginGUI;
@@ -27,7 +27,7 @@ public class DerivedVariablesExtraPanel extends JPanel {
 
     public DerivedVariablesExtraPanel() {
         setLayout(new BorderLayout());
-        DataServer.populateVariablesCombo(varCombo, false);
+        UIUtils.populateVariablesCombo(varCombo, false);
 
         tabs.setTabPlacement(JTabbedPane.LEFT);
 
@@ -84,7 +84,7 @@ public class DerivedVariablesExtraPanel extends JPanel {
             if (Workspace.getReferenceFrame() != null) {
             }
         }
-        DataServer.populateVariablesCombo(frame.varCombo, false);
+        UIUtils.populateVariablesCombo(frame.varCombo, false);
         frame.setVisible(true);
     }
 

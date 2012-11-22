@@ -5,7 +5,7 @@
 package net.sf.sketchlet.designer.editor.ui.properties;
 
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.ui.desktop.Notepad;
 import net.sf.sketchlet.designer.editor.ui.region.PropertiesTableRenderer;
@@ -109,7 +109,7 @@ public class PropertiesSetPanel extends JPanel {
         comboBox.removeAllItems();
         comboBox.setEditable(true);
         comboBox.addItem("");
-        for (String strVar : DataServer.getInstance().variablesVector) {
+        for (String strVar : VariablesBlackboard.getInstance().getVariablesList()) {
             comboBox.addItem("=" + strVar);
         }
 

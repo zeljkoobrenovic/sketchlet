@@ -7,12 +7,11 @@
  * the Source Creation and Management node. Right-click the template and choose
  * Open. You can then make changes to the template in the Source Editor.
  */
-package net.sf.sketchlet.communicator;
+package net.sf.sketchlet.blackboard;
 
 import net.sf.sketchlet.common.DefaultSettings;
 import net.sf.sketchlet.common.context.SketchletContextUtils;
-import net.sf.sketchlet.communicator.server.DataServer;
-import net.sf.sketchlet.communicator.server.Variable;
+import net.sf.sketchlet.net.NetUtils;
 import net.sf.sketchlet.script.ScriptPluginProxy;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
@@ -35,29 +34,26 @@ import java.util.Vector;
 public class ConfigurationData {
     private static final Logger log = Logger.getLogger(ConfigurationData.class);
 
-    /**
-     * Creates a new instance of ConfigurationData
-     */
+    private static int tcpPort = 3320;
+    private static int udpPort = 3321;
+    private static List initialVariablesURLs = new Vector();
+    private static List scriptFiles = new Vector();
+    private static String configURL = "file:conf/communicator/config.xml";
+
     private ConfigurationData() {
     }
 
-    private static int tcpPort = 3320;
-    private static int udpPort = 3321;
-    public static List initialVariablesURLs = new Vector();
-    public static List scriptFiles = new Vector();
-    public static String configURL = "file:conf/communicator/config.xml";
-
     public static void addInitialVariablesURL(String strURL) {
-        initialVariablesURLs.add(strURL);
+        getInitialVariablesURLs().add(strURL);
     }
 
     public static void addScriptFile(String strFile) {
-        scriptFiles.add(strFile);
+        getScriptFiles().add(strFile);
     }
 
     public static void saveConfiguration() {
         try {
-            saveConfiguration(new URL(configURL).getPath());
+            saveConfiguration(new URL(getConfigURL()).getPath());
         } catch (Exception e) {
             log.error(e);
         }
@@ -65,14 +61,14 @@ public class ConfigurationData {
 
     public static void saveInitVariables() {
         String strFileURL;
-        if (initialVariablesURLs.size() == 0) {
+        if (getInitialVariablesURLs().size() == 0) {
             strFileURL = "file:conf/communicator/init-variables.xml";
         } else {
-            strFileURL = (String) initialVariablesURLs.get(0);
-            initialVariablesURLs.clear();
+            strFileURL = (String) getInitialVariablesURLs().get(0);
+            getInitialVariablesURLs().clear();
         }
 
-        initialVariablesURLs.add(strFileURL);
+        getInitialVariablesURLs().add(strFileURL);
 
         try {
             saveInitVariables(new URL(strFileURL).getPath());
@@ -95,8 +91,8 @@ public class ConfigurationData {
             out.println("<?xml version='1.0' encoding='UTF-8'?>");
             out.println("<variables>");
 
-            for (String variableName : DataServer.getInstance().variablesVector) {
-                Variable v = DataServer.getInstance().getVariable(variableName);
+            for (String variableName : VariablesBlackboard.getInstance().getVariablesList()) {
+                Variable v = VariablesBlackboard.getInstance().getVariable(variableName);
 
                 out.println("    <variable" + " name='" + prepareForXML(v.getName()) + "' format='" + prepareForXML(v.getFormat()) + "' min='" + prepareForXML(v.getMin()) + "' max='" + prepareForXML(v.getMax()) + "'" + " group='" + prepareForXML(v.getGroup()) + "'" + " count-filter='" + v.getCountFilter() + "'" + " time-filter='" + v.getTimeFilterMs() + "'" + " description='" + prepareForXML(v.getDescription()) + "'" + "><![CDATA[" + v.getValue() + "]]></variable>");
             }
@@ -204,7 +200,7 @@ public class ConfigurationData {
             out.println(">");
             out.println("<init>");
 
-            Iterator iterator = initialVariablesURLs.iterator();
+            Iterator iterator = getInitialVariablesURLs().iterator();
 
             while (iterator.hasNext()) {
                 String strURL = (String) iterator.next();
@@ -262,23 +258,23 @@ public class ConfigurationData {
     public static void loadFromURL(String configURL) {
         try {
 
-            ConfigurationData.initialVariablesURLs.clear();
-            ConfigurationData.scriptFiles.clear();
+            ConfigurationData.getInitialVariablesURLs().clear();
+            ConfigurationData.getScriptFiles().clear();
 
-            DataServer.scripts = new Vector<ScriptPluginProxy>();
+            VariablesBlackboard.setScripts(new Vector<ScriptPluginProxy>());
 
-            ConfigurationData.configURL = configURL;
+            ConfigurationData.setConfigURL(configURL);
             Document docConfig;
 
             if (configURL != null) {
                 try {
-                    docConfig = Global.getBuilder().parse(new URL(configURL).openStream());
+                    docConfig = NetUtils.getBuilder().parse(new URL(configURL).openStream());
                 } catch (Exception fnfe) {
                     log.error("Configuration file '" + configURL + "' could not be found. Creating an empty document.", fnfe);
-                    docConfig = Global.getBuilder().newDocument();
+                    docConfig = NetUtils.getBuilder().newDocument();
                 }
             } else {
-                docConfig = Global.getBuilder().newDocument();
+                docConfig = NetUtils.getBuilder().newDocument();
             }
 
             XPath xpath = XPathFactory.newInstance().newXPath();
@@ -313,7 +309,7 @@ public class ConfigurationData {
             }
 
             try {
-                File files[] = new File(Global.getWorkingDirectory() + SketchletContextUtils.sketchletDataDir() + "/scripts").listFiles();
+                File files[] = new File(NetUtils.getWorkingDirectory() + SketchletContextUtils.sketchletDataDir() + "/scripts").listFiles();
 
                 if (files != null) {
                     for (int i = 0; i < files.length; i++) {
@@ -356,5 +352,29 @@ public class ConfigurationData {
 
     public static void setUdpPort(int udpPort) {
         ConfigurationData.udpPort = udpPort;
+    }
+
+    public static List getInitialVariablesURLs() {
+        return initialVariablesURLs;
+    }
+
+    public static void setInitialVariablesURLs(List initialVariablesURLs) {
+        ConfigurationData.initialVariablesURLs = initialVariablesURLs;
+    }
+
+    public static List getScriptFiles() {
+        return scriptFiles;
+    }
+
+    public static void setScriptFiles(List scriptFiles) {
+        ConfigurationData.scriptFiles = scriptFiles;
+    }
+
+    public static String getConfigURL() {
+        return configURL;
+    }
+
+    public static void setConfigURL(String configURL) {
+        ConfigurationData.configURL = configURL;
     }
 }

@@ -5,7 +5,7 @@
 package net.sf.sketchlet.designer.editor.ui.variables.recorder;
 
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.context.VariableUpdateListener;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.ui.TextTransfer;
@@ -132,7 +132,7 @@ public class VariablesRecorder extends JFrame implements VariableUpdateListener,
         record.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                DataServer.getInstance().removeVariablesUpdateListener(frame);
+                VariablesBlackboard.getInstance().removeVariablesUpdateListener(frame);
                 if (!bRecording) {
 
                     if (!checkParams()) {
@@ -149,7 +149,7 @@ public class VariablesRecorder extends JFrame implements VariableUpdateListener,
                     startTime = System.currentTimeMillis();
 
                     if (onUpdate.isSelected() || onAnyUpdate.isSelected()) {
-                        DataServer.getInstance().addVariablesUpdateListener(frame);
+                        VariablesBlackboard.getInstance().addVariablesUpdateListener(frame);
                     } else {
                         stopped = false;
                         t = new Thread(frame);
@@ -212,7 +212,7 @@ public class VariablesRecorder extends JFrame implements VariableUpdateListener,
         vars.add((System.currentTimeMillis() - startTime) + "");
         for (int i = 1; i < variables.size(); i++) {
             String strVar = variables.elementAt(i);
-            vars.add(DataServer.getInstance().getVariableValue(strVar));
+            vars.add(VariablesBlackboard.getInstance().getVariableValue(strVar));
         }
 
         data.add(vars);
@@ -261,7 +261,7 @@ public class VariablesRecorder extends JFrame implements VariableUpdateListener,
 
     public void close() {
         stopped = true;
-        DataServer.getInstance().removeVariablesUpdateListener(this);
+        VariablesBlackboard.getInstance().removeVariablesUpdateListener(this);
     }
 
     public void saveToFile() {

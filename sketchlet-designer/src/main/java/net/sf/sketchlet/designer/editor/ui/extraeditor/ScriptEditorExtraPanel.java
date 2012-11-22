@@ -4,7 +4,7 @@
  */
 package net.sf.sketchlet.designer.editor.ui.extraeditor;
 
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.ui.script.ScriptsTablePanel;
@@ -93,7 +93,7 @@ public class ScriptEditorExtraPanel extends JPanel implements ScriptOperations {
         tabs.removeAll();
         editors.removeAllElements();
 
-        for (Object strScriptFile : DataServer.scriptFiles) {
+        for (Object strScriptFile : VariablesBlackboard.getScriptFiles()) {
             if (strScriptFile != null) {
                 ScriptEditorPanel editor = new ScriptEditorPanel();
                 editor.openFile(strScriptFile.toString());

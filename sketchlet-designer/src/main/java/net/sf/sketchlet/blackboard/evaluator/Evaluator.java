@@ -2,9 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package net.sf.sketchlet.model.evaluator;
+package net.sf.sketchlet.blackboard.evaluator;
 
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.context.SketchletContext;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.playback.ui.PlaybackFrame;
@@ -46,10 +46,10 @@ public class Evaluator {
         }
 
         for (int i = 0; i < 10; i++) {
-            strText = DataServer.populateTemplateSimple(strText, false);
+            strText = VariablesBlackboard.populateTemplateSimple(strText, false);
             strText = processRegionReferences(regions, strText);
             if (strText.startsWith("=")) {
-                strText = DataServer.processForFormulas(strText);
+                strText = VariablesBlackboard.processForFormulas(strText);
             } else {
                 break;
             }

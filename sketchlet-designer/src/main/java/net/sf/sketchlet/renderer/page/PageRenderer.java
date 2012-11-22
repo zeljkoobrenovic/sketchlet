@@ -5,7 +5,7 @@
 package net.sf.sketchlet.renderer.page;
 
 import net.sf.sketchlet.common.file.FileDrop;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.context.SketchletPlaybackContext;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.context.SketchletContextImpl;
@@ -15,7 +15,7 @@ import net.sf.sketchlet.designer.editor.SketchletEditorMode;
 import net.sf.sketchlet.model.Connector;
 import net.sf.sketchlet.designer.playback.displays.InteractionSpace;
 import net.sf.sketchlet.designer.tools.imagecache.ImageCache;
-import net.sf.sketchlet.model.evaluator.Evaluator;
+import net.sf.sketchlet.blackboard.evaluator.Evaluator;
 import net.sf.sketchlet.model.ActiveRegion;
 import net.sf.sketchlet.model.events.KeyboardEventMacro;
 import net.sf.sketchlet.model.Page;
@@ -172,7 +172,7 @@ public class PageRenderer {
 
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f * transparency));
 
-        if ((DataServer.scriptFiles != null && DataServer.scriptFiles.size() > 0) || DataServer.drawExternal) {
+        if ((VariablesBlackboard.getScriptFiles() != null && VariablesBlackboard.getScriptFiles().size() > 0) || VariablesBlackboard.isImageDrawnByExternalProcess()) {
             g2.setColor(Color.BLACK);
             g2.drawImage(SketchletContextImpl.getImage(), imageOffset[0], imageOffset[1], null);
         }

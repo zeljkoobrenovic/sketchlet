@@ -6,12 +6,12 @@ package net.sf.sketchlet.designer.editor.ui.page.spreadsheet;
 
 import net.sf.sketchlet.common.file.FileDrop;
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.ui.UIUtils;
 import net.sf.sketchlet.designer.editor.ui.desktop.Notepad;
-import net.sf.sketchlet.model.evaluator.Evaluator;
+import net.sf.sketchlet.blackboard.evaluator.Evaluator;
 import net.sf.sketchlet.util.RefreshTime;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
@@ -224,7 +224,7 @@ public class SpreadsheetPanel extends JPanel {
                 String strValue = result.toString();
                 if (!strValue.equals(prevValue)) {
                     Workspace.getPage().getPrevSpreadsheetData()[row][col] = strValue;
-                    DataServer.getInstance().notifyChange(this.getColumnName(col) + "" + (row + 1), strValue, prevValue);
+                    VariablesBlackboard.getInstance().notifyChange(this.getColumnName(col) + "" + (row + 1), strValue, prevValue);
                 }
                 return strValue;
             } else {
@@ -238,7 +238,7 @@ public class SpreadsheetPanel extends JPanel {
             model.fireTableDataChanged();
             table.getSelectionModel().setSelectionInterval(row, row);
             formula.setText(value.toString());
-            DataServer.getInstance().notifyChange(getColumnName(col) + (row + 1), value.toString(), value.toString());
+            VariablesBlackboard.getInstance().notifyChange(getColumnName(col) + (row + 1), value.toString(), value.toString());
             RefreshTime.update();
             SketchletEditor.getInstance().repaint();
             RefreshTime.update();

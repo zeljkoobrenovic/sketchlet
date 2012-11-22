@@ -6,7 +6,7 @@ package net.sf.sketchlet.renderer.regions;
 
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.ui.toolbars.ColorToolbar;
-import net.sf.sketchlet.model.evaluator.Evaluator;
+import net.sf.sketchlet.blackboard.evaluator.Evaluator;
 import net.sf.sketchlet.model.Connector;
 import net.sf.sketchlet.util.Colors;
 

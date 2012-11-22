@@ -7,7 +7,7 @@ package net.sf.sketchlet.designer.editor.ui.region;
 import net.sf.sketchlet.common.context.SketchletContextUtils;
 import net.sf.sketchlet.common.file.FileDrop;
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.tools.log.ActivityLog;
@@ -1449,7 +1449,7 @@ public class ActiveRegionPanel extends JPanel {
         comboBoxVariables.setEditable(true);
         comboBoxVariables.addItem("");
 
-        for (String strVar : DataServer.getInstance().variablesVector) {
+        for (String strVar : VariablesBlackboard.getInstance().getVariablesList()) {
             comboBoxVariables.addItem(strVar);
         }
 
@@ -1463,7 +1463,7 @@ public class ActiveRegionPanel extends JPanel {
         comboBox.setEditable(true);
         comboBox.addItem("");
 
-        for (String strVar : DataServer.getInstance().variablesVector) {
+        for (String strVar : VariablesBlackboard.getInstance().getVariablesList()) {
             comboBox.addItem("=" + strVar);
         }
 

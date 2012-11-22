@@ -4,7 +4,7 @@
  */
 package net.sf.sketchlet.designer.editor.ui;
 
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.model.Page;
 
@@ -39,7 +39,7 @@ public class UIUtils {
             }
         }
 
-        for (String strVar : DataServer.getInstance().variablesVector) {
+        for (String strVar : VariablesBlackboard.getInstance().getVariablesList()) {
             comboBox.addItem((addEquals ? "=" : "") + strVar);
         }
 
@@ -63,7 +63,7 @@ public class UIUtils {
             }
         }
         if (addVariables) {
-            for (String strVar : DataServer.getInstance().variablesVector) {
+            for (String strVar : VariablesBlackboard.getInstance().getVariablesList()) {
                 comboBox.addItem("=" + strVar);
             }
         }

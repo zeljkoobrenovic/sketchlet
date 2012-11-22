@@ -5,7 +5,7 @@
 package net.sf.sketchlet.designer.editor.ui.region;
 
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.model.Connector;
@@ -225,8 +225,8 @@ public class ConnectorPanel extends JPanel {
         }
         lineThickness.addItem("------");
 
-        if (DataServer.getInstance() != null) {
-            for (String strVar : DataServer.getInstance().variablesVector) {
+        if (VariablesBlackboard.getInstance() != null) {
+            for (String strVar : VariablesBlackboard.getInstance().getVariablesList()) {
                 lineColor.addItem("=" + strVar);
                 lineThickness.addItem("=" + strVar);
                 lineStyle.addItem("=" + strVar);

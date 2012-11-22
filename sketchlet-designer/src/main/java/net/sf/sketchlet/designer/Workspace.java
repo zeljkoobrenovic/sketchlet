@@ -11,8 +11,8 @@ package net.sf.sketchlet.designer;
 import net.sf.sketchlet.common.context.SketchletContextUtils;
 import net.sf.sketchlet.common.file.FileUtils;
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.communicator.ConfigurationData;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.ConfigurationData;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.context.SketchletContext;
 import net.sf.sketchlet.context.SketchletGraphicsContext;
 import net.sf.sketchlet.context.VariablesBlackboardContext;
@@ -32,7 +32,7 @@ import net.sf.sketchlet.ioservices.IoServicesHandler;
 import net.sf.sketchlet.loaders.pluginloader.PluginInstance;
 import net.sf.sketchlet.loaders.pluginloader.PluginLoader;
 import net.sf.sketchlet.model.Page;
-import net.sf.sketchlet.model.varspaces.VariableSpacesHandler;
+import net.sf.sketchlet.blackboard.VariableSpacesHandler;
 import net.sf.sketchlet.util.UtilContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.BasicConfigurator;
@@ -576,7 +576,7 @@ public class Workspace {
 
     public static void openProject(String strPath, boolean append) {
         try {
-            DataServer.setPaused(false);
+            VariablesBlackboard.setPaused(false);
             if (!strPath.endsWith("\\") && !strPath.endsWith("/")) {
                 strPath += File.separator;
             }

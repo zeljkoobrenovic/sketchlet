@@ -5,7 +5,7 @@
 package net.sf.sketchlet.designer.editor.ui.region;
 
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.communicator.server.DataServer;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.model.geom.RegularPolygon;
@@ -287,7 +287,7 @@ public class ShapePanel extends JPanel {
             lineThickness.addItem("" + i);
         }
         lineThickness.addItem("------");
-        for (String strVar : DataServer.getInstance().variablesVector) {
+        for (String strVar : VariablesBlackboard.getInstance().getVariablesList()) {
             lineColor.addItem("=" + strVar);
             lineThickness.addItem("=" + strVar);
             lineStyle.addItem("=" + strVar);

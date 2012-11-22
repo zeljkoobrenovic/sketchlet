@@ -8,12 +8,12 @@
  * Open. You can then make changes to the template in the Source Editor.
  */
 
-package net.sf.sketchlet.communicator.server.tcp;
+package net.sf.sketchlet.net.tcp;
 
 import net.sf.sketchlet.common.AcceptConnectionsThread;
 import net.sf.sketchlet.common.net.ClientConnectionThread;
 import net.sf.sketchlet.common.net.ClientLineProcessingThread;
-import net.sf.sketchlet.communicator.server.DataReceiver;
+import net.sf.sketchlet.net.DataReceiver;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,7 +26,7 @@ import java.util.Vector;
  */
 
 public class TCPDataReceiver extends DataReceiver {
-    AcceptTCPDataReceiverConnections acceptUpdateConnections;
+    private AcceptTCPDataReceiverConnections acceptUpdateConnections;
 
     public TCPDataReceiver(int port) {
         this.acceptUpdateConnections = new AcceptTCPDataReceiverConnections(this, port);
@@ -34,7 +34,7 @@ public class TCPDataReceiver extends DataReceiver {
 }
 
 class AcceptTCPDataReceiverConnections extends AcceptConnectionsThread {
-    TCPDataReceiver dataReceiver;
+    private TCPDataReceiver dataReceiver;
 
     public AcceptTCPDataReceiverConnections(TCPDataReceiver dataReceiver, int port) {
         super(port);

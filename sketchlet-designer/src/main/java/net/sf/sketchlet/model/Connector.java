@@ -6,7 +6,7 @@ package net.sf.sketchlet.model;
 
 import net.sf.sketchlet.context.VariablesBlackboardContext;
 import net.sf.sketchlet.renderer.regions.ConnectorRenderer;
-import net.sf.sketchlet.model.evaluator.Evaluator;
+import net.sf.sketchlet.blackboard.evaluator.Evaluator;
 import net.sf.sketchlet.util.XMLUtils;
 
 import java.text.DecimalFormat;

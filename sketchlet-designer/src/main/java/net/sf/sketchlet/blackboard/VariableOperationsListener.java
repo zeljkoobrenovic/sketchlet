@@ -8,7 +8,7 @@
  * Open. You can then make changes to the template in the Source Editor.
  */
 
-package net.sf.sketchlet.communicator;
+package net.sf.sketchlet.blackboard;
 
 /**
  * @author Omnibook

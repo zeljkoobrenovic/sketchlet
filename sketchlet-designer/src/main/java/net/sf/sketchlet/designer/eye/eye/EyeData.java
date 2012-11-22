@@ -4,8 +4,8 @@
  */
 package net.sf.sketchlet.designer.eye.eye;
 
-import net.sf.sketchlet.communicator.server.DataServer;
-import net.sf.sketchlet.communicator.server.Variable;
+import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.blackboard.Variable;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.model.ActiveRegion;
 import net.sf.sketchlet.model.Page;
@@ -43,8 +43,8 @@ public class EyeData {
         slots.removeAllElements();
         int n = 0;
         if (selector.showVariables.isSelected()) {
-            for (String strVar : DataServer.getInstance().variablesVector) {
-                Variable v = DataServer.getInstance().getVariable(strVar);
+            for (String strVar : VariablesBlackboard.getInstance().getVariablesList()) {
+                Variable v = VariablesBlackboard.getInstance().getVariable(strVar);
                 if (v != null && !v.getName().isEmpty()) {
                     VariableEyeSlot slot = new VariableEyeSlot(v, this);
                     slots.add(slot);
@@ -92,7 +92,7 @@ public class EyeData {
             n = 0;
         }
         if (selector.showScripts.isSelected()) {
-            for (ScriptPluginProxy sc : DataServer.scripts) {
+            for (ScriptPluginProxy sc : VariablesBlackboard.getScripts()) {
                 ScriptEyeSlot slot = new ScriptEyeSlot(sc, this);
                 slots.add(slot);
                 n++;

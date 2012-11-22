@@ -16,7 +16,7 @@ import net.sf.sketchlet.designer.editor.tool.notes.NoteDialog;
 import net.sf.sketchlet.designer.tools.imagecache.ImageCache;
 import net.sf.sketchlet.designer.editor.ui.page.VariableUpdatePageHandler;
 import net.sf.sketchlet.designer.playback.ui.RefreshScreenCaptureThread;
-import net.sf.sketchlet.model.evaluator.Evaluator;
+import net.sf.sketchlet.blackboard.evaluator.Evaluator;
 import net.sf.sketchlet.model.events.KeyboardEventMacro;
 import net.sf.sketchlet.model.events.MouseEventMacro;
 import net.sf.sketchlet.model.events.RegionOverlapEventMacro;
