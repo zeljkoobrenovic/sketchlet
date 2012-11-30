@@ -1,13 +1,9 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.playback.displays;
 
 import net.sf.sketchlet.common.filter.Filters;
 import net.sf.sketchlet.common.filter.PerspectiveFilter;
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.blackboard.evaluator.Evaluator;
+import net.sf.sketchlet.framework.blackboard.evaluator.Evaluator;
 
 import javax.swing.*;
 import java.awt.*;

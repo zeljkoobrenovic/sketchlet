@@ -1,16 +1,8 @@
-/*
- * ProcessHandler.java
- *
- * Created on November 11, 2006, 4:13 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer;
 
 import net.sf.sketchlet.common.QuotedStringTokenizer;
 import net.sf.sketchlet.common.system.PlatformManager;
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.editor.ui.desktop.ProcessConsolePanel;
 import org.apache.log4j.Logger;
 
@@ -213,17 +205,6 @@ public class ProcessHandler implements Runnable, net.sf.sketchlet.context.Variab
 
         if (VariablesBlackboard.getInstance() != null) {
             VariablesBlackboard.getInstance().removeVariablesUpdateListener(this);
-        }
-    }
-
-    private synchronized void addCharacter(int c) {
-        if (Workspace.isShowGUI()) {
-            this.processConsolePanel.textArea.append("" + (char) c);
-
-            this.processConsolePanel.textArea.setSelectionStart(this.processConsolePanel.textArea.getText().length() - 1);
-            this.processConsolePanel.textArea.setSelectionEnd(this.processConsolePanel.textArea.getText().length());
-        } else {
-            System.out.print(c);
         }
     }
 

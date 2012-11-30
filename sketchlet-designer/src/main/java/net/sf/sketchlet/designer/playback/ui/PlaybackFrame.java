@@ -1,21 +1,17 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.playback.ui;
 
 import net.sf.sketchlet.common.awt.AWTUtilitiesWrapper;
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.playback.displays.InteractionSpace;
 import net.sf.sketchlet.designer.playback.displays.ScreenMapping;
-import net.sf.sketchlet.designer.tools.imagecache.ImageCache;
+import net.sf.sketchlet.framework.model.imagecache.ImageCache;
 import net.sf.sketchlet.designer.editor.ui.pagetransition.StateDiagram;
-import net.sf.sketchlet.model.Page;
-import net.sf.sketchlet.model.Pages;
-import net.sf.sketchlet.model.programming.macros.Commands;
-import net.sf.sketchlet.model.programming.screenscripts.ScreenScripts;
+import net.sf.sketchlet.framework.model.Page;
+import net.sf.sketchlet.framework.model.Pages;
+import net.sf.sketchlet.framework.model.programming.macros.Commands;
+import net.sf.sketchlet.framework.model.programming.screenscripts.ScreenScripts;
 import net.sf.sketchlet.util.RefreshTime;
 
 import javax.swing.*;
@@ -84,7 +80,7 @@ public class PlaybackFrame extends JFrame {
         bigger.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                playbackPanel.scale += 0.1;
+                playbackPanel.setScale(playbackPanel.getScale() + 0.1);
                 playbackPanel.revalidate();
                 RefreshTime.update();
                 playbackPanel.repaint();
@@ -93,9 +89,9 @@ public class PlaybackFrame extends JFrame {
         smaller.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                playbackPanel.scale -= 0.1;
-                if (playbackPanel.scale < 0.1) {
-                    playbackPanel.scale = 0.1;
+                playbackPanel.setScale(playbackPanel.getScale() - 0.1);
+                if (playbackPanel.getScale() < 0.1) {
+                    playbackPanel.setScale(0.1);
                 }
                 playbackPanel.revalidate();
                 RefreshTime.update();
@@ -111,14 +107,14 @@ public class PlaybackFrame extends JFrame {
         forwardButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                Commands.execute(PlaybackPanel.currentPage, "Go to page", "next", "", playbackPanel.currentPage.getActiveTimers(), playbackPanel.currentPage.getActiveMacros(), "", "", parent);
+                Commands.execute(PlaybackPanel.getCurrentPage(), "Go to page", "next", "", playbackPanel.getCurrentPage().getActiveTimers(), playbackPanel.getCurrentPage().getActiveMacros(), "", "", parent);
             }
         });
         reloadButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
                 // playbackPanel.initImage();
-                playbackPanel.currentPage.activate(true);
+                playbackPanel.getCurrentPage().activate(true);
             }
         });
         clearButton.addActionListener(new ActionListener() {
@@ -144,8 +140,8 @@ public class PlaybackFrame extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 JPopupMenu popupMenu = new JPopupMenu();
 
-                popupMenu.add(playbackPanel.showAnnotation);
-                popupMenu.add(playbackPanel.highlightRegions);
+                popupMenu.add(playbackPanel.getShowAnnotation());
+                popupMenu.add(playbackPanel.getHighlightRegions());
                 popupMenu.addSeparator();
                 popupMenu.add(settingsButton);
 
@@ -158,7 +154,7 @@ public class PlaybackFrame extends JFrame {
                 JPopupMenu popupMenu = new JPopupMenu();
 
                 int i = 0;
-                for (final Page s : playbackPanel.pages.getPages()) {
+                for (final Page s : playbackPanel.getPages().getPages()) {
                     JMenuItem sketchMenuItem = new JMenuItem((i + 1) + ". " + s.getTitle());
                     sketchMenuItem.addActionListener(new ActionListener() {
 
@@ -233,7 +229,7 @@ public class PlaybackFrame extends JFrame {
             frame.enableControls();
             frame.playbackPanel.repaint();
 
-            frame.playbackPanel.exportDisplay();
+            frame.playbackPanel.getDisplayThread().exportDisplay();
         }
         PlaybackFrame.playbackFrame[0].setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
@@ -246,15 +242,15 @@ public class PlaybackFrame extends JFrame {
             ImageCache.clear();
             clearImagesOnClose = false;
         }
-        PlaybackPanel.currentPage.deactivate(true);
+        PlaybackPanel.getCurrentPage().deactivate(true);
         close();
-        if (!SketchletEditor.inPlaybackMode) {
+        if (!SketchletEditor.isInPlaybackMode()) {
             if (SketchletEditor.editorFrame.isVisible()) {
                 if (SketchletEditor.getInstance().getCurrentPage() != null) {
                     SketchletEditor.getInstance().getCurrentPage().activate(false);
                 }
 
-                SketchletEditor.getInstance().getCurrentPage().getRegions().refreshFromVariables();
+                SketchletEditor.getInstance().getCurrentPage().getRegions().getVariablesHelper().refreshFromVariables();
                 SketchletEditor.getInstance().repaint();
                 SketchletEditor.editorFrame.setState(JFrame.NORMAL);
                 //FreeHand.editorFrame.toFront();
@@ -271,9 +267,8 @@ public class PlaybackFrame extends JFrame {
         if (SketchletEditor.getInstance() != null) {
             SketchletEditor.getInstance().repaintIfNeeded();
         }
-        if (SketchletEditor.inPlaybackMode) {
+        if (SketchletEditor.isInPlaybackMode()) {
             SketchletEditor.editorFrame = null;
-            SketchletEditor.inPlaybackMode = false;
         }
 
         if (SketchletEditor.getInstance() != null) {
@@ -304,7 +299,7 @@ public class PlaybackFrame extends JFrame {
         ScreenScripts.closeScreenScripts();
         ScreenScripts.createScreenScripts(true);
         if (playbackFrame == null) {
-            PlaybackPanel.history = new Vector<Page>();
+            PlaybackPanel.setHistory(new Vector<Page>());
             // PlaybackPanel.bahabahaImages = new BufferedImage[Sketch.NUMBER_OF_LAYERS];
 
             Vector<ScreenMapping> activeDisplays = new Vector<ScreenMapping>();
@@ -330,13 +325,13 @@ public class PlaybackFrame extends JFrame {
 
             showSketch(startingPage);
         } else {
-            PlaybackPanel.pages = pages;
+            PlaybackPanel.setPages(pages);
             for (int i = 0; i < playbackFrame.length; i++) {
                 playbackFrame[i].playbackPanel.showSketch(startingPage);
             }
         }
 
-        SketchletEditor.getInstance().getCurrentPage().getRegions().refreshVariables();
+        SketchletEditor.getInstance().getCurrentPage().getRegions().getVariablesHelper().refreshVariables();
         for (int i = 0; i < playbackFrame.length; i++) {
             playbackFrame[i].setTitle(startingPage.getTitle());
             // playbackFrame[i].toFront();
@@ -401,8 +396,6 @@ public class PlaybackFrame extends JFrame {
             }
         }
 
-
-        // this.setSize((int) width, (int) height);
         this.playbackPanel.setPreferredSize(new Dimension((int) width, (int) height));
         this.pack();
         this.setLocation((int) x, (int) y);
@@ -420,7 +413,7 @@ public class PlaybackFrame extends JFrame {
     }
 
     public void enableControls() {
-        backButton.setEnabled(this.playbackPanel.history.size() > 0);
+        backButton.setEnabled(this.playbackPanel.getHistory().size() > 0);
     }
 
     public static void main(String[] args) {

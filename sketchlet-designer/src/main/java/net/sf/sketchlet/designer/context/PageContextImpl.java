@@ -1,15 +1,11 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.context;
 
 import net.sf.sketchlet.context.ActiveRegionContext;
 import net.sf.sketchlet.context.PageContext;
 import net.sf.sketchlet.context.SketchletContext;
-import net.sf.sketchlet.model.ActiveRegion;
-import net.sf.sketchlet.model.LocalVariable;
-import net.sf.sketchlet.model.Page;
+import net.sf.sketchlet.framework.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.PageVariable;
+import net.sf.sketchlet.framework.model.Page;
 import net.sf.sketchlet.util.Colors;
 
 import javax.imageio.ImageIO;
@@ -117,7 +113,7 @@ public class PageContextImpl extends PageContext {
     public List<String> getPageVariableNames() {
         List<String> variables = new ArrayList<String>();
 
-        for (LocalVariable variable : page.getLocalVariables()) {
+        for (PageVariable variable : page.getPageVariables()) {
             variables.add(variable.getName());
         }
 
@@ -126,12 +122,12 @@ public class PageContextImpl extends PageContext {
 
     @Override
     public void addPageVariable(String name, String value) {
-        page.getLocalVariables().add(new LocalVariable(name, value));
+        page.getPageVariables().add(new PageVariable(name, value));
     }
 
     @Override
     public void setPageVariableValue(String name, String value) {
-        for (LocalVariable variable : page.getLocalVariables()) {
+        for (PageVariable variable : page.getPageVariables()) {
             if (variable.getName().equalsIgnoreCase(name)) {
                 variable.setValue(value);
                 return;
@@ -141,7 +137,7 @@ public class PageContextImpl extends PageContext {
 
     @Override
     public String getPageVariableValue(String name) {
-        for (LocalVariable variable : page.getLocalVariables()) {
+        for (PageVariable variable : page.getPageVariables()) {
             if (variable.getName().equalsIgnoreCase(name)) {
                 return variable.getValue();
             }
@@ -152,26 +148,26 @@ public class PageContextImpl extends PageContext {
 
     @Override
     public int getPageVariableCount() {
-        return page.getLocalVariables().size();
+        return page.getPageVariables().size();
     }
 
     @Override
     public void deletePageVariable(String name) {
         int index = -1;
-        for (int i = 0; i < page.getLocalVariables().size(); i++) {
-            if (page.getLocalVariables().get(i).getName().equalsIgnoreCase(name)) {
+        for (int i = 0; i < page.getPageVariables().size(); i++) {
+            if (page.getPageVariables().get(i).getName().equalsIgnoreCase(name)) {
                 index = i;
                 break;
             }
         }
         if (index >= 0) {
-            page.getLocalVariables().remove(index);
+            page.getPageVariables().remove(index);
         }
     }
 
     @Override
     public String getPageVariableFormat(String name) {
-        for (LocalVariable variable : page.getLocalVariables()) {
+        for (PageVariable variable : page.getPageVariables()) {
             if (variable.getName().equalsIgnoreCase(name)) {
                 return variable.getFormat();
             }
@@ -182,7 +178,7 @@ public class PageContextImpl extends PageContext {
 
     @Override
     public void setPageVariableFormat(String name, String value) {
-        for (LocalVariable variable : page.getLocalVariables()) {
+        for (PageVariable variable : page.getPageVariables()) {
             if (variable.getName().equalsIgnoreCase(name)) {
                 variable.setFormat(value);
                 return;

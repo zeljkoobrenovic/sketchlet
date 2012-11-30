@@ -1,23 +1,19 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.loaders;
 
 import net.sf.sketchlet.common.context.SketchletContextUtils;
-import net.sf.sketchlet.model.Connector;
+import net.sf.sketchlet.framework.model.Connector;
 import net.sf.sketchlet.designer.editor.tool.notes.NoteDialog;
-import net.sf.sketchlet.model.ActiveRegion;
-import net.sf.sketchlet.model.ActiveRegions;
-import net.sf.sketchlet.model.events.KeyboardEventMacro;
-import net.sf.sketchlet.model.LocalVariable;
-import net.sf.sketchlet.model.events.MouseEventMacro;
-import net.sf.sketchlet.model.Page;
-import net.sf.sketchlet.model.events.RegionOverlapEventMacro;
-import net.sf.sketchlet.model.VariableUpdateEventMacro;
-import net.sf.sketchlet.model.events.WidgetEventMacro;
-import net.sf.sketchlet.model.programming.macros.Macro;
-import net.sf.sketchlet.model.programming.macros.MacroSaxParserUtil;
+import net.sf.sketchlet.framework.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.ActiveRegions;
+import net.sf.sketchlet.framework.model.events.keyboard.KeyboardEventMacro;
+import net.sf.sketchlet.framework.model.PageVariable;
+import net.sf.sketchlet.framework.model.events.mouse.MouseEventMacro;
+import net.sf.sketchlet.framework.model.Page;
+import net.sf.sketchlet.framework.model.events.overlap.RegionOverlapEventMacro;
+import net.sf.sketchlet.framework.model.events.variable.VariableUpdateEventMacro;
+import net.sf.sketchlet.framework.model.events.widget.WidgetEventMacro;
+import net.sf.sketchlet.framework.model.programming.macros.Macro;
+import net.sf.sketchlet.framework.model.programming.macros.MacroSaxParserUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.xml.sax.Attributes;
@@ -183,16 +179,16 @@ public class SketchletsSaxLoader extends DefaultHandler {
 
         currentElement = strElem;
         strCharacters = "";
-        if (path().equalsIgnoreCase("/sketch/action/region-widget-event-actions/widget-event-action")) {
+        if (path().equalsIgnoreCase("/page/active-regions/active-region/region-widget-event-actions/widget-event-action")) {
             currentRegion.widgetEventMacros.add(new WidgetEventMacro(""));
             indexOfWidgetAction = -1;
             return;
-        } else if (path().equalsIgnoreCase("/sketch/action/region-widget-event-actions/widget-event-action/action")) {
+        } else if (path().equalsIgnoreCase("/page/active-regions/active-region/region-widget-event-actions/widget-event-action/action")) {
             indexOfWidgetAction++;
             return;
-        } else if (path().equalsIgnoreCase("/sketch/action/region-mouse-event-actions/mouse-event-action")) {
+        } else if (path().equalsIgnoreCase("/page/active-regions/active-region/region-mouse-event-actions/mouse-event-action")) {
             return;
-        } else if (path().equalsIgnoreCase("/sketch/action/region-overlap-event-actions/region-overlap-event-action")) {
+        } else if (path().equalsIgnoreCase("/page/active-regions/active-region/region-overlap-event-actions/region-overlap-event-action")) {
             return;
         } else if (currentMacroSaxUtil != null && currentMacroSaxUtil.startElement(path(), atts)) {
             return;
@@ -487,21 +483,21 @@ public class SketchletsSaxLoader extends DefaultHandler {
 
             currentElement = null;
 
-            if (path().equalsIgnoreCase("/sketch/action/region-widget-event-actions/widget-action")) {
+            if (path().equalsIgnoreCase("/page/active-regions/active-region/region-widget-event-actions/widget-action")) {
                 return;
-            } else if (path().equalsIgnoreCase("/sketch/action/region-widget-event-actions/widget-action/action")) {
+            } else if (path().equalsIgnoreCase("/page/active-regions/active-region/region-widget-event-actions/widget-action/action")) {
                 return;
-            } else if (path().equalsIgnoreCase("/sketch/action/region-mouse-event-actions/mouse-event-action/action")) {
+            } else if (path().equalsIgnoreCase("/page/active-regions/active-region/region-mouse-event-actions/mouse-event-action/action")) {
                 return;
-            } else if (path().equalsIgnoreCase("/sketch/action/region-overlap-event-actions/mouse-overlap-action/action")) {
+            } else if (path().equalsIgnoreCase("/page/active-regions/active-region/region-overlap-event-actions/mouse-overlap-action/action")) {
                 return;
-            } else if (path().equalsIgnoreCase("/sketch/keyboard-event-actions/keyboard-event-action/action")) {
+            } else if (path().equalsIgnoreCase("/page/keyboard-event-actions/keyboard-event-action/action")) {
                 return;
-            } else if (path().equalsIgnoreCase("/sketch/mouse-event-actions/mouse-event-action/action")) {
+            } else if (path().equalsIgnoreCase("/page/mouse-event-actions/mouse-event-action/action")) {
                 return;
-            } else if (path().equalsIgnoreCase("/sketch/action/region-keyboard-event-actions/region-keyboard-event-action/action")) {
+            } else if (path().equalsIgnoreCase("/page/active-regions/active-region/region-keyboard-event-actions/region-keyboard-event-action/action")) {
                 return;
-            } else if (path().equalsIgnoreCase("/sketch/variable-update-event-actions/variable-update-event-action/action")) {
+            } else if (path().equalsIgnoreCase("/page/variable-update-event-actions/variable-update-event-action/action")) {
                 return;
             } else if (currentMacroSaxUtil != null && currentMacroSaxUtil.endElement(path())) {
                 return;
@@ -523,7 +519,7 @@ public class SketchletsSaxLoader extends DefaultHandler {
             } else if (strElem.equalsIgnoreCase("page-property") || strElem.equalsIgnoreCase("sketch-property")) {
                 currentPage.setProperty(lastSketchProperty, strCharacters);
             } else if (strElem.equalsIgnoreCase("page-variable")) {
-                currentPage.getLocalVariables().add(new LocalVariable(lastSketchVariable, strCharacters, lastSketchFormat));
+                currentPage.getPageVariables().add(new PageVariable(lastSketchVariable, strCharacters, lastSketchFormat));
                 lastSketchFormat = "";
             } else if (strElem.equalsIgnoreCase("spreadsheet-cell")) {
                 if (spreadsheet_x >= 0 && spreadsheet_x < currentPage.getSpreadsheetData().length && spreadsheet_y >= 0 && spreadsheet_y < currentPage.getSpreadsheetData()[0].length) {
@@ -577,66 +573,66 @@ public class SketchletsSaxLoader extends DefaultHandler {
             return;
         }
 
-        if (path().equalsIgnoreCase("/sketch/action/region-widget-event-actions/widget-action/name")) {
+        if (path().equalsIgnoreCase("/page/active-regions/active-region/region-widget-event-actions/widget-action/name")) {
             currentRegion.widgetEventMacros.get(currentRegion.widgetEventMacros.size() - 1).setEventName(strCharacters);
             return;
-        } else if (path().equalsIgnoreCase("/sketch/action/region-widget-event-actions/widget-action/repeat")) {
+        } else if (path().equalsIgnoreCase("/page/active-regions/active-region/region-widget-event-actions/widget-action/repeat")) {
             try {
                 currentRegion.widgetEventMacros.get(currentRegion.widgetEventMacros.size() - 1).getMacro().setRepeat((int) Double.parseDouble(strCharacters));
             } catch (NumberFormatException e) {
                 log.error(e);
             }
             return;
-        } else if (path().equalsIgnoreCase("/sketch/action/region-widget-event-actions/widget-action/action/type")) {
+        } else if (path().equalsIgnoreCase("/page/active-regions/active-region/region-widget-event-actions/widget-action/action/type")) {
             Macro macro = currentRegion.widgetEventMacros.get(currentRegion.widgetEventMacros.size() - 1).getMacro();
             macro.getActions()[indexOfWidgetAction][0] = strCharacters;
             return;
-        } else if (path().equalsIgnoreCase("/sketch/action/region-widget-event-actions/widget-action/action/param1")) {
+        } else if (path().equalsIgnoreCase("/page/active-regions/active-region/region-widget-event-actions/widget-action/action/param1")) {
             Macro macro = currentRegion.widgetEventMacros.get(currentRegion.widgetEventMacros.size() - 1).getMacro();
             macro.getActions()[indexOfWidgetAction][1] = strCharacters;
             return;
-        } else if (path().equalsIgnoreCase("/sketch/action/region-widget-event-actions/widget-action/action/param2")) {
+        } else if (path().equalsIgnoreCase("/page/active-regions/active-region/region-widget-event-actions/widget-action/action/param2")) {
             Macro macro = currentRegion.widgetEventMacros.get(currentRegion.widgetEventMacros.size() - 1).getMacro();
             macro.getActions()[indexOfWidgetAction][2] = strCharacters;
             return;
-        } else if (path().equalsIgnoreCase("/sketch/action/region-mouse-event-actions/mouse-event-action/name")) {
+        } else if (path().equalsIgnoreCase("/page/active-regions/active-region/region-mouse-event-actions/mouse-event-action/name")) {
             MouseEventMacro mouseEventMacro = currentRegion.mouseProcessor.getMouseEventMacro(strCharacters);
             if (mouseEventMacro == null) {
                 mouseEventMacro = new MouseEventMacro(strCharacters);
                 currentRegion.mouseProcessor.getMouseEventMacros().add(mouseEventMacro);
             }
             mouseEventMacro.setEventName(strCharacters);
-            currentMacroSaxUtil = new MacroSaxParserUtil(mouseEventMacro.getMacro(), "/sketch/action/region-mouse-event-actions/mouse-event-action");
+            currentMacroSaxUtil = new MacroSaxParserUtil(mouseEventMacro.getMacro(), "/page/active-regions/active-region/region-mouse-event-actions/mouse-event-action");
             currentMacroSaxUtil.processCharacters(path(), strCharacters);
-        } else if (path().equalsIgnoreCase("/sketch/action/region-overlap-event-actions/region-overlap-event-action/name")) {
+        } else if (path().equalsIgnoreCase("/page/active-regions/active-region/region-overlap-event-actions/region-overlap-event-action/name")) {
             RegionOverlapEventMacro regionOverlapEventMacro = new RegionOverlapEventMacro(strCharacters);
             currentRegion.regionOverlapEventMacros.add(regionOverlapEventMacro);
             regionOverlapEventMacro.setEventName(strCharacters);
-            currentMacroSaxUtil = new MacroSaxParserUtil(regionOverlapEventMacro.getMacro(), "/sketch/action/region-overlap-event-actions/region-overlap-event-action");
+            currentMacroSaxUtil = new MacroSaxParserUtil(regionOverlapEventMacro.getMacro(), "/page/active-regions/active-region/region-overlap-event-actions/region-overlap-event-action");
             currentMacroSaxUtil.processCharacters(path(), strCharacters);
-        } else if (path().equalsIgnoreCase("/sketch/keyboard-event-actions/keyboard-event-action/name")) {
+        } else if (path().equalsIgnoreCase("/page/keyboard-event-actions/keyboard-event-action/name")) {
             KeyboardEventMacro keyboardEventMacro = new KeyboardEventMacro(strCharacters);
             currentPage.getKeyboardProcessor().getKeyboardEventMacros().add(keyboardEventMacro);
             keyboardEventMacro.setEventName(strCharacters);
-            currentMacroSaxUtil = new MacroSaxParserUtil(keyboardEventMacro.getMacro(), "/sketch/keyboard-event-actions/keyboard-event-action");
+            currentMacroSaxUtil = new MacroSaxParserUtil(keyboardEventMacro.getMacro(), "/page/keyboard-event-actions/keyboard-event-action");
             currentMacroSaxUtil.processCharacters(path(), strCharacters);
-        } else if (path().equalsIgnoreCase("/sketch/mouse-event-actions/mouse-event-action/name")) {
+        } else if (path().equalsIgnoreCase("/page/mouse-event-actions/mouse-event-action/name")) {
             MouseEventMacro mouseEventMacro = new MouseEventMacro(strCharacters);
             currentPage.getMouseProcessor().getMouseEventMacros().add(mouseEventMacro);
             mouseEventMacro.setEventName(strCharacters);
-            currentMacroSaxUtil = new MacroSaxParserUtil(mouseEventMacro.getMacro(), "/sketch/mouse-event-actions/mouse-event-action");
+            currentMacroSaxUtil = new MacroSaxParserUtil(mouseEventMacro.getMacro(), "/page/mouse-event-actions/mouse-event-action");
             currentMacroSaxUtil.processCharacters(path(), strCharacters);
-        } else if (path().equalsIgnoreCase("/sketch/action/region-keyboard-event-actions/region-keyboard-event-action/name")) {
+        } else if (path().equalsIgnoreCase("/page/active-regions/active-region/region-keyboard-event-actions/region-keyboard-event-action/name")) {
             KeyboardEventMacro keyboardEventMacro = new KeyboardEventMacro(strCharacters);
             currentRegion.keyboardProcessor.getKeyboardEventMacros().add(keyboardEventMacro);
             keyboardEventMacro.setEventName(strCharacters);
-            currentMacroSaxUtil = new MacroSaxParserUtil(keyboardEventMacro.getMacro(), "/sketch/action/region-keyboard-event-actions/region-keyboard-event-action");
+            currentMacroSaxUtil = new MacroSaxParserUtil(keyboardEventMacro.getMacro(), "/page/active-regions/active-region/region-keyboard-event-actions/region-keyboard-event-action");
             currentMacroSaxUtil.processCharacters(path(), strCharacters);
-        } else if (path().equalsIgnoreCase("/sketch/variable-update-event-actions/variable-update-event-action/name")) {
+        } else if (path().equalsIgnoreCase("/page/variable-update-event-actions/variable-update-event-action/name")) {
             VariableUpdateEventMacro variableUpdateEventMacro = new VariableUpdateEventMacro(strCharacters);
             currentPage.getVariableUpdateEventMacros().add(variableUpdateEventMacro);
             variableUpdateEventMacro.setEventName(strCharacters);
-            currentMacroSaxUtil = new MacroSaxParserUtil(variableUpdateEventMacro.getMacro(), "/sketch/variable-update-event-actions/variable-update-event-action");
+            currentMacroSaxUtil = new MacroSaxParserUtil(variableUpdateEventMacro.getMacro(), "/page/variable-update-event-actions/variable-update-event-action");
             currentMacroSaxUtil.processCharacters(path(), strCharacters);
         } else if (currentMacroSaxUtil != null && currentMacroSaxUtil.processCharacters(path(), strCharacters)) {
             return;
@@ -733,10 +729,10 @@ public class SketchletsSaxLoader extends DefaultHandler {
             }
         }
         if (currentElement.equalsIgnoreCase("show-text") && currentRegion != null) {
-            currentRegion.strTextField = strCharacters;
+            currentRegion.textField = strCharacters;
         }
         if (currentElement.equalsIgnoreCase("capture-screen-x") && currentRegion != null) {
-            currentRegion.strCaptureScreenX = strCharacters;
+            currentRegion.captureScreenX = strCharacters;
         }
         if (currentElement.equalsIgnoreCase("capture-screen") && currentRegion != null) {
             currentRegion.screenCapturingEnabled = strCharacters.equals("true");
@@ -745,35 +741,35 @@ public class SketchletsSaxLoader extends DefaultHandler {
             currentRegion.screenCapturingMouseMappingEnabled = strCharacters.equals("true");
         }
         if (currentElement.equalsIgnoreCase("capture-screen-y") && currentRegion != null) {
-            currentRegion.strCaptureScreenY = strCharacters;
+            currentRegion.captureScreenY = strCharacters;
         }
         if (currentElement.equalsIgnoreCase("capture-screen-width") && currentRegion != null) {
-            currentRegion.strCaptureScreenWidth = strCharacters;
+            currentRegion.captureScreenWidth = strCharacters;
         }
         if (currentElement.equalsIgnoreCase("capture-screen-height") && currentRegion != null) {
-            currentRegion.strCaptureScreenHeight = strCharacters;
+            currentRegion.captureScreenHeight = strCharacters;
         }
 
         if (currentElement.equalsIgnoreCase("basic-shape") && currentRegion != null) {
             currentRegion.shape = strCharacters;
         }
         if (currentElement.equalsIgnoreCase("basic-shape-args") && currentRegion != null) {
-            currentRegion.strShapeArgs = strCharacters;
+            currentRegion.shapeArguments = strCharacters;
         }
         if (currentElement.equalsIgnoreCase("group") && currentRegion != null) {
             currentRegion.regionGrouping = strCharacters;
         }
         if (currentElement.equalsIgnoreCase("show-image") && currentRegion != null) {
-            currentRegion.strImageUrlField = strCharacters;
+            currentRegion.imageUrlField = strCharacters;
         }
         if (currentElement.equalsIgnoreCase("image-index") && currentRegion != null) {
             currentRegion.strImageIndex = strCharacters;
         }
         if (currentElement.equalsIgnoreCase("is-active") && currentRegion != null) {
-            currentRegion.strActive = strCharacters;
+            currentRegion.active = strCharacters;
         }
         if (currentElement.equalsIgnoreCase("type") && currentRegion != null) {
-            currentRegion.strType = strCharacters;
+            currentRegion.type = strCharacters;
         }
         if (currentElement.equalsIgnoreCase("control") && currentRegion != null) {
             if (strCharacters.equals("UMLGraph / Class Diagram / Simple DSL")) {
@@ -782,11 +778,11 @@ public class SketchletsSaxLoader extends DefaultHandler {
             if (strCharacters.equals("UMLGraph / Class Diagram / Cascading UML")) {
                 strCharacters = "Cascading UML";
             }
-            currentRegion.strWidget = strCharacters;
+            currentRegion.widget = strCharacters;
         }
 
         if (currentElement.equalsIgnoreCase("control-parameters") && currentRegion != null) {
-            currentRegion.strWidgetProperties = strCharacters;
+            currentRegion.widgetPropertiesString = strCharacters;
         }
         if (currentElement.equalsIgnoreCase("image-animation-ms") && currentRegion != null) {
             currentRegion.strAnimationMs = strCharacters;
@@ -804,7 +800,7 @@ public class SketchletsSaxLoader extends DefaultHandler {
             currentRegion.walkThroughEnabled = strCharacters.equals("true");
         }
         if (currentElement.equalsIgnoreCase("characters-per-line") && currentRegion != null) {
-            currentRegion.strCharactersPerLine = strCharacters;
+            currentRegion.charactersPerLine = strCharacters;
         }
         if (currentElement.equalsIgnoreCase("max-lines") && currentRegion != null) {
             currentRegion.maxNumLines = strCharacters;
@@ -830,7 +826,7 @@ public class SketchletsSaxLoader extends DefaultHandler {
             currentRegion.strX = strCharacters;
         }
         if (currentElement.equalsIgnoreCase("visible") && currentRegion != null) {
-            currentRegion.bVisible = strCharacters.equalsIgnoreCase("true");
+            currentRegion.visible = strCharacters.equalsIgnoreCase("true");
         }
         if (currentElement.equalsIgnoreCase("layer") && currentRegion != null) {
             currentRegion.layer = 0;
@@ -918,19 +914,19 @@ public class SketchletsSaxLoader extends DefaultHandler {
             currentRegion.strShearY = strCharacters;
         }
         if (currentElement.equalsIgnoreCase("windowX") && currentRegion != null) {
-            currentRegion.strWindowX = strCharacters;
+            currentRegion.windowX = strCharacters;
         }
         if (currentElement.equalsIgnoreCase("windowY") && currentRegion != null) {
-            currentRegion.strWindowY = strCharacters;
+            currentRegion.windowY = strCharacters;
         }
         if (currentElement.equalsIgnoreCase("windowWidth") && currentRegion != null) {
-            currentRegion.strWindowWidth = strCharacters;
+            currentRegion.windowWidth = strCharacters;
         }
         if (currentElement.equalsIgnoreCase("windowHeight") && currentRegion != null) {
-            currentRegion.strWindowHeight = strCharacters;
+            currentRegion.windowHeight = strCharacters;
         }
         if (currentElement.equalsIgnoreCase("transparency") && currentRegion != null) {
-            currentRegion.strTransparency = strCharacters;
+            currentRegion.transparency = strCharacters;
         }
         if (currentElement.equalsIgnoreCase("speed") && currentRegion != null) {
             currentRegion.strSpeed = strCharacters;

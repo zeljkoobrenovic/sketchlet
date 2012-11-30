@@ -1,16 +1,12 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.tool;
 
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.model.Connector;
+import net.sf.sketchlet.framework.model.Connector;
 import net.sf.sketchlet.designer.editor.ui.region.ConnectorPanel;
 import net.sf.sketchlet.designer.playback.ui.PlaybackFrame;
-import net.sf.sketchlet.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.ActiveRegion;
 
 import javax.swing.*;
 import java.awt.*;
@@ -39,8 +35,6 @@ public class ActiveRegionSelectTool extends Tool {
 
     public ActiveRegionSelectTool(SketchletEditor freeHand) {
         super(freeHand);
-        Toolkit toolkit = Toolkit.getDefaultToolkit();
-        Point hotSpot = new Point(5, 4);
     }
 
     @Override
@@ -55,14 +49,14 @@ public class ActiveRegionSelectTool extends Tool {
 
     @Override
     public void mouseMoved(MouseEvent e, int x, int y) {
-        ActiveRegion a = editor.getCurrentPage().getRegions().selectRegion(x, y, false);
-        editor.getCurrentPage().getRegions().defocusAllRegions();
+        ActiveRegion a = editor.getCurrentPage().getRegions().getMouseHelper().selectRegion(x, y, false);
+        editor.getCurrentPage().getRegions().getMouseHelper().defocusAllRegions();
 
         if (x < 0 || y < 0) {
             editor.setCursor(Cursor.getDefaultCursor());
         } else if (a != null) {
-            a.getMouseHandler().mouseMoved(e, editor.getScale(), SketchletEditor.editorFrame, false);
-            a.bInFocus = true;
+            a.getMouseController().mouseMoved(e, editor.getScale(), SketchletEditor.editorFrame, false);
+            a.inFocus = true;
         } else {
             editor.setCursor();
         }
@@ -80,7 +74,7 @@ public class ActiveRegionSelectTool extends Tool {
             bDraggingPerspectivePoint2 = true;
         } else {
             editor.getCurrentPage().selectConnector(e.getX(), e.getY());
-            editor.getCurrentPage().getRegions().mousePressed(e, editor.getScale(), editor.editorFrame, false, false);
+            editor.getCurrentPage().getRegions().getMouseHelper().mousePressed(e, editor.getScale(), editor.editorFrame, false, false);
             editor.saveRegionUndo();
 
             prevX = x;
@@ -91,7 +85,7 @@ public class ActiveRegionSelectTool extends Tool {
                 speeds[i] = 0.0;
             }
 
-            if (editor.getCurrentPage().getRegions().getSelectedRegions() == null) {
+            if (editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() == null) {
                 Connector c = editor.getCurrentPage().selectConnector(e.getX(), e.getY());
                 if (c != null) {
                     if (e.getClickCount() >= 2) {
@@ -109,14 +103,14 @@ public class ActiveRegionSelectTool extends Tool {
 
     @Override
     public void mouseReleased(MouseEvent e, int x, int y) {
-        editor.getCurrentPage().getRegions().mouseReleased(e, editor.getScale(), editor.editorFrame, false);
+        editor.getCurrentPage().getRegions().getMouseHelper().mouseReleased(e, editor.getScale(), editor.editorFrame, false);
         if (!bDragged) {
             if (editor.getUndoRegionActions().size() > 0) {
                 editor.getUndoRegionActions().remove(editor.getUndoRegionActions().size() - 1);
             }
         }
         if (inSelectMode) {
-            editor.getCurrentPage().getRegions().setSelectedRegions(getSelectedRegions());
+            editor.getCurrentPage().getRegions().getMouseHelper().setSelectedRegions(getSelectedRegions());
             prevX = 0;
             prevY = 0;
             endX = 0;
@@ -145,14 +139,14 @@ public class ActiveRegionSelectTool extends Tool {
             editor.getCurrentPage().setProperty("perspective y", "" + y);
             editor.repaint();
         } else if (!inSelectMode) {
-            editor.getCurrentPage().getRegions().mouseDragged(e, editor.getScale(), editor.editorFrame, false);
-            if (PlaybackFrame.playbackFrame != null && editor.getCurrentPage().getRegions().getSelectedRegions() != null) {
-                editor.getCurrentPage().getRegions().getSelectedRegions().lastElement().play();
+            editor.getCurrentPage().getRegions().getMouseHelper().mouseDragged(e, editor.getScale(), editor.editorFrame, false);
+            if (PlaybackFrame.playbackFrame != null && editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null) {
+                editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement().play();
             }
 
-            if (editor.getCurrentPage().getRegions().getSelectedRegions() != null && editor.getCurrentPage().getRegions().getSelectedRegions().size() > 0 && ((e.getModifiers() & InputEvent.BUTTON1_MASK) == InputEvent.BUTTON1_MASK || (e.getModifiers() & InputEvent.BUTTON3_MASK) == InputEvent.BUTTON3_MASK)) {
+            if (editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null && editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().size() > 0 && ((e.getModifiers() & InputEvent.BUTTON1_MASK) == InputEvent.BUTTON1_MASK || (e.getModifiers() & InputEvent.BUTTON3_MASK) == InputEvent.BUTTON3_MASK)) {
                 if (e.getWhen() != prevTimestamp) {
-                    ActiveRegion region = editor.getCurrentPage().getRegions().getSelectedRegions().lastElement();
+                    ActiveRegion region = editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
                     int dx = x - prevX;
                     int dy = y - prevY;
                     double dt = (e.getWhen() - prevTimestamp) / 100.0;
@@ -173,8 +167,8 @@ public class ActiveRegionSelectTool extends Tool {
                         if (!region.regionGrouping.equals("")) {
                             for (ActiveRegion as : region.parent.getRegions()) {
                                 if (as != region && as.regionGrouping.equals(region.regionGrouping)) {
-                                    as.getMotionHandler().processLimits("position x", as.x1, 0, 0, true);
-                                    as.getMotionHandler().processLimits("position y", as.y1, 0, 0, true);
+                                    as.getMotionController().processLimits("position x", as.x1, 0, 0, true);
+                                    as.getMotionController().processLimits("position y", as.y1, 0, 0, true);
                                 }
                             }
                         }
@@ -185,7 +179,7 @@ public class ActiveRegionSelectTool extends Tool {
                 }
             }
         } else {
-            editor.getCurrentPage().getRegions().setSelectedRegions(getSelectedRegions());
+            editor.getCurrentPage().getRegions().getMouseHelper().setSelectedRegions(getSelectedRegions());
             endX = x;
             endY = y;
             editor.repaint();
@@ -251,7 +245,7 @@ public class ActiveRegionSelectTool extends Tool {
                         break;
                 }
             } else {
-                ActiveRegion region = editor.getCurrentPage().getRegions().getLastSelectedRegion();
+                ActiveRegion region = editor.getCurrentPage().getRegions().getMouseHelper().getLastSelectedRegion();
                 if (region != null) {
                     switch (e.getKeyCode()) {
                         case KeyEvent.VK_BACK_SPACE:

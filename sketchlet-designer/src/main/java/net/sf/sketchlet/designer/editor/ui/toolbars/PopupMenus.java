@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the openExternalEditor.
- */
 package net.sf.sketchlet.designer.editor.ui.toolbars;
 
 import net.sf.sketchlet.common.translation.Language;
@@ -11,7 +7,7 @@ import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.tool.stroke.StrokeCombo;
 import net.sf.sketchlet.designer.editor.ui.extraeditor.ActiveRegionsExtraPanel;
 import net.sf.sketchlet.designer.editor.ui.region.ShapePanel;
-import net.sf.sketchlet.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.ActiveRegion;
 import net.sf.sketchlet.util.Colors;
 
 import javax.swing.*;
@@ -25,8 +21,8 @@ import java.awt.event.ActionListener;
 public class PopupMenus {
 
     public static void setRegionProperty(String name, String value) {
-        if (SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions() != null) {
-            for (ActiveRegion r : SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions()) {
+        if (SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null) {
+            for (ActiveRegion r : SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions()) {
                 r.setProperty(name, value);
 
                 if (name.equalsIgnoreCase("shape")) {
@@ -38,10 +34,10 @@ public class PopupMenus {
                             strArgs = arg;
                         }
                     }
-                    r.strShapeArgs = strArgs;
+                    r.shapeArguments = strArgs;
                 }
             }
-            ActiveRegionsExtraPanel.reload(SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement());
+            ActiveRegionsExtraPanel.reload(SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement());
             SketchletEditor.getInstance().forceRepaint();
         } else if (SketchletEditor.getInstance().getCurrentPage().getSelectedConnector() != null) {
             SketchletEditor.getInstance().getCurrentPage().getSelectedConnector().setProperty(name, value);

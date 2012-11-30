@@ -1,14 +1,6 @@
-/*
- * DataReceiver.java
- *
- * Created on February 21, 2006, 11:03 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
 package net.sf.sketchlet.net;
 
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import org.apache.log4j.Logger;
 
 import java.net.URLDecoder;

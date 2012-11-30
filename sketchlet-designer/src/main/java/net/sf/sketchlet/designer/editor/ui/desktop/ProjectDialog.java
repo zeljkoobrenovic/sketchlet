@@ -1,11 +1,3 @@
-/*
- * ProjectDialog.java
- *
- * Created on March 25, 2008, 1:36 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.editor.ui.desktop;
 
 import net.sf.sketchlet.common.context.SketchletContextUtils;
@@ -261,7 +253,7 @@ public class ProjectDialog extends JDialog implements KeyListener {
 
         if (dialog.projectCreated) {
             projectFolder = dialog.projectFolderField.getText();
-            Workspace.getMainPanel().projectTitle = dialog.projectNameField.getText();
+            Workspace.getMainPanel().setProjectTitle(dialog.projectNameField.getText());
         } else {
             projectFolder = null;
         }

@@ -1,17 +1,13 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.macros;
 
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.model.Page;
-import net.sf.sketchlet.model.programming.macros.Macro;
-import net.sf.sketchlet.model.programming.macros.Macros;
-import net.sf.sketchlet.model.programming.screenscripts.ScreenScripts;
-import net.sf.sketchlet.model.programming.timers.Timer;
-import net.sf.sketchlet.model.programming.timers.Timers;
+import net.sf.sketchlet.framework.model.Page;
+import net.sf.sketchlet.framework.model.programming.macros.Macro;
+import net.sf.sketchlet.framework.model.programming.macros.Macros;
+import net.sf.sketchlet.framework.model.programming.screenscripts.ScreenScripts;
+import net.sf.sketchlet.framework.model.programming.timers.Timer;
+import net.sf.sketchlet.framework.model.programming.timers.Timers;
 import net.sf.sketchlet.script.ScriptPluginProxy;
 
 import javax.swing.*;

@@ -1,11 +1,3 @@
-/*
- * ProcessConsolePanel.java
- *
- * Created on November 11, 2006, 4:14 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.desktop;
 
 import net.sf.sketchlet.common.EscapeChars;
@@ -84,43 +76,42 @@ public class ProcessConsolePanel extends JPanel implements RunInterface {
         }
     };
 
-    public ProcessConsolePanel(String identifier, String titleText, String description, String commandOriginal, String workingDirectory, java.util.List processes, int offset, boolean autoStart,
-                               String startCondition, String stopCondition, String outVariable, String inVariable) {
-        this.id = identifier;
-        this.title = titleText;
-        this.description = description;
-        this.commandOriginal = commandOriginal;
-        this.command = Workspace.replaceSystemVariables(commandOriginal);
+    public ProcessConsolePanel(ProcessInfo processInfo) {
+        this.id = processInfo.getIdentifier();
+        this.title = processInfo.getTitleText();
+        this.description = processInfo.getDescription();
+        this.commandOriginal = processInfo.getCommandOriginal();
+        this.command = Workspace.replaceSystemVariables(processInfo.getCommandOriginal());
 
-        this.startCondition = startCondition;
-        this.stopCondition = stopCondition;
-        this.outVariable = outVariable;
-        this.inVariable = inVariable;
+        this.startCondition = processInfo.getStartCondition();
+        this.stopCondition = processInfo.getStopCondition();
+        this.outVariable = processInfo.getOutVariable();
+        this.inVariable = processInfo.getInVariable();
 
         workingDirectoryField = new JTextField(49);
-        workingDirectoryField.setText(workingDirectory != null ? workingDirectory : "");
+        workingDirectoryField.setText(processInfo.getWorkingDirectory() != null ? processInfo.getWorkingDirectory() : "");
 
-        this.workingDirectoryOriginal = workingDirectory;
-        if (workingDirectory.trim().equals("")) {
+        this.workingDirectoryOriginal = processInfo.getWorkingDirectory();
+        if (processInfo.getWorkingDirectory().trim().equals("")) {
             this.workingDirectory = SketchletContextUtils.getCurrentProjectDir();
         } else {
-            this.workingDirectory = Workspace.replaceSystemVariables(workingDirectory);
+            this.workingDirectory = Workspace.replaceSystemVariables(processInfo.getWorkingDirectory());
         }
 
-        this.offset = offset;
-        this.processesVector = processes;
+        this.offset = processInfo.getOffset();
+        this.processesVector = processInfo.getProcesses();
 
         this.setLayout(new BorderLayout());
         cmdTextFieldOriginal = new JTextField(51);
         cmdTextField = new JTextField(64);
-        cmdTextFieldOriginal.setText(commandOriginal);
+        cmdTextFieldOriginal.setText(processInfo.getCommandOriginal());
         cmdTextField.setText(command);
 
         this.idField = new JTextField(id, 5);
         this.titleField = new JTextField(this.title, 20);
-        this.descriptionField = new JTextField(description, 58);
-        this.autoStartCheckBox = new JCheckBox(Language.translate("Start automatically"), autoStart);
-        this.timeOffsetField = new JTextField(offset + "", 4);
+        this.descriptionField = new JTextField(processInfo.getDescription(), 58);
+        this.autoStartCheckBox = new JCheckBox(Language.translate("Start automatically"), processInfo.isAutoStart());
+        this.timeOffsetField = new JTextField(processInfo.getOffset() + "", 4);
 
         cmdTextFieldOriginal.addKeyListener(this.keyListener);
         this.idField.addKeyListener(this.keyListener);
@@ -129,9 +120,9 @@ public class ProcessConsolePanel extends JPanel implements RunInterface {
         this.autoStartCheckBox.addChangeListener(this.changeListener);
         this.timeOffsetField.addKeyListener(this.keyListener);
 
-        timeOffsetField.setEnabled(autoStart);
-        label1.setEnabled(autoStart);
-        label2.setEnabled(autoStart);
+        timeOffsetField.setEnabled(processInfo.isAutoStart());
+        label1.setEnabled(processInfo.isAutoStart());
+        label2.setEnabled(processInfo.isAutoStart());
 
         autoStartCheckBox.addItemListener(new ItemListener() {
 
@@ -219,10 +210,10 @@ public class ProcessConsolePanel extends JPanel implements RunInterface {
         panel7.setBorder(BorderFactory.createTitledBorder("Advanced variable options"));
         panel7.setLayout(new GridLayout(0, 1));
 
-        startOnField.setText(startCondition);
-        stopOnField.setText(stopCondition);
-        outVariableField.setText(outVariable);
-        inVariableField.setText(inVariable);
+        startOnField.setText(processInfo.getStartCondition());
+        stopOnField.setText(processInfo.getStopCondition());
+        outVariableField.setText(processInfo.getOutVariable());
+        inVariableField.setText(processInfo.getInVariable());
 
         JPanel panel7a = new JPanel();
         panel7a.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -274,8 +265,8 @@ public class ProcessConsolePanel extends JPanel implements RunInterface {
 
         add(panelData, BorderLayout.NORTH);
 
-        if (autoStart) {
-            this.process = new ProcessHandler(id, command, this.workingDirectory, offset, processes, this);
+        if (processInfo.isAutoStart()) {
+            this.process = new ProcessHandler(id, command, this.workingDirectory, processInfo.getOffset(), processInfo.getProcesses(), this);
         }
 
         textArea.setBackground(Color.BLACK);
@@ -284,8 +275,8 @@ public class ProcessConsolePanel extends JPanel implements RunInterface {
         add(new JScrollPane(textArea), BorderLayout.CENTER);
         JPanel panel = new JPanel();
 
-        start.setEnabled(!autoStart);
-        stop.setEnabled(autoStart);
+        start.setEnabled(!processInfo.isAutoStart());
+        stop.setEnabled(processInfo.isAutoStart());
 
         stop.addActionListener(
                 new ActionListener() {
@@ -344,10 +335,6 @@ public class ProcessConsolePanel extends JPanel implements RunInterface {
         stop.setEnabled(true);
     }
 
-    /* public Dimension getPreferredSize() {
-    return new Dimension( 800, 400 );
-    }
-     */
     public void stopProcess() {
         stop.setEnabled(false);
         kill();

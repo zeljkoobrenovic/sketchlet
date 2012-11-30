@@ -1,13 +1,9 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.editor.ui.wizard;
 
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.editor.ui.extraeditor.TimersExtraPanel;
-import net.sf.sketchlet.model.programming.timers.Timer;
-import net.sf.sketchlet.model.programming.timers.Timers;
+import net.sf.sketchlet.framework.model.programming.timers.Timer;
+import net.sf.sketchlet.framework.model.programming.timers.Timers;
 
 import javax.swing.*;
 import java.awt.*;

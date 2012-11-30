@@ -27,7 +27,7 @@
         </dependency>
         <dependency>
             <groupId>net.sf.sketchlet</groupId>
-            <artifactId>sketchlet-plugin</artifactId>
+            <artifactId>sketchlet-core</artifactId>
             <version>1.0</version>
         </dependency>
         <dependency>
@@ -120,7 +120,8 @@
             <artifactId>spring-beans</artifactId>
             <version>3.1.1.RELEASE</version>
         </dependency>
-        <!-- System dependecies -->
+
+        <!-- System dependencies -->
         <dependency>
             <groupId>com.sun</groupId>
             <artifactId>plugin</artifactId>

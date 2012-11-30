@@ -5,10 +5,8 @@ import java.awt.*;
 /**
  * The structured representation of the string dropped internally from another part of Sketchlet
  * (variables, timers, macros...).
- * <p/>
- * User: zeljko
- * Date: 17-11-12
- * Time: 21:38
+ *
+ * author zeljko
  */
 public class InternalDroppedString {
     private String pastedText;

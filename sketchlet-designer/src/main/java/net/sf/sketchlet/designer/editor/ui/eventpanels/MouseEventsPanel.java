@@ -4,20 +4,16 @@ import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.editor.ui.ActionDialogUtils;
 import net.sf.sketchlet.designer.editor.ui.region.AbstractEventsPanel;
 import net.sf.sketchlet.designer.editor.ui.region.AddActionRunnable;
-import net.sf.sketchlet.model.EventMacroFactory;
-import net.sf.sketchlet.model.events.MouseEventMacro;
-import net.sf.sketchlet.model.MouseProcessor;
+import net.sf.sketchlet.framework.model.events.EventMacroFactory;
+import net.sf.sketchlet.framework.model.events.mouse.MouseEventMacro;
+import net.sf.sketchlet.framework.model.events.mouse.MouseProcessor;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
 /**
- * Created with IntelliJ IDEA.
- * User: zeljko
- * Date: 11-10-12
- * Time: 9:13
- * To change this template use File | Settings | File Templates.
+ * @author zeljko
  */
 public class MouseEventsPanel extends AbstractEventsPanel {
     private MouseProcessor mouseProcessor;

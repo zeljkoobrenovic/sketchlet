@@ -1,10 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.eye.eye;
 
-import net.sf.sketchlet.blackboard.Variable;
+import net.sf.sketchlet.framework.blackboard.Variable;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 
@@ -64,9 +60,9 @@ public class VariableEyeSlot extends EyeSlot {
 
     public void openItem() {
         SketchletEditor.getInstance().getSketchToolbar().showNavigator(true);
-        int row = Workspace.getMainPanel().sketchletPanel.globalVariablesPanel.variablesTableModel.variableRows.indexOf(variable);
-        Workspace.getMainPanel().sketchletPanel.globalVariablesPanel.table.getSelectionModel().setSelectionInterval(row, row);
-        Rectangle rect = Workspace.getMainPanel().sketchletPanel.globalVariablesPanel.table.getCellRect(row, 0, true);
-        Workspace.getMainPanel().sketchletPanel.globalVariablesPanel.table.scrollRectToVisible(rect);
+        int row = Workspace.getMainPanel().getSketchletPanel().globalVariablesPanel.variablesTableModel.variableRows.indexOf(variable);
+        Workspace.getMainPanel().getSketchletPanel().globalVariablesPanel.table.getSelectionModel().setSelectionInterval(row, row);
+        Rectangle rect = Workspace.getMainPanel().getSketchletPanel().globalVariablesPanel.table.getCellRect(row, 0, true);
+        Workspace.getMainPanel().getSketchletPanel().globalVariablesPanel.table.scrollRectToVisible(rect);
     }
 }

@@ -1,18 +1,10 @@
-/*
- * Workspace.java
- *
- * Created on April 18, 2006, 10:04 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer;
 
 import net.sf.sketchlet.common.context.SketchletContextUtils;
 import net.sf.sketchlet.common.file.FileUtils;
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.blackboard.ConfigurationData;
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.ConfigurationData;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.context.SketchletContext;
 import net.sf.sketchlet.context.SketchletGraphicsContext;
 import net.sf.sketchlet.context.VariablesBlackboardContext;
@@ -31,8 +23,8 @@ import net.sf.sketchlet.designer.editor.ui.profiles.Profiles;
 import net.sf.sketchlet.ioservices.IoServicesHandler;
 import net.sf.sketchlet.loaders.pluginloader.PluginInstance;
 import net.sf.sketchlet.loaders.pluginloader.PluginLoader;
-import net.sf.sketchlet.model.Page;
-import net.sf.sketchlet.blackboard.VariableSpacesHandler;
+import net.sf.sketchlet.framework.model.Page;
+import net.sf.sketchlet.framework.blackboard.VariableSpacesHandler;
 import net.sf.sketchlet.util.UtilContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.BasicConfigurator;
@@ -57,6 +49,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
+ *
  * @author cuypers
  */
 public class Workspace {
@@ -292,7 +285,7 @@ public class Workspace {
         getIoServicesFrame().addWindowListener(new WindowAdapter() {
 
             public void windowClosing(WindowEvent e) {
-                getMainPanel().consoleButton.setText(Language.translate("Show Details and Console..."));
+                getMainPanel().getConsoleButton().setText(Language.translate("Show Details and Console..."));
             }
         });
 
@@ -541,8 +534,8 @@ public class Workspace {
                         configFileUrl = args[0];
                     }
                     createAndShowGUI(configFileUrl);
-                    SketchletDesignerMainPanel.projectSelectorPanel.populate();
-                    getMainPanel().sketchletPanel.globalVariablesPanel.enableControls();
+                    SketchletDesignerMainPanel.getProjectSelectorPanel().populate();
+                    getMainPanel().getSketchletPanel().globalVariablesPanel.enableControls();
                 } catch (Exception e) {
                     log.error(e);
                 } finally {
@@ -611,8 +604,8 @@ public class Workspace {
 
     public static Page getPage() {
         Page page;
-        if ((PlaybackFrame.playbackFrame != null || SketchletEditor.getInstance().getInternalPlaybackPanel() != null) && PlaybackPanel.currentPage != null) {
-            page = PlaybackPanel.currentPage;
+        if ((PlaybackFrame.playbackFrame != null || SketchletEditor.getInstance().getInternalPlaybackPanel() != null) && PlaybackPanel.getCurrentPage() != null) {
+            page = PlaybackPanel.getCurrentPage();
         } else {
             page = SketchletEditor.getInstance().getCurrentPage();
         }

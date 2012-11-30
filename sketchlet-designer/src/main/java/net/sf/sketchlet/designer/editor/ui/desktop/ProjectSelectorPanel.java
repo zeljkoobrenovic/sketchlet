@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.desktop;
 
 import net.sf.sketchlet.common.context.SketchletContextUtils;
@@ -29,15 +25,6 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.ArrayList;
 
-/**
- * Example tree built out of DefaultMutableTreeNodes. 1999 Marty Hall,
- * http://www.apl.jhu.edu/~hall/java/
- */
-
-/**
- * JTree that reports selections by placing their string values in a JTextField.
- * 1999 Marty Hall, http://www.apl.jhu.edu/~hall/java/
- */
 public class ProjectSelectorPanel extends JPanel implements TreeSelectionListener {
     private static final Logger log = Logger.getLogger(ProjectSelectorPanel.class);
 
@@ -127,8 +114,8 @@ public class ProjectSelectorPanel extends JPanel implements TreeSelectionListene
                                                         }
                                                     }
                                                     populate();
-                                                    SketchletDesignerMainPanel.desktopPanelAuto.refresh();
-                                                    SketchletDesignerMainPanel.desktopPanel.refresh();
+                                                    SketchletDesignerMainPanel.getDesktopPanelAuto().refresh();
+                                                    SketchletDesignerMainPanel.getDesktopPanel().refresh();
                                                 } finally {
                                                     MessageFrame.closeMessage();
                                                 }
@@ -260,8 +247,8 @@ public class ProjectSelectorPanel extends JPanel implements TreeSelectionListene
                                                         }
                                                     }
                                                     populate();
-                                                    SketchletDesignerMainPanel.desktopPanelAuto.refresh();
-                                                    SketchletDesignerMainPanel.desktopPanel.refresh();
+                                                    SketchletDesignerMainPanel.getDesktopPanelAuto().refresh();
+                                                    SketchletDesignerMainPanel.getDesktopPanel().refresh();
                                                     MessageFrame.closeMessage();
                                                 }
                                             });
@@ -348,8 +335,8 @@ public class ProjectSelectorPanel extends JPanel implements TreeSelectionListene
                             }
                         }
                         populate();
-                        SketchletDesignerMainPanel.desktopPanelAuto.refresh();
-                        SketchletDesignerMainPanel.desktopPanel.refresh();
+                        SketchletDesignerMainPanel.getDesktopPanelAuto().refresh();
+                        SketchletDesignerMainPanel.getDesktopPanel().refresh();
                     } else {
                         JOptionPane.showMessageDialog(SketchletContext.getInstance().getMainFrame(), "Directory already exists.\nProject has not been moved.");
                     }

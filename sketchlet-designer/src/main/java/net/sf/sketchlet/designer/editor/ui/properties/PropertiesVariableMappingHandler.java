@@ -1,16 +1,12 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.editor.ui.properties;
 
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.context.VariableUpdateListener;
-import net.sf.sketchlet.model.PropertiesInterface;
-import net.sf.sketchlet.model.programming.macros.Commands;
-import net.sf.sketchlet.model.programming.timers.curves.Curve;
-import net.sf.sketchlet.model.programming.timers.curves.Curves;
+import net.sf.sketchlet.framework.model.PropertiesInterface;
+import net.sf.sketchlet.framework.model.programming.macros.Commands;
+import net.sf.sketchlet.framework.model.programming.timers.curves.Curve;
+import net.sf.sketchlet.framework.model.programming.timers.curves.Curves;
 
 import javax.swing.table.AbstractTableModel;
 import java.text.DecimalFormat;

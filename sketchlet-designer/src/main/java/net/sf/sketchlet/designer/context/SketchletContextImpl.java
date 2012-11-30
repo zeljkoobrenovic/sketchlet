@@ -1,11 +1,8 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.context;
 
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.evaluator.JEParser;
 import net.sf.sketchlet.common.context.SketchletContextUtils;
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.context.PageContext;
 import net.sf.sketchlet.context.PageEventsListener;
 import net.sf.sketchlet.context.SketchletContext;
@@ -18,14 +15,12 @@ import net.sf.sketchlet.designer.editor.ui.MessageFrame;
 import net.sf.sketchlet.designer.editor.ui.connectors.PluginsFrame;
 import net.sf.sketchlet.designer.playback.ui.PlaybackFrame;
 import net.sf.sketchlet.designer.playback.ui.PlaybackPanel;
-import net.sf.sketchlet.blackboard.evaluator.JEParser;
 import net.sf.sketchlet.loaders.pluginloader.PluginLoader;
-import net.sf.sketchlet.model.Page;
-import net.sf.sketchlet.model.programming.macros.Commands;
+import net.sf.sketchlet.framework.model.Page;
+import net.sf.sketchlet.framework.model.programming.macros.Commands;
 import net.sf.sketchlet.script.ScriptPluginProxy;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URL;
@@ -36,10 +31,8 @@ import java.util.Vector;
  */
 public class SketchletContextImpl extends SketchletContext {
 
-    private boolean stopped;
     private Object script;
     private static BufferedImage image = Workspace.createCompatibleImage(2000, 2000);
-    private Graphics2D g2;
     private static JFileChooser fc;
 
     private static String getFilePath(String title, int selectionMode, boolean bAllFiles) {
@@ -120,8 +113,8 @@ public class SketchletContextImpl extends SketchletContext {
 
     private Page getSketch() {
         Page page;
-        if ((PlaybackFrame.playbackFrame != null || SketchletEditor.getInstance().getInternalPlaybackPanel() != null) && PlaybackPanel.currentPage != null) {
-            page = PlaybackPanel.currentPage;
+        if ((PlaybackFrame.playbackFrame != null || SketchletEditor.getInstance().getInternalPlaybackPanel() != null) && PlaybackPanel.getCurrentPage() != null) {
+            page = PlaybackPanel.getCurrentPage();
         } else {
             page = SketchletEditor.getInstance().getCurrentPage();
         }
@@ -175,7 +168,7 @@ public class SketchletContextImpl extends SketchletContext {
 
     @Override
     public void pause(double seconds) {
-        if (VariablesBlackboard.getInstance() == null || VariablesBlackboard.isPaused() || stopped) {
+        if (VariablesBlackboard.getInstance() == null || VariablesBlackboard.isPaused()) {
             return;
         }
         try {
@@ -188,7 +181,7 @@ public class SketchletContextImpl extends SketchletContext {
 
     @Override
     public void waitForVariableUpdate(final String variable) {
-        if (VariablesBlackboard.getInstance() == null || VariablesBlackboard.isPaused() || stopped) {
+        if (VariablesBlackboard.getInstance() == null || VariablesBlackboard.isPaused()) {
             waiting = false;
             return;
         }
@@ -243,7 +236,7 @@ public class SketchletContextImpl extends SketchletContext {
 
     @Override
     public void updateVariable(String variable, String value) {
-        if (VariablesBlackboard.getInstance() == null || VariablesBlackboard.isPaused() || stopped) {
+        if (VariablesBlackboard.getInstance() == null || VariablesBlackboard.isPaused()) {
             return;
         }
         Commands.updateVariableOrProperty(this, variable, value, Commands.ACTION_VARIABLE_UPDATE);
@@ -316,7 +309,7 @@ public class SketchletContextImpl extends SketchletContext {
 
     @Override
     public String getVariableValue(String variable) {
-        if (VariablesBlackboard.getInstance() == null || VariablesBlackboard.isPaused() || stopped) {
+        if (VariablesBlackboard.getInstance() == null || VariablesBlackboard.isPaused()) {
             return null;
         }
 
@@ -429,7 +422,7 @@ public class SketchletContextImpl extends SketchletContext {
     @Override
     public boolean isInPlaybackMode() {
         return (PlaybackFrame.playbackFrame != null || (SketchletEditor.getInstance() != null && SketchletEditor.getInstance().getInternalPlaybackPanel() != null))
-                && PlaybackPanel.currentPage != null;
+                && PlaybackPanel.getCurrentPage() != null;
     }
 
     @Override

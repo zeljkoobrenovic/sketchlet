@@ -1,17 +1,13 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.page.spreadsheet;
 
 import net.sf.sketchlet.common.file.FileDrop;
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.ui.UIUtils;
 import net.sf.sketchlet.designer.editor.ui.desktop.Notepad;
-import net.sf.sketchlet.blackboard.evaluator.Evaluator;
+import net.sf.sketchlet.framework.blackboard.evaluator.Evaluator;
 import net.sf.sketchlet.util.RefreshTime;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 

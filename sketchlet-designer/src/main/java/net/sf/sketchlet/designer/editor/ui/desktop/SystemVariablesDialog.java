@@ -1,11 +1,7 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.editor.ui.desktop;
 
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.util.SpringUtilities;
 import net.sf.sketchlet.util.XMLHelper;
@@ -22,30 +18,30 @@ import java.util.Calendar;
  */
 public class SystemVariablesDialog extends JDialog {
 
-    JTextArea textArea = new JTextArea(2, 12);
-    JButton okButton = new JButton(Language.translate("OK"), Workspace.createImageIcon("resources/ok.png"));
-    JButton cancelButton = new JButton(Language.translate("Cancel"), Workspace.createImageIcon("resources/cancel.png"));
-    JCheckBox checkMouseX = new JCheckBox(Language.translate("Mouse Position X"), false);
-    JCheckBox checkMouseY = new JCheckBox(Language.translate("Mouse Position Y"), false);
-    JCheckBox checkMouseEvent = new JCheckBox(Language.translate("Mouse Event"), false);
-    JCheckBox checkKey = new JCheckBox(Language.translate("Keyboard Key"), false);
-    JCheckBox checkKeyCode = new JCheckBox(Language.translate("Keyboard Code"), false);
-    JCheckBox checkKeyboardEvent = new JCheckBox(Language.translate("Keyboard Event"), false);
-    JCheckBox checkTimeHour = new JCheckBox(Language.translate("Time / Hours"), false);
-    JCheckBox checkTimeMinute = new JCheckBox(Language.translate("Time / Minutes"), false);
-    JCheckBox checkTimeSecond = new JCheckBox(Language.translate("Time / Seconds"), false);
-    JCheckBox checkTimestamp = new JCheckBox(Language.translate("Timestamp"), false);
-    JTextField fieldVarX = new JTextField("mouse_x");
-    JTextField fieldVarY = new JTextField("mouse_x");
-    JTextField fieldVarEvent = new JTextField("mouse_event");
-    JTextField fieldVarKey = new JTextField("key");
-    JTextField fieldVarCode = new JTextField("keycode");
-    JTextField fieldVarKeyboardEvent = new JTextField("keyboard_event");
-    JTextField fieldVarTimeHour = new JTextField("hours");
-    JTextField fieldVarTimeMinute = new JTextField("minutes");
-    JTextField fieldVarTimeSecond = new JTextField("seconds");
-    JTextField fieldVarTimestamp = new JTextField("timestamp");
-    public static Object data[][] = {
+    private JTextArea textArea = new JTextArea(2, 12);
+    private JButton okButton = new JButton(Language.translate("OK"), Workspace.createImageIcon("resources/ok.png"));
+    private JButton cancelButton = new JButton(Language.translate("Cancel"), Workspace.createImageIcon("resources/cancel.png"));
+    private JCheckBox checkMouseX = new JCheckBox(Language.translate("Mouse Position X"), false);
+    private JCheckBox checkMouseY = new JCheckBox(Language.translate("Mouse Position Y"), false);
+    private JCheckBox checkMouseEvent = new JCheckBox(Language.translate("Mouse Event"), false);
+    private JCheckBox checkKey = new JCheckBox(Language.translate("Keyboard Key"), false);
+    private JCheckBox checkKeyCode = new JCheckBox(Language.translate("Keyboard Code"), false);
+    private JCheckBox checkKeyboardEvent = new JCheckBox(Language.translate("Keyboard Event"), false);
+    private JCheckBox checkTimeHour = new JCheckBox(Language.translate("Time / Hours"), false);
+    private JCheckBox checkTimeMinute = new JCheckBox(Language.translate("Time / Minutes"), false);
+    private JCheckBox checkTimeSecond = new JCheckBox(Language.translate("Time / Seconds"), false);
+    private JCheckBox checkTimestamp = new JCheckBox(Language.translate("Timestamp"), false);
+    private JTextField fieldVarX = new JTextField("mouse_x");
+    private JTextField fieldVarY = new JTextField("mouse_x");
+    private JTextField fieldVarEvent = new JTextField("mouse_event");
+    private JTextField fieldVarKey = new JTextField("key");
+    private JTextField fieldVarCode = new JTextField("keycode");
+    private JTextField fieldVarKeyboardEvent = new JTextField("keyboard_event");
+    private JTextField fieldVarTimeHour = new JTextField("hours");
+    private JTextField fieldVarTimeMinute = new JTextField("minutes");
+    private JTextField fieldVarTimeSecond = new JTextField("seconds");
+    private JTextField fieldVarTimestamp = new JTextField("timestamp");
+    private static Object[][] data = {
             {"false", "mouse_x", "mouse_x"},
             {"false", "mouse_y", "mouse_y"},
             {"false", "mouse_event", "mouse_event"},
@@ -152,58 +148,66 @@ public class SystemVariablesDialog extends JDialog {
         setVisible(true);
     }
 
+    public static Object[][] getData() {
+        return data;
+    }
+
+    public static void setData(Object[][] data) {
+        SystemVariablesDialog.data = data;
+    }
+
     public void save() {
-        data[0][0] = "" + checkMouseX.isSelected();
-        data[1][0] = "" + checkMouseY.isSelected();
-        data[2][0] = "" + checkMouseEvent.isSelected();
-        data[3][0] = "" + checkKey.isSelected();
-        data[4][0] = "" + checkKeyboardEvent.isSelected();
-        data[5][0] = "" + checkTimeHour.isSelected();
-        data[6][0] = "" + checkTimeMinute.isSelected();
-        data[7][0] = "" + checkTimeSecond.isSelected();
-        data[8][0] = "" + checkTimestamp.isSelected();
-        data[9][0] = "" + checkKeyCode.isSelected();
+        getData()[0][0] = "" + checkMouseX.isSelected();
+        getData()[1][0] = "" + checkMouseY.isSelected();
+        getData()[2][0] = "" + checkMouseEvent.isSelected();
+        getData()[3][0] = "" + checkKey.isSelected();
+        getData()[4][0] = "" + checkKeyboardEvent.isSelected();
+        getData()[5][0] = "" + checkTimeHour.isSelected();
+        getData()[6][0] = "" + checkTimeMinute.isSelected();
+        getData()[7][0] = "" + checkTimeSecond.isSelected();
+        getData()[8][0] = "" + checkTimestamp.isSelected();
+        getData()[9][0] = "" + checkKeyCode.isSelected();
 
-        data[0][1] = fieldVarX.getText();
-        data[1][1] = fieldVarY.getText();
-        data[2][1] = fieldVarEvent.getText();
-        data[3][1] = fieldVarKey.getText();
-        data[9][1] = fieldVarCode.getText();
-        data[4][1] = fieldVarKeyboardEvent.getText();
-        data[5][1] = fieldVarTimeHour.getText();
-        data[6][1] = fieldVarTimeMinute.getText();
-        data[7][1] = fieldVarTimeSecond.getText();
-        data[8][1] = fieldVarTimestamp.getText();
+        getData()[0][1] = fieldVarX.getText();
+        getData()[1][1] = fieldVarY.getText();
+        getData()[2][1] = fieldVarEvent.getText();
+        getData()[3][1] = fieldVarKey.getText();
+        getData()[9][1] = fieldVarCode.getText();
+        getData()[4][1] = fieldVarKeyboardEvent.getText();
+        getData()[5][1] = fieldVarTimeHour.getText();
+        getData()[6][1] = fieldVarTimeMinute.getText();
+        getData()[7][1] = fieldVarTimeSecond.getText();
+        getData()[8][1] = fieldVarTimestamp.getText();
 
-        XMLHelper.save("system_variables.xml", "system_variables", data);
+        XMLHelper.save("system_variables.xml", "system_variables", getData());
         startThread();
     }
 
     public static SystemVarThread timeThread;
 
     public void load() {
-        XMLHelper.load("system_variables.xml", "system_variables", data);
+        XMLHelper.load("system_variables.xml", "system_variables", getData());
 
-        checkMouseX.setSelected(((String) data[0][0]).equalsIgnoreCase("true"));
-        checkMouseY.setSelected(((String) data[1][0]).equalsIgnoreCase("true"));
-        checkMouseEvent.setSelected(((String) data[2][0]).equalsIgnoreCase("true"));
-        checkKey.setSelected(((String) data[3][0]).equalsIgnoreCase("true"));
-        checkKeyCode.setSelected(((String) data[9][0]).equalsIgnoreCase("true"));
-        checkKeyboardEvent.setSelected(((String) data[4][0]).equalsIgnoreCase("true"));
-        checkTimeHour.setSelected(((String) data[5][0]).equalsIgnoreCase("true"));
-        checkTimeMinute.setSelected(((String) data[6][0]).equalsIgnoreCase("true"));
-        checkTimeSecond.setSelected(((String) data[7][0]).equalsIgnoreCase("true"));
-        checkTimestamp.setSelected(((String) data[8][0]).equalsIgnoreCase("true"));
-        fieldVarX.setText((String) data[0][1]);
-        fieldVarY.setText((String) data[1][1]);
-        fieldVarEvent.setText((String) data[2][1]);
-        fieldVarKey.setText((String) data[3][1]);
-        fieldVarCode.setText((String) data[9][1]);
-        fieldVarKeyboardEvent.setText((String) data[4][1]);
-        fieldVarTimeHour.setText((String) data[5][1]);
-        fieldVarTimeMinute.setText((String) data[6][1]);
-        fieldVarTimeSecond.setText((String) data[7][1]);
-        fieldVarTimestamp.setText((String) data[8][1]);
+        checkMouseX.setSelected(((String) getData()[0][0]).equalsIgnoreCase("true"));
+        checkMouseY.setSelected(((String) getData()[1][0]).equalsIgnoreCase("true"));
+        checkMouseEvent.setSelected(((String) getData()[2][0]).equalsIgnoreCase("true"));
+        checkKey.setSelected(((String) getData()[3][0]).equalsIgnoreCase("true"));
+        checkKeyCode.setSelected(((String) getData()[9][0]).equalsIgnoreCase("true"));
+        checkKeyboardEvent.setSelected(((String) getData()[4][0]).equalsIgnoreCase("true"));
+        checkTimeHour.setSelected(((String) getData()[5][0]).equalsIgnoreCase("true"));
+        checkTimeMinute.setSelected(((String) getData()[6][0]).equalsIgnoreCase("true"));
+        checkTimeSecond.setSelected(((String) getData()[7][0]).equalsIgnoreCase("true"));
+        checkTimestamp.setSelected(((String) getData()[8][0]).equalsIgnoreCase("true"));
+        fieldVarX.setText((String) getData()[0][1]);
+        fieldVarY.setText((String) getData()[1][1]);
+        fieldVarEvent.setText((String) getData()[2][1]);
+        fieldVarKey.setText((String) getData()[3][1]);
+        fieldVarCode.setText((String) getData()[9][1]);
+        fieldVarKeyboardEvent.setText((String) getData()[4][1]);
+        fieldVarTimeHour.setText((String) getData()[5][1]);
+        fieldVarTimeMinute.setText((String) getData()[6][1]);
+        fieldVarTimeSecond.setText((String) getData()[7][1]);
+        fieldVarTimestamp.setText((String) getData()[8][1]);
 
     }
 
@@ -218,26 +222,26 @@ public class SystemVariablesDialog extends JDialog {
     }
 
     public static void processMouseEvent(int x, int y, String event) {
-        if (((String) data[0][0]).equalsIgnoreCase("true")) {
-            VariablesBlackboard.getInstance().updateVariableIfDifferent((String) data[0][1], "" + x);
+        if (((String) getData()[0][0]).equalsIgnoreCase("true")) {
+            VariablesBlackboard.getInstance().updateVariableIfDifferent((String) getData()[0][1], "" + x);
         }
-        if (((String) data[1][0]).equalsIgnoreCase("true")) {
-            VariablesBlackboard.getInstance().updateVariableIfDifferent((String) data[1][1], "" + y);
+        if (((String) getData()[1][0]).equalsIgnoreCase("true")) {
+            VariablesBlackboard.getInstance().updateVariableIfDifferent((String) getData()[1][1], "" + y);
         }
-        if (((String) data[2][0]).equalsIgnoreCase("true")) {
-            VariablesBlackboard.getInstance().updateVariable((String) data[2][1], event);
+        if (((String) getData()[2][0]).equalsIgnoreCase("true")) {
+            VariablesBlackboard.getInstance().updateVariable((String) getData()[2][1], event);
         }
     }
 
     public static void processKeyboardEvent(KeyEvent e, String key, String event) {
-        if (((String) data[3][0]).equalsIgnoreCase("true")) {
-            VariablesBlackboard.getInstance().updateVariableIfDifferent((String) data[3][1], key);
+        if (((String) getData()[3][0]).equalsIgnoreCase("true")) {
+            VariablesBlackboard.getInstance().updateVariableIfDifferent((String) getData()[3][1], key);
         }
-        if (((String) data[9][0]).equalsIgnoreCase("true")) {
-            VariablesBlackboard.getInstance().updateVariableIfDifferent((String) data[9][1], e.getKeyCode() + "");
+        if (((String) getData()[9][0]).equalsIgnoreCase("true")) {
+            VariablesBlackboard.getInstance().updateVariableIfDifferent((String) getData()[9][1], e.getKeyCode() + "");
         }
-        if (((String) data[4][0]).equalsIgnoreCase("true")) {
-            VariablesBlackboard.getInstance().updateVariable((String) data[4][1], event);
+        if (((String) getData()[4][0]).equalsIgnoreCase("true")) {
+            VariablesBlackboard.getInstance().updateVariable((String) getData()[4][1], event);
         }
     }
 
@@ -260,14 +264,14 @@ public class SystemVariablesDialog extends JDialog {
 
         public void run() {
             while (!stopped) {
-                String strH = data[5][1].toString();
-                String strM = data[6][1].toString();
-                String strS = data[7][1].toString();
-                String strT = data[8][1].toString();
-                boolean bH = data[5][0].toString().equalsIgnoreCase("true") && !strH.isEmpty();
-                boolean bM = data[6][0].toString().equalsIgnoreCase("true") && !strM.isEmpty();
-                boolean bS = data[7][0].toString().equalsIgnoreCase("true") && !strS.isEmpty();
-                boolean bT = data[8][0].toString().equalsIgnoreCase("true") && !strT.isEmpty();
+                String strH = getData()[5][1].toString();
+                String strM = getData()[6][1].toString();
+                String strS = getData()[7][1].toString();
+                String strT = getData()[8][1].toString();
+                boolean bH = getData()[5][0].toString().equalsIgnoreCase("true") && !strH.isEmpty();
+                boolean bM = getData()[6][0].toString().equalsIgnoreCase("true") && !strM.isEmpty();
+                boolean bS = getData()[7][0].toString().equalsIgnoreCase("true") && !strS.isEmpty();
+                boolean bT = getData()[8][0].toString().equalsIgnoreCase("true") && !strT.isEmpty();
 
                 if (bH || bM || bS || bT) {
                     if (!VariablesBlackboard.getInstance().isPaused()) {
@@ -299,9 +303,5 @@ public class SystemVariablesDialog extends JDialog {
             }
             stopped = true;
         }
-    }
-
-    public static void main(String args[]) {
-        new SystemVariablesDialog(null);
     }
 }

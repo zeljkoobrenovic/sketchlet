@@ -1,20 +1,16 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.eye.eye;
 
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
-import net.sf.sketchlet.blackboard.Variable;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.Variable;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.model.ActiveRegion;
-import net.sf.sketchlet.model.Page;
-import net.sf.sketchlet.model.programming.macros.Macro;
-import net.sf.sketchlet.model.programming.macros.Macros;
-import net.sf.sketchlet.model.programming.screenscripts.ScreenScript;
-import net.sf.sketchlet.model.programming.screenscripts.ScreenScripts;
-import net.sf.sketchlet.model.programming.timers.Timer;
-import net.sf.sketchlet.model.programming.timers.Timers;
+import net.sf.sketchlet.framework.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.Page;
+import net.sf.sketchlet.framework.model.programming.macros.Macro;
+import net.sf.sketchlet.framework.model.programming.macros.Macros;
+import net.sf.sketchlet.framework.model.programming.screenscripts.ScreenScript;
+import net.sf.sketchlet.framework.model.programming.screenscripts.ScreenScripts;
+import net.sf.sketchlet.framework.model.programming.timers.Timer;
+import net.sf.sketchlet.framework.model.programming.timers.Timers;
 import net.sf.sketchlet.script.ScriptPluginProxy;
 
 import java.awt.*;
@@ -124,7 +120,6 @@ public class EyeData {
         }
         if (n > 0) {
             slots.add(new EmptyEyeSlot(this));
-            n = 0;
         }
 
         for (int i = 0; i < slots.size(); i++) {

@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.profiles;
 
 import net.sf.sketchlet.common.translation.Language;

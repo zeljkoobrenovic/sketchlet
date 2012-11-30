@@ -1,16 +1,8 @@
-/*
- * RecentFilesManager.java
- *
- * Created on March 25, 2008, 6:05 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the openExternalEditor.
- */
 package net.sf.sketchlet.designer;
 
 import net.sf.sketchlet.common.SimpleProperties;
 import net.sf.sketchlet.common.context.SketchletContextUtils;
-import net.sf.sketchlet.model.Page;
+import net.sf.sketchlet.framework.model.Page;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -134,11 +126,11 @@ public class RecentFilesManager {
     }
 
     public static void populateMenu() {
-        if (Workspace.getMainPanel() == null || Workspace.getMainPanel().recentProjectsMenu == null) {
+        if (Workspace.getMainPanel() == null || Workspace.getMainPanel().getRecentProjectsMenu() == null) {
             return;
         }
 
-        JMenu menu = Workspace.getMainPanel().recentProjectsMenu;
+        JMenu menu = Workspace.getMainPanel().getRecentProjectsMenu();
         menu.removeAll();
 
         int startIndex = 0;

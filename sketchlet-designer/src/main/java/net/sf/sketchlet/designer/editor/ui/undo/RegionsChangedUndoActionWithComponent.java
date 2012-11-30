@@ -1,10 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.editor.ui.undo;
 
-import net.sf.sketchlet.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.ActiveRegion;
 
 import java.awt.*;
 import java.util.Vector;

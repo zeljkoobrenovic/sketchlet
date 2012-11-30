@@ -1,15 +1,11 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.tool;
 
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.designer.tools.log.ActivityLog;
+import net.sf.sketchlet.framework.model.log.ActivityLog;
 import net.sf.sketchlet.designer.playback.ui.PlaybackFrame;
-import net.sf.sketchlet.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.ActiveRegion;
 
 import javax.swing.*;
 import java.awt.*;
@@ -53,7 +49,6 @@ public class ActiveRegionTool extends Tool {
 
     @Override
     public void mouseMoved(MouseEvent e, int x, int y) {
-        ActiveRegion a = editor.getCurrentPage().getRegions().selectRegion(x, y, false);
         if (x < 0 || y < 0) {
             editor.setCursor(Cursor.getDefaultCursor());
         } else {
@@ -64,8 +59,8 @@ public class ActiveRegionTool extends Tool {
     @Override
     public void mousePressed(MouseEvent e, int x, int y) {
         bDragged = false;
-        editor.getCurrentPage().getRegions().mousePressed(e, editor.getScale(), editor.editorFrame, false, true);
-        if (editor.getCurrentPage().getRegions().isNewRegion()) {
+        editor.getCurrentPage().getRegions().getMouseHelper().mousePressed(e, editor.getScale(), editor.editorFrame, false, true);
+        if (editor.getCurrentPage().getRegions().getMouseHelper().isNewRegion()) {
             editor.saveNewRegionUndo();
         } else {
             editor.saveRegionUndo();
@@ -82,15 +77,15 @@ public class ActiveRegionTool extends Tool {
 
     @Override
     public void mouseReleased(MouseEvent e, int x, int y) {
-        boolean newRegion = editor.getCurrentPage().getRegions().isNewRegion();
-        editor.getCurrentPage().getRegions().mouseReleased(e, editor.getScale(), editor.editorFrame, false);
+        boolean newRegion = editor.getCurrentPage().getRegions().getMouseHelper().isNewRegion();
+        editor.getCurrentPage().getRegions().getMouseHelper().mouseReleased(e, editor.getScale(), editor.editorFrame, false);
 
-        if (editor.getCurrentPage().getRegions().getSelectedRegions() == null || editor.getCurrentPage().getRegions().isbNoEffect() || !bDragged) {
+        if (editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() == null || editor.getCurrentPage().getRegions().getMouseHelper().isWithoutEffect() || !bDragged) {
             if (editor.getUndoRegionActions().size() > 0) {
                 editor.getUndoRegionActions().remove(editor.getUndoRegionActions().size() - 1);
             }
         }
-        if (newRegion && editor.getCurrentPage().getRegions().getSelectedRegions() != null) {
+        if (newRegion && editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null) {
             SketchletEditor.getInstance().setTool(SketchletEditor.getInstance().getActiveRegionSelectTool(), SketchletEditor.getInstance());
         }
 
@@ -101,14 +96,14 @@ public class ActiveRegionTool extends Tool {
     @Override
     public void mouseDragged(MouseEvent e, int x, int y) {
         bDragged = true;
-        editor.getCurrentPage().getRegions().mouseDragged(e, editor.getScale(), editor.editorFrame, false);
-        if (PlaybackFrame.playbackFrame != null && editor.getCurrentPage().getRegions().getSelectedRegions() != null) {
-            editor.getCurrentPage().getRegions().getSelectedRegions().lastElement().play();
+        editor.getCurrentPage().getRegions().getMouseHelper().mouseDragged(e, editor.getScale(), editor.editorFrame, false);
+        if (PlaybackFrame.playbackFrame != null && editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null) {
+            editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement().play();
         }
 
-        if (editor.getCurrentPage().getRegions().getSelectedRegions() != null && editor.getCurrentPage().getRegions().getSelectedRegions().size() > 0 && ((e.getModifiers() & InputEvent.BUTTON1_MASK) == InputEvent.BUTTON1_MASK || (e.getModifiers() & InputEvent.BUTTON3_MASK) == InputEvent.BUTTON3_MASK)) {
+        if (editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null && editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().size() > 0 && ((e.getModifiers() & InputEvent.BUTTON1_MASK) == InputEvent.BUTTON1_MASK || (e.getModifiers() & InputEvent.BUTTON3_MASK) == InputEvent.BUTTON3_MASK)) {
             if (e.getWhen() != prevTimestamp) {
-                ActiveRegion a = editor.getCurrentPage().getRegions().getSelectedRegions().lastElement();
+                ActiveRegion a = editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
                 int dx = x - prevX;
                 int dy = y - prevY;
                 double dt = (e.getWhen() - prevTimestamp) / 100.0;
@@ -124,14 +119,13 @@ public class ActiveRegionTool extends Tool {
                 }
 
                 speed = _s / speeds.length;
-                double _speed = a.getMotionHandler().processLimits("speed", speed, 0.0, 0.0, true);
 
                 if (dx != 0 || dy != 0) {
                     if (!a.regionGrouping.equals("")) {
                         for (ActiveRegion as : a.parent.getRegions()) {
                             if (as != a && as.regionGrouping.equals(a.regionGrouping)) {
-                                as.getMotionHandler().processLimits("position x", as.x1, 0, 0, true);
-                                as.getMotionHandler().processLimits("position y", as.y1, 0, 0, true);
+                                as.getMotionController().processLimits("position x", as.x1, 0, 0, true);
+                                as.getMotionController().processLimits("position y", as.y1, 0, 0, true);
                             }
                         }
                     }

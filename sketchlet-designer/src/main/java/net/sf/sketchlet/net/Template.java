@@ -8,7 +8,7 @@
  */
 package net.sf.sketchlet.net;
 
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 
 /**
  * @author cuypers

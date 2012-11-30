@@ -1,28 +1,3 @@
-/*
- * Copyright (c) 1997, 2008, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms. 
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package com.sun.tools.internal.xjc.runtime;
 
 import javax.xml.bind.JAXBContext;
@@ -32,44 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-/**
- * This class implements the actual logic of {@link JAXBContext#newInstance}.
- * <p/>
- * <p/>
- * This class works as a facade and all the actual work is delegated to
- * a JAXB provider that happens to be in the runtime (not necessarily the JAXB RI.)
- * This allows the generated code to be run with any JAXB provider.
- * <p/>
- * <p/>
- * This code is only used when XJC generates interfaces/implementations.
- * <p/>
- * <p/>
- * The trick to make this work is two ObjectFactory classes that we generate
- * in the interface/implementation mode.
- * <p/>
- * <p/>
- * The public ObjectFactory follows the spec, and this is the one that's exposed
- * to users. The public ObjectFactory refers to interfaces, so they aren't
- * directly usable by a JAXB 2.0 implementation.
- * <p/>
- * <p/>
- * The private one lives in the impl package, and this one is indistinguishable
- * from the ObjectFactory that we generate for the value class generation mode.
- * This private ObjectFactory refers to implementation classes, which are
- * also indistinguishable from value classes that JAXB generates.
- * <p/>
- * <p/>
- * All in all, the private ObjectFactory plus implementation classes give
- * a JAXB provider an illusion that they are dealing with value classes
- * that happens to implement some interfaces.
- * <p/>
- * <p/>
- * In this way, the JAXB RI can provide the portability even for the
- * interface/implementation generation mode.
- *
- * @author Kohsuke Kawaguchi
- * @since 2.0
- */
 public class JAXBContextFactory {
     private static final String DOT_OBJECT_FACTORY = ".ObjectFactory";
     private static final String IMPL_DOT_OBJECT_FACTORY = ".impl.ObjectFactory";

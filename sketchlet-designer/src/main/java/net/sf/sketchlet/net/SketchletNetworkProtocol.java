@@ -1,11 +1,7 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.net;
 
-import net.sf.sketchlet.blackboard.CommandHandler;
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.CommandHandler;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.context.SketchletContext;
 import net.sf.sketchlet.context.SketchletGraphicsContext;
 import org.apache.log4j.Logger;

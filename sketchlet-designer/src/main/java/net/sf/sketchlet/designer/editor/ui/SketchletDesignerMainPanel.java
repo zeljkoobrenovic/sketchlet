@@ -1,11 +1,3 @@
-/*
- * SketchletDesignerMainPanel.java
- *
- * Created on November 11, 2006, 4:17 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui;
 
 import net.sf.sketchlet.common.QuotedStringTokenizer;
@@ -13,7 +5,6 @@ import net.sf.sketchlet.common.context.SketchletContextUtils;
 import net.sf.sketchlet.common.file.FileUtils;
 import net.sf.sketchlet.common.system.PlatformManager;
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.net.NetUtils;
 import net.sf.sketchlet.context.SketchletContext;
 import net.sf.sketchlet.context.SketchletGraphicsContext;
 import net.sf.sketchlet.designer.GlobalProperties;
@@ -37,13 +28,15 @@ import net.sf.sketchlet.designer.editor.ui.page.PageDetailsPanel;
 import net.sf.sketchlet.designer.editor.ui.profiles.Profiles;
 import net.sf.sketchlet.designer.editor.ui.region.ActiveRegionPanel;
 import net.sf.sketchlet.designer.editor.ui.timers.curve.CurvesFrame;
+import net.sf.sketchlet.designer.editor.ui.variables.VariablesPanel;
 import net.sf.sketchlet.designer.editor.ui.variables.VariablesTableModel;
 import net.sf.sketchlet.designer.editor.ui.variables.recorder.VariablesRecorder;
+import net.sf.sketchlet.designer.help.HelpViewer;
 import net.sf.sketchlet.designer.playback.displays.InteractionSpace;
 import net.sf.sketchlet.designer.playback.ui.InteractionSpaceFrame;
 import net.sf.sketchlet.designer.playback.ui.PropertiesFrame;
-import net.sf.sketchlet.designer.tools.imagecache.ImageCache;
-import net.sf.sketchlet.designer.tools.log.ActivityLog;
+import net.sf.sketchlet.framework.model.imagecache.ImageCache;
+import net.sf.sketchlet.framework.model.log.ActivityLog;
 import net.sf.sketchlet.designer.tools.reporting.ReportFrame;
 import net.sf.sketchlet.designer.tools.vfs.RemoteLocationFrame;
 import net.sf.sketchlet.designer.tools.vfs.RestoreRemoteLocationFrame;
@@ -52,10 +45,11 @@ import net.sf.sketchlet.designer.tools.zip.ZipVersion;
 import net.sf.sketchlet.help.HelpUtils;
 import net.sf.sketchlet.loaders.pluginloader.PluginData;
 import net.sf.sketchlet.loaders.pluginloader.PluginLoader;
-import net.sf.sketchlet.model.Pages;
-import net.sf.sketchlet.model.programming.macros.Macros;
-import net.sf.sketchlet.model.programming.screenscripts.ScreenScripts;
-import net.sf.sketchlet.model.programming.timers.Timers;
+import net.sf.sketchlet.framework.model.Pages;
+import net.sf.sketchlet.framework.model.programming.macros.Macros;
+import net.sf.sketchlet.framework.model.programming.screenscripts.ScreenScripts;
+import net.sf.sketchlet.framework.model.programming.timers.Timers;
+import net.sf.sketchlet.net.NetUtils;
 import net.sf.sketchlet.script.ScriptConsole;
 import net.sf.sketchlet.util.XMLHelper;
 import org.apache.log4j.Logger;
@@ -91,67 +85,54 @@ import java.util.List;
  */
 public class SketchletDesignerMainPanel extends JPanel implements ActionListener {
     private static final Logger log = Logger.getLogger(SketchletDesignerMainPanel.class);
-    JFrame consoleFrame;
-    public JComboBox comboProfiles;
-    public Workspace processRunner;
-    public JTable tableModules;
-    JTable tableFiles;
-    // JTable tableSketches;
-    public ProcessTableModel tableModelModules;
-    FileTableModel tableModelFiles;
-    // public SketchesTableModel tableModelSketches;
-    public String projectTitle = "";
-    public JTextField projectFolderField;
-    public JButton consoleButton;
-    JButton editButton;
-    public JMenu recentProjectsMenu;
-    public JMenu systemSettingsMenu;
-    public JMenu projectSettingsMenu;
-    SketchletDesignerMainPanel thisPanel = this;
-    private Hashtable commands;
+
+    private static final String IMAGE_SUFFIX = "Image";
+    private static final String LABEL_SUFFIX = "Label";
+    private static final String ACTION_SUFFIX = "Action";
+    private static final String TIP_SUFFIX = "Tooltip";
+    private static final String TEXT_SUFFIX = "Text";
+
+    private JFrame consoleFrame;
+    private JComboBox comboProfiles;
+    private Workspace processRunner;
+    private JTable tableModules;
+    private JTable tableFiles;
+    private ProcessTableModel tableModelModules;
+    private FileTableModel tableModelFiles;
+    private String projectTitle = "";
+    private JTextField projectFolderField;
+    private JButton consoleButton;
+    private JMenu recentProjectsMenu;
+    private JMenu systemSettingsMenu;
+    private JMenu projectSettingsMenu;
+    private SketchletDesignerMainPanel thisPanel = this;
     private Hashtable menuItems;
     private Hashtable toolbarItems;
-    public JMenuBar menubar;
-    private JToolBar toolbar;
-    public JPanel panelFiles = new JPanel();
-    public JPanel panelProcesses = new JPanel();
-    String[] columnNames = {Language.translate("Service"), Language.translate("Status")};
-    String[] columnNamesFiles = {Language.translate("File"), Language.translate("Size"), Language.translate("Date")};
-    String[] columnNamesSketches = {Language.translate("Page Name"), Language.translate("Image")};
+    private JMenuBar menuBar;
+    private JPanel panelFiles = new JPanel();
+    private JPanel panelProcesses = new JPanel();
+    private String[] columnNames = {Language.translate("Service"), Language.translate("Status")};
+    private String[] columnNamesFiles = {Language.translate("File"), Language.translate("Size"), Language.translate("Date")};
     private static ResourceBundle resources;
-    private final static String EXIT_AFTER_PAINT = new String("-exit");
-    private static boolean exitAfterFirstPaint;
-    public JTabbedPane tabs;
-    final static JFileChooser fc = new JFileChooser();
-    public static JPanel desktopPanelFrame = new JPanel(new BorderLayout());
-    public static JPanel desktopPanelAutoFrame = new JPanel(new BorderLayout());
-    public static JScrollPane desktopPanelScrollPane = new JScrollPane(desktopPanelFrame);
-    public static JScrollPane desktopPanelAutoScrollPane = new JScrollPane(desktopPanelAutoFrame);
-    public static DesktopPanel desktopPanel = new DesktopPanel(DesktopPanel.MANUAL, SketchletDesignerMainPanel.desktopPanelScrollPane);
-    public static DesktopPanel desktopPanelAuto = new DesktopPanel(DesktopPanel.AUTO, SketchletDesignerMainPanel.desktopPanelAutoScrollPane);
-    public static ProjectSelectorPanel projectSelectorPanel;
-    /**
-     * Suffix applied to the key used in resource file lookups for an
-     * currentSketch.images.
-     */
-    public static final String imageSuffix = "Image";
-    /**
-     * Suffix applied to the key used in resource file lookups for a label.
-     */
-    public static final String labelSuffix = "Label";
-    /**
-     * Suffix applied to the key used in resource file lookups for an action.
-     */
-    public static final String actionSuffix = "Action";
-    /**
-     * Suffix applied to the key used in resource file lookups for tooltip text.
-     */
-    public static final String tipSuffix = "Tooltip";
-    public static final String textSuffix = "Text";
-    public net.sf.sketchlet.designer.editor.ui.variables.VariablesPanel sketchletPanel;
-    static Vector<String> advancedItems1 = new Vector<String>();
-    static Vector<String> advancedItems2 = new Vector<String>();
-    static Vector<String> advancedItems3 = new Vector<String>();
+    private JTabbedPane tabs;
+    private final static JFileChooser fc = new JFileChooser();
+    private static JPanel desktopPanelFrame = new JPanel(new BorderLayout());
+    private static JPanel desktopPanelAutoFrame = new JPanel(new BorderLayout());
+    private static JScrollPane desktopPanelScrollPane = new JScrollPane(desktopPanelFrame);
+    private static JScrollPane desktopPanelAutoScrollPane = new JScrollPane(getDesktopPanelAutoFrame());
+    private static DesktopPanel desktopPanel = new DesktopPanel(DesktopPanel.MANUAL, SketchletDesignerMainPanel.getDesktopPanelScrollPane());
+    private static DesktopPanel desktopPanelAuto = new DesktopPanel(DesktopPanel.AUTO, SketchletDesignerMainPanel.getDesktopPanelAutoScrollPane());
+    private static ProjectSelectorPanel projectSelectorPanel;
+    private String selectedFile;
+    private String selectedFileShortName;
+
+    private net.sf.sketchlet.designer.editor.ui.variables.VariablesPanel sketchletPanel;
+
+    private JPopupMenu popupMenuModules = new JPopupMenu();
+    private JPopupMenu popupMenuFiles = new JPopupMenu();
+
+    private static String helpHTML = "";
+    private JToolBar mainFrameToolbar;
 
     static {
         try {
@@ -163,29 +144,25 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
         }
     }
 
-    public static String strHelpHTML = "";
-    public JToolBar mainFrameToolbar;
-
     public SketchletDesignerMainPanel(JFrame console, Workspace runner) {
         super(new GridLayout(2, 0));
 
-        strHelpHTML = "<html><body>\r\n";
+        setHelpHTML("<html><body>\r\n");
         this.setLayout(new BorderLayout());
 
-        commands = new Hashtable();
         menuItems = new Hashtable();
         toolbarItems = new Hashtable();
 
         Workspace.getMainFrame().setJMenuBar(this.createMenubar("menubarMain"));
-        strHelpHTML += "</body></html>\r\n";
-        strHelpHTML = "";
+        setHelpHTML(getHelpHTML() + "</body></html>\r\n");
+        setHelpHTML("");
 
         this.consoleFrame = console;
-        this.processRunner = runner;
+        this.setProcessRunner(runner);
 
-        Object[][] data = new String[this.processRunner.getIoServicesHandler().getProcessHandlers().size()][3];
+        Object[][] data = new String[this.getProcessRunner().getIoServicesHandler().getProcessHandlers().size()][3];
 
-        Iterator iterator = this.processRunner.getIoServicesHandler().getProcessHandlers().iterator();
+        Iterator iterator = this.getProcessRunner().getIoServicesHandler().getProcessHandlers().iterator();
 
         int i = 0;
         while (iterator.hasNext()) {
@@ -196,20 +173,20 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
             i++;
         }
 
-        this.tableModelModules = new ProcessTableModel();
+        this.setTableModelModules(new ProcessTableModel());
         this.tableModelFiles = new FileTableModel();
 
-        tableModules = new JTable(this.tableModelModules);
-        tableModules.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
-        tableModules.getSelectionModel().addListSelectionListener(new RowListener());
-        tableModules.addMouseListener(new MouseAdapter() {
+        setTableModules(new JTable(this.getTableModelModules()));
+        getTableModules().putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+        getTableModules().getSelectionModel().addListSelectionListener(new RowListener());
+        getTableModules().addMouseListener(new MouseAdapter() {
 
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
-                    int row = tableModules.getSelectedRow();
+                    int row = getTableModules().getSelectedRow();
 
                     if (row >= 0) {
-                        processRunner.getIoServicesHandler().getTabbedPane().setSelectedIndex(row);
+                        getProcessRunner().getIoServicesHandler().getTabbedPane().setSelectedIndex(row);
                     }
 
                     showConsoleIfNotVisible();
@@ -222,30 +199,30 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
         tableFiles.getSelectionModel().addListSelectionListener(new RowListenerFiles());
 
-        JScrollPane scrollPane = new JScrollPane(tableModules);
-        tableModules.setTableHeader(null);
-        tableModules.putClientProperty("JComponent.sizeVariant", "small");
-        SwingUtilities.updateComponentTreeUI(tableModules);
+        JScrollPane scrollPane = new JScrollPane(getTableModules());
+        getTableModules().setTableHeader(null);
+        getTableModules().putClientProperty("JComponent.sizeVariant", "small");
+        SwingUtilities.updateComponentTreeUI(getTableModules());
         JScrollPane scrollPaneFiles = new JScrollPane(tableFiles);
 
         JPanel processesPanel = new JPanel();
         processesPanel.setLayout(new BorderLayout());
 
-        tabs = new JTabbedPane();
-        tabs.setTabPlacement(JTabbedPane.RIGHT);
-        tabs.putClientProperty("JComponent.sizeVariant", "small");
-        SwingUtilities.updateComponentTreeUI(tabs);
+        setTabs(new JTabbedPane());
+        getTabs().setTabPlacement(JTabbedPane.RIGHT);
+        getTabs().putClientProperty("JComponent.sizeVariant", "small");
+        SwingUtilities.updateComponentTreeUI(getTabs());
 
-        panelProcesses.setLayout(new BorderLayout());
+        getPanelProcesses().setLayout(new BorderLayout());
 
         JToolBar commandsPanel = this.createToolbar("toolbarModules");
         commandsPanel.setFloatable(false);
 
-        consoleButton = new JButton(Workspace.createImageIcon("resources/details.gif", null));
-        editButton = new JButton(Language.translate("Edit Configuration..."));
+        setConsoleButton(new JButton(Workspace.createImageIcon("resources/details.gif", null)));
+        JButton editButton = new JButton(Language.translate("Edit Configuration..."));
         JButton hideButton = new JButton("Hide");
 
-        panelProcesses.add(scrollPane, BorderLayout.CENTER);
+        getPanelProcesses().add(scrollPane, BorderLayout.CENTER);
         final JButton help = new JButton(Workspace.createImageIcon("resources/help-browser.png", ""));
         help.setToolTipText(Language.translate("What are I/O Services?"));
         help.addActionListener(new ActionListener() {
@@ -266,16 +243,16 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
         add(panelNorth, BorderLayout.NORTH);
 
-        panelProcesses.add(panelNorth, BorderLayout.NORTH);
+        getPanelProcesses().add(panelNorth, BorderLayout.NORTH);
 
-        mainFrameToolbar = new JToolBar();
-        createToolbar(mainFrameToolbar, "toolbarVariables");
+        setMainFrameToolbar(new JToolBar());
+        createToolbar(getMainFrameToolbar(), "toolbarVariables");
         FlowLayout flowLayout = new FlowLayout(FlowLayout.LEFT);
         flowLayout.setHgap(0);
         flowLayout.setVgap(0);
-        mainFrameToolbar.setLayout(flowLayout);
+        getMainFrameToolbar().setLayout(flowLayout);
         JToolBar mainFrameToolbarDown = new JToolBar();
-        mainFrameToolbar.setFloatable(false);
+        getMainFrameToolbar().setFloatable(false);
         mainFrameToolbarDown.setFloatable(false);
 
         final JButton helpMainWindow = new JButton("", Workspace.createImageIcon("resources/help-browser.png"));
@@ -283,14 +260,22 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
         helpMainWindow.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                HelpUtils.openHelpFile("Sketchlet", "main_window");
+                JFrame frame = new JFrame();
+                HelpViewer index = new HelpViewer("index");
+                frame.getContentPane().add(index);
+
+                frame.setSize(400, 600);
+                frame.setLocationRelativeTo(Workspace.getMainFrame());
+                frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                frame.setVisible(true);
+                index.showHelpByID("main_window");
             }
         });
 
         FlowLayout flowLayout3 = new FlowLayout(FlowLayout.LEFT);
         flowLayout3.setHgap(0);
         flowLayout3.setVgap(0);
-        mainFrameToolbar.setLayout(flowLayout3);
+        getMainFrameToolbar().setLayout(flowLayout3);
         FlowLayout flowLayout2 = new FlowLayout(FlowLayout.LEFT);
         flowLayout2.setHgap(0);
         flowLayout2.setVgap(0);
@@ -343,8 +328,7 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
         comboSort.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                String strSort = (String) comboSort.getSelectedItem();
-                VariablesTableModel.strSort = strSort;
+                VariablesTableModel.strSort = (String) comboSort.getSelectedItem();
                 if (VariablesTableModel.model != null) {
                     VariablesTableModel.model.fireTableDataChanged();
                 }
@@ -352,10 +336,10 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
             }
         });
 
-        sketchletPanel = new net.sf.sketchlet.designer.editor.ui.variables.VariablesPanel(null, mainFrameToolbar, mainFrameToolbarDown, createToolbar("toolbarScripts"), createToolbar("toolbarScriptsConsole"), menuItems, toolbarItems);
+        setSketchletPanel(new VariablesPanel(null, getMainFrameToolbar(), mainFrameToolbarDown, createToolbar("toolbarScripts"), createToolbar("toolbarScriptsConsole"), menuItems, toolbarItems));
 
-        panelFiles.setLayout(new BorderLayout());
-        panelFiles.add(scrollPaneFiles, BorderLayout.CENTER);
+        getPanelFiles().setLayout(new BorderLayout());
+        getPanelFiles().add(scrollPaneFiles, BorderLayout.CENTER);
         JPanel panelFileControls = new JPanel();
 
         JPanel panelSketches = new JPanel();
@@ -364,11 +348,11 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
         JTabbedPane tabsSketches = new JTabbedPane();
         tabsSketches.setTabPlacement(JTabbedPane.BOTTOM);
 
-        desktopPanelFrame.add(desktopPanel);
-        desktopPanelAutoFrame.add(desktopPanelAuto);
+        desktopPanelFrame.add(getDesktopPanel());
+        getDesktopPanelAutoFrame().add(getDesktopPanelAuto());
 
-        tabsSketches.add(Language.translate("Auto Arrange"), desktopPanelAutoScrollPane);
-        tabsSketches.add(Language.translate("Desktop"), desktopPanelScrollPane);
+        tabsSketches.add(Language.translate("Auto Arrange"), getDesktopPanelAutoScrollPane());
+        tabsSketches.add(Language.translate("Desktop"), getDesktopPanelScrollPane());
         tabsSketches.putClientProperty("JComponent.sizeVariant", "small");
         SwingUtilities.updateComponentTreeUI(tabsSketches);
 
@@ -382,8 +366,8 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
             }
         });
 
-        JButton filemanagerButton = new JButton("File Manager...");
-        filemanagerButton.addActionListener(new ActionListener() {
+        JButton fileManagerButton = new JButton("File Manager...");
+        fileManagerButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
                 fileManager();
@@ -391,14 +375,14 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
         });
 
         panelFileControls.add(openButton);
-        panelFileControls.add(filemanagerButton);
+        panelFileControls.add(fileManagerButton);
 
         final JButton helpFiles = new JButton(Workspace.createImageIcon("resources/help-browser.png", ""));
-        helpFiles.setToolTipText(Language.translate("What is 'Files & JSPs'?"));
+        helpFiles.setToolTipText(Language.translate("What is the Files Tab?"));
         helpFiles.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                HelpUtils.openHelpFile("Files & JSPs", "files_and_jsp");
+                HelpUtils.openHelpFile("Files", "files_and_jsp");
             }
         });
 
@@ -409,18 +393,18 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
         panelNorthFiles.add(createToolbar("toolbarFiles"));
         panelNorthFiles.add(toolbarHelpFiles, BorderLayout.EAST);
 
-        panelFiles.add(panelNorthFiles, BorderLayout.NORTH);
+        getPanelFiles().add(panelNorthFiles, BorderLayout.NORTH);
         JToolBar toolbar = createToolbar("toolbarSketches");
         panelSketches.add(toolbar, BorderLayout.NORTH);
 
-        tabs.add(panelSketches, Language.translate("Pages"));
+        getTabs().add(panelSketches, Language.translate("Pages"));
 
-        tabs.setMnemonicAt(0, KeyEvent.VK_1);
-        tabs.add(panelFiles, Language.translate("Files & JSPs"));
+        getTabs().setMnemonicAt(0, KeyEvent.VK_1);
+        getTabs().add(getPanelFiles(), Language.translate("Files"));
 
-        projectSelectorPanel = new ProjectSelectorPanel();
+        setProjectSelectorPanel(new ProjectSelectorPanel());
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, projectSelectorPanel, tabs);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, getProjectSelectorPanel(), getTabs());
         splitPane.setOneTouchExpandable(true);
         splitPane.setDividerLocation(175);
 
@@ -438,14 +422,14 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
         panelFolder.setLayout(new FlowLayout(FlowLayout.LEFT));
         JLabel label = new JLabel(Language.translate("Project Folder: "));
         label.setEnabled(false);
-        projectFolderField = new JTextField(55);
-        projectFolderField.setEditable(false);
+        setProjectFolderField(new JTextField(55));
+        getProjectFolderField().setEditable(false);
         if (SketchletContextUtils.getCurrentProjectDir() != null) {
-            projectFolderField.setText(SketchletContextUtils.getCurrentProjectDir());
+            getProjectFolderField().setText(SketchletContextUtils.getCurrentProjectDir());
         }
 
         panelFolder.add(label);
-        panelFolder.add(projectFolderField);
+        panelFolder.add(getProjectFolderField());
         panelFolder.add(new JLabel("    "));
         panelFolder.add(saveButton);
 
@@ -475,7 +459,7 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
                     }
                 });
 
-        consoleButton.addActionListener(new ActionListener() {
+        getConsoleButton().addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
                 showConsole();
@@ -505,8 +489,60 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
         enableToolbarItems();
 
-        tableModules.addMouseListener(new PopupListenerModules());
+        getTableModules().addMouseListener(new PopupListenerModules());
         tableFiles.addMouseListener(new PopupListenerFiles());
+    }
+
+    public static JPanel getDesktopPanelAutoFrame() {
+        return desktopPanelAutoFrame;
+    }
+
+    public static JScrollPane getDesktopPanelScrollPane() {
+        return desktopPanelScrollPane;
+    }
+
+    public static JScrollPane getDesktopPanelAutoScrollPane() {
+        return desktopPanelAutoScrollPane;
+    }
+
+    public static DesktopPanel getDesktopPanel() {
+        return desktopPanel;
+    }
+
+    public static DesktopPanel getDesktopPanelAuto() {
+        return desktopPanelAuto;
+    }
+
+    public static ProjectSelectorPanel getProjectSelectorPanel() {
+        return projectSelectorPanel;
+    }
+
+    public static void setProjectSelectorPanel(ProjectSelectorPanel projectSelectorPanel) {
+        SketchletDesignerMainPanel.projectSelectorPanel = projectSelectorPanel;
+    }
+
+    public static String getHelpHTML() {
+        return helpHTML;
+    }
+
+    public static void setHelpHTML(String helpHTML) {
+        SketchletDesignerMainPanel.helpHTML = helpHTML;
+    }
+
+    public static boolean isSavingOriginalInProgress() {
+        return savingOriginalInProgress;
+    }
+
+    public static void setSavingOriginalInProgress(boolean savingOriginalInProgress) {
+        SketchletDesignerMainPanel.savingOriginalInProgress = savingOriginalInProgress;
+    }
+
+    public static boolean isOriginalSavedSuccessfully() {
+        return originalSavedSuccessfully;
+    }
+
+    public static void setOriginalSavedSuccessfully(boolean originalSavedSuccessfully) {
+        SketchletDesignerMainPanel.originalSavedSuccessfully = originalSavedSuccessfully;
     }
 
     public void openFile() {
@@ -526,7 +562,7 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
     }
 
-    public void openFileInWebBrowser() {
+    void openFileInWebBrowser() {
         if (selectedFileShortName == null) {
             return;
         }
@@ -557,7 +593,7 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
     public void editConfiguration() {
         if (SketchletContextUtils.getCurrentProjectFile() == null) {
             Object[] options = {Language.translate("Save Project..."), Language.translate("Cancel")};
-            int selectedValue = JOptionPane.showOptionDialog(consoleFrame, Language.translate("You have to create a project before editong configuration file."), Language.translate("Create Configuration"),
+            int selectedValue = JOptionPane.showOptionDialog(consoleFrame, Language.translate("You have to create a project before editing configuration file."), Language.translate("Create Configuration"),
                     JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
                     null, options, options[0]);
 
@@ -603,19 +639,19 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
     public void addNewProcess() {
         Workspace.getProcessRunner().getIoServicesHandler().addProcess("0", "", "", "New Module", "", 0, false, "", "", "", "");
 
-        processRunner.getIoServicesHandler().getTabbedPane().setSelectedIndex(processRunner.getIoServicesHandler().getTabbedPane().getTabCount() - 1);
+        getProcessRunner().getIoServicesHandler().getTabbedPane().setSelectedIndex(getProcessRunner().getIoServicesHandler().getTabbedPane().getTabCount() - 1);
 
-        int index = Workspace.getMainPanel().tableModules.getRowCount() - 1;
+        int index = Workspace.getMainPanel().getTableModules().getRowCount() - 1;
 
         if (index >= 0) {
-            Workspace.getMainPanel().tableModules.getSelectionModel().setSelectionInterval(index, index);
+            Workspace.getMainPanel().getTableModules().getSelectionModel().setSelectionInterval(index, index);
         }
         Workspace.getMainPanel().refreshData(true);
 
     }
 
     public void refreshSketches() {
-        this.desktopPanel.refresh();
+        this.getDesktopPanel().refresh();
     }
 
     public void exportProcesses() {
@@ -630,9 +666,7 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = fc.getSelectedFile();
-            this.exportProcesses(file, false);
-        } else {
-            return;
+            this.exportProcesses(file);
         }
 
     }
@@ -702,25 +736,23 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
                 FileUtils.copyFile(file, newFile);
             }
-        } else {
-            return;
         }
     }
 
-    public void showConsole() {
+    void showConsole() {
         JMenuItem menuItem = (JMenuItem) menuItems.get("viewdetails");
         if (consoleFrame.isVisible()) {
             consoleFrame.setVisible(false);
-            consoleButton.setText("Show Details and Console...");
+            getConsoleButton().setText("Show Details and Console...");
             if (menuItem != null) {
                 menuItem.setText("Show Details and Console...");
             }
 
         } else {
-            projectFolderField.setText(SketchletContextUtils.getCurrentProjectDir());
+            getProjectFolderField().setText(SketchletContextUtils.getCurrentProjectDir());
             consoleFrame.pack();
             consoleFrame.setVisible(true);
-            consoleButton.setText("Hide Details and Console");
+            getConsoleButton().setText("Hide Details and Console");
             if (menuItem != null) {
                 menuItem.setText("Hide Details and Console");
             }
@@ -737,35 +769,25 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
         }
     }
 
-    /**
-     * Create the menubar for the app. By default this pulls the definition of
-     * the menu from the associated resource file.
-     */
     public JMenuBar createMenubar(String strMenubarID) {
         JMenuItem mi;
         JMenuBar mb = new JMenuBar();
 
-        SketchletDesignerMainPanel.strHelpHTML += "<table>\r\n";
+        SketchletDesignerMainPanel.setHelpHTML(SketchletDesignerMainPanel.getHelpHTML() + "<table>\r\n");
 
         String[] menuKeys = tokenize(getResourceString(strMenubarID));
-        for (int i = 0; i < menuKeys.length; i++) {
-            JMenu m = createMenu(menuKeys[i]);
-            /*
-             * String mnemonic = getResourceString(menuKeys[i] + "Mnemonic"); if
-             * (mnemonic != null && mnemonic.length() > 0) {
-             * m.setMnemonic(mnemonic.charAt(0)); }
-             */
-
+        for (String menuKey : menuKeys) {
+            JMenu m = createMenu(menuKey);
             if (m != null) {
                 mb.add(m);
             }
         }
 
-        SketchletDesignerMainPanel.strHelpHTML += "</table>\r\n";
+        SketchletDesignerMainPanel.setHelpHTML(SketchletDesignerMainPanel.getHelpHTML() + "</table>\r\n");
         return mb;
     }
 
-    public boolean isActive(String id) {
+    boolean isActive(String id) {
         if (id.equalsIgnoreCase("communicator") && !Profiles.isActive("variables")) {
             return false;
         } else if (id.equalsIgnoreCase("pageactions") && !Profiles.isActive("page_actions")) {
@@ -799,10 +821,7 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
                 return false;
             } else if (id.equalsIgnoreCase("mode2") && !Profiles.isActive("active_regions_layer")) {
                 return false;
-            } else /*
-         * if (id.equalsIgnoreCase("mode3") &&
-         * !Profiles.isActive("active_regions_layer")) { return false; }
-         */ if (id.equalsIgnoreCase("infovar") && !Profiles.isActive("variables")) {
+            } else if (id.equalsIgnoreCase("infovar") && !Profiles.isActive("variables")) {
                 return false;
             } else if (id.equalsIgnoreCase("infopage") && !Profiles.isActive("toolbar_textinfo")) {
                 return false;
@@ -830,20 +849,6 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
         return true;
     }
 
-    /**
-     * Fetch the menu item that was created for the given command.
-     *
-     * @param cmd Name of the action. @returns item created for the given
-     *            command or null if one wasn't created.
-     */
-    protected JMenuItem getMenuItem(String cmd) {
-        return (JMenuItem) menuItems.get(cmd);
-    }
-
-    protected Action getAction(String cmd) {
-        return (Action) commands.get(cmd);
-    }
-
     protected String getResourceString(String nm) {
         String str;
         try {
@@ -859,18 +864,11 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
         String name = getResourceString(key);
 
         if (name != null) {
-            URL url = Workspace.class.getResource(name);
-
-            return url;
+            return Workspace.class.getResource(name);
         }
         return null;
     }
 
-    /**
-     * Take the given string and chop it up into a series of strings on
-     * whitespace boundaries. This is useful for trying to getVariableValue an
-     * array of strings out of the resource file.
-     */
     protected String[] tokenize(String input) {
         Vector v = new Vector();
         StringTokenizer t = new StringTokenizer(input);
@@ -889,10 +887,6 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
         return cmd;
     }
 
-    /**
-     * Create a menu for the app. By default this pulls the definition of the
-     * menu from the associated resource file.
-     */
     protected JMenu createMenu(String key) {
         if (key.equalsIgnoreCase("activeregion")) {
             return SketchletEditor.getInstance().getActiveRegionMenu();
@@ -908,12 +902,12 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
             menu.setMnemonic(mnemonic.charAt(0));
         }
 
-        SketchletDesignerMainPanel.strHelpHTML += "<tr><td colspan='3'><b>" + strMenuLabel + "</b></td></tr>\r\n";
+        SketchletDesignerMainPanel.setHelpHTML(SketchletDesignerMainPanel.getHelpHTML() + "<tr><td colspan='3'><b>" + strMenuLabel + "</b></td></tr>\r\n");
 
         boolean prevSeparator = false;
         boolean addSeparator = false;
-        for (int i = 0; i < itemKeys.length; i++) {
-            if (itemKeys[i].equals("-")) {
+        for (String itemKey : itemKeys) {
+            if (itemKey.equals("-")) {
                 if (!prevSeparator && menu.getItemCount() > 0) {
                     addSeparator = true;
                     prevSeparator = true;
@@ -921,49 +915,49 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
                     continue;
                 }
 
-            } else if (itemKeys[i].equals("openrecent")) {
-                recentProjectsMenu = createMenu("openrecentmenu");
-                menu.add(recentProjectsMenu);
-                URL url = getResource("openrecentmenu" + this.imageSuffix);
+            } else if (itemKey.equals("openrecent")) {
+                setRecentProjectsMenu(createMenu("openrecentmenu"));
+                menu.add(getRecentProjectsMenu());
+                URL url = getResource("openrecentmenu" + IMAGE_SUFFIX);
                 if (url != null) {
-                    recentProjectsMenu.setHorizontalTextPosition(JButton.RIGHT);
-                    recentProjectsMenu.setIcon(new ImageIcon(url));
+                    getRecentProjectsMenu().setHorizontalTextPosition(JButton.RIGHT);
+                    getRecentProjectsMenu().setIcon(new ImageIcon(url));
                 }
 
                 prevSeparator = false;
-            } else if (itemKeys[i].equals("projectsettings")) {
-                projectSettingsMenu = createMenu("projectsettingsmenu");
-                menu.add(projectSettingsMenu);
-                URL url = getResource("projectsettingsmenu" + this.imageSuffix);
+            } else if (itemKey.equals("projectsettings")) {
+                setProjectSettingsMenu(createMenu("projectsettingsmenu"));
+                menu.add(getProjectSettingsMenu());
+                URL url = getResource("projectsettingsmenu" + IMAGE_SUFFIX);
                 if (url != null) {
-                    projectSettingsMenu.setHorizontalTextPosition(JButton.RIGHT);
-                    projectSettingsMenu.setIcon(new ImageIcon(url));
+                    getProjectSettingsMenu().setHorizontalTextPosition(JButton.RIGHT);
+                    getProjectSettingsMenu().setIcon(new ImageIcon(url));
                 }
 
                 prevSeparator = false;
-            } else if (itemKeys[i].equals("systemsettings")) {
-                systemSettingsMenu = createMenu("systemsettingsmenu");
-                menu.add(systemSettingsMenu);
-                URL url = getResource("systemsettingsmenu" + this.imageSuffix);
+            } else if (itemKey.equals("systemsettings")) {
+                setSystemSettingsMenu(createMenu("systemsettingsmenu"));
+                menu.add(getSystemSettingsMenu());
+                URL url = getResource("systemsettingsmenu" + IMAGE_SUFFIX);
                 if (url != null) {
-                    systemSettingsMenu.setHorizontalTextPosition(JButton.RIGHT);
-                    systemSettingsMenu.setIcon(new ImageIcon(url));
+                    getSystemSettingsMenu().setHorizontalTextPosition(JButton.RIGHT);
+                    getSystemSettingsMenu().setIcon(new ImageIcon(url));
                 }
 
-                populateSettingsMenu(systemSettingsMenu, null);
+                populateSettingsMenu(getSystemSettingsMenu(), null);
                 prevSeparator = false;
-            } else if (isActive(itemKeys[i])) {
+            } else if (isActive(itemKey)) {
                 if (addSeparator) {
                     addSeparator = false;
                     menu.addSeparator();
                 }
-                JMenuItem mi = createMenuItem(itemKeys[i], menu);
+                JMenuItem mi = createMenuItem(itemKey, menu);
                 menu.add(mi);
                 prevSeparator = false;
             }
 
         }
-        SketchletDesignerMainPanel.strHelpHTML += "</td></tr>\r\n";
+        SketchletDesignerMainPanel.setHelpHTML(SketchletDesignerMainPanel.getHelpHTML() + "</td></tr>\r\n");
         return menu;
     }
 
@@ -984,17 +978,17 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
         String strFiles[] = confDir.list();
 
-        for (int i = 0; i < strFiles.length; i++) {
-            final File file = new File(confDir + File.separator + strFiles[i]);
+        for (String strFile : strFiles) {
+            final File file = new File(confDir + File.separator + strFile);
 
             if (file.isDirectory()) {
-                final JMenu submenu = new JMenu(strFiles[i]);
+                final JMenu submenu = new JMenu(strFile);
 
                 populateSettingsMenu(submenu, file);
 
                 menu.add(submenu);
             } else {
-                JMenuItem menuItem = new JMenuItem(strFiles[i]);
+                JMenuItem menuItem = new JMenuItem(strFile);
                 menu.add(menuItem);
                 menuItem.addActionListener(new ActionListener() {
 
@@ -1007,33 +1001,26 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
         }
     }
 
-    /**
-     * This is the hook through which all menu items are created. It registers
-     * the result with the menuitem hashtable so that it can be fetched with
-     * getMenuItem().
-     *
-     * @see #getMenuItem
-     */
     protected JMenuItem createMenuItem(String cmd, final JMenu menu) {
-        final String strLabel = getResourceString(cmd + labelSuffix);
-        String strTip = Language.translate(getResourceString(cmd + tipSuffix));
-        String strURL = getResourceString(cmd + imageSuffix);
+        final String strLabel = getResourceString(cmd + LABEL_SUFFIX);
+        String strTip = Language.translate(getResourceString(cmd + TIP_SUFFIX));
+        String strURL = getResourceString(cmd + IMAGE_SUFFIX);
         JMenuItem mi = new JMenuItem(Language.translate(strLabel));
-        URL url = getResource(cmd + imageSuffix);
+        URL url = getResource(cmd + IMAGE_SUFFIX);
         if (url != null) {
             mi.setHorizontalTextPosition(JButton.RIGHT);
             mi.setIcon(new ImageIcon(url));
         }
 
-        String astr = getResourceString(cmd + actionSuffix);
+        String astr = getResourceString(cmd + ACTION_SUFFIX);
         if (astr == null) {
             astr = cmd;
         }
-        SketchletDesignerMainPanel.strHelpHTML += "<tr>\r\n";
-        SketchletDesignerMainPanel.strHelpHTML += "<td>" + (strURL == null ? "" : "<img src='" + strURL + "'>") + "</td>\r\n";
-        SketchletDesignerMainPanel.strHelpHTML += "<td>" + strLabel + "</td>\r\n";
-        SketchletDesignerMainPanel.strHelpHTML += "<td>" + (strTip == null ? "&nbsp;" : strTip) + "</td>\r\n";
-        SketchletDesignerMainPanel.strHelpHTML += "</tr>\r\n";
+        SketchletDesignerMainPanel.setHelpHTML(SketchletDesignerMainPanel.getHelpHTML() + "<tr>\r\n");
+        SketchletDesignerMainPanel.setHelpHTML(SketchletDesignerMainPanel.getHelpHTML() + "<td>" + (strURL == null ? "" : "<img src='" + strURL + "'>") + "</td>\r\n");
+        SketchletDesignerMainPanel.setHelpHTML(SketchletDesignerMainPanel.getHelpHTML() + "<td>" + strLabel + "</td>\r\n");
+        SketchletDesignerMainPanel.setHelpHTML(SketchletDesignerMainPanel.getHelpHTML() + "<td>" + (strTip == null ? "&nbsp;" : strTip) + "</td>\r\n");
+        SketchletDesignerMainPanel.setHelpHTML(SketchletDesignerMainPanel.getHelpHTML() + "</tr>\r\n");
 
         mi.setActionCommand(astr);
 
@@ -1049,7 +1036,7 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
         return mi;
     }
 
-    public void setAccelerationKeys(JMenuItem item, String text) {
+    void setAccelerationKeys(JMenuItem item, String text) {
         if (text.equalsIgnoreCase("undo")) {
             item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         } else if (text.equalsIgnoreCase("redo")) {
@@ -1092,11 +1079,6 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
             item.setAccelerator(KeyStroke.getKeyStroke("F4"));
         } else if (text.equalsIgnoreCase("mode2")) {
             item.setAccelerator(KeyStroke.getKeyStroke("F5"));
-            /*
-             * } else if (text.equalsIgnoreCase("mode3")) {
-             * item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_3,
-             * Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-             */
         } else if (text.equalsIgnoreCase("infovar")) {
             item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F9, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         } else if (text.equalsIgnoreCase("infopage")) {
@@ -1105,11 +1087,6 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
             item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F11, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         } else if (text.equalsIgnoreCase("eye")) {
             item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F12, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-            /*
-             * } else if (text.equalsIgnoreCase("importimage")) {
-             * item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I,
-             * Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-             */
         } else if (text.equalsIgnoreCase("screenrecorder")) {
             item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | Event.SHIFT_MASK));
         } else if (text.equalsIgnoreCase("pages")) {
@@ -1133,14 +1110,10 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
     }
 
     public void executeCommand(String cmd, ActionEvent event) {
-        Component source = null;
-        if (event.getSource() instanceof Component) {
-            source = (Component) event.getSource();
-        }
         ActivityLog.log(cmd, "");
 
         if (cmd.equals("new")) {
-            createNewProject(true, true, "New Project");
+            createNewProject();
         } else if (cmd.equals("save")) {
             this.saveConfiguration();
         } else if (cmd.equals("saveas")) {
@@ -1154,26 +1127,25 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
         } else if (cmd.equals("open")) {
             openProject();
         } else if (cmd.equals("start-process")) {
-            int rows[] = this.tableModules.getSelectedRows();
-            for (int i = 0; i < rows.length; i++) {
-                ((ProcessConsolePanel) Workspace.getConsolePane().getIoServicesHandler().getTabbedPane().getComponentAt(rows[i])).startProcess();
-                this.tableModelModules.fireTableDataChanged();
+            int rows[] = this.getTableModules().getSelectedRows();
+            for (int row : rows) {
+                ((ProcessConsolePanel) Workspace.getConsolePane().getIoServicesHandler().getTabbedPane().getComponentAt(row)).startProcess();
+                this.getTableModelModules().fireTableDataChanged();
             }
 
         } else if (cmd.equals("stop-process")) {
-            int rows[] = this.tableModules.getSelectedRows();
-            for (int i = 0; i < rows.length; i++) {
-                ((ProcessConsolePanel) Workspace.getConsolePane().getIoServicesHandler().getTabbedPane().getComponentAt(rows[i])).stopProcess();
-                this.tableModelModules.fireTableDataChanged();
+            int rows[] = this.getTableModules().getSelectedRows();
+            for (int row : rows) {
+                ((ProcessConsolePanel) Workspace.getConsolePane().getIoServicesHandler().getTabbedPane().getComponentAt(row)).stopProcess();
+                this.getTableModelModules().fireTableDataChanged();
             }
 
         } else if (cmd.equals("restart-process")) {
-            int rows[] = this.tableModules.getSelectedRows();
-            for (int i = 0; i
-                    < rows.length; i++) {
-                ((ProcessConsolePanel) Workspace.getConsolePane().getIoServicesHandler().getTabbedPane().getComponentAt(rows[i])).stopProcess();
-                ((ProcessConsolePanel) Workspace.getConsolePane().getIoServicesHandler().getTabbedPane().getComponentAt(rows[i])).startProcess();
-                this.tableModelModules.fireTableDataChanged();
+            int rows[] = this.getTableModules().getSelectedRows();
+            for (int row : rows) {
+                ((ProcessConsolePanel) Workspace.getConsolePane().getIoServicesHandler().getTabbedPane().getComponentAt(row)).stopProcess();
+                ((ProcessConsolePanel) Workspace.getConsolePane().getIoServicesHandler().getTabbedPane().getComponentAt(row)).startProcess();
+                this.getTableModelModules().fireTableDataChanged();
             }
 
         } else if (cmd.equals("add-process")) {
@@ -1225,17 +1197,15 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
             SketchletEditor.getInstance().getHelpViewer().showHelpByID("index");
         } else if (cmd.equals("profile1")) {
             SketchletEditor.getInstance().editorFrame.getContentPane().removeAll();
-            Workspace.getMainPanel().comboProfiles.setSelectedIndex(0);
+            Workspace.getMainPanel().getComboProfiles().setSelectedIndex(0);
             SketchletEditorFrame.populateFrame();
             SketchletEditor.getInstance().loadLayersTab();
-
 
             SketchletEditor.getInstance().enableControls();
             SketchletEditor.getInstance().repaint();
             if (SketchletEditor.getInstance().getCurrentPage() != null) {
                 int index = SketchletEditor.getInstance().getPages().getPages().indexOf(SketchletEditor.getInstance().getCurrentPage());
-                SketchletEditor.getInstance().getSketchListPanel().table.getSelectionModel().setSelectionInterval(index, index);
-                //freeHand.sketchListPanel.desktopPanel.ensureVisible(editorPanel.currentSketch);
+                SketchletEditor.getInstance().getPageListPanel().table.getSelectionModel().setSelectionInterval(index, index);
             }
 
             SketchletEditor.getInstance().setTool(SketchletEditor.getInstance().getActiveRegionSelectTool(), null);
@@ -1309,13 +1279,8 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
         } else if (cmd.equals("interactionspace")) {
             InteractionSpace.load();
             InteractionSpaceFrame.showFrame();
-            /*
-             * } else if (cmd.equals("history")) { //
-             * fileManager(SketchletContextUtils.getCurrentProjectHistoryDir());
-             * // new HistoryWindow();
-             */
         } else if (cmd.equals("remove-process")) {
-            int rows[] = this.tableModules.getSelectedRows();
+            int rows[] = this.getTableModules().getSelectedRows();
 
             for (int i = rows.length - 1; i >= 0; i--) {
                 ((ProcessConsolePanel) Workspace.getConsolePane().getIoServicesHandler().getTabbedPane().getComponentAt(rows[i])).removeProcess();
@@ -1331,15 +1296,6 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
             this.exportProcesses();
         } else if (cmd.equals("teammembers")) {
             this.teamMembers();
-            /*
-             * } else if (cmd.equals("addnote")) { HTMLEditor.createNewNote(); }
-             * else if (cmd.equals("addscreenshot")) {
-             * CaptureScreen.createNewScreenshot(); } else if
-             * (cmd.equals("addimage")) { HTMLEditor.createNewImageNote(); }
-             * else if (cmd.equals("addvideo")) {
-             * HTMLEditor.createNewVideoNote(); } else if
-             * (cmd.equals("importnotes")) { HTMLEditor.importNotes();
-             */
         } else if (cmd.equals("view-details")) {
             this.showConsole();
         } else if (cmd.equals("spreadsheet")) {
@@ -1348,8 +1304,6 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
             this.remoteDesktop();
         } else if (cmd.equals("undo")) {
             SketchletEditor.getInstance().undo();
-            //} else if (cmd.equals("redo")) {
-            // SketchletEditor.editorPanel.redo();
         } else if (cmd.equals("copy")) {
             SketchletEditor.getInstance().getEditorClipboardController().copy();
         } else if (cmd.equals("paste")) {
@@ -1368,7 +1322,6 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
             SketchletEditor.getInstance().selectAll();
         } else if (cmd.equals("variables")) {
             SketchletEditor.getInstance().getSketchToolbar().showHideProjectNavigator();
-            //services - timers curves - macros - screenpoking - scripts
         } else if (cmd.equals("import-sketches")) {
             SketchletEditor.getInstance().importSketches();
         } else if (cmd.equals("cache-images")) {
@@ -1440,10 +1393,6 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
             SketchletEditor.getInstance().clearAllImage();
         } else if (cmd.equals("filemanager")) {
             this.fileManager();
-            /*
-             * } else if (cmd.equals("noteorganizer")) {
-             * Organizer.createAndShowGUI();
-             */
         } else if (cmd.equals("remotebackup")) {
             RemoteLocationFrame.createAndShowGUI();
         } else if (cmd.equals("restorebackup")) {
@@ -1454,27 +1403,26 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
         } else if (cmd.equals("exit")) {
             Workspace.getMainPanel().saveConfiguration();
             Workspace.getProcessRunner().getIoServicesHandler().killProcesses();
             System.exit(0);
         } else if (cmd.equals("newscript")) {
-            this.sketchletPanel.panel2.createNewScript();
+            this.getSketchletPanel().panel2.createNewScript();
         } else if (cmd.equals("importscript")) {
-            this.sketchletPanel.panel2.importScript();
+            this.getSketchletPanel().panel2.importScript();
         } else if (cmd.equals("editscript")) {
-            this.sketchletPanel.panel2.editScript();
+            this.getSketchletPanel().panel2.editScript();
         } else if (cmd.equals("editscriptexternal")) {
-            this.sketchletPanel.panel2.editScriptExternal();
+            this.getSketchletPanel().panel2.editScriptExternal();
         } else if (cmd.equals("removescript")) {
-            this.sketchletPanel.panel2.removeScript();
+            this.getSketchletPanel().panel2.removeScript();
         } else if (cmd.equals("startscript")) {
-            this.sketchletPanel.panel2.startScript();
+            this.getSketchletPanel().panel2.startScript();
         } else if (cmd.equals("stopscript")) {
-            this.sketchletPanel.panel2.stopScript();
+            this.getSketchletPanel().panel2.stopScript();
         } else if (cmd.equals("reloadallscripts")) {
-            this.sketchletPanel.panel2.reloadAll();
+            this.getSketchletPanel().panel2.reloadAll();
         } else if (cmd.equals("savescriptimage")) {
             try {
                 BufferedImage img = SketchletEditor.getInstance().getCurrentPage().getImages()[0];
@@ -1488,38 +1436,37 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
                 e.printStackTrace();
             }
         } else if (cmd.equals("showconsole")) {
-            // this.sketchletPanel.panel2.showConsole();
             SketchletGraphicsContext.getInstance().clearCanvas();
             SketchletGraphicsContext.getInstance().repaint();
             ScriptConsole.getConsole().getTextArea().setText("");
         } else if (cmd.equals("addvar")) {
-            sketchletPanel.globalVariablesPanel.addVariable();
+            getSketchletPanel().globalVariablesPanel.addVariable();
         } else if (cmd.equals("sysvar")) {
             new SystemVariablesDialog(SketchletEditor.editorFrame);
         } else if (cmd.equals("removevar")) {
-            sketchletPanel.globalVariablesPanel.removeVariable();
+            getSketchletPanel().globalVariablesPanel.removeVariable();
         } else if (cmd.equals("copyvarname")) {
-            sketchletPanel.globalVariablesPanel.copyVariableName();
+            getSketchletPanel().globalVariablesPanel.copyVariableName();
         } else if (cmd.equals("aggregatevalueview")) {
-            sketchletPanel.globalVariablesPanel.calculateAggregateVariables();
+            getSketchletPanel().globalVariablesPanel.calculateAggregateVariables();
         } else if (cmd.equals("aggregatevalue")) {
-            sketchletPanel.globalVariablesPanel.calculateAggregateVariables();
+            getSketchletPanel().globalVariablesPanel.calculateAggregateVariables();
         } else if (cmd.equals("derivedvars")) {
             SketchletEditor.getInstance().showDerivedVariablesPopupMenu(event);
         } else if (cmd.equals("tablevars")) {
             SketchletEditor.getInstance().showTableVariables();
         } else if (cmd.equals("connectors")) {
-            sketchletPanel.globalVariablesPanel.networkConnectors();
+            getSketchletPanel().globalVariablesPanel.networkConnectors();
         } else if (cmd.equals("serializeview")) {
-            sketchletPanel.globalVariablesPanel.serializeVariable();
+            getSketchletPanel().globalVariablesPanel.serializeVariable();
         } else if (cmd.equals("serialize")) {
-            sketchletPanel.globalVariablesPanel.serializeVariable();
+            getSketchletPanel().globalVariablesPanel.serializeVariable();
         } else if (cmd.equals("recordvars")) {
             new VariablesRecorder(SketchletEditor.editorFrame);
         } else if (cmd.equals("countfilter")) {
-            sketchletPanel.globalVariablesPanel.setCountFilter();
+            getSketchletPanel().globalVariablesPanel.setCountFilter();
         } else if (cmd.equals("pausecomm")) {
-            sketchletPanel.globalVariablesPanel.pauseUpdates();
+            getSketchletPanel().globalVariablesPanel.pauseUpdates();
         } else if (cmd.equals("shellexecute")) {
             this.openFile();
         } else if (cmd.equals("openinwebbrowser")) {
@@ -1535,34 +1482,34 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
     }
 
-    public static boolean bSavingOriginal = false;
-    public static boolean bSavingOriginalSuccess = false;
+    private static boolean savingOriginalInProgress = false;
+    private static boolean originalSavedSuccessfully = false;
 
     public void saveOriginal() {
-        bSavingOriginal = true;
-        bSavingOriginalSuccess = false;
+        setSavingOriginalInProgress(true);
+        setOriginalSavedSuccessfully(false);
         new Thread(new Runnable() {
 
             public void run() {
                 try {
                     FileUtils.deleteDir(new File(SketchletContextUtils.getCurrentProjectOriginalDir()));
                     FileUtils.restore(SketchletContextUtils.getCurrentProjectDir() + SketchletContextUtils.sketchletDataDir(), SketchletContextUtils.getCurrentProjectOriginalDir());
-                    bSavingOriginalSuccess = true;
+                    setOriginalSavedSuccessfully(true);
                 } catch (Exception e) {
-                    bSavingOriginalSuccess = false;
+                    setOriginalSavedSuccessfully(false);
                     e.printStackTrace();
                 }
-                bSavingOriginal = false;
+                setSavingOriginalInProgress(false);
             }
         }).start();
     }
 
     public void restoreOriginal() {
-        if (bSavingOriginalSuccess && new File(SketchletContextUtils.getCurrentProjectOriginalDir()).exists()) {
+        if (isOriginalSavedSuccessfully() && new File(SketchletContextUtils.getCurrentProjectOriginalDir()).exists()) {
             log.debug("Restoring original...");
             try {
                 log.debug("Waiting...");
-                while (bSavingOriginal) {
+                while (isSavingOriginalInProgress()) {
                     Thread.sleep(50);
                 }
                 log.debug(" DONE.");
@@ -1585,11 +1532,6 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
             Workspace.getReadyCountDownLatch().await();
         } catch (Exception e) {
         }
-        /*
-         * amico.workspace.sketches.SketchletEditor.createAndShowGui(sketchRow,
-         * play); if (!play && SketchletEditor.editorPanel != null) {
-         * SketchletEditor.editorPanel.requestFocus(); }
-         */
 
         if (!Workspace.bCloseOnPlaybackEnd) {
             MessageFrame.showMessage(Workspace.getMainFrame(), Language.translate("Loading pages..."), Workspace.getMainFrame());
@@ -1605,7 +1547,7 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
                     if (!play) {
                         saveOriginal();
                     }
-                    SketchletEditorFrame.createAndShowGui(DesktopPanel.selectedIndex, play);
+                    SketchletEditorFrame.createAndShowGui(DesktopPanel.selectedPageIndex, play);
                 } catch (Throwable e) {
                     e.printStackTrace();
                 } finally {
@@ -1673,9 +1615,6 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
     }
 
     public void listPlugins() {
-        // JTextArea textArea = new JTextArea(PluginLoader.pluginsInfo.toString(), 40, 50);
-        // textArea.setFont(new Font("Verdana", Font.PLAIN, 9));
-        // textArea.setEditable(false);
         List<PluginData> info = PluginLoader.getPluginInfo();
         String[][] array = new String[info.size()][4];
         for (int i = 0; i < array.length; i++) {
@@ -1692,7 +1631,7 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
             }
 
             public boolean equals(Object obj) {
-                return this == obj;
+                return obj.getClass() == String.class && this == obj;
             }
         });
         JTable table = new JTable(array, new String[]{"Plugin Type", "Name", "Class", "Description"});
@@ -1700,7 +1639,7 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
     }
 
-    public void openDefaultSpreadsheet() {
+    void openDefaultSpreadsheet() {
         try {
             String strSpreadsheetFile = SketchletContextUtils.getCurrentProjectDir() + "default.ods";
             if (!new File(strSpreadsheetFile).exists()) {
@@ -1719,7 +1658,7 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
     }
 
-    public void openDefaultUML() {
+    void openDefaultUML() {
         try {
             String strSpreadsheetFile = SketchletContextUtils.getCurrentProjectDir() + "model.zargo";
             if (!new File(strSpreadsheetFile).exists()) {
@@ -1738,17 +1677,17 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
     }
 
-    public void reloadFiles() {
+    void reloadFiles() {
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         this.tableModelFiles.fireTableDataChanged();
         this.setCursor(Cursor.getDefaultCursor());
     }
 
     public void changeProjectTitle() {
-        String inputValue = JOptionPane.showInputDialog(this, "Project title:", this.projectTitle);
+        String inputValue = JOptionPane.showInputDialog(this, "Project title:", this.getProjectTitle());
 
         if (inputValue != null) {
-            this.projectTitle = inputValue;
+            this.setProjectTitle(inputValue);
         }
 
     }
@@ -1786,7 +1725,7 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
             String args[] = QuotedStringTokenizer.parseArgs(command);
 
             ProcessBuilder processBuilder = new ProcessBuilder(args);
-            Process process = processBuilder.start();
+            processBuilder.start();
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Error starting File Manager.\n Check configuration file 'screen_recorder.txt'", "Error", JOptionPane.ERROR_MESSAGE);
@@ -1816,10 +1755,6 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
     }
 
     public void fileManager() {
-        fileManager(null);
-    }
-
-    public void fileManager(String secondFolder) {
         String projectFilemanagerConf = SketchletContextUtils.getCurrentProjectConfDir() + "filemanager";
         new File(projectFilemanagerConf).mkdirs();
 
@@ -1836,21 +1771,20 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
                 JOptionPane.showMessageDialog(this, "Error starting File Manager.\n Check configuration file " + configurationFile, "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            if (secondFolder != null) {
-                command += " -c \"" + projectFilemanagerConf + File.separator + "preferences.xml\" \"" + secondFolder + "\"";
+            if (null != null) {
+                command += " -c \"" + projectFilemanagerConf + File.separator + "preferences.xml\" \"" + null + "\"";
                 command +=
                         " \"" + SketchletContextUtils.getCurrentProjectDir() + "\"";
             } else {
                 command += " -c \"" + projectFilemanagerConf + File.separator + "preferences.xml\" \"" + SketchletContextUtils.getCurrentProjectDir() + "\"";
             }
-// command += " \"" + projectDir + "\"";
 
             command = Workspace.replaceSystemVariables(command);
 
             String args[] = QuotedStringTokenizer.parseArgs(command);
 
             ProcessBuilder processBuilder = new ProcessBuilder(args);
-            Process process = processBuilder.start();
+            processBuilder.start();
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Error starting File Manager.\n Check configuration file " + configurationFile, "Error", JOptionPane.ERROR_MESSAGE);
@@ -1868,11 +1802,8 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
             }
 
-
             command = Workspace.replaceSystemVariables(command);
-
             String args[] = QuotedStringTokenizer.parseArgs(command);
-
             ProcessBuilder processBuilder = new ProcessBuilder(args);
             Process process = processBuilder.start();
         } catch (Exception e) {
@@ -1933,7 +1864,7 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
                 String args[] = QuotedStringTokenizer.parseArgs(command);
 
                 ProcessBuilder processBuilder = new ProcessBuilder(args);
-                Process process = processBuilder.start();
+                processBuilder.start();
             } catch (Exception e) {
                 e.printStackTrace();
                 JOptionPane.showMessageDialog(this, "Error starting File Manager.\n Check configuration file.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -1946,10 +1877,11 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
     }
 
-    public void createNewProject(boolean createNewProcess, boolean killProcess, String title) {
+    public void createNewProject() {
         if (!SketchletEditor.close()) {
             return;
         }
+        String title = Language.translate("New Project");
         if (ProjectDialog.openDialog(Workspace.getMainFrame(), title)) {
             if (ProjectDialog.templateDir == null) {
                 SketchletContextUtils.setProjectFolder(ProjectDialog.projectFolder);
@@ -1957,18 +1889,16 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
                 System.setProperty("user.dir", SketchletContextUtils.getProjectFolder());
 
-                this.projectFolderField.setText(SketchletContextUtils.getProjectFolder());
+                this.getProjectFolderField().setText(SketchletContextUtils.getProjectFolder());
 
-                if (killProcess) {
-                    Workspace.getProcessRunner().getIoServicesHandler().killProcesses();
-                }
+                Workspace.getProcessRunner().getIoServicesHandler().killProcesses();
 
                 if (NetUtils.getWorkingDirectory() != null) {
                     Workspace.getMainPanel().refreshData(false);
                 }
 
                 NetUtils.setWorkingDirectory(SketchletContextUtils.getCurrentProjectDir());
-                sketchletPanel.restart(SketchletContextUtils.getCurrentProjectConfDir() + "communicator/config.xml");
+                getSketchletPanel().restart(SketchletContextUtils.getCurrentProjectConfDir() + "communicator/config.xml");
 
                 saveConfiguration(false);
 
@@ -1983,12 +1913,12 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
                 System.setProperty("user.dir", SketchletContextUtils.getProjectFolder());
 
-                this.projectFolderField.setText(SketchletContextUtils.getProjectFolder());
+                this.getProjectFolderField().setText(SketchletContextUtils.getProjectFolder());
 
                 Workspace.getMainPanel().refreshData(false);
 
                 NetUtils.setWorkingDirectory(SketchletContextUtils.getCurrentProjectDir());
-                sketchletPanel.restart(SketchletContextUtils.getCurrentProjectConfDir() + "communicator/config.xml");
+                getSketchletPanel().restart(SketchletContextUtils.getCurrentProjectConfDir() + "communicator/config.xml");
 
                 saveConfiguration(false);
 
@@ -1996,12 +1926,10 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
                 Workspace.openProject(ProjectDialog.projectFolder + SketchletContextUtils.sketchletDataDir(), false);
             }
-            SketchletDesignerMainPanel.projectSelectorPanel.populate();
+            SketchletDesignerMainPanel.getProjectSelectorPanel().populate();
         }
     }
 
-    // File tempDir;
-    boolean tempDirCreationInProgress = false;
 
     public void saveProjectAsFromEditor() {
         // this.createNewProject(false, false, "Save Project As");
@@ -2016,11 +1944,10 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
         this.saveCommunicator();
         this.saveConfiguration();
 
-        final String projectTitle = Workspace.getMainPanel().projectTitle;
+        final String projectTitle = Workspace.getMainPanel().getProjectTitle();
         if (ProjectDialog.openDialog(SketchletEditor.editorFrame, Language.translate("Save Project As"), SketchletContextUtils.getCurrentProjectDirName())) {
             MessageFrame.showMessage(Workspace.getMainFrame(), Language.translate("Please wait..."), Workspace.getMainFrame());
             try {
-                tempDirCreationInProgress = true;
                 java.awt.EventQueue.invokeLater(new Runnable() {
 
                     public void run() {
@@ -2030,7 +1957,7 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
                             Workspace.openProject(ProjectDialog.projectFolder + SketchletContextUtils.sketchletDataDir(), false);
                             Workspace.getMainPanel().refreshData(false);
-                            SketchletDesignerMainPanel.projectSelectorPanel.populate();
+                            SketchletDesignerMainPanel.getProjectSelectorPanel().populate();
 
                             SketchletEditorFrame.createAndShowGui(-1, false);
                         } catch (Exception e) {
@@ -2062,19 +1989,19 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
             System.setProperty("user.dir", SketchletContextUtils.getProjectFolder());
 
-            this.projectFolderField.setText(SketchletContextUtils.getProjectFolder());
+            this.getProjectFolderField().setText(SketchletContextUtils.getProjectFolder());
 
             Workspace.getMainPanel().refreshData(false);
 
             NetUtils.setWorkingDirectory(SketchletContextUtils.getCurrentProjectDir());
-            sketchletPanel.restart(SketchletContextUtils.getCurrentProjectConfDir() + "communicator/config.xml");
+            getSketchletPanel().restart(SketchletContextUtils.getCurrentProjectConfDir() + "communicator/config.xml");
 
             saveConfiguration(false);
 
             Workspace.getMainPanel().refreshData(false);
 
             Workspace.openProject(ProjectDialog.projectFolder + SketchletContextUtils.sketchletDataDir(), false);
-            SketchletDesignerMainPanel.projectSelectorPanel.populate();
+            SketchletDesignerMainPanel.getProjectSelectorPanel().populate();
         }
 
     }
@@ -2118,21 +2045,21 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
                         System.setProperty("user.dir", SketchletContextUtils.getProjectFolder());
 
-                        projectFolderField.setText(SketchletContextUtils.getProjectFolder());
+                        getProjectFolderField().setText(SketchletContextUtils.getProjectFolder());
 
                         if (NetUtils.getWorkingDirectory() != null) {
                             Workspace.getMainPanel().refreshData(false);
                         }
 
                         NetUtils.setWorkingDirectory(SketchletContextUtils.getCurrentProjectDir());
-                        sketchletPanel.restart(SketchletContextUtils.getCurrentProjectConfDir() + "communicator/config.xml");
+                        getSketchletPanel().restart(SketchletContextUtils.getCurrentProjectConfDir() + "communicator/config.xml");
 
                         saveConfiguration(false);
 
                         Workspace.getMainPanel().refreshData(false);
 
                         Workspace.openProject(ProjectDialog.projectFolder + SketchletContextUtils.sketchletDataDir(), false);
-                        SketchletDesignerMainPanel.projectSelectorPanel.populate();
+                        SketchletDesignerMainPanel.getProjectSelectorPanel().populate();
                     }
                 } catch (Exception e) {
                     // e.printStackTrace();
@@ -2145,7 +2072,7 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
         }).start();
     }
 
-    public void importFromZIP() {
+    void importFromZIP() {
         if (!SketchletEditor.close()) {
             return;
         }
@@ -2175,39 +2102,37 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
                 System.setProperty("user.dir", SketchletContextUtils.getProjectFolder());
 
-                this.projectFolderField.setText(SketchletContextUtils.getProjectFolder());
+                this.getProjectFolderField().setText(SketchletContextUtils.getProjectFolder());
 
                 if (NetUtils.getWorkingDirectory() != null) {
                     Workspace.getMainPanel().refreshData(false);
                 }
 
                 NetUtils.setWorkingDirectory(SketchletContextUtils.getCurrentProjectDir());
-                sketchletPanel.restart(SketchletContextUtils.getCurrentProjectConfDir() + "communicator/config.xml");
+                getSketchletPanel().restart(SketchletContextUtils.getCurrentProjectConfDir() + "communicator/config.xml");
 
                 saveConfiguration(false);
 
                 Workspace.getMainPanel().refreshData(false);
                 Workspace.openProject(ProjectDialog.projectFolder + SketchletContextUtils.sketchletDataDir(), false);
-                SketchletDesignerMainPanel.projectSelectorPanel.populate();
+                SketchletDesignerMainPanel.getProjectSelectorPanel().populate();
             }
         } catch (Exception e) {
             e.printStackTrace();
-            JOptionPane.showConfirmDialog(Workspace.getMainFrame(), "Could not open the archive.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(Workspace.getMainFrame(), "Could not open the archive.", "Error", JOptionPane.ERROR_MESSAGE);
         }
         Workspace.getMainFrame().setCursor(Cursor.getDefaultCursor());
     }
 
     public synchronized void saveConfiguration() {
-        if (SketchletContextUtils.getCurrentProjectFile() == null) {
-            return;
-        } else {
+        if (SketchletContextUtils.getCurrentProjectFile() != null) {
             boolean isXML = SketchletContextUtils.getCurrentProjectFile().toLowerCase().endsWith(".xml");
             this.saveConfiguration(isXML);
         }
     }
 
     public void saveConfiguration(boolean isXML) {
-        saveConfiguration(isXML, projectTitle.replace("Control Panel: ", ""));
+        saveConfiguration(isXML, getProjectTitle().replace("Control Panel: ", ""));
     }
 
     public void saveConfiguration(boolean isXML, String strTitle) {
@@ -2224,10 +2149,8 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
                 out.println();
             }
 
-            Iterator iterator = processRunner.getIoServicesHandler().getProcessHandlers().iterator();
-
-            while (iterator.hasNext()) {
-                ProcessConsolePanel processPanel = (ProcessConsolePanel) iterator.next();
+            for (Object panel : getProcessRunner().getIoServicesHandler().getProcessHandlers()) {
+                ProcessConsolePanel processPanel = (ProcessConsolePanel) panel;
                 if (isXML) {
                     out.println("    " + processPanel.getXmlString());
                 } else {
@@ -2253,33 +2176,21 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
     }
 
     public void saveCommunicator() {
-        net.sf.sketchlet.blackboard.ConfigurationData.saveConfiguration(SketchletContextUtils.getCurrentProjectConfDir() + "communicator/config.xml", SketchletContextUtils.getCurrentProjectDir() + SketchletContextUtils.sketchletDataDir() + "/init-variables.xml");
+        net.sf.sketchlet.framework.blackboard.ConfigurationData.saveConfiguration(SketchletContextUtils.getCurrentProjectConfDir() + "communicator/config.xml", SketchletContextUtils.getCurrentProjectDir() + SketchletContextUtils.sketchletDataDir() + "/init-variables.xml");
     }
 
-    public void exportProcesses(File file, boolean isXML) {
+    void exportProcesses(File file) {
         try {
             PrintWriter out = new PrintWriter(new FileWriter(file));
 
-            if (isXML) {
-                out.println("<?xml version='1.0' encoding='UTF-8'?>");
-                out.println("<process-runner>");
+            int indexes[] = this.getTableModules().getSelectedRows();
+
+            for (int index : indexes) {
+                ProcessConsolePanel processPanel = (ProcessConsolePanel) getProcessRunner().getIoServicesHandler().getProcessHandlers().get(index);
+                out.println(processPanel.getTxtString());
             }
 
-            int indexes[] = this.tableModules.getSelectedRows();
-
-            for (int i = 0; i < indexes.length; i++) {
-                ProcessConsolePanel processPanel = (ProcessConsolePanel) processRunner.getIoServicesHandler().getProcessHandlers().get(indexes[i]);
-                if (isXML) {
-                    out.println("    " + processPanel.getXmlString());
-                } else {
-                    out.println(processPanel.getTxtString());
-                }
-
-            }
-
-            if (isXML) {
-                out.println("</process-runner>");
-            }
+            out.println("</process-runner>");
 
             out.flush();
             out.close();
@@ -2290,13 +2201,8 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
     }
 
     public void saveToHistory() {
-        // Calendar date = Calendar.getInstance();
-        // String historyFileName = "Version " + date.getVariableValue(Calendar.YEAR) + "_" + (date.getVariableValue(Calendar.MONTH) < Calendar.OCTOBER ? "0" : "") + (date.getVariableValue(Calendar.MONTH) + 1) + "_" + (date.getVariableValue(Calendar.DAY_OF_MONTH) < 10 ? "0" : "") + date.getVariableValue(Calendar.DAY_OF_MONTH) + " at " + (date.getVariableValue(Calendar.HOUR_OF_DAY) < 10 ? "0" : "") + date.getVariableValue(Calendar.HOUR_OF_DAY) + "." + (date.getVariableValue(Calendar.MINUTE) < 10 ? "0" : "") + date.getVariableValue(Calendar.MINUTE) + "." + (date.getVariableValue(Calendar.SECOND) < 10 ? "0" : "") + date.getVariableValue(Calendar.SECOND);
-        String historyFileName = Workspace.getMainPanel().projectTitle.replace(" ", "_").toLowerCase();
+        String historyFileName = Workspace.getMainPanel().getProjectTitle().replace(" ", "_").toLowerCase();
         ZipVersion.createAndShowGUI(historyFileName);
-
-        // new File(historyDir).mkdirs();
-        // saveToHistory( historyDir, root, null );
     }
 
     public void saveToHistory(String historyDir, String directory, String subdirectory) {
@@ -2306,24 +2212,24 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
         File files[] = new File(directory).listFiles();
 
-        for (int i = 0; i
-                < files.length; i++) {
-            File file = files[i];
-            String filename = file.getName();
+        if (files != null) {
+            for (File file : files) {
+                String filename = file.getName();
 
-            if (file.isDirectory()) {
-                if (!filename.equalsIgnoreCase("history") && !filename.equalsIgnoreCase("notebook") && !filename.equalsIgnoreCase("index")) {
-                    String dir = subdirectory == null ? filename : subdirectory + File.separator + filename;
-                    saveToHistory(historyDir, directory + File.separator + filename, dir);
-                }
+                if (file.isDirectory()) {
+                    if (!filename.equalsIgnoreCase("history") && !filename.equalsIgnoreCase("notebook") && !filename.equalsIgnoreCase("index")) {
+                        String dir = subdirectory == null ? filename : subdirectory + File.separator + filename;
+                        saveToHistory(historyDir, directory + File.separator + filename, dir);
+                    }
 
-            } else {
-                if (subdirectory != null) {
-                    FileUtils.copyFile(file, new File(historyDir + File.separator + subdirectory + File.separator + filename));
                 } else {
-                    FileUtils.copyFile(file, new File(historyDir + File.separator + filename));
-                }
+                    if (subdirectory != null) {
+                        FileUtils.copyFile(file, new File(historyDir + File.separator + subdirectory + File.separator + filename));
+                    } else {
+                        FileUtils.copyFile(file, new File(historyDir + File.separator + filename));
+                    }
 
+                }
             }
         }
     }
@@ -2337,7 +2243,7 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
             out.println("<jnlp spec='1.0+' codebase='http://amico.sourceforge.net/jws/bin'>");
             out.println("<information>");
-            out.println("  <title>" + projectTitle + "</title>");
+            out.println("  <title>" + getProjectTitle() + "</title>");
             out.println("  <vendor>AMICO</vendor>");
             out.println("  <homepage href='http://amico.sourceforge.net/' />");
             out.println("  <description>AMICO Web Start</description>");
@@ -2370,6 +2276,134 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
         return new ActionChangedListener(b);
     }
 
+    public JMenu getProjectSettingsMenu() {
+        return projectSettingsMenu;
+    }
+
+    public void setProjectSettingsMenu(JMenu projectSettingsMenu) {
+        this.projectSettingsMenu = projectSettingsMenu;
+    }
+
+    public JComboBox getComboProfiles() {
+        return comboProfiles;
+    }
+
+    public void setComboProfiles(JComboBox comboProfiles) {
+        this.comboProfiles = comboProfiles;
+    }
+
+    public Workspace getProcessRunner() {
+        return processRunner;
+    }
+
+    public void setProcessRunner(Workspace processRunner) {
+        this.processRunner = processRunner;
+    }
+
+    public JTable getTableModules() {
+        return tableModules;
+    }
+
+    public void setTableModules(JTable tableModules) {
+        this.tableModules = tableModules;
+    }
+
+    public ProcessTableModel getTableModelModules() {
+        return tableModelModules;
+    }
+
+    public void setTableModelModules(ProcessTableModel tableModelModules) {
+        this.tableModelModules = tableModelModules;
+    }
+
+    public String getProjectTitle() {
+        return projectTitle;
+    }
+
+    public void setProjectTitle(String projectTitle) {
+        this.projectTitle = projectTitle;
+    }
+
+    public JTextField getProjectFolderField() {
+        return projectFolderField;
+    }
+
+    public void setProjectFolderField(JTextField projectFolderField) {
+        this.projectFolderField = projectFolderField;
+    }
+
+    public JButton getConsoleButton() {
+        return consoleButton;
+    }
+
+    public void setConsoleButton(JButton consoleButton) {
+        this.consoleButton = consoleButton;
+    }
+
+    public JMenu getRecentProjectsMenu() {
+        return recentProjectsMenu;
+    }
+
+    public void setRecentProjectsMenu(JMenu recentProjectsMenu) {
+        this.recentProjectsMenu = recentProjectsMenu;
+    }
+
+    public JMenu getSystemSettingsMenu() {
+        return systemSettingsMenu;
+    }
+
+    public void setSystemSettingsMenu(JMenu systemSettingsMenu) {
+        this.systemSettingsMenu = systemSettingsMenu;
+    }
+
+    public JMenuBar getMenuBar() {
+        return menuBar;
+    }
+
+    public void setMenuBar(JMenuBar menuBar) {
+        this.menuBar = menuBar;
+    }
+
+    public JPanel getPanelFiles() {
+        return panelFiles;
+    }
+
+    public void setPanelFiles(JPanel panelFiles) {
+        this.panelFiles = panelFiles;
+    }
+
+    public JPanel getPanelProcesses() {
+        return panelProcesses;
+    }
+
+    public void setPanelProcesses(JPanel panelProcesses) {
+        this.panelProcesses = panelProcesses;
+    }
+
+    public JTabbedPane getTabs() {
+        return tabs;
+    }
+
+    public void setTabs(JTabbedPane tabs) {
+        this.tabs = tabs;
+    }
+
+    public VariablesPanel getSketchletPanel() {
+        return sketchletPanel;
+    }
+
+    public void setSketchletPanel(VariablesPanel sketchletPanel) {
+        this.sketchletPanel = sketchletPanel;
+    }
+
+    public JToolBar getMainFrameToolbar() {
+        return mainFrameToolbar;
+    }
+
+    public void setMainFrameToolbar(JToolBar mainFrameToolbar) {
+        this.mainFrameToolbar = mainFrameToolbar;
+    }
+
     // Yarked from JMenu, ideally this would be public.
     private class ActionChangedListener
             implements PropertyChangeListener {
@@ -2399,11 +2433,11 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
         // new File(SketchletContextUtils.getCurrentProjectHistoryDir()).mkdirs();
         new File(SketchletContextUtils.getCurrentProjectNotebookDir()).mkdirs();
 
-        this.tableModelModules.fireTableDataChanged();
-        int row = processRunner.getConsolePane().getIoServicesHandler().getTabbedPane().getSelectedIndex();
+        this.getTableModelModules().fireTableDataChanged();
+        int row = getProcessRunner().getConsolePane().getIoServicesHandler().getTabbedPane().getSelectedIndex();
 
         if (row >= 0) {
-            this.tableModules.getSelectionModel().setSelectionInterval(row, row);
+            this.getTableModules().getSelectionModel().setSelectionInterval(row, row);
         }
 
         tableModelFiles.fireTableDataChanged();
@@ -2434,26 +2468,15 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
             // tableModelSketches.refreshData();
 
-            XMLHelper.load("system_variables.xml", "system_variables", SystemVariablesDialog.data);
+            XMLHelper.load("system_variables.xml", "system_variables", SystemVariablesDialog.getData());
             SystemVariablesDialog.startThread();
 
             if (SketchletEditor.getPages() != null) {
                 SketchletEditor.getPages().dispose();
-                new Thread(new Runnable() {
-
-                    public void run() {
-                        try {
-                            /*
-                             * System.gc(); Thread.sleep(5000); System.gc();
-                             */
-                        } catch (Exception e) {
-                        }
-                    }
-                }).start();
             }
             SketchletEditor.setPages(new Pages());
-            SketchletDesignerMainPanel.desktopPanel.refresh();
-            SketchletDesignerMainPanel.desktopPanelAuto.refresh();
+            SketchletDesignerMainPanel.getDesktopPanel().refresh();
+            SketchletDesignerMainPanel.getDesktopPanelAuto().refresh();
         }
         Workspace.getMainFrame().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
@@ -2462,11 +2485,11 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
             extends AbstractTableModel {
 
         public String getColumnName(int col) {
-            return columnNames[col].toString();
+            return columnNames[col];
         }
 
         public int getRowCount() {
-            return processRunner.getIoServicesHandler().getProcessHandlers().size();
+            return getProcessRunner().getIoServicesHandler().getProcessHandlers().size();
         }
 
         public int getColumnCount() {
@@ -2474,7 +2497,7 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
         }
 
         public Object getValueAt(int row, int col) {
-            ProcessConsolePanel processPanel = (ProcessConsolePanel) processRunner.getIoServicesHandler().getProcessHandlers().get(row);
+            ProcessConsolePanel processPanel = (ProcessConsolePanel) getProcessRunner().getIoServicesHandler().getProcessHandlers().get(row);
 
             switch (col) {
                 case 0:
@@ -2501,7 +2524,7 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
     class FileTableModel extends AbstractTableModel {
 
         public String getColumnName(int col) {
-            return columnNamesFiles[col].toString();
+            return columnNamesFiles[col];
         }
 
         public int getRowCount() {
@@ -2548,50 +2571,10 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
                     cal.setTimeInMillis(file.lastModified());
                     int day = cal.get(Calendar.DAY_OF_MONTH);
                     int month = cal.get(Calendar.MONTH);
-                    String strDate = ((day < 10) ? "0" : "") + day + "/" + ((month < 10) ? "0" : "") + month + "/" + cal.get(Calendar.YEAR);
-                    return strDate;
+                    return ((day < 10) ? "0" : "") + day + "/" + ((month < 10) ? "0" : "") + month + "/" + cal.get(Calendar.YEAR);
             }
 
             return "";
-        }
-
-        public boolean isCellEditable(int row, int col) {
-            return false;
-        }
-
-        public void setValueAt(Object value, int row, int col) {
-            // rowData[row][col] = value;
-            // fireTableCellUpdated(row, col);
-        }
-    }
-
-    class SketchesTableModel extends AbstractTableModel {
-
-        Object data[][];
-
-        public void refreshData() {
-            // data = Sketches.getSketchInfoFromDir();
-            this.fireTableDataChanged();
-        }
-
-        public String getColumnName(int col) {
-            return columnNamesSketches[col].toString();
-        }
-
-        public int getRowCount() {
-            if (data == null) {
-                return 0;
-            } else {
-                return data.length;
-            }
-        }
-
-        public int getColumnCount() {
-            return columnNamesSketches.length;
-        }
-
-        public Object getValueAt(int row, int col) {
-            return data[row][col];
         }
 
         public boolean isCellEditable(int row, int col) {
@@ -2608,7 +2591,7 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
             if (event.getValueIsAdjusting()) {
                 return;
             }
-            int row = tableModules.getSelectedRow();
+            int row = getTableModules().getSelectedRow();
 
             if (row >= 0) {
                 Workspace.getConsolePane().getIoServicesHandler().getTabbedPane().setSelectedIndex(row);
@@ -2618,22 +2601,6 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
             enableToolbarItems();
         }
     }
-
-    private class SketchRowListener implements ListSelectionListener {
-
-        public void valueChanged(ListSelectionEvent event) {
-            if (event.getValueIsAdjusting()) {
-                return;
-            }
-            // sketchRow = tableSketches.getSelectedRow();
-
-            enableMenuItems();
-            enableToolbarItems();
-        }
-    }
-
-    String selectedFile;
-    String selectedFileShortName;
 
     private class RowListenerFiles implements ListSelectionListener {
 
@@ -2656,30 +2623,32 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
         }
     }
 
-    public File[] getFiles() {
+    File[] getFiles() {
         File files[] = new File(SketchletContextUtils.getCurrentProjectDir()).listFiles();
 
-        Arrays.sort(files, new Comparator() {
+        if (files != null) {
+            Arrays.sort(files, new Comparator() {
 
-            public int compare(Object o1, Object o2) {
-                if (o1 instanceof File && o2 instanceof File) {
-                    File f1 = (File) o1;
-                    File f2 = (File) o2;
-                    if (f1.isDirectory() && !f2.isDirectory()) {
-                        return -1;
-                    } else if (!f1.isDirectory() && f2.isDirectory()) {
-                        return 1;
-                    } else {
-                        return 0;
+                public int compare(Object o1, Object o2) {
+                    if (o1 instanceof File && o2 instanceof File) {
+                        File f1 = (File) o1;
+                        File f2 = (File) o2;
+                        if (f1.isDirectory() && !f2.isDirectory()) {
+                            return -1;
+                        } else if (!f1.isDirectory() && f2.isDirectory()) {
+                            return 1;
+                        } else {
+                            return 0;
+                        }
                     }
+                    return 0;
                 }
-                return 0;
-            }
 
-            public boolean equals(Object o) {
-                return this == o;
-            }
-        });
+                public boolean equals(Object o) {
+                    return this == o;
+                }
+            });
+        }
 
         return files;
     }
@@ -2689,15 +2658,14 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
      * definition of the toolbar.
      */
     private Component createToolbar() {
-        toolbar = new JToolBar();
-        // toolbar.setOrientation( JToolBar.VERTICAL );
+        JToolBar toolbar = new JToolBar();
         String[] toolKeys = tokenize(getResourceString("toolbar"));
-        for (int i = 0; i < toolKeys.length; i++) {
-            if (toolKeys[i].equals("-")) {
+        for (String toolKey : toolKeys) {
+            if (toolKey.equals("-")) {
                 toolbar.add(Box.createHorizontalStrut(5));
             } else {
-                if (isActive(toolKeys[i])) {
-                    toolbar.add(createTool(toolKeys[i], new Insets(2, 2, 2, 2)));
+                if (isActive(toolKey)) {
+                    toolbar.add(createTool(toolKey, new Insets(2, 2, 2, 2)));
                 }
             }
 
@@ -2719,12 +2687,12 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
         toolbar.removeAll();
         toolbar.setFloatable(false);
         String[] toolKeys = tokenize(getResourceString(name));
-        for (int i = 0; i < toolKeys.length; i++) {
-            if (toolKeys[i].equals("-")) {
+        for (String toolKey : toolKeys) {
+            if (toolKey.equals("-")) {
                 toolbar.add(Box.createHorizontalStrut(5));
             } else {
-                if (isActive(toolKeys[i])) {
-                    toolbar.add(createTool(toolKeys[i], new Insets(0, 0, 0, 0)));
+                if (isActive(toolKey)) {
+                    toolbar.add(createTool(toolKey, new Insets(0, 0, 0, 0)));
                 }
             }
 
@@ -2756,7 +2724,7 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
      * @param key The key in the resource file to serve as the basis of lookups.
      */
     protected JButton createToolbarButton(String key) {
-        URL url = getResource(key + imageSuffix);
+        URL url = getResource(key + IMAGE_SUFFIX);
         JButton b = new JButton(
                 new ImageIcon(url)) {
 
@@ -2767,7 +2735,7 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
         b.setRequestFocusEnabled(false);
         b.setMargin(new Insets(1, 1, 1, 1));
 
-        String astr = getResourceString(key + actionSuffix);
+        String astr = getResourceString(key + ACTION_SUFFIX);
         if (astr == null) {
             astr = key;
         }
@@ -2777,7 +2745,7 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
         toolbarItems.put(key, b);
 
-        String tip = Language.translate(getResourceString(key + tipSuffix));
+        String tip = Language.translate(getResourceString(key + TIP_SUFFIX));
         if (tip != null) {
             b.setToolTipText(tip);
         }
@@ -2785,8 +2753,8 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
         return b;
     }
 
-    protected JButton createToolbarButton(String key, Insets insets) {
-        URL url = getResource(key + imageSuffix);
+    JButton createToolbarButton(String key, Insets insets) {
+        URL url = getResource(key + IMAGE_SUFFIX);
         JButton b = new JButton(new ImageIcon(url)) {
 
             public float getAlignmentY() {
@@ -2796,7 +2764,7 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
         b.setRequestFocusEnabled(false);
         b.setMargin(insets);
 
-        String astr = getResourceString(key + actionSuffix);
+        String astr = getResourceString(key + ACTION_SUFFIX);
         if (astr == null) {
             astr = key;
         }
@@ -2806,11 +2774,11 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
         toolbarItems.put(key, b);
 
-        String tip = Language.translate(getResourceString(key + tipSuffix));
+        String tip = Language.translate(getResourceString(key + TIP_SUFFIX));
         if (tip != null) {
             b.setToolTipText(tip);
         }
-        String text = Language.translate(getResourceString(key + textSuffix));
+        String text = Language.translate(getResourceString(key + TEXT_SUFFIX));
         if (text != null) {
             b.setText(text);
         }
@@ -2826,10 +2794,10 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
             String selectionItems[] = {"start", "stop", "restart", "removeprocess", "exportprocess"};
 
-            boolean enable = this.tableModules.getSelectedRow() >= 0;
+            boolean enable = this.getTableModules().getSelectedRow() >= 0;
 
-            for (int i = 0; i < selectionItems.length; i++) {
-                JMenuItem menuItem = (JMenuItem) this.menuItems.get(selectionItems[i]);
+            for (String selectionItem : selectionItems) {
+                JMenuItem menuItem = (JMenuItem) this.menuItems.get(selectionItem);
 
                 if (menuItem != null) {
                     menuItem.setEnabled(enable);
@@ -2837,7 +2805,7 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
             }
 
-            int row = this.tableModules.getSelectedRow();
+            int row = this.getTableModules().getSelectedRow();
             if (row >= 0 && Workspace.getConsolePane().getIoServicesHandler().getTabbedPane().getTabCount() > row) {
                 boolean stopped = ((ProcessConsolePanel) Workspace.getConsolePane().getIoServicesHandler().getTabbedPane().getComponentAt(row)).stop.isEnabled();
                 JMenuItem menuItem = (JMenuItem) this.menuItems.get("start");
@@ -2925,20 +2893,19 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
     }
 
     public void enableAmicoPanel() {
-        this.sketchletPanel.globalVariablesPanel.enableControls();
-        if (this.sketchletPanel.panel2 != null) {
-            this.sketchletPanel.panel2.enableControls();
+        this.getSketchletPanel().globalVariablesPanel.enableControls();
+        if (this.getSketchletPanel().panel2 != null) {
+            this.getSketchletPanel().panel2.enableControls();
         }
     }
 
-    public void enableModuleToolbar() {
+    void enableModuleToolbar() {
         String selectionItems[] = {"start", "stop", "restart", "removeprocess", "exportprocess"};
 
-        boolean enable = this.tableModules.getSelectedRow() >= 0;
+        boolean enable = this.getTableModules().getSelectedRow() >= 0;
 
-        for (int i = 0; i
-                < selectionItems.length; i++) {
-            JButton toolbarItem = (JButton) this.toolbarItems.get(selectionItems[i]);
+        for (String selectionItem : selectionItems) {
+            JButton toolbarItem = (JButton) this.toolbarItems.get(selectionItem);
 
             if (toolbarItem != null) {
                 toolbarItem.setEnabled(enable);
@@ -2946,7 +2913,7 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
         }
 
-        int row = this.tableModules.getSelectedRow();
+        int row = this.getTableModules().getSelectedRow();
         if (row >= 0 && Workspace.getConsolePane().getIoServicesHandler().getTabbedPane().getTabCount() > 0) {
             boolean stopped = ((ProcessConsolePanel) Workspace.getConsolePane().getIoServicesHandler().getTabbedPane().getComponentAt(row)).stop.isEnabled();
             JButton toolbarItem = (JButton) this.toolbarItems.get("start");
@@ -2964,14 +2931,10 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
         }
     }
 
-    JPopupMenu popupMenuModules = new JPopupMenu();
-    JPopupMenu popupMenuFiles = new JPopupMenu();
-    JPopupMenu popupMenuSketches = new JPopupMenu();
-
     class PopupListenerModules extends MouseAdapter {
 
-        JMenuItem menuItemStart;
-        JMenuItem menuItemStop;
+        private JMenuItem menuItemStart;
+        private JMenuItem menuItemStop;
 
         public PopupListenerModules() {
             menuItemStart = new JMenuItem(Language.translate("Start"));
@@ -3004,18 +2967,20 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
             popupMenuModules.add(menuItem);
         }
 
+        @Override
         public void mousePressed(MouseEvent e) {
             showPopup(e);
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
             showPopup(e);
         }
 
         private void showPopup(MouseEvent e) {
             if ((e.getModifiers() & InputEvent.BUTTON3_MASK) == InputEvent.BUTTON3_MASK) {
-                int row = tableModules.rowAtPoint(e.getPoint());
-                tableModules.getSelectionModel().setSelectionInterval(row, row);
+                int row = getTableModules().rowAtPoint(e.getPoint());
+                getTableModules().getSelectionModel().setSelectionInterval(row, row);
 
                 if (row >= 0) {
                     boolean stopped = ((ProcessConsolePanel) Workspace.getConsolePane().getIoServicesHandler().getTabbedPane().getComponentAt(row)).stop.isEnabled();
@@ -3029,9 +2994,9 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
 
     class PopupListenerFiles extends MouseAdapter {
 
-        JMenuItem menuItemOpen;
-        JMenuItem menuItemOpenInWebBrowser;
-        JMenuItem menuItemOpenInExternalEditor;
+        private JMenuItem menuItemOpen;
+        private JMenuItem menuItemOpenInWebBrowser;
+        private JMenuItem menuItemOpenInExternalEditor;
 
         public PopupListenerFiles() {
             menuItemOpen = new JMenuItem(Language.translate("Open"));
@@ -3050,14 +3015,17 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
             popupMenuFiles.add(menuItemOpenInExternalEditor);
         }
 
+        @Override
         public void mousePressed(MouseEvent e) {
             showPopup(e);
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
             showPopup(e);
         }
 
+        @Override
         public void mouseClicked(MouseEvent e) {
             if (e.getClickCount() == 2) {
                 openFile();
@@ -3070,48 +3038,6 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
                 tableFiles.getSelectionModel().setSelectionInterval(row, row);
 
                 popupMenuFiles.show(e.getComponent(), e.getX(), e.getY());
-            }
-        }
-    }
-
-    class PopupListenerSketches extends MouseAdapter {
-
-        JMenuItem menuItemOpenSketches;
-        JMenuItem menuItemPlaySketches;
-
-        public PopupListenerSketches() {
-            menuItemOpenSketches = new JMenuItem(Language.translate("Open Sketches..."));
-            menuItemOpenSketches.setActionCommand("sketches");
-            menuItemOpenSketches.addActionListener(thisPanel);
-
-            menuItemPlaySketches = new JMenuItem(Language.translate("Play Sketches..."));
-            menuItemPlaySketches.setActionCommand("playsketches");
-            menuItemPlaySketches.addActionListener(thisPanel);
-
-            popupMenuSketches.add(menuItemOpenSketches);
-            popupMenuSketches.add(menuItemPlaySketches);
-        }
-
-        public void mousePressed(MouseEvent e) {
-            showPopup(e);
-        }
-
-        public void mouseReleased(MouseEvent e) {
-            showPopup(e);
-        }
-
-        public void mouseClicked(MouseEvent e) {
-            if (e.getClickCount() == 2) {
-                openSketches(false);
-            }
-        }
-
-        private void showPopup(MouseEvent e) {
-            if ((e.getModifiers() & InputEvent.BUTTON3_MASK) == InputEvent.BUTTON3_MASK) {
-                // int row = tableSketches.rowAtPoint(e.getPoint());
-                // tableSketches.getSelectionModel().setSelectionInterval(row, row);
-
-                popupMenuSketches.show(e.getComponent(), e.getX(), e.getY());
             }
         }
     }

@@ -1,10 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.editor.ui;
 
-import net.sf.sketchlet.model.Pages;
+import net.sf.sketchlet.framework.model.Pages;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;

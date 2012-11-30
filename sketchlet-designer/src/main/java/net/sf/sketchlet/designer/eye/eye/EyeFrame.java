@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.eye.eye;
 
 import net.sf.sketchlet.designer.Workspace;
@@ -99,7 +95,6 @@ public class EyeFrame extends JPanel {
                 a -= Math.PI * 2;
             }
 
-            EyeSlot slot = eyeData.selectSlot(a);
             tempA = a;
             repaint();
         }

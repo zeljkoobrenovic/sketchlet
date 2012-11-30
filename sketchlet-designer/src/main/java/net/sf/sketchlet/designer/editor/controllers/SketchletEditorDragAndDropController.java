@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.editor.controllers;
 
 import net.sf.sketchlet.common.file.FileDrop;
@@ -15,9 +11,9 @@ import net.sf.sketchlet.designer.editor.dnd.SelectDropProperty;
 import net.sf.sketchlet.designer.editor.ui.page.PageDetailsPanel;
 import net.sf.sketchlet.designer.editor.ui.region.ActiveRegionPanel;
 import net.sf.sketchlet.designer.editor.ui.region.ActiveRegionsFrame;
-import net.sf.sketchlet.model.ActiveRegion;
-import net.sf.sketchlet.model.events.region.ActiveRegionMouseHandler;
-import net.sf.sketchlet.renderer.page.PageRenderer;
+import net.sf.sketchlet.framework.controller.ActiveRegionMouseController;
+import net.sf.sketchlet.framework.model.ActiveRegion;
+import net.sf.sketchlet.framework.renderer.page.PageRenderer;
 import net.sf.sketchlet.util.RefreshTime;
 import org.apache.commons.lang.StringUtils;
 
@@ -122,7 +118,7 @@ public class SketchletEditorDragAndDropController {
             int x = (int) ((p.getX()) / SketchletEditor.getInstance().getScale() - SketchletEditor.getInstance().getMarginX());
             int y = (int) ((p.getY()) / SketchletEditor.getInstance().getScale() - SketchletEditor.getInstance().getMarginY());
             FileDrop.setDragging(true);
-            ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().selectRegion(x, y, false);
+            ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().selectRegion(x, y, false);
             FileDrop.setDragging(false);
             if (region != null) {
                 String action = "", param1 = "", param2 = "";
@@ -144,7 +140,7 @@ public class SketchletEditorDragAndDropController {
                     param2 = "";
                 }
 
-                Point2D ip = ActiveRegionMouseHandler.inversePoint(region, x, y, false);
+                Point2D ip = ActiveRegionMouseController.inversePoint(region, x, y, false);
                 x = (int) ip.getX();
                 y = (int) ip.getY();
                 SketchletEditor.getInstance().saveRegionUndo(region);
@@ -152,15 +148,15 @@ public class SketchletEditorDragAndDropController {
 
                 if (StringUtils.isNotBlank(action) && region.isInMouseIconArea(x, y)) {
                     ActiveRegionsFrame.showRegionsAndActions();
-                    ActiveRegionsFrame.refresh(region, ActiveRegionPanel.indexEvents, ActiveRegionPanel.indexMouseEvents);
-                    ActiveRegionPanel.currentActiveRegionPanel.mouseEventPanel.addNewEventMacro(action, param1, param2);
+                    ActiveRegionsFrame.refresh(region, ActiveRegionPanel.getIndexEvents(), ActiveRegionPanel.getIndexMouseEvents());
+                    ActiveRegionPanel.getCurrentActiveRegionPanel().getMouseEventPanel().addNewEventMacro(action, param1, param2);
                 } else if (StringUtils.isNotBlank(action) && region.isInRegionsIconArea(x, y)) {
                     ActiveRegionsFrame.showRegionsAndActions();
-                    ActiveRegionsFrame.refresh(region, ActiveRegionPanel.indexEvents, ActiveRegionPanel.indexMouseEvents);
-                    ActiveRegionPanel.currentActiveRegionPanel.regionOverlapEventsPanel.addNewRegionOverlapMacro(action, param1, param2);
+                    ActiveRegionsFrame.refresh(region, ActiveRegionPanel.getIndexEvents(), ActiveRegionPanel.getIndexMouseEvents());
+                    ActiveRegionPanel.getCurrentActiveRegionPanel().getRegionOverlapEventsPanel().addNewRegionOverlapMacro(action, param1, param2);
                 } else if (text.startsWith("=") && region.isInMappingIconArea(x, y)) {
                     ActiveRegionsFrame.showRegionsAndActions();
-                    ActiveRegionPanel ap = ActiveRegionsFrame.refresh(region, ActiveRegionPanel.indexEvents, ActiveRegionPanel.indexMotion);
+                    ActiveRegionPanel ap = ActiveRegionsFrame.refresh(region, ActiveRegionPanel.getIndexEvents(), ActiveRegionPanel.getIndexMotion());
                     int row = ap.getFreeMappingRow();
                     region.updateTransformations[row][1] = text.substring(1);
                     ap.editUpdateTransformationsEvent(row);

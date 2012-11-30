@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the openExternalEditor.
- */
 package net.sf.sketchlet.designer.editor;
 
 import net.sf.sketchlet.common.dnd.GenericTableTransferHandler;
@@ -12,14 +8,14 @@ import net.sf.sketchlet.designer.GlobalProperties;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.dnd.SelectDropFile;
 import net.sf.sketchlet.designer.help.HelpViewer;
-import net.sf.sketchlet.designer.tools.log.ActivityLog;
+import net.sf.sketchlet.framework.model.log.ActivityLog;
 import net.sf.sketchlet.designer.editor.ui.MessageFrame;
 import net.sf.sketchlet.designer.editor.ui.VerticalButton;
 import net.sf.sketchlet.designer.editor.ui.desktop.SystemVariablesDialog;
 import net.sf.sketchlet.designer.editor.ui.extraeditor.ExtraEditorPanel;
 import net.sf.sketchlet.designer.editor.ui.macros.MacrosTablePanel;
 import net.sf.sketchlet.designer.editor.ui.page.PageDetailsPanel;
-import net.sf.sketchlet.designer.editor.ui.page.SketchListPanel;
+import net.sf.sketchlet.designer.editor.ui.page.PageListPanel;
 import net.sf.sketchlet.designer.editor.ui.page.perspective.PerspectivePanel;
 import net.sf.sketchlet.designer.editor.ui.page.spreadsheet.SpreadsheetPanel;
 import net.sf.sketchlet.designer.editor.ui.profiles.Profiles;
@@ -31,10 +27,10 @@ import net.sf.sketchlet.designer.editor.ui.toolbars.FormulaToolbar;
 import net.sf.sketchlet.designer.editor.ui.toolbars.ModeToolbar;
 import net.sf.sketchlet.designer.editor.ui.toolbars.SimplePagesNavigationPanel;
 import net.sf.sketchlet.help.HelpUtils;
-import net.sf.sketchlet.model.ActiveRegion;
-import net.sf.sketchlet.model.Page;
-import net.sf.sketchlet.model.programming.macros.Macro;
-import net.sf.sketchlet.model.programming.screenscripts.ScreenScripts;
+import net.sf.sketchlet.framework.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.Page;
+import net.sf.sketchlet.framework.model.programming.macros.Macro;
+import net.sf.sketchlet.framework.model.programming.screenscripts.ScreenScripts;
 import net.sf.sketchlet.plugin.WidgetPlugin;
 import net.sf.sketchlet.util.RefreshTime;
 import net.sf.sketchlet.util.ui.DataRowFrame;
@@ -57,7 +53,6 @@ public class SketchletEditorFrame {
     private static final Logger log = Logger.getLogger(SketchletEditorFrame.class);
 
     public static void createAndShowGui(int showIndex, boolean play) {
-        SketchletEditor.inPlaybackMode = play;
         if (SketchletEditor.getInstance() == null) {
             SketchletEditor.setbGUIReady(false);
             SketchletEditor.editorFrame = new JFrame();
@@ -109,6 +104,8 @@ public class SketchletEditorFrame {
             }
 
             if (sd.getWidth() <= windowWidth || sd.getHeight() <= windowHeight) {
+                windowWidth = (int) sd.getWidth();
+
                 SketchletEditor.editorFrame.setSize((int) (sd.getWidth() * 0.8), (int) (sd.getHeight() * 0.8));
                 SketchletEditor.editorFrame.setExtendedState(SketchletEditor.editorFrame.getExtendedState() | Frame.MAXIMIZED_BOTH);
             } else {
@@ -116,7 +113,6 @@ public class SketchletEditorFrame {
             }
 
             SketchletEditor.editorFrame.setLocationRelativeTo(Workspace.getMainFrame());
-            SketchletEditor.getInstance().getSpllitPane().setDividerLocation(windowWidth - 300);
         }
 
         if (showIndex >= 0) {
@@ -141,12 +137,12 @@ public class SketchletEditorFrame {
             }
             SketchletEditor.getInstance().play();
         } else {
-            Workspace.getMainPanel().sketchletPanel.globalVariablesPanel.enableControls();
+            Workspace.getMainPanel().getSketchletPanel().globalVariablesPanel.enableControls();
         }
 
         if (SketchletEditor.getInstance().getCurrentPage() != null) {
             int index = SketchletEditor.getInstance().getPages().getPages().indexOf(SketchletEditor.getInstance().getCurrentPage());
-            SketchletEditor.getInstance().getSketchListPanel().table.getSelectionModel().setSelectionInterval(index, index);
+            SketchletEditor.getInstance().getPageListPanel().table.getSelectionModel().setSelectionInterval(index, index);
         }
 
         if (Profiles.isActive("active_regions_layer")) {
@@ -157,6 +153,8 @@ public class SketchletEditorFrame {
             SketchletEditor.getInstance().setEditorMode(SketchletEditorMode.SKETCHING);
         }
         SketchletEditor.setbGUIReady(true);
+
+        SketchletEditor.getInstance().getSpllitPane().setDividerLocation(SketchletEditor.editorFrame.getWidth() - 300);
     }
 
     public static void populateFrame() {
@@ -164,13 +162,13 @@ public class SketchletEditorFrame {
 
         SketchletEditor.setEditorPanel(new SketchletEditor());
 
-        Workspace.getMainPanel().menubar = Workspace.getMainPanel().createMenubar("menubar");
-        SketchletEditor.editorFrame.setJMenuBar(Workspace.getMainPanel().menubar);
+        Workspace.getMainPanel().setMenuBar(Workspace.getMainPanel().createMenubar("menubar"));
+        SketchletEditor.editorFrame.setJMenuBar(Workspace.getMainPanel().getMenuBar());
 
         SwingUtilities.updateComponentTreeUI(SketchletEditor.editorFrame);
-        SketchletEditor.statusBar.setEditable(false);
-        SketchletEditor.statusBar.putClientProperty("JComponent.sizeVariant", "mini");
-        SwingUtilities.updateComponentTreeUI(SketchletEditor.statusBar);
+        SketchletEditor.getStatusBar().setEditable(false);
+        SketchletEditor.getStatusBar().putClientProperty("JComponent.sizeVariant", "mini");
+        SwingUtilities.updateComponentTreeUI(SketchletEditor.getStatusBar());
 
         SketchletEditor.getInstance().scrollPane = new JScrollPane(SketchletEditor.getInstance());
         if (GlobalProperties.get("rulers", "false").equalsIgnoreCase("true")) {
@@ -192,7 +190,7 @@ public class SketchletEditorFrame {
                     if (SketchletEditor.getInstance().getMode() == SketchletEditorMode.ACTIONS) {
                         int x = (int) ((p.getX()) / SketchletEditor.getInstance().getScale()) - SketchletEditor.getInstance().getMarginX();
                         int y = (int) ((p.getY()) / SketchletEditor.getInstance().getScale()) - SketchletEditor.getInstance().getMarginY();
-                        ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().selectRegion(x, y, false);
+                        ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().selectRegion(x, y, false);
                         if (region != null) {
                             new SelectDropFile(SketchletEditor.getInstance().editorFrame, files[0], region, x, y);
                             SketchletEditor.getInstance().repaint();
@@ -397,7 +395,7 @@ public class SketchletEditorFrame {
 
         SketchletEditor.getInstance().getEditorPane().add(SketchletEditor.getInstance().getPanelDrawingPanel());
 
-        SketchletEditor.getInstance().setSketchListPanel(new SketchListPanel());
+        SketchletEditor.getInstance().setPageListPanel(new PageListPanel());
         SketchletEditor.getInstance().getCentralPanel().add(SketchletEditor.getInstance().getEditorPane());
         SketchletEditor.getInstance().setControlPanel(new SimplePagesNavigationPanel());
         SketchletEditor.getInstance().getCentralPanel().add(SketchletEditor.getInstance().getControlPanel(), BorderLayout.NORTH);
@@ -416,7 +414,7 @@ public class SketchletEditorFrame {
         profilePanel.add(mbprofiles);
 
         SketchletEditor.getInstance().getStatusPanel().add(profilePanel, BorderLayout.WEST);
-        SketchletEditor.getInstance().getStatusPanel().add(SketchletEditor.statusBar, BorderLayout.CENTER);
+        SketchletEditor.getInstance().getStatusPanel().add(SketchletEditor.getStatusBar(), BorderLayout.CENTER);
         if (GlobalProperties.get("memory-monitor", "false").equalsIgnoreCase("true")) {
             SketchletEditor.getInstance().addMemoryPanel();
         }
@@ -442,14 +440,14 @@ public class SketchletEditorFrame {
 
         JComponent rightComponent;
         if (Profiles.isActiveAny("variables,io_services,timers,macros,scripts,screen_scripts")) {
-            SketchletEditor.getInstance().getTabsNavigator().addTab(Language.translate("Pages"), SketchletEditor.getInstance().getSketchListPanel());
+            SketchletEditor.getInstance().getTabsNavigator().addTab(Language.translate("Pages"), SketchletEditor.getInstance().getPageListPanel());
             SketchletEditor.getInstance().getTabsNavigator().addTab(Language.translate("Global Objects"), SketchletEditor.getInstance().getTabsRight());
             rightComponent = SketchletEditor.getInstance().getTabsNavigator();
             JPanel panel = new JPanel(new BorderLayout());
             panel.add(SketchletEditor.getInstance().getTabsNavigator());
             rightComponent = panel;
         } else {
-            rightComponent = SketchletEditor.getInstance().getSketchListPanel();
+            rightComponent = SketchletEditor.getInstance().getPageListPanel();
         }
 
         SketchletEditor.getInstance().setTabsBrowser(new JTabbedPane());
@@ -482,8 +480,8 @@ public class SketchletEditorFrame {
 
         SketchletEditor.getInstance().setExtraEditorPanel(new ExtraEditorPanel());
 
-        Workspace.getMainPanel().createToolbar(Workspace.getMainPanel().mainFrameToolbar, "toolbarVariables");
-        Workspace.getMainPanel().mainFrameToolbar.setOrientation(JToolBar.VERTICAL);
+        Workspace.getMainPanel().createToolbar(Workspace.getMainPanel().getMainFrameToolbar(), "toolbarVariables");
+        Workspace.getMainPanel().getMainFrameToolbar().setOrientation(JToolBar.VERTICAL);
 
         loadTabsRight();
         loadNavigationButtons();
@@ -536,7 +534,7 @@ public class SketchletEditorFrame {
             });
         }
         if (Profiles.isActive("macros")) {
-            ab = new VerticalButton(Language.translate("Macros"), Workspace.createImageIcon("resources/programming-object.png"));
+            ab = new VerticalButton(Language.translate("Actions"), Workspace.createImageIcon("resources/programming-object.png"));
             SketchletEditor.getInstance().getNavigationToolbar().add(ab);
             SketchletEditor.getInstance().getNavigationToolbar().addSeparator();
             ab.addActionListener(new ActionListener() {
@@ -586,6 +584,7 @@ public class SketchletEditorFrame {
         }
         setRigthPanelVisible(true);
         SketchletEditor.getInstance().getTabsNavigator().setSelectedIndex(tabIndex);
+        SketchletEditor.getInstance().getTabsBrowser().setSelectedIndex(0);
     }
 
     private static void setRigthPanelVisible(boolean bVisible) {
@@ -606,9 +605,9 @@ public class SketchletEditorFrame {
         SketchletEditor.setPageTabIndex(SketchletEditor.getInstance().getTabsRight().getTabCount());
         if (Profiles.isActive("io_services")) {
             SketchletEditor.setIoservicesTabIndex(SketchletEditor.getInstance().getTabsRight().getTabCount());
-            SketchletEditor.getInstance().getTabsRight().addTab("", Workspace.createImageIcon("resources/service.gif"), Workspace.getMainPanel().panelProcesses, Language.translate("I/O Services"));
-            Workspace.getMainPanel().tableModules.setDragEnabled(true);
-            Workspace.getMainPanel().tableModules.setTransferHandler(new GenericTableTransferHandler("@macro Service:", 0));
+            SketchletEditor.getInstance().getTabsRight().addTab("", Workspace.createImageIcon("resources/service.gif"), Workspace.getMainPanel().getPanelProcesses(), Language.translate("I/O Services"));
+            Workspace.getMainPanel().getTableModules().setDragEnabled(true);
+            Workspace.getMainPanel().getTableModules().setTransferHandler(new GenericTableTransferHandler("@macro Service:", 0));
         }
 
         SketchletEditor.getInstance().setTimersTablePanel(new TimersTablePanel());
@@ -631,12 +630,12 @@ public class SketchletEditorFrame {
             SketchletEditor.setScreenpokingTabIndex(SketchletEditor.getInstance().getTabsProgramming().getTabCount());
             SketchletEditor.getInstance().getTabsProgramming().addTab("", Workspace.createImageIcon("resources/mouse.png"), ScreenScripts.createScreenScripts(false), Language.translate("Screen Poking"));
         }
-        if (Workspace.getMainPanel().sketchletPanel.panel2 != null) {
-            Workspace.getMainPanel().sketchletPanel.panel2.table.setDragEnabled(true);
-            Workspace.getMainPanel().sketchletPanel.panel2.table.setTransferHandler(new GenericTableTransferHandler("@macro Script:", 0));
+        if (Workspace.getMainPanel().getSketchletPanel().panel2 != null) {
+            Workspace.getMainPanel().getSketchletPanel().panel2.table.setDragEnabled(true);
+            Workspace.getMainPanel().getSketchletPanel().panel2.table.setTransferHandler(new GenericTableTransferHandler("@macro Script:", 0));
             if (Profiles.isActive("scripts")) {
                 SketchletEditor.setScriptsTabIndex(SketchletEditor.getInstance().getTabsProgramming().getTabCount());
-                SketchletEditor.getInstance().getTabsProgramming().addTab("", Workspace.createImageIcon("resources/script.png"), Workspace.getMainPanel().sketchletPanel.panel2, Language.translate("Scripts"));
+                SketchletEditor.getInstance().getTabsProgramming().addTab("", Workspace.createImageIcon("resources/script.png"), Workspace.getMainPanel().getSketchletPanel().panel2, Language.translate("Scripts"));
             }
         }
 
@@ -659,8 +658,8 @@ public class SketchletEditorFrame {
             public void run() {
                 try {
                     SketchletEditor.close();
-                    Workspace.getMainPanel().sketchletPanel.globalVariablesPanel.variablesTableModel.fireTableStructureChanged();
-                    Workspace.getMainPanel().sketchletPanel.panel2.scriptsTableModel.fireTableStructureChanged();
+                    Workspace.getMainPanel().getSketchletPanel().globalVariablesPanel.variablesTableModel.fireTableStructureChanged();
+                    Workspace.getMainPanel().getSketchletPanel().panel2.scriptsTableModel.fireTableStructureChanged();
                     if (ScreenScripts.getScreenScriptsPanel() != null && ScreenScripts.getScreenScriptsPanel().getModel() != null) {
                         ScreenScripts.getScreenScriptsPanel().getModel().fireTableStructureChanged();
                     }
@@ -676,8 +675,8 @@ public class SketchletEditorFrame {
 
     public static void onProfileChange() {
         Macro.prepareCommandList();
-        Workspace.getMainPanel().menubar = Workspace.getMainPanel().createMenubar("menubar");
-        SketchletEditor.editorFrame.setJMenuBar(Workspace.getMainPanel().menubar);
+        Workspace.getMainPanel().setMenuBar(Workspace.getMainPanel().createMenubar("menubar"));
+        SketchletEditor.editorFrame.setJMenuBar(Workspace.getMainPanel().getMenuBar());
         SketchletEditor.getInstance().getPanelModes().remove(SketchletEditor.getInstance().getTabsModes());
         if (Profiles.isActive("active_regions_layer")) {
             SketchletEditor.getInstance().getPanelModes().add(SketchletEditor.getInstance().getTabsModes(), BorderLayout.NORTH);
@@ -688,19 +687,19 @@ public class SketchletEditorFrame {
         }
         SketchletEditor.getInstance().getPanelModes().revalidate();
         SketchletEditor.getInstance().getSketchToolbar().loadButtons();
-        Workspace.getMainPanel().createToolbar(Workspace.getMainPanel().mainFrameToolbar, "toolbarVariables");
-        Workspace.getMainPanel().mainFrameToolbar.revalidate();
+        Workspace.getMainPanel().createToolbar(Workspace.getMainPanel().getMainFrameToolbar(), "toolbarVariables");
+        Workspace.getMainPanel().getMainFrameToolbar().revalidate();
 
         loadTabsRight();
         loadNavigationButtons();
         JComponent rightComponent;
         if (Profiles.isActiveAny("variables,io_services,timers,macros,scripts,screen_scripts")) {
             SketchletEditor.getInstance().getTabsNavigator().removeAll();
-            SketchletEditor.getInstance().getTabsNavigator().addTab(Language.translate("Pages"), SketchletEditor.getInstance().getSketchListPanel());
+            SketchletEditor.getInstance().getTabsNavigator().addTab(Language.translate("Pages"), SketchletEditor.getInstance().getPageListPanel());
             SketchletEditor.getInstance().getTabsNavigator().addTab(Language.translate("Global Objects"), SketchletEditor.getInstance().getTabsRight());
             rightComponent = SketchletEditor.getInstance().getTabsNavigator();
         } else {
-            rightComponent = SketchletEditor.getInstance().getSketchListPanel();
+            rightComponent = SketchletEditor.getInstance().getPageListPanel();
         }
 
         SketchletEditor.getInstance().getTabsBrowser().setComponentAt(0, rightComponent);
@@ -711,7 +710,7 @@ public class SketchletEditorFrame {
             SketchletEditor.getInstance().getExtraEditorPanel().createTabs();
         }
 
-        SketchletEditor.getInstance().getSketchListPanel().reloadToolbar();
+        SketchletEditor.getInstance().getPageListPanel().reloadToolbar();
 
         ActiveRegionsFrame.reload();
     }

@@ -1,11 +1,3 @@
-/*
- * RemoteBackup.java
- *
- * Created on April 3, 2008, 4:50 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.tools.vfs;
 
 import net.sf.sketchlet.common.mail.PasswordDialog;
@@ -22,15 +14,12 @@ import org.apache.commons.vfs.provider.sftp.SftpFileSystemConfigBuilder;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
-import java.io.BufferedReader;
 import java.io.File;
 import java.net.URLDecoder;
 import java.util.StringTokenizer;
 
 public class RemoteBackup extends RemoteCopy {
     private static final Logger log = Logger.getLogger(RemoteBackup.class);
-    private FileObject cwd;
-    private BufferedReader reader;
     int numberOfCopiedFiles = 0;
     int totalNumberOfFiles = 0;
     RemoteBackupProgressFeedback feedback;
@@ -178,8 +167,6 @@ public class RemoteBackup extends RemoteCopy {
                 SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(fso, "no");
 
                 FileObject sourceFileObject = fsm.resolveFile(URLDecoder.decode(file.toURL().toString(), "UTF8"), fso);
-                String sourceFilePath = sourceFileObject.getName().getPath();
-
 
                 if (!remoteFolder.endsWith("/") && !remoteFolder.endsWith("\\")) {
                     remoteFolder += "/";

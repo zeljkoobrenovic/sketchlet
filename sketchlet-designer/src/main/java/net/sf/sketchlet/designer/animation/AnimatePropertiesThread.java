@@ -1,19 +1,14 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.animation;
 
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.playback.displays.InteractionSpace;
 import net.sf.sketchlet.designer.playback.ui.PlaybackFrame;
-import net.sf.sketchlet.blackboard.evaluator.Evaluator;
-import net.sf.sketchlet.model.ActiveRegion;
-import net.sf.sketchlet.model.ActiveRegions;
-import net.sf.sketchlet.model.Page;
-import net.sf.sketchlet.model.programming.timers.TimerThread;
-import net.sf.sketchlet.model.programming.timers.curves.Curve;
-import net.sf.sketchlet.model.programming.timers.curves.Curves;
+import net.sf.sketchlet.framework.blackboard.evaluator.Evaluator;
+import net.sf.sketchlet.framework.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.Page;
+import net.sf.sketchlet.framework.model.programming.timers.TimerThread;
+import net.sf.sketchlet.framework.model.programming.timers.curves.Curve;
+import net.sf.sketchlet.framework.model.programming.timers.curves.Curves;
 import net.sf.sketchlet.util.RefreshTime;
 import org.apache.log4j.Logger;
 
@@ -24,12 +19,12 @@ public class AnimatePropertiesThread implements Runnable {
     private static final Logger log = Logger.getLogger(AnimatePropertiesThread.class);
 
     private Page page;
-    private Thread t = new Thread(this);
+    private Thread thread = new Thread(this);
     private boolean stopped = false;
 
     public AnimatePropertiesThread(Page page) {
         this.page = page;
-        t.start();
+        thread.start();
     }
 
     public void stop() {
@@ -39,18 +34,18 @@ public class AnimatePropertiesThread implements Runnable {
     public void run() {
         long startTime = System.currentTimeMillis();
         for (ActiveRegion region : page.getRegions().getRegions()) {
-            region.speed_prevX1 = region.playback_x1;
-            region.speed_prevY1 = region.playback_y1;
-            region.speed_prevX2 = region.playback_x2;
-            region.speed_prevY2 = region.playback_y2;
+            region.speed_prevX1 = region.x1;
+            region.speed_prevY1 = region.y1;
+            region.speed_prevX2 = region.x2;
+            region.speed_prevY2 = region.y2;
 
-            region.speed_w = Math.abs(region.playback_x2 - region.playback_x1);
-            region.speed_h = Math.abs(region.playback_y2 - region.playback_y1);
+            region.speed_w = Math.abs(region.x2 - region.x1);
+            region.speed_h = Math.abs(region.y2 - region.y1);
 
-            region.speed_x = region.playback_x1;
-            region.speed_y = region.playback_y1;
+            region.speed_x = region.x1;
+            region.speed_y = region.y1;
 
-            region.speed_prevDirection = region.playback_rotation;
+            region.speed_prevDirection = region.rotation;
         }
         while (!isStopped() && (SketchletEditor.getInstance() != null && (SketchletEditor.getInstance().getInternalPlaybackPanel() != null || PlaybackFrame.playbackFrame != null))) {
             try {
@@ -119,11 +114,11 @@ public class AnimatePropertiesThread implements Runnable {
         String strRotation = region.processText((region.strRotate)).trim();
         if (!strSpeed.isEmpty()) {
             try {
-                if (Math.abs(region.speed_x - region.playback_x1) > 3) {
-                    region.speed_x = region.playback_x1;
+                if (Math.abs(region.speed_x - region.x1) > 3) {
+                    region.speed_x = region.x1;
                 }
-                if (Math.abs(region.speed_y - region.playback_y1) > 3) {
-                    region.speed_y = region.playback_y1;
+                if (Math.abs(region.speed_y - region.y1) > 3) {
+                    region.speed_y = region.y1;
                 }
                 region.speed = Double.parseDouble(strSpeed);
 
@@ -133,7 +128,7 @@ public class AnimatePropertiesThread implements Runnable {
                     return;
                 }
 
-                double angle = region.playback_rotation;
+                double angle = region.rotation;
 
                 if (strDirection.equalsIgnoreCase("random") || strRotation.equalsIgnoreCase("random")) {
                     try {
@@ -141,7 +136,7 @@ public class AnimatePropertiesThread implements Runnable {
                         region.speed_prevDirection = angle;
 
                         if (strRotation.equalsIgnoreCase("random")) {
-                            region.playback_rotation = angle;
+                            region.rotation = angle;
                         }
                     } catch (Exception ex) {
                     }
@@ -160,44 +155,40 @@ public class AnimatePropertiesThread implements Runnable {
                     region.speed_x += Math.cos(angle - Math.PI / 2);
                     region.speed_y += Math.sin(angle - Math.PI / 2);
 
-                    region.playback_x1 = (int) region.speed_x;
-                    region.playback_y1 = (int) region.speed_y;
+                    region.x1 = (int) region.speed_x;
+                    region.y1 = (int) region.speed_y;
 
-                    region.playback_x1 = (int) region.getMotionHandler().processLimits("position x", region.playback_x1, 0, region.speed_w, false);
+                    region.x1 = (int) region.getMotionController().processLimits("position x", region.x1, 0, region.speed_w, false);
                     if (strHAlign.equalsIgnoreCase("center")) {
-                        region.getMotionHandler().processLimits("position x", region.playback_x1 + region.speed_w / 2, region.speed_w / 2, region.speed_w / 2, true);
+                        region.getMotionController().processLimits("position x", region.x1 + region.speed_w / 2, region.speed_w / 2, region.speed_w / 2, true);
                     } else if (strHAlign.equalsIgnoreCase("right")) {
-                        region.getMotionHandler().processLimits("position x", region.playback_x1 + region.speed_w, region.speed_w, 0, true);
+                        region.getMotionController().processLimits("position x", region.x1 + region.speed_w, region.speed_w, 0, true);
                     } else {
-                        region.getMotionHandler().processLimits("position x", region.playback_x1, 0, region.speed_w, true);
+                        region.getMotionController().processLimits("position x", region.x1, 0, region.speed_w, true);
                     }
-                    region.playback_y1 = (int) region.getMotionHandler().processLimits("position y", region.playback_y1, 0, region.speed_h, false);
+                    region.y1 = (int) region.getMotionController().processLimits("position y", region.y1, 0, region.speed_h, false);
                     if (strVAlign.equalsIgnoreCase("center")) {
-                        region.getMotionHandler().processLimits("position y", region.playback_y1 + region.speed_h / 2, region.speed_h / 2, region.speed_h / 2, true);
+                        region.getMotionController().processLimits("position y", region.y1 + region.speed_h / 2, region.speed_h / 2, region.speed_h / 2, true);
                     } else if (strVAlign.equalsIgnoreCase("bottom")) {
-                        region.getMotionHandler().processLimits("position y", region.playback_y1 + region.speed_h, region.speed_h, 0, true);
+                        region.getMotionController().processLimits("position y", region.y1 + region.speed_h, region.speed_h, 0, true);
                     } else {
-                        region.getMotionHandler().processLimits("position y", region.playback_y1, 0, region.speed_h, true);
+                        region.getMotionController().processLimits("position y", region.y1, 0, region.speed_h, true);
                     }
 
-                    region.playback_x2 = region.playback_x1 + region.speed_w;
-                    region.playback_y2 = region.playback_y1 + region.speed_h;
+                    region.x2 = region.x1 + region.speed_w;
+                    region.y2 = region.y1 + region.speed_h;
 
-                    // editorPanel.repaint();
-
-                    // region.interactionHandler.processInteractionEvents(true, region.parent.sketch.activeTimers, region.parent.sketch.activeMacros);
-
-                    if (!region.isWithinLimits(true) || region.getInteractionHandler().intersectsWithSolids(true)) {
-                        ActiveRegions.findNonOverlapingLocationPlayback(region);
+                    if (!region.isWithinLimits(true) || region.getInteractionController().intersectsWithSolids(true)) {
+                        region.parent.getOverlapHelper().findNonOverlappingLocationPlayback(region);
                         break;
                     } else {
-                        region.speed_prevX1 = region.playback_x1;
-                        region.speed_prevY1 = region.playback_y1;
-                        region.speed_prevX2 = region.playback_x2;
-                        region.speed_prevY2 = region.playback_y2;
+                        region.speed_prevX1 = region.x1;
+                        region.speed_prevY1 = region.y1;
+                        region.speed_prevX2 = region.x2;
+                        region.speed_prevY2 = region.y2;
                     }
                 }
-                region.getInteractionHandler().processInteractionEvents(true, region.parent.getPage().getActiveTimers(), region.parent.getPage().getActiveMacros());
+                region.getInteractionController().processInteractionEvents(true, region.parent.getPage().getActiveTimers(), region.parent.getPage().getActiveMacros());
                 region.getSketch().updateConnectors(region, true);
 
             } catch (NumberFormatException nfe) {

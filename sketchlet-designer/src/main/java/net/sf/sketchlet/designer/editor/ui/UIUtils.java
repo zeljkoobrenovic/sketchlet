@@ -1,12 +1,8 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.editor.ui;
 
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.model.Page;
+import net.sf.sketchlet.framework.model.Page;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;

@@ -2,8 +2,8 @@ package net.sf.sketchlet.designer.editor.ui.localvars;
 
 import net.sf.sketchlet.common.file.FileDrop;
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
-import net.sf.sketchlet.blackboard.Variable;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.Variable;
 import net.sf.sketchlet.context.PageContext;
 import net.sf.sketchlet.context.SketchletContext;
 import net.sf.sketchlet.context.VariablesBlackboardContext;
@@ -23,11 +23,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 /**
- * Created with IntelliJ IDEA.
- * User: zeljko
- * Date: 9-9-12
- * Time: 9:56
- * To change this template use File | Settings | File Templates.
+ * @author zeljko
  */
 public class PageVariablesPanel extends JPanel {
     private JToolBar toolbar = new JToolBar(JToolBar.VERTICAL);

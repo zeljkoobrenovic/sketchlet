@@ -44,7 +44,6 @@ public class HelpUtils {
 
             String command = "\"$JAVA_HOME/bin/java\" -jar \"$AMICO_HOME/bin/tools/htmleditor/ekit.jar\" -jar com.hexidec.ekit.Ekit";
             command += " -t \"-f" + strPath + "\"";
-            // command += " \"-c" + strStyle + "\" ";
             command = HelpUtils.replaceSystemVariables(command);
 
             String args[] = QuotedStringTokenizer.parseArgs(command);
@@ -99,7 +98,6 @@ public class HelpUtils {
             String strPath = file.getPath();
             String command = "\"$JAVA_HOME/bin/java\" -jar \"$AMICO_HOME/bin/tools/htmleditor/ekit.jar\" -jar com.hexidec.ekit.Ekit";
             command += " -t \"-f" + strPath + "\"";
-            // command += " \"-c" + strStyle + "\" ";
             command = replaceSystemVariables(command);
 
             String args[] = QuotedStringTokenizer.parseArgs(command);

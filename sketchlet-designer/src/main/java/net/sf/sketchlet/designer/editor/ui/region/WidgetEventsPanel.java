@@ -1,17 +1,20 @@
 package net.sf.sketchlet.designer.editor.ui.region;
 
-import net.sf.sketchlet.model.ActiveRegion;
-import net.sf.sketchlet.model.EventMacroFactory;
-import net.sf.sketchlet.model.events.WidgetEventMacro;
+import net.sf.sketchlet.common.translation.Language;
+import net.sf.sketchlet.designer.Workspace;
+import net.sf.sketchlet.designer.context.ActiveRegionContextImpl;
+import net.sf.sketchlet.designer.context.PageContextImpl;
+import net.sf.sketchlet.designer.editor.SketchletEditor;
+import net.sf.sketchlet.loaders.pluginloader.WidgetPluginFactory;
+import net.sf.sketchlet.framework.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.events.EventMacroFactory;
+import net.sf.sketchlet.framework.model.events.widget.WidgetEventMacro;
 
+import javax.swing.*;
 import java.util.List;
 
 /**
- * Created with IntelliJ IDEA.
- * User: zeljko
- * Date: 6-10-12
- * Time: 17:42
- * To change this template use File | Settings | File Templates.
+ * @author zeljko
  */
 public class WidgetEventsPanel extends AbstractEventsPanel {
 
@@ -19,7 +22,15 @@ public class WidgetEventsPanel extends AbstractEventsPanel {
         super(new EventMacroFactory<WidgetEventMacro>() {
             @Override
             public WidgetEventMacro getNewEventMacroInstance(String... args) {
-                return new WidgetEventMacro(args[0]);
+                String selectionValues[] = WidgetPluginFactory.getActions(new ActiveRegionContextImpl(region, new PageContextImpl(Workspace.getPage())));
+                Object value = JOptionPane.showInputDialog(SketchletEditor.getInstance().getExtraEditorPanel(), Language.translate("Select Widget Event:"),
+                        "Widget Event", JOptionPane.PLAIN_MESSAGE, null,
+                        selectionValues, selectionValues[0]);
+                if (value != null) {
+                    return new WidgetEventMacro(value.toString());
+                } else {
+                    return null;
+                }
             }
 
             @Override

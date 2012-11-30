@@ -1,19 +1,10 @@
-/*
- * UDPDataReceiver.java
- *
- * Created on 24 February 2006, 11:30
- *
- * To change this template, choose Tools | Options and locate the template under
- * the Source Creation and Management node. Right-click the template and choose
- * Open. You can then make changes to the template in the Source Editor.
- */
 package net.sf.sketchlet.net.udp;
 
 import net.sf.sketchlet.common.net.ProcessPacket;
 import net.sf.sketchlet.common.net.UDPDataReceiverThread;
 import net.sf.sketchlet.net.DataReceiver;
 import net.sf.sketchlet.net.SketchletNetworkProtocol;
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.net.Template;
 import net.sf.sketchlet.net.TemplateHandler;
 import org.apache.log4j.Logger;

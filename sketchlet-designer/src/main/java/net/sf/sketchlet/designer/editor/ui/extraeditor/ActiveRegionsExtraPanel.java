@@ -1,14 +1,10 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.extraeditor;
 
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.designer.tools.log.ActivityLog;
+import net.sf.sketchlet.framework.model.log.ActivityLog;
 import net.sf.sketchlet.designer.editor.ui.region.ActiveRegionPanel;
-import net.sf.sketchlet.model.ActiveRegion;
-import net.sf.sketchlet.model.Page;
+import net.sf.sketchlet.framework.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.Page;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -65,40 +61,40 @@ public class ActiveRegionsExtraPanel extends JPanel {
                     int tevent = 0;
                     int ttransform = 0;
                     if (previousPanel != null) {
-                        t = previousPanel.tabs.getSelectedIndex();
-                        timage = previousPanel.tabsImage.getSelectedIndex();
-                        tevent = previousPanel.tabsRegionEvents.getSelectedIndex();
-                        ttransform = previousPanel.tabsTransform.getSelectedIndex();
+                        t = previousPanel.getTabs().getSelectedIndex();
+                        timage = previousPanel.getTabsImage().getSelectedIndex();
+                        tevent = previousPanel.getTabsRegionEvents().getSelectedIndex();
+                        ttransform = previousPanel.getTabsTransform().getSelectedIndex();
                     }
                     ActiveRegionPanel p = new ActiveRegionPanel(SketchletEditor.getPages(), region, t);
                     tabs.setComponentAt(selectedTabIndex, p);
-                    if (SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions() == null) {
-                        SketchletEditor.getInstance().getCurrentPage().getRegions().setSelectedRegions(new Vector<ActiveRegion>());
+                    if (SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() == null) {
+                        SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().setSelectedRegions(new Vector<ActiveRegion>());
                     }
-                    if (!SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().contains(region)) {
-                        if (!(SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 1)) {
-                            SketchletEditor.getInstance().getCurrentPage().getRegions().setSelectedRegions(new Vector<ActiveRegion>());
-                            SketchletEditor.getInstance().getCurrentPage().getRegions().addToSelection(region);
+                    if (!SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().contains(region)) {
+                        if (!(SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().size() > 1)) {
+                            SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().setSelectedRegions(new Vector<ActiveRegion>());
+                            SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().addToSelection(region);
                         }
                     }
                     SketchletEditor.getInstance().repaint();
 
                     if (previousPanel != null) {
-                        subTabIndex = previousPanel.tabs.getSelectedIndex();
-                        subTabIndexProperties = previousPanel.tabsTransform.getSelectedIndex();
+                        subTabIndex = previousPanel.getTabs().getSelectedIndex();
+                        subTabIndexProperties = previousPanel.getTabsTransform().getSelectedIndex();
                     }
 
-                    if (subTabIndex >= 0 && subTabIndex < p.tabs.getTabCount()) {
-                        p.tabs.setSelectedIndex(subTabIndex);
+                    if (subTabIndex >= 0 && subTabIndex < p.getTabs().getTabCount()) {
+                        p.getTabs().setSelectedIndex(subTabIndex);
                     }
-                    if (timage >= 0 && timage < p.tabsImage.getTabCount()) {
-                        p.tabsImage.setSelectedIndex(timage);
+                    if (timage >= 0 && timage < p.getTabsImage().getTabCount()) {
+                        p.getTabsImage().setSelectedIndex(timage);
                     }
-                    if (tevent >= 0 && tevent < p.tabsRegionEvents.getTabCount()) {
-                        p.tabsRegionEvents.setSelectedIndex(tevent);
+                    if (tevent >= 0 && tevent < p.getTabsRegionEvents().getTabCount()) {
+                        p.getTabsRegionEvents().setSelectedIndex(tevent);
                     }
-                    if (ttransform >= 0 && ttransform < p.tabsTransform.getTabCount()) {
-                        p.tabsTransform.setSelectedIndex(ttransform);
+                    if (ttransform >= 0 && ttransform < p.getTabsTransform().getTabCount()) {
+                        p.getTabsTransform().setSelectedIndex(ttransform);
                     }
 
                     p.refresh();
@@ -115,7 +111,7 @@ public class ActiveRegionsExtraPanel extends JPanel {
 
     public void save() {
         updateUIControls();
-        SketchletEditor.getInstance().getCurrentPage().getRegions().createNewVariables();
+        SketchletEditor.getInstance().getCurrentPage().getRegions().getVariablesHelper().createNewVariables();
         SketchletEditor.getInstance().repaint();
     }
 
@@ -124,7 +120,7 @@ public class ActiveRegionsExtraPanel extends JPanel {
             ActiveRegionPanel p = (ActiveRegionPanel) regionsAndActions.tabs.getSelectedComponent();
 
             if (p != null) {
-                JTable tables[] = {p.tableLimits, p.tableUpdateTransformations};
+                JTable tables[] = {p.getTableLimits(), p.getTableUpdateTransformations()};
 
                 for (int it = 0; it < tables.length; it++) {
                     TableCellEditor tce = tables[it].getCellEditor();
@@ -134,11 +130,11 @@ public class ActiveRegionsExtraPanel extends JPanel {
                     }
                 }
             }
-            if (p != null && p.region != null) {
-                p.imageUrlField.setSelectedItem(p.imageUrlField.getEditor().getItem());
+            if (p != null && p.getRegion() != null) {
+                p.getImageUrlField().setSelectedItem(p.getImageUrlField().getEditor().getItem());
                 p.updateUIControls();
-                p.imageIndex.setSelectedItem(p.imageIndex.getEditor().getItem());
-                p.animationMs.setSelectedItem(p.animationMs.getEditor().getItem());
+                p.getImageIndex().setSelectedItem(p.getImageIndex().getEditor().getItem());
+                p.getAnimationMs().setSelectedItem(p.getAnimationMs().getEditor().getItem());
             }
         }
     }
@@ -157,8 +153,8 @@ public class ActiveRegionsExtraPanel extends JPanel {
     public static void showRegionsAndActionsImage(int tabIndex) {
         if (tabIndex >= 0) {
             ActiveRegionPanel p = (ActiveRegionPanel) regionsAndActions.tabs.getSelectedComponent();
-            p.tabs.setSelectedIndex(0);
-            p.tabsImage.setSelectedIndex(tabIndex);
+            p.getTabs().setSelectedIndex(0);
+            p.getTabsImage().setSelectedIndex(tabIndex);
         }
         SketchletEditor.getInstance().showExtraEditorPanel(ExtraEditorPanel.indexActiveRegion);
     }
@@ -166,7 +162,7 @@ public class ActiveRegionsExtraPanel extends JPanel {
     public static void showRegionsAndActions(int tabIndex) {
         if (tabIndex >= 0) {
             ActiveRegionPanel p = (ActiveRegionPanel) regionsAndActions.tabs.getSelectedComponent();
-            p.tabs.setSelectedIndex(tabIndex);
+            p.getTabs().setSelectedIndex(tabIndex);
         }
         SketchletEditor.getInstance().showExtraEditorPanel(ExtraEditorPanel.indexActiveRegion);
     }
@@ -185,15 +181,15 @@ public class ActiveRegionsExtraPanel extends JPanel {
             int ss = 0;
             JTabbedPane subTab = null;
             if (p != null) {
-                s = p.tabs.getSelectedIndex();
+                s = p.getTabs().getSelectedIndex();
                 if (s >= 0) {
-                    String title = p.tabs.getTitleAt(s).trim().toLowerCase();
+                    String title = p.getTabs().getTitleAt(s).trim().toLowerCase();
                     if (title.contains("graphic")) {
-                        subTab = p.tabsImage;
+                        subTab = p.getTabsImage();
                     } else if (title.contains("transform")) {
-                        subTab = p.tabsTransform;
+                        subTab = p.getTabsTransform();
                     } else if (title.contains("move")) {
-                        subTab = p.tabsMove;
+                        subTab = p.getTabsMove();
                     } else {
                         subTab = null;
                     }
@@ -208,18 +204,18 @@ public class ActiveRegionsExtraPanel extends JPanel {
             p = (ActiveRegionPanel) regionsAndActions.tabs.getSelectedComponent();
 
             if (p != null) {
-                p.tabs.setSelectedIndex(s);
+                p.getTabs().setSelectedIndex(s);
 
-                if (s >= 0 && p.tabs.getTabCount() > s) {
-                    String title = p.tabs.getTitleAt(s);
+                if (s >= 0 && p.getTabs().getTabCount() > s) {
+                    String title = p.getTabs().getTitleAt(s);
                     if (title != null) {
                         title = title.trim().toLowerCase();
                         if (title.contains("graphic")) {
-                            subTab = p.tabsImage;
+                            subTab = p.getTabsImage();
                         } else if (title.contains("transform")) {
-                            subTab = p.tabsTransform;
+                            subTab = p.getTabsTransform();
                         } else if (title.contains("move")) {
-                            subTab = p.tabsMove;
+                            subTab = p.getTabsMove();
                         } else {
                             subTab = null;
                         }
@@ -259,11 +255,11 @@ public class ActiveRegionsExtraPanel extends JPanel {
             int ttransform = 0;
             if (p != null) {
                 if (s < 0) {
-                    s = p.tabs.getSelectedIndex();
+                    s = p.getTabs().getSelectedIndex();
                 }
-                timage = p.tabsImage.getSelectedIndex();
-                tevent = p.tabsRegionEvents.getSelectedIndex();
-                ttransform = p.tabsTransform.getSelectedIndex();
+                timage = p.getTabsImage().getSelectedIndex();
+                tevent = p.getTabsRegionEvents().getSelectedIndex();
+                ttransform = p.getTabsTransform().getSelectedIndex();
             }
             int index = SketchletEditor.getInstance().getCurrentPage().getRegions().getRegions().indexOf(action);
             if (index < regionsAndActions.tabs.getTabCount()) {
@@ -272,10 +268,10 @@ public class ActiveRegionsExtraPanel extends JPanel {
                     p = (ActiveRegionPanel) regionsAndActions.tabs.getSelectedComponent();
                 }
                 if (p != null) {
-                    p.tabs.setSelectedIndex(s);
-                    p.tabsImage.setSelectedIndex(timage);
-                    p.tabsRegionEvents.setSelectedIndex(tevent);
-                    p.tabsTransform.setSelectedIndex(ttransform);
+                    p.getTabs().setSelectedIndex(s);
+                    p.getTabsImage().setSelectedIndex(timage);
+                    p.getTabsRegionEvents().setSelectedIndex(tevent);
+                    p.getTabsTransform().setSelectedIndex(ttransform);
                 }
             }
         }
@@ -300,7 +296,7 @@ public class ActiveRegionsExtraPanel extends JPanel {
             int s = tabIndex;
             if (p != null) {
                 if (s < 0) {
-                    s = p.tabs.getSelectedIndex();
+                    s = p.getTabs().getSelectedIndex();
                 }
             }
             int index = SketchletEditor.getInstance().getCurrentPage().getRegions().getRegions().indexOf(action);
@@ -310,16 +306,16 @@ public class ActiveRegionsExtraPanel extends JPanel {
                     p = (ActiveRegionPanel) regionsAndActions.tabs.getSelectedComponent();
                 }
                 if (p != null) {
-                    p.tabs.setSelectedIndex(s);
+                    p.getTabs().setSelectedIndex(s);
 
-                    if (tabIndex == ActiveRegionPanel.indexGraphics) {
-                        p.tabsImage.setSelectedIndex(subIndex);
+                    if (tabIndex == ActiveRegionPanel.getIndexGraphics()) {
+                        p.getTabsImage().setSelectedIndex(subIndex);
                     }
-                    if (tabIndex == ActiveRegionPanel.indexEvents) {
-                        p.tabsRegionEvents.setSelectedIndex(subIndex);
+                    if (tabIndex == ActiveRegionPanel.getIndexEvents()) {
+                        p.getTabsRegionEvents().setSelectedIndex(subIndex);
                     }
-                    if (tabIndex == ActiveRegionPanel.indexTransform) {
-                        p.tabsTransform.setSelectedIndex(subIndex);
+                    if (tabIndex == ActiveRegionPanel.getIndexTransform()) {
+                        p.getTabsTransform().setSelectedIndex(subIndex);
                     }
                 }
             }
@@ -331,13 +327,9 @@ public class ActiveRegionsExtraPanel extends JPanel {
     public void init() {
         initializing = true;
         Page page = SketchletEditor.getInstance().getCurrentPage();
-        int s = 0;
         ActiveRegionPanel p;
         if (tabs.getSelectedComponent() != null && tabs.getSelectedComponent() instanceof ActiveRegionPanel) {
             p = (ActiveRegionPanel) tabs.getSelectedComponent();
-            if (p != null) {
-                s = p.tabs.getSelectedIndex();
-            }
         }
         tabs.removeAll();
 
@@ -354,12 +346,12 @@ public class ActiveRegionsExtraPanel extends JPanel {
             }
         }
 
-        if (page.getRegions().getSelectedRegions() != null && page.getRegions().getSelectedRegions().size() > 0) {
-            int index = page.getRegions().getRegions().indexOf(page.getRegions().getSelectedRegions().lastElement());
+        if (page.getRegions().getMouseHelper().getSelectedRegions() != null && page.getRegions().getMouseHelper().getSelectedRegions().size() > 0) {
+            int index = page.getRegions().getRegions().indexOf(page.getRegions().getMouseHelper().getSelectedRegions().lastElement());
             tabs.setSelectedIndex(index);
             int t = 0;
             if (previousPanel != null) {
-                t = previousPanel.tabs.getSelectedIndex();
+                t = previousPanel.getTabs().getSelectedIndex();
             }
             p = new ActiveRegionPanel(SketchletEditor.getPages(), page.getRegions().getRegions().elementAt(index), t);
             tabs.setComponentAt(index, p);

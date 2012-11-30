@@ -1,13 +1,9 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.dnd;
 
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.SketchletEditorMode;
-import net.sf.sketchlet.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.ActiveRegion;
 import org.apache.log4j.Logger;
 
 import javax.imageio.ImageIO;
@@ -73,7 +69,7 @@ public class SelectDropFile extends JDialog {
                                 log.error(e);
                             }
                         } else if (index == 1) {
-                            region.strImageUrlField = file.getPath();
+                            region.imageUrlField = file.getPath();
                         }
                     }
                 }

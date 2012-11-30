@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.region;
 
 import com.sun.pdfview.PDFFile;
@@ -19,10 +15,10 @@ import net.sf.sketchlet.designer.editor.media.ImageOperations;
 import net.sf.sketchlet.designer.editor.resize.ResizeDialog;
 import net.sf.sketchlet.designer.editor.resize.ResizeInterface;
 import net.sf.sketchlet.designer.editor.tool.*;
-import net.sf.sketchlet.designer.tools.imagecache.ImageCache;
 import net.sf.sketchlet.designer.editor.ui.BufferedImageClipboardObject;
 import net.sf.sketchlet.designer.playback.ui.PlaybackFrame;
-import net.sf.sketchlet.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.imagecache.ImageCache;
+import net.sf.sketchlet.framework.model.ActiveRegion;
 import net.sf.sketchlet.util.RefreshTime;
 import org.apache.log4j.Logger;
 
@@ -57,8 +53,6 @@ import java.nio.channels.FileChannel;
 public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refresh, ToolInterface, ResizeInterface {
     private static final Logger log = Logger.getLogger(ActiveRegionImageEditor.class);
 
-    private static Color color;
-    private static Stroke stroke;
     private static float strokeValue;
     private static boolean bErase = false;
     private boolean imageUpdated = false;
@@ -129,14 +123,6 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
         DrawingListenerSimple listener = new DrawingListenerSimple(this);
         this.addMouseListener(listener);
         this.addMouseMotionListener(listener);
-
-        /*
-         * strokeType = StrokeCombo.getInstance();
-         * strokeType.addActionListener(new ActionListener() {
-         *
-         * public void actionPerformed(ActionEvent e) { setStroke(); } });
-        strokeType.setSelectedIndex(0);
-         */
 
         moveFirst.addActionListener(new ActionListener() {
 
@@ -218,7 +204,6 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
                     }
                     setIndex(getDrawingPanels().getSelectedIndex());
                     enableControls();
-                    // drawingPanels.remove(scrollPane);
 
                     for (int i = 0; i < getDrawingPanels().getTabCount(); i++) {
                         getDrawingPanels().setComponentAt(i, new JPanel());
@@ -279,7 +264,6 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
     }
 
     public static void setStroke(Stroke stroke) {
-        ActiveRegionImageEditor.stroke = stroke;
     }
 
     public static float getStrokeValue() {
@@ -326,12 +310,6 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
         if (getDrawingPanels().getTabCount() > 1) {
             int selectedTabIndex = getDrawingPanels().getSelectedIndex();
             getRegion().deleteDrawImage(selectedTabIndex);
-            /*
-             * for (int i = selectedTabIndex + 1; i < inTabs.size(); i++) {
-             * drawingPanels.setTitleAt(i, "" + i); inTabs.elementAt(i).index--;
-             * }
-            inTabs.remove(selectedTabIndex);
-             */
 
             getParentActiveRegionPanel().loadDrawingTabs();
 
@@ -552,35 +530,14 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
         }
         if ((modifiers & Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()) != 0) {
             switch (key) {
-                /*
-                 * case KeyEvent.VK_E: editorPanel();
-                break;
-                 */
-                /*
-                 * case KeyEvent.VK_H: history();
-                break;
-                 */
-                /*
-                 * case KeyEvent.VK_S: save();
-                break;
-                 */
                 case KeyEvent.VK_C:
                     SketchletEditor.getInstance().skipKey = true;
                     this.copy();
                     break;
-                /*
-                 * case KeyEvent.VK_X: this.copy(); this.clearImage();
-                break;
-                 */
                 case KeyEvent.VK_V:
                     SketchletEditor.getInstance().skipKey = true;
                     this.pasteImage();
                     break;
-                /*
-                 * case KeyEvent.VK_R: this.refresh(); break; case
-                 * KeyEvent.VK_I: this.fromFile();
-                break;
-                 */
             }
         }
 
@@ -598,83 +555,10 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
     public void saveUndo() {
         BufferedImage img = getRegion().getDrawImage(getIndex());
         SketchletEditor.getInstance().saveRegionImageUndo(img, getRegion(), getIndex());
-        /*
-         * if (img != null) { BufferedImage newImg = new
-         * BufferedImage(img.getWidth(), img.getHeight(),
-         * BufferedImage.TYPE_INT_ARGB); Graphics2D g2 =
-         * newImg.createGraphics(); g2.drawImage(img, 0, 0, null); g2.dispose();
-         *
-         * undoImages.add(newImg); undo.setEnabled(true); if (undoImages.size()
-         * > 5) { undoImages.remove(0); }
-        }
-         */
     }
 
     public JPanel getColorPanel() {
-        Color[] colors = {
-                Color.BLACK, Color.WHITE, Color.red, Color.green.darker(),
-                Color.blue, Color.orange
-        };
         JPanel colorPanel = new JPanel(new BorderLayout());
-        ActionListener l = new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                getCurrentTool().deactivate();
-                bErase = false;
-                JButton button = (JButton) e.getSource();
-                setColor(button.getBackground());
-                getCurrentTool().activate();
-            }
-        };
-        /*
-         * JToolBar panel = new JToolBar(); panel.setFloatable(false);
-         * FlowLayout flowLayout = new FlowLayout(FlowLayout.LEFT);
-         * flowLayout.setHgap(0); flowLayout.setVgap(0);
-         * panel.setLayout(flowLayout); slider = new JSlider(JSlider.HORIZONTAL,
-         * 1, 20, (int) strokeValue); slider.setValue(2);
-         * slider.addChangeListener(new ChangeListener() {
-         *
-         * public void stateChanged(ChangeEvent e) { setStroke(); } });
-         * slider.setPreferredSize(new Dimension(60, 20));
-         *
-         * sliderWatering = new JSlider(JSlider.HORIZONTAL, 0, 10, 0);
-         * sliderWatering.setPreferredSize(new Dimension(20, 20));
-         * sliderWatering.addChangeListener(new ChangeListener() {
-         *
-         * public void stateChanged(ChangeEvent e) { setWatering(); } });
-         *
-         * slider.setToolTipText("stroke width, shortcut key: (bigger +, smaller
-         * -)"); sliderWatering.setToolTipText("watering");
-         *
-         * JPanel strokePanel = new JPanel(); strokePanel.add(strokeType);
-         * strokePanel.add(slider); strokePanel.add(sliderWatering);
-         * colorPanel.add(strokePanel, BorderLayout.NORTH); for (int j = 0; j <
-         * colors.length; j++) { JButton button = new JButton(" ") {
-         *
-         * public void paintComponent(Graphics g) { Graphics2D g2 = (Graphics2D)
-         * g; super.paintComponent(g);
-         *
-         * int w = getWidth(); int h = getHeight();
-         * g2.setPaint(getBackground()); g2.fillRect(3, 3, w - 6, h - 6); } };
-         * button.setFocusPainted(false); button.setBackground(colors[j]);
-         * button.addActionListener(l); panel.add(button); } JButton moreColors
-         * = new JButton(Workspace.createImageIcon("resources/palette.png"));
-         * final FreeHandSimple freeHandSimple = this;
-         * moreColors.addActionListener(new ActionListener() {
-         *
-         * public void actionPerformed(ActionEvent ae) { Color newColor =
-         * JColorChooser.showDialog( freeHandSimple, "Choose Color",
-         * freeHandSimple.color);
-         *
-         * if (newColor != null) { currentTool.deactivate();
-         * freeHandSimple.color = newColor; currentTool.activate(); } } });
-         *
-         * panel.add(moreColors);
-         *
-         * panel.setPreferredSize(new Dimension(130, 100));
-         *
-         * colorPanel.add(panel);
-         */
 
         JToolBar panel2 = new JToolBar();
         panel2.setFloatable(false);
@@ -719,26 +603,15 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
     }
 
     public void setStroke() {
-        //if (slider != null && strokeType != null) {
         getCurrentTool().deactivate();
-        /*
-         * String strStroke = strokeType.getStroke(); float value = ((Integer)
-         * slider.getValue()).floatValue();
-         *
-         * Stroke s = ColorToolbar.getStroke(strStroke, value); if (s != null) {
-         * stroke = s;
-         */
         createGraphics();
-        //}
         getCurrentTool().activate();
-        //}
     }
 
     public JPanel getControlPanel() {
         final JButton clear = new JButton(Workspace.createImageIcon("resources/edit-clear.png"));
         final JButton copy = new JButton(Workspace.createImageIcon("resources/edit-copy.png"));
         final JButton clipboard = new JButton(Workspace.createImageIcon("resources/edit-paste.png"));
-        // final JButton transparent = new JButton(Workspace.createImageIcon("resources/image_transparent_color.png"));
         final JButton fromFile = new JButton(Workspace.createImageIcon("resources/import.gif"));
         final JMenuItem extract = new JMenuItem(Language.translate("extract"), Workspace.createImageIcon("resources/edit-cut.png"));
         final JMenuItem stamp = new JMenuItem(Language.translate("stamp"), Workspace.createImageIcon("resources/stamp.png"));
@@ -781,14 +654,11 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
         saveAnimatedGif.setToolTipText(Language.translate("Export images as animated gif"));
         saveAnimatedGif.setText(Language.translate("export frames as animated GIF"));
 
-        // resize.setText("Resize images");
-
         editor.setToolTipText(Language.translate("External image editor"));
         refresh.setToolTipText(Language.translate("Refresh image"));
 
         extract.setToolTipText(Language.translate("Extract image from main sketch (Alt X)"));
         stamp.setToolTipText(Language.translate("Draws (stamp) image over main skatch (Alt S)"));
-        // transparent.setToolTipText("Select transparent color");
         final JMenuItem defineClip = new JMenuItem(Language.translate("define visible area"), Workspace.createImageIcon("resources/clip.png"));
         defineClip.addActionListener(new ActionListener() {
 
@@ -1025,7 +895,6 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
         ImageFileFilter filter = new ImageFileFilter();
         chooser.setFileFilter(filter);
 
-        //In response to a button click:
         int returnVal = chooser.showOpenDialog(this);
 
         if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -1119,7 +988,6 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
 
         fc.setApproveButtonText(Language.translate("Save Animated GIF"));
         fc.setDialogTitle(Language.translate("Save Frames as Animated GIF"));
-        //In response to a button click:
         int returnVal = fc.showOpenDialog(this);
 
         if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -1131,7 +999,6 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
                 }
             }
 
-            // anim.setTransparent(Color.WHITE);
             String strPath = file.getPath();
             if (!strPath.toLowerCase().endsWith(".gif")) {
                 strPath += ".gif";
@@ -1225,7 +1092,7 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
 
         Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
         Transferable transferable = clip.getContents(null);
-        RenderedImage img = null;
+        RenderedImage img;
 
         if (transferable.isDataFlavorSupported(new DataFlavor("image/x-java-image; class=java.awt.Image", "Image"))) {
             try {
@@ -1413,12 +1280,12 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
             RandomAccessFile raf = new RandomAccessFile(file, "r");
             FileChannel channel = raf.getChannel();
             ByteBuffer buf = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
-            PDFFile pdffile = new PDFFile(buf);
+            PDFFile pdfFile = new PDFFile(buf);
 
-            int n = pdffile.getNumPages();
+            int n = pdfFile.getNumPages();
 
             for (int i = 0; i < n; i++) {
-                PDFPage page = pdffile.getPage(i + 1);
+                PDFPage page = pdfFile.getPage(i + 1);
 
                 Rectangle2D rect = page.getBBox();
 
@@ -1437,8 +1304,6 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
                 );
                 if (page.getRotation() == 90 || page.getRotation() == 270) {
                     int t = w;
-                    w = h;
-                    h = t;
                 }
                 BufferedImage img = Workspace.createCompatibleImageCopy(image);
                 if (i > 0) {
@@ -1540,7 +1405,6 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
     }
 
     public void setColor(Color c) {
-        this.color = c;
     }
 
     public Color getColor() {
@@ -1666,17 +1530,6 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
         });
 
         zoomBox.setSelectedItem("100%");
-        /*
-         * try { String strZoom =
-         * FileUtils.getFileText(WorkspaceUtils.getCurrentProjectSkecthletsDir()
-         * + "last_zoom.txt").trim(); if (!strZoom.equals("")) {
-         * zoomBox.setSelectedItem(strZoom); } else {
-         * zoomBox.setSelectedItem("100%"); } } catch (Throwable e) {
-         * zoomBox.setSelectedItem("100%");
-        }
-         */
-
-
         zoomIn.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
@@ -1867,18 +1720,17 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
 
 class DrawingListenerSimple extends MouseInputAdapter {
 
-    private ActiveRegionImageEditor freeHandSimple;
-    private Point start;
+    private ActiveRegionImageEditor editor;
 
     public DrawingListenerSimple(ActiveRegionImageEditor fh) {
-        this.freeHandSimple = fh;
+        this.editor = fh;
     }
 
     public void mousePressed(MouseEvent e) {
-        BufferedImage img = freeHandSimple.getRegion().getDrawImage(freeHandSimple.getIndex());
+        BufferedImage img = editor.getRegion().getDrawImage(editor.getIndex());
         if (img == null) {
-            freeHandSimple.getRegion().initImage(freeHandSimple.getIndex());
-            img = freeHandSimple.getRegion().getDrawImage(freeHandSimple.getIndex());
+            editor.getRegion().initImage(editor.getIndex());
+            img = editor.getRegion().getDrawImage(editor.getIndex());
         }
 
         if (img == null) {
@@ -1888,46 +1740,38 @@ class DrawingListenerSimple extends MouseInputAdapter {
         int h = img.getHeight();
 
         if (w == 1 && h == 1) {
-            Dimension d = freeHandSimple.getDrawImageDimension();
+            Dimension d = editor.getDrawImageDimension();
             w = d.width;
             h = d.height;
-            freeHandSimple.getRegion().setDrawImage(freeHandSimple.getIndex(), Workspace.createCompatibleImage(w, h, img));
+            editor.getRegion().setDrawImage(editor.getIndex(), Workspace.createCompatibleImage(w, h, img));
         }
 
-        if (freeHandSimple.isSelectTransparentColor()) {
-            freeHandSimple.makeTransparent(freeHandSimple.getImage().getRGB((int) (e.getPoint().x / freeHandSimple.getScale()), (int) (e.getPoint().y / freeHandSimple.getScale())));
-            start = null;
-            freeHandSimple.setSelectTransparentColor(false);
-            freeHandSimple.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        if (editor.isSelectTransparentColor()) {
+            editor.makeTransparent(editor.getImage().getRGB((int) (e.getPoint().x / editor.getScale()), (int) (e.getPoint().y / editor.getScale())));
+            editor.setSelectTransparentColor(false);
+            editor.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         } else {
-            // freeHandSimple.saveUndo();
-            // start = e.getPoint();
-            freeHandSimple.getCurrentTool().mousePressed((int) (e.getX() / freeHandSimple.getScale()), (int) (e.getY() / freeHandSimple.getScale()), e.getModifiers());
-            freeHandSimple.repaint();
+            editor.getCurrentTool().mousePressed((int) (e.getX() / editor.getScale()), (int) (e.getY() / editor.getScale()), e.getModifiers());
+            editor.repaint();
         }
     }
 
     public void mouseDragged(MouseEvent e) {
-        freeHandSimple.getCurrentTool().mouseDragged((int) (e.getX() / freeHandSimple.getScale()), (int) (e.getY() / freeHandSimple.getScale()), e.getModifiers());
-        freeHandSimple.repaint();
-        //if (start != null) {
-//            Point p = e.getPoint();
-//            editorPanel.draw(start, p);
-//            start = p;
-        //}
+        editor.getCurrentTool().mouseDragged((int) (e.getX() / editor.getScale()), (int) (e.getY() / editor.getScale()), e.getModifiers());
+        editor.repaint();
     }
 
     public void mouseReleased(MouseEvent e) {
-        freeHandSimple.getCurrentTool().mouseReleased((int) (e.getX() / freeHandSimple.getScale()), (int) (e.getY() / freeHandSimple.getScale()), e.getModifiers());
+        editor.getCurrentTool().mouseReleased((int) (e.getX() / editor.getScale()), (int) (e.getY() / editor.getScale()), e.getModifiers());
 
         RefreshTime.update();
-        freeHandSimple.repaint();
+        editor.repaint();
         SketchletEditor.getInstance().repaint();
-        freeHandSimple.requestFocus();
+        editor.requestFocus();
     }
 
     public void mouseMoved(MouseEvent e) {
-        freeHandSimple.setCursor(freeHandSimple.getCurrentTool().getCursor());
-        freeHandSimple.getCurrentTool().mouseMoved((int) (e.getX() / freeHandSimple.getScale()), (int) (e.getY() / freeHandSimple.getScale()), e.getModifiers());
+        editor.setCursor(editor.getCurrentTool().getCursor());
+        editor.getCurrentTool().mouseMoved((int) (e.getX() / editor.getScale()), (int) (e.getY() / editor.getScale()), e.getModifiers());
     }
 }

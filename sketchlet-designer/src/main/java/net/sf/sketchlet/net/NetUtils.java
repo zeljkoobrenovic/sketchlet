@@ -1,12 +1,3 @@
-/*
- * Global.java
- *
- * Created on April 26, 2006, 5:58 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package net.sf.sketchlet.net;
 
 import net.sf.sketchlet.net.tcp.TCPServer;

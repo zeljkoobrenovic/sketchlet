@@ -6,11 +6,7 @@ import org.apache.commons.lang.StringUtils;
 import java.awt.*;
 
 /**
- * Created with IntelliJ IDEA.
- * User: zeljko
- * Date: 14-11-12
- * Time: 12:23
- * To change this template use File | Settings | File Templates.
+ * @author zeljko
  */
 public class DropArea {
     private Image icon;

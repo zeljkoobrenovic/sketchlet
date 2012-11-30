@@ -1,14 +1,10 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.extraeditor;
 
 import com.lowagie.text.Font;
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.ActiveRegion;
 import net.sf.sketchlet.util.RefreshTime;
 
 import javax.swing.*;
@@ -34,12 +30,12 @@ public class CheckButtonTabComponent extends JPanel {
         final JToggleButton pin = new JToggleButton(Workspace.createImageIcon("resources/pin_small.png"));
 
         //tab button
-        final JCheckBox button = new JCheckBox("", region.bVisible);
+        final JCheckBox button = new JCheckBox("", region.visible);
         button.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         button.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
-                region.bVisible = button.isSelected();
+                region.visible = button.isSelected();
                 SketchletEditor.getInstance().repaint();
                 if (SketchletEditor.getInstance().getInternalPlaybackPanel() != null) {
                     SketchletEditor.getInstance().getInternalPlaybackPanel().repaint();
@@ -84,8 +80,8 @@ public class CheckButtonTabComponent extends JPanel {
         add(btnClose);
 
 
-        pin.setSelected(region.bPinned);
-        if (region.bPinned) {
+        pin.setSelected(region.pinned);
+        if (region.pinned) {
             pin.setIcon(Workspace.createImageIcon("resources/pin_small_down.png"));
         } else {
             pin.setIcon(Workspace.createImageIcon("resources/pin_small.png"));
@@ -98,7 +94,7 @@ public class CheckButtonTabComponent extends JPanel {
                 } else {
                     pin.setIcon(Workspace.createImageIcon("resources/pin_small.png"));
                 }
-                region.bPinned = pin.isSelected();
+                region.pinned = pin.isSelected();
             }
         });
 

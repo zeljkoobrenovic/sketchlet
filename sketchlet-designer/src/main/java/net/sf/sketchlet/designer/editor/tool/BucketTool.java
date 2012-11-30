@@ -1,12 +1,8 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.editor.tool;
 
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
-import net.sf.sketchlet.designer.tools.log.ActivityLog;
+import net.sf.sketchlet.framework.model.log.ActivityLog;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -124,22 +120,7 @@ public class BucketTool extends Tool {
         }
     }
 
-    /**
-     * Returns true if RGBA arrays are equivalent, false otherwise
-     * Could use Arrays.equals(int[], int[]), but this is probably a little faster...
-     */
-    private static boolean isEqualRgba2(int[] pix1, int[] pix2) {
-        return pix1[0] == pix2[0] && pix1[1] == pix2[1] && pix1[2] == pix2[2] && pix1[3] == pix2[3];
-    }
-
     private static boolean isEqualRgba(int[] pix1, int[] pix2) {
         return Math.abs(pix1[0] - pix2[0]) == 0 && Math.abs(pix1[1] - pix2[1]) == 0 && Math.abs(pix1[2] - pix2[2]) == 0 && Math.abs(pix1[3] - pix2[3]) == 0;
-    }
-
-    private static boolean isEqualRgba3(int[] pix1, int[] pix2) {
-        float hsv1[] = Color.RGBtoHSB(pix1[0], pix1[1], pix1[2], null);
-        float hsv2[] = Color.RGBtoHSB(pix2[0], pix2[1], pix2[2], null);
-
-        return Math.abs(hsv1[0] - hsv2[0]) < 0.02 && Math.abs(hsv1[1] - hsv2[1]) < 0.5 && Math.abs(hsv1[2] - hsv2[2]) < 0.5;
     }
 }

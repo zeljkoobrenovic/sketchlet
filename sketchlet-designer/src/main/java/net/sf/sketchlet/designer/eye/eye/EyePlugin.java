@@ -7,11 +7,8 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * Created with IntelliJ IDEA.
- * User: zeljko
- * Date: 20-9-12
- * Time: 16:00
- * To change this template use File | Settings | File Templates.
+ *
+ * @author zeljko
  */
 @PluginInfo(name = "eye", type = "generic", description = "Visualization of Sketchlet objects")
 public class EyePlugin extends AbstractPlugin {

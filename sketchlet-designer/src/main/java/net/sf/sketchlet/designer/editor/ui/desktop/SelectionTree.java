@@ -1,11 +1,3 @@
-/*
- * SelectionTree.java
- *
- * Created on March 25, 2008, 10:01 AM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.desktop;
 
 import net.sf.sketchlet.common.context.SketchletContextUtils;
@@ -28,15 +20,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 
-/** Example tree built out of DefaultMutableTreeNodes.
- *  1999 Marty Hall, http://www.apl.jhu.edu/~hall/java/
- */
-
-/**
- * JTree that reports selections by placing their string values
- * in a JTextField.
- * 1999 Marty Hall, http://www.apl.jhu.edu/~hall/java/
- */
 public class SelectionTree extends JFrame implements TreeSelectionListener {
     private static final Logger log = Logger.getLogger(SelectionTree.class);
 
@@ -218,9 +201,9 @@ public class SelectionTree extends JFrame implements TreeSelectionListener {
 
             setVisible(false);
 
-            int index = Workspace.getMainPanel().tableModules.getRowCount() - 1;
+            int index = Workspace.getMainPanel().getTableModules().getRowCount() - 1;
             if (index >= 0) {
-                Workspace.getMainPanel().tableModules.getSelectionModel().setSelectionInterval(index, index);
+                Workspace.getMainPanel().getTableModules().getSelectionModel().setSelectionInterval(index, index);
             }
 
         } catch (Exception e) {

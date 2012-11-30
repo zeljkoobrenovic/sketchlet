@@ -1,12 +1,8 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.editor.dnd;
 
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
-import net.sf.sketchlet.model.Page;
+import net.sf.sketchlet.framework.model.Page;
 
 import javax.swing.*;
 import java.awt.*;

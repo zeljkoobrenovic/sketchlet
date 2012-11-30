@@ -2,11 +2,12 @@ package net.sf.sketchlet.ioservices;
 
 import net.sf.sketchlet.common.SimpleProperties;
 import net.sf.sketchlet.common.context.SketchletContextUtils;
-import net.sf.sketchlet.net.NetUtils;
 import net.sf.sketchlet.designer.ApplicationLifecycleCentre;
 import net.sf.sketchlet.designer.RecentFilesManager;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.ui.desktop.ProcessConsolePanel;
+import net.sf.sketchlet.designer.editor.ui.desktop.ProcessInfo;
+import net.sf.sketchlet.net.NetUtils;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -35,11 +36,7 @@ import java.util.List;
 import java.util.Vector;
 
 /**
- * Created with IntelliJ IDEA.
- * User: zeljko
- * Date: 13-11-12
- * Time: 16:07
- * To change this template use File | Settings | File Templates.
+ * @author zeljko
  */
 public class IoServicesHandler extends JPanel {
     private static final Logger log = Logger.getLogger(IoServicesHandler.class);
@@ -87,9 +84,8 @@ public class IoServicesHandler extends JPanel {
 
     public void addProcess(String id, String command, String workingDirectory, String title, String description, int offset, boolean autoStart,
                            String startCondition, String stopCondition, String outVariable, String inVariable) {
-        ProcessConsolePanel panel = new ProcessConsolePanel(id, title, description, command, workingDirectory,
-                getProcesses(), offset, autoStart,
-                startCondition, stopCondition, outVariable, inVariable);
+        ProcessInfo processInfo = new ProcessInfo(id, title, description, command, workingDirectory, getProcesses(), offset, autoStart, startCondition, stopCondition, outVariable, inVariable);
+        ProcessConsolePanel panel = new ProcessConsolePanel(processInfo);
         panel.setParentTabbedPanel(getTabbedPane());
         this.getProcessHandlers().add(panel);
         this.getProcessHandlersIdMap().put(id, panel);
@@ -141,7 +137,7 @@ public class IoServicesHandler extends JPanel {
         }
 
         if (SketchletContextUtils.getCurrentProjectDir() != null && Workspace.getMainPanel() != null) {
-            Workspace.getMainPanel().populateSettingsMenu(Workspace.getMainPanel().projectSettingsMenu, new File(SketchletContextUtils.getCurrentProjectConfDir()));
+            Workspace.getMainPanel().populateSettingsMenu(Workspace.getMainPanel().getProjectSettingsMenu(), new File(SketchletContextUtils.getCurrentProjectConfDir()));
         }
 
         if (configURL.toString().toLowerCase().endsWith(".xml")) {
@@ -153,7 +149,7 @@ public class IoServicesHandler extends JPanel {
         if (!append) {
             try {
                 NetUtils.setWorkingDirectory(SketchletContextUtils.getCurrentProjectDir());
-                Workspace.getMainPanel().sketchletPanel.restart(URLDecoder.decode(new File(SketchletContextUtils.getCurrentProjectConfDir() + "communicator/config.xml").toURL().toString(), "UTF8"));
+                Workspace.getMainPanel().getSketchletPanel().restart(URLDecoder.decode(new File(SketchletContextUtils.getCurrentProjectConfDir() + "communicator/config.xml").toURL().toString(), "UTF8"));
                 ApplicationLifecycleCentre.afterProjectOpening();
             } catch (Exception e) {
                 log.error(e);
@@ -197,7 +193,7 @@ public class IoServicesHandler extends JPanel {
                 if (Workspace.getMainFrame() != null) {
                     Workspace.getMainFrame().setTitle("Sketchlet: " + str + " (" + SketchletContextUtils.getProjectFolder() + ")");
                 }
-                Workspace.getMainPanel().projectTitle = str;
+                Workspace.getMainPanel().setProjectTitle(str);
             }
 
             if (installFiles) {
@@ -307,7 +303,7 @@ public class IoServicesHandler extends JPanel {
                 if (Workspace.getMainFrame() != null) {
                     Workspace.getMainFrame().setTitle("Sketchlet: " + title + " (" + SketchletContextUtils.getProjectFolder() + ")");
                 }
-                Workspace.getMainPanel().projectTitle = title;
+                Workspace.getMainPanel().setProjectTitle(title);
             }
 
             for (int i = 0; i < props.getCount("addprocess"); i++) {

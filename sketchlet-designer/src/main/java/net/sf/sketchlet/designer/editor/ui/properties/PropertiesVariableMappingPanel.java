@@ -1,13 +1,9 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.properties;
 
 import net.sf.sketchlet.common.file.FileDrop;
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.model.programming.timers.curves.Curves;
+import net.sf.sketchlet.framework.model.programming.timers.curves.Curves;
 import net.sf.sketchlet.util.ui.DataRowFrame;
 
 import javax.swing.*;

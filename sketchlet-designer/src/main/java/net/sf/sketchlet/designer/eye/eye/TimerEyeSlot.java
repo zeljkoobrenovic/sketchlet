@@ -1,12 +1,8 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.eye.eye;
 
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.model.programming.timers.Timer;
-import net.sf.sketchlet.model.programming.timers.Timers;
+import net.sf.sketchlet.framework.model.programming.timers.Timer;
+import net.sf.sketchlet.framework.model.programming.timers.Timers;
 
 import java.awt.*;
 

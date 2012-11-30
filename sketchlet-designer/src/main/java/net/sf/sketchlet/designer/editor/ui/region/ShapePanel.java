@@ -1,16 +1,12 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.region;
 
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.model.geom.RegularPolygon;
-import net.sf.sketchlet.model.geom.StarPolygon;
-import net.sf.sketchlet.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.geom.RegularPolygon;
+import net.sf.sketchlet.framework.model.geom.StarPolygon;
+import net.sf.sketchlet.framework.model.ActiveRegion;
 import net.sf.sketchlet.util.Colors;
 import net.sf.sketchlet.util.RefreshTime;
 
@@ -110,7 +106,7 @@ public class ShapePanel extends JPanel {
         //Create the combo box.
         this.shapeList = new JComboBox(intArray);
         this.shapeArguments = new JTextField(21);
-        this.shapeArguments.setText(region.strShapeArgs);
+        this.shapeArguments.setText(region.shapeArguments);
         boolean bIsStar = region.shape.toLowerCase().startsWith("starpolygon");
         boolean bIsPie = region.shape.toLowerCase().startsWith("pie");
         boolean bRoundedRectangle = region.shape.toLowerCase().startsWith("rounded rectangle");
@@ -127,7 +123,7 @@ public class ShapePanel extends JPanel {
         this.shapeArguments.addKeyListener(new KeyAdapter() {
 
             public void keyTyped(KeyEvent e) {
-                region.strShapeArgs = shapeArguments.getText();
+                region.shapeArguments = shapeArguments.getText();
             }
 
             public void keyPressed(KeyEvent e) {
@@ -183,11 +179,11 @@ public class ShapePanel extends JPanel {
                 SketchletEditor.getInstance().repaint();
             }
         });
-        this.shapeArguments.setText(region.strShapeArgs);
+        this.shapeArguments.setText(region.shapeArguments);
         this.shapeArguments.addKeyListener(new KeyAdapter() {
 
             public void keyReleased(KeyEvent e) {
-                region.strShapeArgs = shapeArguments.getText();
+                region.shapeArguments = shapeArguments.getText();
                 RefreshTime.update();
                 SketchletEditor.getInstance().repaint();
             }

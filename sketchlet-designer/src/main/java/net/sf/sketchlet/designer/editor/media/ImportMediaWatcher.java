@@ -10,11 +10,7 @@ import java.io.IOException;
 import java.util.concurrent.Executors;
 
 /**
- * Created with IntelliJ IDEA.
- * User: zeljko
- * Date: 7-11-12
- * Time: 16:04
- * To change this template use File | Settings | File Templates.
+ * @author zeljko
  */
 public class ImportMediaWatcher implements Runnable {
     private static final Logger log = Logger.getLogger(ImportMediaWatcher.class);

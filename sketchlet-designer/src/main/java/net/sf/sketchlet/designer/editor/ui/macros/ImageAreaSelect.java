@@ -1,14 +1,10 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.macros;
 
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.ui.UIUtils;
-import net.sf.sketchlet.model.programming.screenscripts.AWTRobotUtil;
+import net.sf.sketchlet.framework.model.programming.screenscripts.AWTRobotUtil;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -27,17 +23,10 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 
-/**
- * Grabs a frame from a Webcam, overlays the current date and time, and saves the frame as a PNG to c:\webcam.png
- *
- * @author David
- * @version 1.0, 16/01/2004
- */
 public class ImageAreaSelect extends JPanel {
     private static final Logger log = Logger.getLogger(CommandPanel.class);
 
     private BufferedImage img;
-    private Robot robot;
     static Toolkit toolkit = Toolkit.getDefaultToolkit();
     int width = (int) toolkit.getScreenSize().getWidth();
     int height = (int) toolkit.getScreenSize().getHeight();
@@ -300,8 +289,6 @@ public class ImageAreaSelect extends JPanel {
 
             setLayout(new BorderLayout());
 
-            final CommandPanel parent = this;
-
             saveButton = new JButton(Language.translate("Select"), Workspace.createImageIcon("resources/ok.png"));
             saveButton.addActionListener(new ActionListener() {
 
@@ -451,7 +438,7 @@ public class ImageAreaSelect extends JPanel {
     public void pasteImage() {
         Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
         Transferable transferable = clip.getContents(null);
-        RenderedImage imgPaste = null;
+        RenderedImage imgPaste;
 
         if (transferable.isDataFlavorSupported(new DataFlavor("image/x-java-image; class=java.awt.Image", "Image"))) {
             try {

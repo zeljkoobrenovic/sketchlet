@@ -6,11 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created with IntelliJ IDEA.
- * User: zeljko
- * Date: 14-11-12
- * Time: 12:28
- * To change this template use File | Settings | File Templates.
+ * @author zeljko
  */
 public class DropAreas {
     private static final Logger log = Logger.getLogger(DropAreas.class);

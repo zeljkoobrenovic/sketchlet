@@ -1,12 +1,8 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.region.menus;
 
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
-import net.sf.sketchlet.designer.animation.AnimationTimer;
+import net.sf.sketchlet.designer.animation.AnimationTimerDialog;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.SketchletEditorMode;
 import net.sf.sketchlet.designer.editor.SketchletEditorUtils;
@@ -14,7 +10,7 @@ import net.sf.sketchlet.designer.playback.displays.InteractionSpace;
 import net.sf.sketchlet.designer.editor.ui.page.PageDetailsPanel;
 import net.sf.sketchlet.designer.editor.ui.region.ActiveRegionsFrame;
 import net.sf.sketchlet.designer.editor.ui.wizard.WizActiveRegionEvent;
-import net.sf.sketchlet.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.ActiveRegion;
 
 import javax.swing.*;
 import java.awt.*;
@@ -210,8 +206,8 @@ public class ActiveRegionMenu extends JMenu {
                 boolean hasTransferableText = (contents != null) && contents.isDataFlavorSupported(DataFlavor.stringFlavor);
                 if (hasTransferableText) {
                     try {
-                        if (SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
-                            ActiveRegion action = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
+                        if (SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null && SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().size() > 0) {
+                            ActiveRegion action = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
                             action.text = (String) contents.getTransferData(DataFlavor.stringFlavor);
                             SketchletEditor.getInstance().repaint();
                         }
@@ -244,11 +240,6 @@ public class ActiveRegionMenu extends JMenu {
         fix.add(menuFixY);
         fix.add(menuFixRotation);
         fix.add(menuFixSize);
-        //fix.addSeparator();
-        //fix.add(menuUnfixPosition);
-        //fix.add(menuUnfixX);
-        //fix.add(menuUnfixY);
-        //fix.add(menuUnfixSize);
         wizards.setIcon(Workspace.createImageIcon("resources/wizard.png"));
         wizards.add(mouseWizard);
         wizards.add(interactionWizard);
@@ -283,7 +274,7 @@ public class ActiveRegionMenu extends JMenu {
         mouseWizard.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                if (SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions() != null) {
+                if (SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null) {
                     WizActiveRegionEvent.showWizard(1, "Region Mouse Wizard");
                     SketchletEditor.getInstance().getSketchToolbar().enableControls();
                 }
@@ -293,7 +284,7 @@ public class ActiveRegionMenu extends JMenu {
         interactionWizard.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                if (SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions() != null) {
+                if (SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null) {
                     WizActiveRegionEvent.showWizard(2, "Region Interaction Wizard");
                     SketchletEditor.getInstance().getSketchToolbar().enableControls();
                 }
@@ -302,8 +293,8 @@ public class ActiveRegionMenu extends JMenu {
         animationWizard.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                if (SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions() != null) {
-                    new AnimationTimer(SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement(), SketchletEditor.getInstance().editorFrame);
+                if (SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null) {
+                    new AnimationTimerDialog(SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement(), SketchletEditor.getInstance().editorFrame);
                     SketchletEditor.getInstance().getSketchToolbar().enableControls();
                 }
             }
@@ -465,10 +456,6 @@ public class ActiveRegionMenu extends JMenu {
                 SketchletEditor.getInstance().moveCurrentActionToBack();
             }
         });
-        //imageOperations.add(extract);
-        //imageOperations.add(stamp);
-        //imageOperations.addSeparator();
-        //imageOperations.add(defineClip);
 
         JMenuItem menuAsMinXY = new JMenuItem(Language.translate("As Leftmost and Topmost Limit"), Workspace.createImageIcon("resources/go-top-left.png"));
         JMenuItem menuAsMinX = new JMenuItem(Language.translate("As Leftmost Limit"), Workspace.createImageIcon("resources/go-first.png"));
@@ -484,7 +471,7 @@ public class ActiveRegionMenu extends JMenu {
         menuAsMinXY.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
+                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
 
                 Rectangle r = a.getBounds(false);
                 int x1 = (int) r.getX();
@@ -498,7 +485,7 @@ public class ActiveRegionMenu extends JMenu {
         menuAsMinX.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
+                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
                 Rectangle r = a.getBounds(false);
                 int x1 = (int) r.getX();
 
@@ -509,7 +496,7 @@ public class ActiveRegionMenu extends JMenu {
         menuAsMinY.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
+                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
 
                 Rectangle r = a.getBounds(false);
                 int y1 = (int) r.getY();
@@ -520,7 +507,7 @@ public class ActiveRegionMenu extends JMenu {
         menuAsMaxXY.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
+                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
                 Rectangle r = a.getBounds(false);
                 int x1 = (int) r.getX();
                 int y1 = (int) r.getY();
@@ -536,7 +523,7 @@ public class ActiveRegionMenu extends JMenu {
         menuAsMaxX.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
+                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
                 Rectangle r = a.getBounds(false);
                 int x1 = (int) r.getX();
                 int x2 = x1 + (int) r.getWidth();
@@ -548,7 +535,7 @@ public class ActiveRegionMenu extends JMenu {
         menuAsMaxY.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
+                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
 
                 Rectangle r = a.getBounds(false);
                 int y1 = (int) r.getY();
@@ -561,7 +548,7 @@ public class ActiveRegionMenu extends JMenu {
         menuFixPosition.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
+                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
                 Rectangle r = a.getBounds(false);
 
                 if (menuFixPosition.getText().startsWith("Lock")) {
@@ -576,26 +563,13 @@ public class ActiveRegionMenu extends JMenu {
                 SketchletEditor.getInstance().repaint();
             }
         });
-        /*menuUnfixPosition.addActionListener(new ActionListener() {
-        
-        public void actionPerformed(ActionEvent event) {
-        ActiveRegion a = SketchletEditor.editorPanel.currentSketch.actions.selectedActions.lastElement();
-        Rectangle r = a.getBounds(false);
-        int y1 = (int) r.getY();
-        int y2 = y1 + (int) r.getHeight();
-        
-        a.setProperty("position x", "");
-        a.setProperty("position y", "");
-        SketchletEditor.editorPanel.repaint();
-        }
-        });*/
+
         menuFixRotation.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
+                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
                 Rectangle r = a.getBounds(false);
                 int y1 = (int) r.getY();
-                int y2 = y1 + (int) r.getHeight();
 
                 if (menuFixRotation.getText().startsWith("Lock")) {
                     a.setProperty("rotation", "=" + a.getProperty("rotation"));
@@ -610,11 +584,11 @@ public class ActiveRegionMenu extends JMenu {
         endTrajectory.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
+                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
                 if (a.inTrajectoryMode) {
-                    a.getMouseHandler().processTrajectory();
+                    a.getMouseController().processTrajectory();
                 } else if (a.inTrajectoryMode2) {
-                    a.getMouseHandler().processTrajectory2();
+                    a.getMouseController().processTrajectory2();
                 }
             }
         });
@@ -627,7 +601,7 @@ public class ActiveRegionMenu extends JMenu {
         clearTrajectory.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
+                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
                 a.trajectory1 = "";
                 a.trajectory2 = "";
                 SketchletEditor.getInstance().repaint();
@@ -636,7 +610,7 @@ public class ActiveRegionMenu extends JMenu {
         stickToTrajectory.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
-                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
+                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
                 a.stickToTrajectoryEnabled = stickToTrajectory.isSelected();
                 a.changingOrientationOnTrajectoryEnabled = stickToTrajectory.isSelected();
             }
@@ -644,7 +618,7 @@ public class ActiveRegionMenu extends JMenu {
         clearTrajectory2.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
+                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
                 a.trajectory2 = "";
                 SketchletEditor.getInstance().repaint();
             }
@@ -652,10 +626,9 @@ public class ActiveRegionMenu extends JMenu {
         menuUnfixRotation.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
+                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
                 Rectangle r = a.getBounds(false);
                 int y1 = (int) r.getY();
-                int y2 = y1 + (int) r.getHeight();
 
                 a.setProperty("rotation", "");
                 SketchletEditor.getInstance().repaint();
@@ -664,7 +637,7 @@ public class ActiveRegionMenu extends JMenu {
         menuUnfixRotationPoint.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
+                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
                 a.center_rotation_x = 0.5;
                 a.center_rotation_y = 0.5;
                 SketchletEditor.getInstance().repaint();
@@ -673,7 +646,7 @@ public class ActiveRegionMenu extends JMenu {
         menuUnfixTrajectoryPoint.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
+                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
                 a.center_rotation_x = 0.5;
                 a.center_rotation_y = 0.5;
                 a.trajectory2_x = 0.4;
@@ -684,7 +657,7 @@ public class ActiveRegionMenu extends JMenu {
         menuUnfixMotionLimits.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
+                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
                 for (int i = 0; i < a.limits.length; i++) {
                     a.limits[i][1] = "";
                     a.limits[i][2] = "";
@@ -695,10 +668,9 @@ public class ActiveRegionMenu extends JMenu {
         menuFixSize.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
+                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
                 Rectangle r = a.getBounds(false);
                 int y1 = (int) r.getY();
-                int y2 = y1 + (int) r.getHeight();
 
                 if (menuFixSize.getText().startsWith("Lock")) {
                     a.setProperty("width", "=" + a.getWidth());
@@ -712,94 +684,56 @@ public class ActiveRegionMenu extends JMenu {
                 SketchletEditor.getInstance().repaint();
             }
         });
-        /*
-        menuUnfixSize.addActionListener(new ActionListener() {
-        
-        public void actionPerformed(ActionEvent event) {
-        ActiveRegion a = SketchletEditor.editorPanel.currentSketch.actions.selectedActions.lastElement();
-        Rectangle r = a.getBounds(false);
-        int y1 = (int) r.getY();
-        int y2 = y1 + (int) r.getHeight();
-        
-        a.setProperty("width", "");
-        a.setProperty("height", "");
-        SketchletEditor.editorPanel.repaint();
-        }
-        });*/
+
         menuFixX.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
-                Rectangle r = a.getBounds(false);
+                ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
+                Rectangle r = region.getBounds(false);
                 int y1 = (int) r.getY();
                 int y2 = y1 + (int) r.getHeight();
 
                 if (menuFixX.getText().startsWith("Lock")) {
-                    a.limits[1][1] = "" + InteractionSpace.getPhysicalY(y1);
-                    a.limits[1][2] = "" + InteractionSpace.getPhysicalY(y2);
+                    region.limits[1][1] = "" + InteractionSpace.getPhysicalY(y1);
+                    region.limits[1][2] = "" + InteractionSpace.getPhysicalY(y2);
                     menuFixX.setText(Language.translate("Unlock Horizontal Position"));
                 } else {
-                    a.limits[1][1] = "";
-                    a.limits[1][2] = "";
+                    region.limits[1][1] = "";
+                    region.limits[1][2] = "";
                     menuFixX.setText(Language.translate("Lock Horizontal Position"));
                 }
                 SketchletEditor.getInstance().repaint();
             }
         });
-        /*menuUnfixX.addActionListener(new ActionListener() {
-        
-        public void actionPerformed(ActionEvent event) {
-        ActiveRegion a = SketchletEditor.editorPanel.currentSketch.actions.selectedActions.lastElement();
-        Rectangle r = a.getBounds(false);
-        int y1 = (int) r.getY();
-        int y2 = y1 + (int) r.getHeight();
-        
-        a.limits[1][1] = "";
-        a.limits[1][2] = "";
-        SketchletEditor.editorPanel.repaint();
-        }
-        });*/
+
         menuFixY.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
-                Rectangle r = a.getBounds(false);
+                ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
+                Rectangle r = region.getBounds(false);
                 int x1 = (int) r.getX();
                 int x2 = x1 + (int) r.getWidth();
 
                 if (menuFixY.getText().startsWith("Lock")) {
-                    a.limits[0][1] = "" + InteractionSpace.getPhysicalX(x1);
-                    a.limits[0][2] = "" + InteractionSpace.getPhysicalX(x2);
+                    region.limits[0][1] = "" + InteractionSpace.getPhysicalX(x1);
+                    region.limits[0][2] = "" + InteractionSpace.getPhysicalX(x2);
                     menuFixY.setText(Language.translate("Unlock Vertical Position"));
                 } else {
-                    a.limits[0][1] = "";
-                    a.limits[0][2] = "";
+                    region.limits[0][1] = "";
+                    region.limits[0][2] = "";
                     menuFixY.setText(Language.translate("Lock Vertical Position"));
                 }
                 SketchletEditor.getInstance().repaint();
             }
         });
-        /*menuUnfixY.addActionListener(new ActionListener() {
-        
-        public void actionPerformed(ActionEvent event) {
-        ActiveRegion a = SketchletEditor.editorPanel.currentSketch.actions.selectedActions.lastElement();
-        Rectangle r = a.getBounds(false);
-        int x1 = (int) r.getX();
-        int x2 = x1 + (int) r.getWidth();
-        
-        a.limits[0][1] = "";
-        a.limits[0][2] = "";
-        SketchletEditor.editorPanel.repaint();
-        }
-        });*/
 
         menuSizeAsWindowPos.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
+                ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
 
-                a.strWindowX = "" + (a.x2 - a.x1);
-                a.strWindowY = "" + (a.y2 - a.y1);
+                region.windowX = "" + (region.x2 - region.x1);
+                region.windowY = "" + (region.y2 - region.y1);
 
                 SketchletEditor.getInstance().repaint();
             }
@@ -808,10 +742,10 @@ public class ActiveRegionMenu extends JMenu {
         menuSizeAsWindowSize.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
+                ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
 
-                a.strWindowWidth = "" + (a.x2 - a.x1);
-                a.strWindowHeight = "" + (a.y2 - a.y1);
+                region.windowWidth = "" + (region.x2 - region.x1);
+                region.windowHeight = "" + (region.y2 - region.y1);
                 SketchletEditor.getInstance().repaint();
             }
         });
@@ -819,12 +753,10 @@ public class ActiveRegionMenu extends JMenu {
         menuSizeAsCapturePos.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
+                ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
 
-                //a.captureScreenX.setSelectedItem("" + a.x1);
-                //a.captureScreenY.setSelectedItem("" + a.y1);
-                a.strCaptureScreenX = "" + a.x1;
-                a.strCaptureScreenY = "" + a.y1;
+                region.captureScreenX = "" + region.x1;
+                region.captureScreenY = "" + region.y1;
                 SketchletEditor.getInstance().repaint();
             }
         });
@@ -832,25 +764,22 @@ public class ActiveRegionMenu extends JMenu {
         menuSizeAsCaptureSize.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
+                ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
 
-                //a.captureScreenWidth.setSelectedItem("" + (a.x2 - a.x1));
-                //a.captureScreenHeight.setSelectedItem("" + (a.y2 - a.y1));
-                a.strCaptureScreenWidth = "" + (a.x2 - a.x1);
-                a.strCaptureScreenHeight = "" + (a.y2 - a.y1);
+                region.captureScreenWidth = "" + (region.x2 - region.x1);
+                region.captureScreenHeight = "" + (region.y2 - region.y1);
                 SketchletEditor.getInstance().repaint();
             }
         });
 
         menuProperties.setIcon(Workspace.createImageIcon("resources/details.gif"));
-        //menuSaveLibrary.setIcon(Workspace.createImageIcon("resources/active_region.png"));
 
         trajectoryGesture.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion action = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
-                if (action != null) {
-                    action.startDefiningTrajectory(0);
+                ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
+                if (region != null) {
+                    region.startDefiningTrajectory(0);
                 }
             }
         });
@@ -858,9 +787,9 @@ public class ActiveRegionMenu extends JMenu {
         trajectoryLine.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion action = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
-                if (action != null) {
-                    action.startDefiningTrajectory(1);
+                ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
+                if (region != null) {
+                    region.startDefiningTrajectory(1);
                 }
             }
         });
@@ -868,9 +797,9 @@ public class ActiveRegionMenu extends JMenu {
         trajectoryMultiLine.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion action = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
-                if (action != null) {
-                    action.startDefiningTrajectory(2);
+                ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
+                if (region != null) {
+                    region.startDefiningTrajectory(2);
                 }
             }
         });
@@ -878,9 +807,9 @@ public class ActiveRegionMenu extends JMenu {
         trajectoryOval.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion action = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
-                if (action != null) {
-                    action.startDefiningTrajectory(3);
+                ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
+                if (region != null) {
+                    region.startDefiningTrajectory(3);
                 }
             }
         });
@@ -888,9 +817,9 @@ public class ActiveRegionMenu extends JMenu {
         trajectory2Gesture.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion action = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
-                if (action != null) {
-                    action.startDefiningTrajectory2(0);
+                ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
+                if (region != null) {
+                    region.startDefiningTrajectory2(0);
                 }
             }
         });
@@ -898,9 +827,9 @@ public class ActiveRegionMenu extends JMenu {
         trajectory2Line.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion action = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
-                if (action != null) {
-                    action.startDefiningTrajectory2(1);
+                ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
+                if (region != null) {
+                    region.startDefiningTrajectory2(1);
                 }
             }
         });
@@ -908,9 +837,9 @@ public class ActiveRegionMenu extends JMenu {
         trajectory2MultiLine.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion action = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
-                if (action != null) {
-                    action.startDefiningTrajectory2(2);
+                ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
+                if (region != null) {
+                    region.startDefiningTrajectory2(2);
                 }
             }
         });
@@ -918,9 +847,9 @@ public class ActiveRegionMenu extends JMenu {
         trajectory2MultiLine.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion action = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
-                if (action != null) {
-                    action.startDefiningTrajectory2(2);
+                ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
+                if (region != null) {
+                    region.startDefiningTrajectory2(2);
                 }
             }
         });
@@ -928,18 +857,18 @@ public class ActiveRegionMenu extends JMenu {
         trajectory2Oval.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion action = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
-                if (action != null) {
-                    action.startDefiningTrajectory2(3);
+                ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
+                if (region != null) {
+                    region.startDefiningTrajectory2(3);
                 }
             }
         });
         animator.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ActiveRegion action = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
-                if (action != null) {
-                    new AnimationTimer(action, SketchletEditor.getInstance().editorFrame);
+                ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
+                if (region != null) {
+                    new AnimationTimerDialog(region, SketchletEditor.getInstance().editorFrame);
                 }
             }
         });
@@ -1044,9 +973,9 @@ public class ActiveRegionMenu extends JMenu {
     public void fillMenu() {
         this.setEnabled(true);
         this.removeAll();
-        ActiveRegion a = null;
-        if (SketchletEditor.getInstance() != null && SketchletEditor.getInstance().getCurrentPage() != null && SketchletEditor.getInstance().getCurrentPage().getRegions() != null && SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
-            a = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
+        ActiveRegion a;
+        if (SketchletEditor.getInstance() != null && SketchletEditor.getInstance().getCurrentPage() != null && SketchletEditor.getInstance().getCurrentPage().getRegions() != null && SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null && SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().size() > 0) {
+            a = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
         } else {
             return;
         }
@@ -1068,8 +997,8 @@ public class ActiveRegionMenu extends JMenu {
         reset.add(menuUnfixMotionLimits);
         this.add(reset);
         this.addSeparator();
-        this.add(wizards);
-        this.addSeparator();
+        //this.add(wizards);
+        //this.addSeparator();
         this.add(defineClip);
         this.addSeparator();
         this.add(trajectoryMenu);
@@ -1096,18 +1025,13 @@ public class ActiveRegionMenu extends JMenu {
         this.add(sendToBack);
         this.add(asBackground);
         this.addSeparator();
-        //this.add(menuSaveLibrary);
-        //this.addSeparator();
         this.add(delete);
         prepareMenu();
         return;
     }
 
     private void prepareMenu() {
-        ActiveRegion a = null;
-        if (SketchletEditor.getInstance() != null && SketchletEditor.getInstance().getCurrentPage() != null && SketchletEditor.getInstance().getCurrentPage().getRegions() != null && SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions() != null) {
-            a = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
-        } else {
+        if (!(SketchletEditor.getInstance() != null && SketchletEditor.getInstance().getCurrentPage() != null && SketchletEditor.getInstance().getCurrentPage().getRegions() != null && SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null)) {
             return;
         }
 
@@ -1117,11 +1041,11 @@ public class ActiveRegionMenu extends JMenu {
 
         boolean imageOnClipboard = transferable.isDataFlavorSupported(new DataFlavor("image/x-java-image; class=java.awt.Image", "Image"));
 
-        if (SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 0 && SketchletEditor.getInstance().getMode() == SketchletEditorMode.ACTIONS) {
-            if (SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 1) {
+        if (SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null && SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().size() > 0 && SketchletEditor.getInstance().getMode() == SketchletEditorMode.ACTIONS) {
+            if (SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null && SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().size() > 1) {
                 boolean bGroup = false;
-                for (ActiveRegion as : SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions()) {
-                    if (as.regionGrouping.equals("") || !as.regionGrouping.equals(SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().firstElement().regionGrouping)) {
+                for (ActiveRegion as : SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions()) {
+                    if (as.regionGrouping.equals("") || !as.regionGrouping.equals(SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().firstElement().regionGrouping)) {
                         bGroup = true;
                         break;
                     }
@@ -1139,8 +1063,8 @@ public class ActiveRegionMenu extends JMenu {
             }
 
             pasteImage.setEnabled(imageOnClipboard);
-            if (SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions() != null) {
-                ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
+            if (SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null) {
+                ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
                 int index = region.parent.getRegions().indexOf(region);
                 int size = region.parent.getRegions().size();
 

@@ -3,9 +3,9 @@ package net.sf.sketchlet.designer.editor.ui.region;
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.ui.ActionDialogUtils;
-import net.sf.sketchlet.model.ActiveRegion;
-import net.sf.sketchlet.model.EventMacroFactory;
-import net.sf.sketchlet.model.events.RegionOverlapEventMacro;
+import net.sf.sketchlet.framework.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.events.EventMacroFactory;
+import net.sf.sketchlet.framework.model.events.overlap.RegionOverlapEventMacro;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,11 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created with IntelliJ IDEA.
- * User: zeljko
- * Date: 6-10-12
- * Time: 17:42
- * To change this template use File | Settings | File Templates.
+ * @author zeljko
  */
 public class RegionOverlapEventsPanel extends AbstractEventsPanel {
     private ActiveRegion region;

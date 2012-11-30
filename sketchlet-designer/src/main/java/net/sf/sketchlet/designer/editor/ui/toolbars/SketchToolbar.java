@@ -1,7 +1,3 @@
-/*
-* To change this template, choose Tools | Templates
-* and open the template in the editorPanel.
-*/
 package net.sf.sketchlet.designer.editor.ui.toolbars;
 
 import net.sf.sketchlet.common.context.SketchletContextUtils;
@@ -12,11 +8,11 @@ import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.SketchletEditorMode;
 import net.sf.sketchlet.designer.eye.eye.EyeFrame;
-import net.sf.sketchlet.designer.tools.log.ActivityLog;
+import net.sf.sketchlet.framework.model.log.ActivityLog;
 import net.sf.sketchlet.designer.playback.ui.InteractionSpaceFrame;
 import net.sf.sketchlet.designer.editor.ui.profiles.Profiles;
-import net.sf.sketchlet.model.programming.macros.Macros;
-import net.sf.sketchlet.model.programming.timers.Timers;
+import net.sf.sketchlet.framework.model.programming.macros.Macros;
+import net.sf.sketchlet.framework.model.programming.timers.Timers;
 import net.sf.sketchlet.util.RefreshTime;
 import org.apache.log4j.Logger;
 
@@ -413,7 +409,7 @@ public class SketchToolbar extends JToolBar {
                 Macros.globalMacros.save();
                 Workspace.getMainPanel().saveConfiguration();
                 Workspace.getMainPanel().saveOriginal();
-                while (Workspace.getMainPanel().bSavingOriginal) {
+                while (Workspace.getMainPanel().isSavingOriginalInProgress()) {
                     try {
                         Thread.sleep(10);
                     } catch (Exception ex) {
@@ -695,7 +691,7 @@ public class SketchToolbar extends JToolBar {
                             GlobalProperties.set("editor-zoom", (String) zoomBox.getSelectedItem());
                             GlobalProperties.save();
                             if (SketchletEditor.getInstance().getInternalPlaybackPanel() != null) {
-                                SketchletEditor.getInstance().getInternalPlaybackPanel().scale = SketchletEditor.getInstance().getScale();
+                                SketchletEditor.getInstance().getInternalPlaybackPanel().setScale(SketchletEditor.getInstance().getScale());
                                 SketchletEditor.getInstance().getInternalPlaybackPanel().repaint();
                             }
                             SketchletEditor.getInstance().getRulerHorizontal().repaint();

@@ -1,11 +1,3 @@
-/*
- * RemoteBackup.java
- *
- * Created on April 3, 2008, 4:50 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.tools.vfs;
 
 import net.sf.sketchlet.common.mail.PasswordDialog;
@@ -19,18 +11,15 @@ import org.apache.commons.vfs.impl.DefaultFileSystemConfigBuilder;
 import org.apache.commons.vfs.provider.sftp.SftpFileSystemConfigBuilder;
 
 import javax.swing.*;
-import java.io.BufferedReader;
 import java.io.File;
 import java.net.URLDecoder;
 
 
 public class RestoreRemoteBackup extends RemoteCopy {
 
-    private FileObject cwd;
-    private BufferedReader reader;
-    int numberOfCopiedFiles = 0;
-    int totalNumberOfFiles = 0;
-    RemoteBackupProgressFeedback feedback;
+    private int numberOfCopiedFiles = 0;
+    private int totalNumberOfFiles = 0;
+    private RemoteBackupProgressFeedback feedback;
 
     public RestoreRemoteBackup(RemoteBackupProgressFeedback feedback) {
         this.feedback = feedback;
@@ -166,19 +155,8 @@ class RestoreBackupThread implements Runnable {
         t.start();
     }
 
-    public RestoreBackupThread(String remoteDirectory, String directory, String files[], RemoteBackupProgressFeedback feedback, JFrame frame) {
-        this.feedback = feedback;
-        this.remoteDirectory = remoteDirectory;
-        this.directory = directory;
-        this.files = files;
-        this.frame = frame;
-
-        t.start();
-    }
-
     public void run() {
         this.remoteBackup = new RestoreRemoteBackup(this.feedback);
-
         this.remoteBackup.doRestore(this.remoteDirectory, this.directory, this.frame);
     }
 }

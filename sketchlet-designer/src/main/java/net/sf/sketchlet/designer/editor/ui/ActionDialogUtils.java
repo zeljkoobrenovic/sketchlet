@@ -3,7 +3,7 @@ package net.sf.sketchlet.designer.editor.ui;
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.ui.region.AddActionRunnable;
-import net.sf.sketchlet.model.programming.macros.Macro;
+import net.sf.sketchlet.framework.model.programming.macros.Macro;
 import net.sf.sketchlet.util.SpringUtilities;
 import net.sf.sketchlet.util.UtilContext;
 
@@ -13,11 +13,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /**
- * Created with IntelliJ IDEA.
- * User: zeljko
- * Date: 23-10-12
- * Time: 9:22
- * To change this template use File | Settings | File Templates.
+ *
+ * @author zeljko
  */
 public class ActionDialogUtils {
 
@@ -109,8 +106,6 @@ public class ActionDialogUtils {
         dlg.setLayout(new BorderLayout());
         JPanel centerPane = new JPanel();
         centerPane.setLayout(new SpringLayout());
-
-        final JTextField param2Field = new JTextField();
 
         for (Component component : components) {
             centerPane.add(component);

@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.macros;
 
 import net.sf.sketchlet.common.file.FileDrop;
@@ -9,9 +5,9 @@ import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.ui.ProgressMonitor;
-import net.sf.sketchlet.model.programming.macros.Macro;
-import net.sf.sketchlet.model.programming.macros.MacroThread;
-import net.sf.sketchlet.model.programming.screenscripts.AWTRobotUtil;
+import net.sf.sketchlet.framework.model.programming.macros.Macro;
+import net.sf.sketchlet.framework.model.programming.macros.MacroThread;
+import net.sf.sketchlet.framework.model.programming.screenscripts.AWTRobotUtil;
 import net.sf.sketchlet.util.ui.DataRowFrame;
 
 import javax.swing.*;

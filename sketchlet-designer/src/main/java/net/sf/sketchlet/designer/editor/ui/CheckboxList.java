@@ -1,12 +1,3 @@
-/*
- * CheckboxList.java
- *
- * Created on April 11, 2008, 10:58 AM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package net.sf.sketchlet.designer.editor.ui;
 
 import javax.swing.*;

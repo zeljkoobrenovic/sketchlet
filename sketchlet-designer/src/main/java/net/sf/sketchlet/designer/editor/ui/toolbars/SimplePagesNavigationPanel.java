@@ -1,14 +1,10 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.toolbars;
 
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.playback.ui.PropertiesFrame;
 import net.sf.sketchlet.help.HelpUtils;
-import net.sf.sketchlet.model.Page;
+import net.sf.sketchlet.framework.model.Page;
 
 import javax.swing.*;
 import java.awt.*;
@@ -47,7 +43,7 @@ public class SimplePagesNavigationPanel extends JPanel {
 
             public void actionPerformed(ActionEvent e) {
                 Workspace.getMainFrame().setVisible(true);
-                Workspace.getMainPanel().tabs.setSelectedIndex(0);
+                Workspace.getMainPanel().getTabs().setSelectedIndex(0);
             }
         });
 

@@ -1,20 +1,16 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.timers;
 
 import net.sf.sketchlet.common.file.FileDrop;
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.ui.ProgressMonitor;
 import net.sf.sketchlet.designer.editor.ui.UIUtils;
-import net.sf.sketchlet.model.programming.macros.Commands;
-import net.sf.sketchlet.model.programming.timers.Timer;
-import net.sf.sketchlet.model.programming.timers.TimerThread;
-import net.sf.sketchlet.model.programming.timers.curves.Curves;
-import net.sf.sketchlet.model.programming.timers.events.TimerEventsPanel;
+import net.sf.sketchlet.framework.model.programming.macros.Commands;
+import net.sf.sketchlet.framework.model.programming.timers.Timer;
+import net.sf.sketchlet.framework.model.programming.timers.TimerThread;
+import net.sf.sketchlet.framework.model.programming.timers.curves.Curves;
+import net.sf.sketchlet.framework.model.programming.timers.events.TimerEventsPanel;
 import net.sf.sketchlet.util.SpringUtilities;
 import net.sf.sketchlet.util.ui.DataRowFrame;
 

@@ -1,10 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.extraeditor;
 
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.ui.script.ScriptsTablePanel;
@@ -58,7 +54,7 @@ public class ScriptEditorExtraPanel extends JPanel implements ScriptOperations {
         btnNew.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                Workspace.getMainPanel().sketchletPanel.panel2.createNewScript();
+                Workspace.getMainPanel().getSketchletPanel().panel2.createNewScript();
             }
         });
         btnDelete.addActionListener(new ActionListener() {
@@ -66,7 +62,7 @@ public class ScriptEditorExtraPanel extends JPanel implements ScriptOperations {
             public void actionPerformed(ActionEvent ae) {
                 int row = tabs.getSelectedIndex();
                 if (row >= 0) {
-                    Workspace.getMainPanel().sketchletPanel.panel2.removeScript(row);
+                    Workspace.getMainPanel().getSketchletPanel().panel2.removeScript(row);
                 }
             }
         });
@@ -74,8 +70,8 @@ public class ScriptEditorExtraPanel extends JPanel implements ScriptOperations {
         add(tabs);
         add(toolbar, BorderLayout.WEST);
 
-        if (Workspace.getMainPanel().sketchletPanel.panel2 != null) {
-            Workspace.getMainPanel().sketchletPanel.panel2.table.revalidate();
+        if (Workspace.getMainPanel().getSketchletPanel().panel2 != null) {
+            Workspace.getMainPanel().getSketchletPanel().panel2.table.revalidate();
         }
         load();
     }

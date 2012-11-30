@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.extraeditor;
 
 import net.sf.sketchlet.common.translation.Language;
@@ -9,9 +5,9 @@ import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.ui.timers.TimerPanel;
 import net.sf.sketchlet.designer.editor.ui.timers.curve.CurvesFrame;
-import net.sf.sketchlet.model.programming.timers.Timer;
-import net.sf.sketchlet.model.programming.timers.TimerThread;
-import net.sf.sketchlet.model.programming.timers.Timers;
+import net.sf.sketchlet.framework.model.programming.timers.Timer;
+import net.sf.sketchlet.framework.model.programming.timers.TimerThread;
+import net.sf.sketchlet.framework.model.programming.timers.Timers;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;

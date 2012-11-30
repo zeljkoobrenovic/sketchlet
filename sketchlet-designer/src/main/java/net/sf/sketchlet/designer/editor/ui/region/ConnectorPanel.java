@@ -1,14 +1,10 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the openExternalEditor.
- */
 package net.sf.sketchlet.designer.editor.ui.region;
 
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.model.Connector;
+import net.sf.sketchlet.framework.model.Connector;
 import net.sf.sketchlet.util.Colors;
 import net.sf.sketchlet.util.SpringUtilities;
 

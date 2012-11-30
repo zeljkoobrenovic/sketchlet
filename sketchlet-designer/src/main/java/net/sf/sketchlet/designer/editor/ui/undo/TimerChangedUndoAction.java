@@ -1,10 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.undo;
 
-import net.sf.sketchlet.model.programming.timers.Timer;
+import net.sf.sketchlet.framework.model.programming.timers.Timer;
 
 /**
  * @author zobrenovic

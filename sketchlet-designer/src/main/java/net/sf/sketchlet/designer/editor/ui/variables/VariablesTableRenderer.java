@@ -1,10 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.editor.ui.variables;
 
-import net.sf.sketchlet.blackboard.Variable;
+import net.sf.sketchlet.framework.blackboard.Variable;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;

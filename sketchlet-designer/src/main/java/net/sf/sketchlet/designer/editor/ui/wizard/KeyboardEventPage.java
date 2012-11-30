@@ -1,11 +1,7 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.editor.ui.wizard;
 
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.model.KeyEvents;
+import net.sf.sketchlet.framework.model.events.keyboard.KeyEvents;
 import net.sf.sketchlet.util.SpringUtilities;
 import org.netbeans.spi.wizard.WizardPage;
 

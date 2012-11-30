@@ -1,15 +1,11 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.timers.curve;
 
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.help.HelpUtils;
-import net.sf.sketchlet.model.programming.timers.curves.Curve;
-import net.sf.sketchlet.model.programming.timers.curves.Curves;
+import net.sf.sketchlet.framework.model.programming.timers.curves.Curve;
+import net.sf.sketchlet.framework.model.programming.timers.curves.Curves;
 
 import javax.swing.*;
 import java.awt.*;

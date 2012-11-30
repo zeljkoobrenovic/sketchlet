@@ -15,7 +15,6 @@ public class XMLUtils {
     public static String prepareForXML(String strText) {
         if (strText != null) {
             return StringEscapeUtils.escapeXml(strText);
-            //return getEsc(strText, false);
         } else {
             return "";
         }

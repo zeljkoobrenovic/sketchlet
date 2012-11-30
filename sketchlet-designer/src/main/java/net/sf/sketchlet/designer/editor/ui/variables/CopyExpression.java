@@ -1,12 +1,8 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.editor.ui.variables;
 
 import net.sf.sketchlet.common.context.SketchletContextUtils;
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
-import net.sf.sketchlet.blackboard.Variable;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.Variable;
 import net.sf.sketchlet.designer.editor.ui.TextTransfer;
 
 import javax.swing.*;
@@ -59,14 +55,10 @@ public class CopyExpression {
             String line;
 
             while ((line = in.readLine()) != null) {
-                String strFirstPart = "";
                 String strLastPart = "";
                 int n = line.indexOf(" ");
                 if (n > 0) {
-                    strFirstPart = line.substring(0, n);
                     strLastPart = line.substring(n);
-                } else {
-                    strFirstPart = line;
                 }
 
                 if (line.startsWith("AddExpression")) {

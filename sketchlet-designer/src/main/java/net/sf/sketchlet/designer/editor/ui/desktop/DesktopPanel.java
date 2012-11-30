@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.desktop;
 
 import net.sf.sketchlet.common.context.SketchletContextUtils;
@@ -11,7 +7,7 @@ import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.SketchletEditorFrame;
 import net.sf.sketchlet.designer.editor.tool.stroke.WobbleStroke;
-import net.sf.sketchlet.model.Page;
+import net.sf.sketchlet.framework.model.Page;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -28,28 +24,23 @@ import java.util.Hashtable;
 
 public class DesktopPanel extends JPanel {
 
-    static DesktopPanel diagram;
     public static Page selectedPage = null;
-    public static int selectedIndex = -1;
-    static int posX = 0;
-    static int posY = 0;
-    // Object[][] sketchInfo;
+    public static int selectedPageIndex = -1;
     public static final int MAX_ICON_WIDTH = 100;
     public int iconWidth = MAX_ICON_WIDTH;
     public static final int MANUAL = 0;
     public static final int AUTO = 1;
-    int type = MANUAL;
-    Component component;
-    boolean singleClickChange = false;
-    JFrame frame;
-    int panelWidth;
+    private int type = MANUAL;
+    private Component component;
+    private boolean singleClickChange = false;
+    private JFrame frame;
+    private int panelWidth;
 
     public DesktopPanel(int type, Component component) {
         frame = Workspace.getMainFrame();
         this.component = component;
         this.type = type;
         panelWidth = component.getWidth();
-        // sketchInfo = Sketches.getSketchInfoFromDir(ICON_WIDTH, 600);
         MouseAdapter l;
         if (type == MANUAL) {
             l = new DesktopPanelMouseListener();
@@ -63,50 +54,33 @@ public class DesktopPanel extends JPanel {
         loadThumbnails();
     }
 
-    public void setFrame(JFrame frame) {
-        this.frame = frame;
-    }
-
-    public void ensureVisible(Page s) {
-        Rectangle r = this.getSketchRect(s);
-        if (r != null) {
-            this.scrollRectToVisible(r);
-        }
-    }
-
     public void refresh() {
-        // sketchInfo = Sketches.getSketchInfoFromDir(ICON_WIDTH, 600);
         loadThumbnails();
         try {
-            selectedIndex = Integer.parseInt(GlobalProperties.get("last-sketch-index"));
-            if (selectedIndex < SketchletEditor.getPages().getPages().size()) {
-                selectedPage = SketchletEditor.getPages().getPages().elementAt(selectedIndex);
+            selectedPageIndex = Integer.parseInt(GlobalProperties.get("last-sketch-index"));
+            if (selectedPageIndex < SketchletEditor.getPages().getPages().size()) {
+                selectedPage = SketchletEditor.getPages().getPages().elementAt(selectedPageIndex);
             } else {
                 selectedPage = null;
             }
         } catch (Throwable e) {
-            //e.printStackTrace();
             selectedPage = null;
         }
         repaint();
     }
 
     public void save() {
-        for (Page s : touchedSketches.values()) {
+        for (Page s : touchedPages.values()) {
             s.save(false);
         }
-    }
-
-    public void enableSingleClickChange(boolean enable) {
-        this.singleClickChange = enable;
     }
 
     public Dimension getPreferredSize() {
         return new Dimension(5000, 5000);
     }
 
-    static Hashtable<Page, Page> touchedSketches;
-    static BufferedImage images[];
+    private static Hashtable<Page, Page> touchedPages;
+    private static BufferedImage images[];
 
     public void loadThumbnails() {
         if (SketchletEditor.getPages() == null) {
@@ -156,11 +130,9 @@ public class DesktopPanel extends JPanel {
 
             Graphics2D g2 = (Graphics2D) g;
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            touchedSketches = new Hashtable<Page, Page>();
+            touchedPages = new Hashtable<Page, Page>();
 
             final Hashtable hash = new Hashtable();
-
-            int c = 20;
 
             Font font = g2.getFont();
 
@@ -192,8 +164,8 @@ public class DesktopPanel extends JPanel {
                 if (s == null) {
                     continue;
                 }
-                double x = s.getStateDiagramX();
-                double y = s.getStateDiagramY();
+                double x;
+                double y;
 
                 if (type == MANUAL) {
                     x = s.getStateDiagramX();
@@ -205,16 +177,6 @@ public class DesktopPanel extends JPanel {
                     }
                     s.setStateDiagramX(x);
                     s.setStateDiagramY(y);
-                    /*
-                    
-                    if (x == 20) {
-                    y = c;
-                    c += 140;
-                    }
-                    
-                    s.stateDiagramX = x;
-                    s.stateDiagramY = y;
-                     */
                 } else {
                     int row_space = Math.max(1, panelWidth / (iconWidth + 15));
 
@@ -262,8 +224,8 @@ public class DesktopPanel extends JPanel {
     public Rectangle getSketchRect(Page page) {
         for (int i = 0; i < SketchletEditor.getPages().getPages().size(); i++) {
             Page s = SketchletEditor.getPages().getPages().elementAt(i);
-            double x = s.getStateDiagramX();
-            double y = s.getStateDiagramY();
+            double x;
+            double y;
 
             if (s == page) {
                 if (type == MANUAL) {
@@ -304,7 +266,7 @@ public class DesktopPanel extends JPanel {
             int mx = e.getPoint().x;
             int my = e.getPoint().y;
             selectedPage = null;
-            selectedIndex = -1;
+            selectedPageIndex = -1;
             int c = 20;
 
             for (int i = SketchletEditor.getPages().getPages().size() - 1; i >= 0; i--) {
@@ -326,12 +288,12 @@ public class DesktopPanel extends JPanel {
 
                 if (r.contains(mx, my)) {
                     selectedPage = s;
-                    selectedIndex = i;
+                    selectedPageIndex = i;
                     break;
                 }
             }
             if (selectedPage != null && ((e.getModifiers() & InputEvent.BUTTON3_MASK) == InputEvent.BUTTON3_MASK)) {
-                showPopupMenu(selectedPage, selectedIndex, e.getX(), e.getY());
+                showPopupMenu(selectedPage, selectedPageIndex, e.getX(), e.getY());
             }
 
             repaint();
@@ -366,17 +328,15 @@ public class DesktopPanel extends JPanel {
 
     class DesktopPanelAutoMouseListener extends MouseInputAdapter {
 
-        Point start;
-
+        @Override
         public void mousePressed(MouseEvent e) {
             if (SketchletEditor.getPages() == null) {
                 return;
             }
-            start = e.getPoint();
             int mx = e.getPoint().x;
             int my = e.getPoint().y;
             selectedPage = null;
-            selectedIndex = -1;
+            selectedPageIndex = -1;
 
             panelWidth = component.getWidth();
             for (int i = SketchletEditor.getPages().getPages().size() - 1; i >= 0; i--) {
@@ -392,47 +352,46 @@ public class DesktopPanel extends JPanel {
 
                 if (r.contains(mx, my)) {
                     selectedPage = s;
-                    selectedIndex = i;
+                    selectedPageIndex = i;
                     break;
                 }
             }
 
             if (selectedPage != null && ((e.getModifiers() & InputEvent.BUTTON3_MASK) == InputEvent.BUTTON3_MASK)) {
-                showPopupMenu(selectedPage, selectedIndex, e.getX(), e.getY());
+                showPopupMenu(selectedPage, selectedPageIndex, e.getX(), e.getY());
             }
 
             repaint();
         }
 
+        @Override
         public void mouseDragged(MouseEvent e) {
             TransferHandler handler = getTransferHandler();
             handler.exportAsDrag(DesktopPanel.this, e, TransferHandler.COPY);
         }
 
-        public void mouseReleased(MouseEvent e) {
-        }
-
+        @Override
         public void mouseClicked(MouseEvent e) {
             if (selectedPage != null && singleClickChange) {
                 setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                SketchletEditorFrame.createAndShowGui(selectedIndex, false);
+                SketchletEditorFrame.createAndShowGui(selectedPageIndex, false);
                 setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             } else if (selectedPage != null && e.getClickCount() >= 2) {
                 setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                SketchletEditorFrame.createAndShowGui(selectedIndex, false);
+                SketchletEditorFrame.createAndShowGui(selectedPageIndex, false);
                 setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             }
         }
     }
 
-    public void showPopupMenu(final Page s, final int selectedIndex, int x, int y) {
+    public void showPopupMenu(final Page s, final int selectedPageIndex, int x, int y) {
         final JPopupMenu popupMenu = new JPopupMenu();
 
         JMenuItem sketchMenuItem = new JMenuItem(Language.translate("Open..."));
         sketchMenuItem.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                SketchletEditorFrame.createAndShowGui(selectedIndex, false);
+                SketchletEditorFrame.createAndShowGui(selectedPageIndex, false);
             }
         });
         popupMenu.add(sketchMenuItem);
@@ -463,7 +422,7 @@ public class DesktopPanel extends JPanel {
 
             public void actionPerformed(ActionEvent ae) {
                 if (SketchletEditor.getInstance() != null) {
-                    SketchletEditor.getInstance().openSketchByIndex(selectedIndex);
+                    SketchletEditor.getInstance().openSketchByIndex(selectedPageIndex);
                     SketchletEditor.getInstance().delete(frame);
                 } else {
                     Object[] options = {Language.translate("Delete"), Language.translate("Cancel")};

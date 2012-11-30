@@ -1,12 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package net.sf.sketchlet.designer.eye.eye;
 
-import net.sf.sketchlet.model.programming.screenscripts.ScreenScript;
-
+import net.sf.sketchlet.framework.model.programming.screenscripts.ScreenScript;
 import java.awt.*;
 
 /**

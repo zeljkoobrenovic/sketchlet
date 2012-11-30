@@ -1,12 +1,8 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.extraeditor;
 
 import net.sf.sketchlet.common.file.FileUtils;
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.ui.desktop.Notepad;
@@ -128,8 +124,8 @@ public class ScriptEditorPanel extends JPanel {
             public void actionPerformed(ActionEvent ae) {
                 saveDocument();
                 int index = SketchletEditor.getInstance().getExtraEditorPanel().scriptEditorExtraPanel.tabs.getSelectedIndex();
-                Workspace.getMainPanel().sketchletPanel.panel2.table.getSelectionModel().setSelectionInterval(index, index);
-                Workspace.getMainPanel().sketchletPanel.panel2.startScript();
+                Workspace.getMainPanel().getSketchletPanel().panel2.table.getSelectionModel().setSelectionInterval(index, index);
+                Workspace.getMainPanel().getSketchletPanel().panel2.startScript();
             }
         });
         btnStop.addActionListener(new ActionListener() {
@@ -137,8 +133,8 @@ public class ScriptEditorPanel extends JPanel {
             public void actionPerformed(ActionEvent ae) {
                 saveDocument();
                 int index = SketchletEditor.getInstance().getExtraEditorPanel().scriptEditorExtraPanel.tabs.getSelectedIndex();
-                Workspace.getMainPanel().sketchletPanel.panel2.table.getSelectionModel().setSelectionInterval(index, index);
-                Workspace.getMainPanel().sketchletPanel.panel2.stopScript();
+                Workspace.getMainPanel().getSketchletPanel().panel2.table.getSelectionModel().setSelectionInterval(index, index);
+                Workspace.getMainPanel().getSketchletPanel().panel2.stopScript();
             }
         });
         btnDecl.addActionListener(new ActionListener() {

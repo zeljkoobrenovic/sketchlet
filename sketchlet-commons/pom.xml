@@ -12,7 +12,7 @@
     <dependencies>
 		<dependency>
 			<groupId>net.sf.sketchlet</groupId>
-			<artifactId>sketchlet-plugin</artifactId>
+			<artifactId>sketchlet-core</artifactId>
 			<version>1.0</version>
 		</dependency>
 		<dependency>

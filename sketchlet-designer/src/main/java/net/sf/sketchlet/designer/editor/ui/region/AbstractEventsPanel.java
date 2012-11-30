@@ -5,8 +5,8 @@ import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.ui.UIUtils;
 import net.sf.sketchlet.designer.editor.ui.macros.MacroPanel;
-import net.sf.sketchlet.model.EventMacro;
-import net.sf.sketchlet.model.EventMacroFactory;
+import net.sf.sketchlet.framework.model.events.EventMacro;
+import net.sf.sketchlet.framework.model.events.EventMacroFactory;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -17,11 +17,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /**
- * Created with IntelliJ IDEA.
- * User: zeljko
- * Date: 11-10-12
- * Time: 9:13
- * To change this template use File | Settings | File Templates.
+ * @author zeljko
  */
 public class AbstractEventsPanel<T extends EventMacro> extends JPanel {
 

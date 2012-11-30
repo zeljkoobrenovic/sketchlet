@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.loaders.pluginloader;
 
 import net.sf.sketchlet.plugin.PluginInfo;
@@ -277,28 +273,29 @@ public class WidgetPluginHandler extends SketchletPluginHandler {
                 for (Field f : c.getDeclaredFields()) {
                     if (f.isAnnotationPresent(WidgetPluginProperty.class)) {
                         f.setAccessible(true);
-                        name = ((WidgetPluginProperty) f.getAnnotation(WidgetPluginProperty.class)).name();
+                        name = f.getAnnotation(WidgetPluginProperty.class).name();
+                        String widgetProperty = plugin.getActiveRegionContext().getWidgetProperty(name);
                         try {
                             if (f.getType().equals(String.class)) {
-                                f.set(plugin, plugin.getActiveRegionContext().getWidgetProperty(name));
+                                f.set(plugin, widgetProperty);
                             } else if (f.getType().equals(double.class)) {
-                                f.setDouble(plugin, Double.parseDouble(plugin.getActiveRegionContext().getWidgetProperty(name)));
+                                f.setDouble(plugin, Double.parseDouble(widgetProperty));
                             } else if (f.getType().equals(float.class)) {
-                                f.setFloat(plugin, (float) Double.parseDouble(plugin.getActiveRegionContext().getWidgetProperty(name)));
+                                f.setFloat(plugin, (float) Double.parseDouble(widgetProperty));
                             } else if (f.getType().equals(int.class)) {
-                                f.setInt(plugin, (int) Double.parseDouble(plugin.getActiveRegionContext().getWidgetProperty(name)));
+                                f.setInt(plugin, (int) Double.parseDouble(widgetProperty));
                             } else if (f.getType().equals(byte.class)) {
-                                f.setByte(plugin, (byte) Double.parseDouble(plugin.getActiveRegionContext().getWidgetProperty(name)));
+                                f.setByte(plugin, (byte) Double.parseDouble(widgetProperty));
                             } else if (f.getType().equals(boolean.class)) {
-                                f.setBoolean(plugin, Boolean.parseBoolean(plugin.getActiveRegionContext().getWidgetProperty(name)));
+                                f.setBoolean(plugin, Boolean.parseBoolean(widgetProperty));
                             }
                         } catch (Exception ex) {
-                            log.error("Inject Widget Exception: " + name + " = " + plugin.getActiveRegionContext().getWidgetProperty(name), ex);
+                            log.error("Inject Widget Exception: " + name + " = " + widgetProperty, ex);
                         }
                     }
                 }
             } catch (Throwable e) {
-                log.error("Inject Widget Exception: " + name + " = " + plugin.getActiveRegionContext().getWidgetProperty(name), e);
+                log.error("Inject Widget Exception: " + name, e);
             }
         }
     }

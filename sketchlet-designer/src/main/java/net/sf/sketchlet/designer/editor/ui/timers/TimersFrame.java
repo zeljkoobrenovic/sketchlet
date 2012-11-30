@@ -1,14 +1,10 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.editor.ui.timers;
 
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.ui.timers.curve.CurvesFrame;
 import net.sf.sketchlet.help.HelpUtils;
-import net.sf.sketchlet.model.programming.timers.TimerThread;
-import net.sf.sketchlet.model.programming.timers.Timers;
+import net.sf.sketchlet.framework.model.programming.timers.TimerThread;
+import net.sf.sketchlet.framework.model.programming.timers.Timers;
 
 import javax.swing.*;
 import java.awt.*;

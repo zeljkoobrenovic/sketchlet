@@ -6,7 +6,7 @@ import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.ui.UIUtils;
 import net.sf.sketchlet.designer.editor.ui.profiles.Profiles;
-import net.sf.sketchlet.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.ActiveRegion;
 import net.sf.sketchlet.util.RefreshTime;
 
 import javax.swing.*;
@@ -19,11 +19,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
 /**
- * Created with IntelliJ IDEA.
- * User: zeljko
- * Date: 11-10-12
- * Time: 13:11
- * To change this template use File | Settings | File Templates.
+ * @author zeljko
  */
 public class GeneralSettingsPanel extends JPanel {
     private ActiveRegion region;
@@ -54,13 +50,13 @@ public class GeneralSettingsPanel extends JPanel {
                     }
                 }
             });
-            this.type.setText(region.strType);
+            this.type.setText(region.type);
             this.type.addKeyListener(new KeyAdapter() {
 
                 public void keyReleased(KeyEvent e) {
-                    if (!region.strType.equals(type.getText())) {
+                    if (!region.type.equals(type.getText())) {
                         SketchletEditor.getInstance().saveRegionUndo();
-                        region.strType = type.getText();
+                        region.type = type.getText();
                         RefreshTime.update();
                         SketchletEditor.getInstance().repaint();
                     }
@@ -75,14 +71,14 @@ public class GeneralSettingsPanel extends JPanel {
                 }
             });
             UIUtils.removeActionListeners(this.active);
-            this.active.setSelectedItem(region.strActive);
+            this.active.setSelectedItem(region.active);
             this.active.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent ae) {
                     if (active.getSelectedItem() != null) {
-                        if (!region.strActive.equals(active.getSelectedItem().toString())) {
+                        if (!region.active.equals(active.getSelectedItem().toString())) {
                             SketchletEditor.getInstance().saveRegionUndo();
-                            region.strActive = (String) active.getSelectedItem();
+                            region.active = (String) active.getSelectedItem();
                             RefreshTime.update();
                             SketchletEditor.getInstance().repaint();
                         }
@@ -90,13 +86,13 @@ public class GeneralSettingsPanel extends JPanel {
                 }
             });
             UIUtils.removeActionListeners(type);
-            type.setText(region.strType);
+            type.setText(region.type);
             type.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent ae) {
-                    if (!region.strType.equals(type.getText())) {
+                    if (!region.type.equals(type.getText())) {
                         SketchletEditor.getInstance().saveRegionUndo();
-                        region.strType = type.getText();
+                        region.type = type.getText();
                         RefreshTime.update();
                         SketchletEditor.getInstance().repaint();
                     }
@@ -182,11 +178,11 @@ public class GeneralSettingsPanel extends JPanel {
     }
 
     public void refreshComponents() {
-        UIUtils.refreshComboBox(this.active, region.strActive);
+        UIUtils.refreshComboBox(this.active, region.active);
         UIUtils.refreshComboBox(this.horizontalAlign, region.horizontalAlignment);
         UIUtils.refreshComboBox(this.verticalAlign, region.verticalAlignment);
         this.name.setText(region.trajectory1);
-        this.type.setText(region.strType);
+        this.type.setText(region.type);
         UIUtils.refreshCheckBox(fitToBox, region.fitToBoxEnabled);
     }
 

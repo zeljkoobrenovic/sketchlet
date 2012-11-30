@@ -1,10 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.editor.ui;
 
-import net.sf.sketchlet.model.Pages;
+import net.sf.sketchlet.framework.model.Pages;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -127,40 +123,5 @@ public class MessageFrame extends JDialog implements Runnable {
 
     public static void main(String args[]) {
         new MessageFrame(null, "test", null);
-    }
-}
-
-class RotateProgressPanel extends JPanel implements Runnable {
-
-    Thread t = new Thread(this);
-    boolean stopped = false;
-
-    public RotateProgressPanel() {
-        t.start();
-    }
-
-    public void stop() {
-        stopped = true;
-    }
-
-    public void paint(Graphics g) {
-        super.paint(g);
-        g.setColor(Color.BLACK);
-        g.drawOval(0, 0, 22, 22);
-        g.drawString("" + System.currentTimeMillis(), 30, 30);
-    }
-
-    public Dimension getPreferredSize() {
-        return new Dimension(100, 40);
-    }
-
-    public void run() {
-        try {
-            while (!stopped) {
-                repaint();
-                Thread.sleep(50);
-            }
-        } catch (Exception e) {
-        }
     }
 }

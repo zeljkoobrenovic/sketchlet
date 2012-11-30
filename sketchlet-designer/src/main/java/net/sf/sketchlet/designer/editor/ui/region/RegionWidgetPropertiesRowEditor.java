@@ -3,7 +3,7 @@ package net.sf.sketchlet.designer.editor.ui.region;
 import net.sf.sketchlet.designer.context.ActiveRegionContextImpl;
 import net.sf.sketchlet.designer.context.PageContextImpl;
 import net.sf.sketchlet.loaders.pluginloader.WidgetPluginFactory;
-import net.sf.sketchlet.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.ActiveRegion;
 
 import javax.swing.*;
 import javax.swing.event.CellEditorListener;
@@ -13,11 +13,7 @@ import java.awt.event.MouseEvent;
 import java.util.EventObject;
 
 /**
- * Created with IntelliJ IDEA.
- * User: zeljko
- * Date: 11-10-12
- * Time: 10:17
- * To change this template use File | Settings | File Templates.
+ * @author zeljko
  */
 public class RegionWidgetPropertiesRowEditor implements TableCellEditor {
 

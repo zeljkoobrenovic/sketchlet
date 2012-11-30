@@ -1,12 +1,8 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.undo;
 
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.ui.region.ActiveRegionsFrame;
-import net.sf.sketchlet.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.ActiveRegion;
 
 import java.util.Vector;
 
@@ -31,8 +27,8 @@ public class RegionsDeletedUndoAction extends UndoAction {
                 SketchletEditor.getInstance().openSketchAndWait(reg.getSketch());
             }
             SketchletEditor.getInstance().getCurrentPage().getRegions().getRegions().insertElementAt(reg, 0);
-            SketchletEditor.getInstance().getCurrentPage().getRegions().setSelectedRegions(new Vector<ActiveRegion>());
-            SketchletEditor.getInstance().getCurrentPage().getRegions().addToSelection(reg);
+            SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().setSelectedRegions(new Vector<ActiveRegion>());
+            SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().addToSelection(reg);
         }
         ActiveRegionsFrame.reload();
     }

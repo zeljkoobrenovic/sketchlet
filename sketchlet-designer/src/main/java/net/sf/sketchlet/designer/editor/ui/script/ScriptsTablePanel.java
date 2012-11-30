@@ -1,20 +1,11 @@
-/*
- * VariablesTablePanel.java
- *
- * Created on 22 February 2006, 13:39
- *
- * To change this template, choose Tools | Options and locate the template under
- * the Source Creation and Management node. Right-click the template and choose
- * Open. You can then make changes to the template in the Source Editor.
- */
 package net.sf.sketchlet.designer.editor.ui.script;
 
 import net.sf.sketchlet.common.QuotedStringTokenizer;
 import net.sf.sketchlet.common.context.SketchletContextUtils;
 import net.sf.sketchlet.common.file.FileUtils;
-import net.sf.sketchlet.blackboard.ConfigurationData;
+import net.sf.sketchlet.framework.blackboard.ConfigurationData;
 import net.sf.sketchlet.net.NetUtils;
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.ui.TextTransfer;
 import net.sf.sketchlet.designer.editor.ui.variables.VariablesPanel;

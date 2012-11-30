@@ -1,16 +1,12 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.editor;
 
 import net.sf.sketchlet.common.context.SketchletContextUtils;
 import net.sf.sketchlet.common.file.FileUtils;
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.GlobalProperties;
 import net.sf.sketchlet.designer.Workspace;
-import net.sf.sketchlet.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.ActiveRegion;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -106,8 +102,8 @@ public class SketchletEditorUtils {
     }
 
     public static void createAnimatedImageWindow() {
-        if (SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions() != null) {
-            for (ActiveRegion region : SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions()) {
+        if (SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null) {
+            for (ActiveRegion region : SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions()) {
                 String strXVar = "x";
                 String strYVar = "y";
                 String _strXVar = "x";
@@ -172,10 +168,10 @@ public class SketchletEditorUtils {
                 region.updateTransformations[posY][0] = "position y";
                 region.updateTransformations[posY][1] = strYVar;
 
-                region.strWindowX = "=" + strXVar;
-                region.strWindowY = "=" + strYVar;
-                region.strWindowWidth = "" + region.getWidth();
-                region.strWindowHeight = "" + region.getHeight();
+                region.windowX = "=" + strXVar;
+                region.windowY = "=" + strYVar;
+                region.windowWidth = "" + region.getWidth();
+                region.windowHeight = "" + region.getHeight();
                 SketchletEditor.getInstance().forceRepaint();
             }
         }

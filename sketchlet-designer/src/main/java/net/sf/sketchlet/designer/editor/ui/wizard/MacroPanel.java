@@ -1,18 +1,9 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.editor.ui.wizard;
-
-/**
- *
- * @author zobrenovic
- */
 
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.editor.ui.macros.MacrosFrame;
-import net.sf.sketchlet.model.programming.macros.Macro;
-import net.sf.sketchlet.model.programming.macros.Macros;
+import net.sf.sketchlet.framework.model.programming.macros.Macro;
+import net.sf.sketchlet.framework.model.programming.macros.Macros;
 
 import javax.swing.*;
 import java.awt.*;

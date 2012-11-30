@@ -1,15 +1,12 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.pagetransition;
 
 import net.sf.sketchlet.common.context.SketchletContextUtils;
 import net.sf.sketchlet.common.file.FileUtils;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.model.Page;
-import net.sf.sketchlet.model.Pages;
+import net.sf.sketchlet.framework.model.Page;
+import net.sf.sketchlet.framework.model.Pages;
+import org.apache.log4j.Logger;
 import org.jgraph.JGraph;
 import org.jgraph.event.GraphLayoutCacheEvent;
 import org.jgraph.event.GraphLayoutCacheListener;
@@ -41,16 +38,24 @@ import java.util.List;
 import java.util.Set;
 
 public class StateDiagram {
+    private static final Logger log = Logger.getLogger(StateDiagram.class);
 
-    static StateDiagram diagram;
-    static JFrame diagramFrame;
+    private static JFrame diagramFrame;
 
-    public static void main(String[] args) {
-        showDiagram(null);
+    private static Page selectedPage = null;
+    private static DefaultGraphCell selectedCell = null;
+
+    private static int posX = 0;
+    private static int posY = 0;
+
+    private static String graphvizPath = SketchletContextUtils.getSketchletDesignerHome() + "bin/plugins/plugin-graphs/tools/graphviz/bin/dot";
+    private static final String GRAPHVIZ_DOT_SYSTEM_VARIABLE = "GRAPHVIZ_DOT";
+
+    static {
+        if (System.getenv(GRAPHVIZ_DOT_SYSTEM_VARIABLE) != null) {
+            graphvizPath = System.getenv(GRAPHVIZ_DOT_SYSTEM_VARIABLE);
+        }
     }
-
-    public static Page selectedPage = null;
-    public static DefaultGraphCell selectedCell = null;
 
     public static void hideDiagram() {
         if (diagramFrame != null && diagramFrame.isVisible()) {
@@ -58,10 +63,6 @@ public class StateDiagram {
         }
         diagramFrame = null;
     }
-
-    static int posX = 0;
-    static int posY = 0;
-    static JCheckBox synchWithSketches;
 
     public static void showDiagram(final Pages pages) {
         JFrame oldFrame = diagramFrame;
@@ -73,8 +74,46 @@ public class StateDiagram {
         }
 
         SketchletEditor.editorFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        // Construct Model and Graph
         diagramFrame = new JFrame();
+        diagramFrame.setIconImage(Workspace.createImageIcon("resources/states.png", "").getImage());
+        diagramFrame.setTitle("Page Transition Diagram");
+        JPanel paneDot = null;
+        JScrollPane scrollPane = null;
+
+        if (image == null) {
+            diagramFrame.getContentPane().add(new JScrollPane(graph));
+        } else {
+            paneDot = new StateDiagramPanel(image);
+            scrollPane = new JScrollPane(paneDot);
+            scrollPane.getViewport().setPreferredSize(new Dimension(image.getWidth(), image.getHeight()));
+            diagramFrame.getContentPane().add(scrollPane, BorderLayout.CENTER);
+        }
+
+        JButton refresh = new JButton("refresh", Workspace.createImageIcon("resources/view-refresh.png"));
+        refresh.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent ae) {
+                showDiagram(pages);
+            }
+        });
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        panel.add(refresh);
+        diagramFrame.getContentPane().add(panel, BorderLayout.NORTH);
+
+        if (oldFrame != null && oldFrame.isVisible()) {
+            posX = oldFrame.getLocation().x;
+            posY = oldFrame.getLocation().y;
+            oldFrame.setVisible(false);
+        }
+
+        diagramFrame.pack();
+        if (posX > 0) {
+            diagramFrame.setLocation(posX, posY);
+        } else {
+            diagramFrame.setLocationRelativeTo(SketchletEditor.editorFrame);
+        }
         diagramFrame.addWindowListener(new WindowAdapter() {
 
             public void windowClosing(WindowEvent e) {
@@ -87,66 +126,8 @@ public class StateDiagram {
                 diagramFrame.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             }
         });
-        diagramFrame.setIconImage(Workspace.createImageIcon("resources/states.png", "").getImage());
-        //diagramFrame.setAlwaysOnTop(true);
-        diagramFrame.setTitle("Page Transition Diagram");
-        if (image == null) {
-            diagramFrame.getContentPane().add(new JScrollPane(graph));
-        } else {
-            JPanel paneDot = new JPanel() {
-
-                @Override
-                public void paintComponent(Graphics g) {
-                    super.paintComponent(g);
-                    g.setColor(Color.WHITE);
-                    g.fillRect(0, 0, this.getWidth(), this.getHeight());
-                    g.drawImage(image, 0, 0, null);
-                }
-
-                @Override
-                public Dimension getPreferredSize() {
-                    return getSize();
-                }
-
-                @Override
-                public Dimension getSize() {
-                    return new Dimension(image.getWidth(), image.getHeight());
-                }
-            };
-            diagramFrame.getContentPane().add(new JScrollPane(paneDot));
-        }
-        diagramFrame.pack();
-        if (posX > 0) {
-            diagramFrame.setLocation(posX, posY);
-        } else {
-            diagramFrame.setLocationRelativeTo(SketchletEditor.editorFrame);
-        }
-        JButton refresh = new JButton("refresh", Workspace.createImageIcon("resources/view-refresh.png"));
-        refresh.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent ae) {
-                showDiagram(pages);
-            }
-        });
-
-        JPanel panel = new JPanel();
-        panel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        panel.add(refresh);
-        synchWithSketches = new JCheckBox("Synchronize with sketch window");
-        panel.add(synchWithSketches);
-        diagramFrame.getContentPane().add(panel, BorderLayout.NORTH);
-
-        if (oldFrame != null && oldFrame.isVisible()) {
-            posX = oldFrame.getLocation().x;
-            posY = oldFrame.getLocation().y;
-            oldFrame.setVisible(false);
-        }
-
-        int sw = Math.max(300, diagramFrame.getWidth());
-        int sh = Math.max(300, diagramFrame.getHeight());
-
-        diagramFrame.setSize(sw, sh);
         diagramFrame.setVisible(true);
+
         SketchletEditor.editorFrame.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
 
@@ -354,12 +335,11 @@ public class StateDiagram {
                         selectedPage.setStateDiagramX(bounds.getX());
                         selectedPage.setStateDiagramY(bounds.getY());
 
-                        if (currentPage != selectedPage && synchWithSketches.isSelected()) {
+                        if (currentPage != selectedPage) {
                             diagramFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                             SketchletEditor.getInstance().selectSketch(selectedPage);
                             diagramFrame.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                             currentPage = selectedPage;
-
                         }
                     }
                 }
@@ -369,10 +349,6 @@ public class StateDiagram {
 
         return graph;
     }
-
-    static String dirGraphviz = SketchletContextUtils.getSketchletDesignerHome() + "bin/plugins/plugin-graphs/tools/graphviz/bin/";
-    static String cmdDot = "dot";
-    //
 
     public static BufferedImage getDotImage(Pages pages) {
         String strDot = getDot(pages);
@@ -385,13 +361,13 @@ public class StateDiagram {
 
             List<String> dotParams = new ArrayList<String>();
 
-            dotParams.add(new File(dirGraphviz).getAbsolutePath() + File.separator + cmdDot);
+            dotParams.add(new File(graphvizPath).getAbsolutePath());
             dotParams.add("-Tpng");
             dotParams.add("-o" + imgFile.getAbsolutePath());
             dotParams.add(dotFile.getAbsolutePath());
 
             ProcessBuilder processBuilder = new ProcessBuilder(dotParams.toArray(new String[dotParams.size()]));
-            processBuilder.directory(new File(dirGraphviz));
+            processBuilder.directory(new File(graphvizPath).getParentFile());
             processBuilder.redirectErrorStream(true);
             Process theProcess = processBuilder.start();
             theProcess.waitFor();

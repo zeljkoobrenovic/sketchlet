@@ -11,7 +11,7 @@ import net.sf.sketchlet.designer.editor.ui.UIUtils;
 import net.sf.sketchlet.designer.editor.ui.desktop.Notepad;
 import net.sf.sketchlet.designer.editor.ui.profiles.Profiles;
 import net.sf.sketchlet.loaders.pluginloader.WidgetPluginFactory;
-import net.sf.sketchlet.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.ActiveRegion;
 import net.sf.sketchlet.plugin.ScriptPluginAutoCompletion;
 import net.sf.sketchlet.plugin.WidgetPlugin;
 import net.sf.sketchlet.util.RefreshTime;
@@ -35,15 +35,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created with IntelliJ IDEA.
- * User: zeljko
- * Date: 11-10-12
- * Time: 10:35
- * To change this template use File | Settings | File Templates.
+ * @author zeljko
  */
 public class WidgetPanel extends JPanel {
     private KeyUpdateThread widgetItemsUpdateThread;
-    // public JTextArea widgetItems = new JTextArea(4, 20);
     private RSyntaxTextArea widgetItems = Notepad.getInstance(RSyntaxTextArea.SYNTAX_STYLE_NONE);
     private JTabbedPane tabsWidget = new JTabbedPane();
     private WidgetEventsPanel widgetActionsPanel;
@@ -52,7 +47,7 @@ public class WidgetPanel extends JPanel {
     private static Notepad widgetNotepad;
     private java.util.Map<String, DefaultCompletionProvider> installedAutoCompletions = new HashMap<String, DefaultCompletionProvider>();
     private JButton btnImportItems = new JButton(Workspace.createImageIcon("resources/import.gif"));
-    private JButton btnEditItems = new JButton(Workspace.createImageIcon("resources/edit.gif"));
+    private JButton btnEditItems = new JButton(Workspace.createImageIcon("resources/edit-undocked.gif"));
     private JButton btnWidgetHelp = new JButton(Workspace.createImageIcon("resources/help-browser2.png"));
 
     private ActiveRegion region;
@@ -67,14 +62,8 @@ public class WidgetPanel extends JPanel {
         this.widgetActionsPanel.refresh();
     }
 
-    public void setTabsEnabledAt(int index, boolean bEnable) {
-        if (tabsWidget != null && index >= 0 && index < tabsWidget.getTabCount()) {
-            this.tabsWidget.setEnabledAt(index, bEnable);
-        }
-    }
-
     public void refreshComponents() {
-        UIUtils.refreshComboBox(this.widget, region.strWidget);
+        UIUtils.refreshComboBox(this.widget, region.widget);
         this.widgetItems.setText(region.widgetItems);
         widgetItems.setCaretPosition(0);
         UIUtils.refreshTable(tableWidgetProperties);
@@ -120,7 +109,7 @@ public class WidgetPanel extends JPanel {
         tableWidgetProperties.setFillsViewportHeight(true);
         AbstractTableModel model = new AbstractTableModel() {
 
-            String columns[] = new String[]{"Property", "Value", "Description"};
+            String columns[] = new String[]{Language.translate("Property"), Language.translate("Value"), Language.translate("Description")};
 
             public String getColumnName(int col) {
                 return columns[col].toString();
@@ -175,19 +164,18 @@ public class WidgetPanel extends JPanel {
         tableWidgetProperties.setModel(model);
         tableWidgetProperties.getColumnModel().getColumn(1).setCellEditor(new RegionWidgetPropertiesRowEditor(tableWidgetProperties, region));
 
-        widget.setSelectedItem(region.strWidget);
+        widget.setSelectedItem(region.widget);
         widget.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
                 region.widgetProperties = null;
-                refreshComponents();
-                if (widget.getSelectedItem() != null && !region.strWidget.equals(widget.getSelectedItem().toString())) {
+                if (widget.getSelectedItem() != null && !region.widget.equals(widget.getSelectedItem().toString())) {
                     region.widgetEventMacros.clear();
                     SketchletEditor.getInstance().saveRegionUndo();
-                    region.strWidget = (String) widget.getSelectedItem();
-                    region.strWidgetProperties = WidgetPluginFactory.getDefaultPropertiesValue(new ActiveRegionContextImpl(region, new PageContextImpl(region.parent.getPage())));
+                    region.widget = (String) widget.getSelectedItem();
+                    region.widgetPropertiesString = WidgetPluginFactory.getDefaultPropertiesValue(new ActiveRegionContextImpl(region, new PageContextImpl(region.parent.getPage())));
                     region.widgetProperties = null;
-                    if (region.strWidget.isEmpty()) {
+                    if (region.widget.isEmpty()) {
                         widgetItems.setText("");
                         widgetItems.setEnabled(false);
                         btnWidgetHelp.setEnabled(false);
@@ -195,7 +183,7 @@ public class WidgetPanel extends JPanel {
                         btnImportItems.setEnabled(false);
                     } else {
                         ActiveRegionContextImpl regionContext = new ActiveRegionContextImpl(region, new PageContextImpl(region.parent.getPage()));
-                        region.strWidgetProperties = WidgetPluginFactory.getDefaultPropertiesValue(regionContext);
+                        region.widgetPropertiesString = WidgetPluginFactory.getDefaultPropertiesValue(regionContext);
                         String strDefaultItems = WidgetPluginFactory.getDefaultItemsText(regionContext);
                         widgetItems.setText(strDefaultItems);
                         widgetItems.setCaretPosition(0);
@@ -314,7 +302,7 @@ public class WidgetPanel extends JPanel {
         add(tabsWidget);
     }
 
-    public static void populateControlsCombo(JComboBox comboBox) {
+    private static void populateControlsCombo(JComboBox comboBox) {
         Object selectedItem = comboBox.getSelectedItem();
 
         comboBox.removeAllItems();
@@ -322,9 +310,9 @@ public class WidgetPanel extends JPanel {
         comboBox.addItem("");
 
         if (SketchletEditor.getInstance() != null) {
-            String ctrls[] = WidgetPluginFactory.getWidgetList();
-            for (int i = 0; i < ctrls.length; i++) {
-                comboBox.addItem(ctrls[i]);
+            String widgets[] = WidgetPluginFactory.getWidgetList();
+            for (int i = 0; i < widgets.length; i++) {
+                comboBox.addItem(widgets[i]);
             }
         }
 

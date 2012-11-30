@@ -1,15 +1,7 @@
-/*
- * ScriptsTableModel.java
- *
- * Created on April 21, 2008, 2:38 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.editor.ui.script;
 
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.script.ScriptPluginProxy;
 import org.apache.log4j.Logger;
 

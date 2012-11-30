@@ -1,14 +1,10 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.page.perspective;
 
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.ui.UIUtils;
-import net.sf.sketchlet.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.ActiveRegion;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -56,7 +52,7 @@ public class PerspectivePanel extends JPanel {
     }
 
     public void enableControls() {
-        boolean bEnable = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 0;
+        boolean bEnable = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null && SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().size() > 0;
         perspectiveFront.setEnabled(bEnable);
         perspectiveLeft.setEnabled(bEnable);
         perspectiveRight.setEnabled(bEnable);
@@ -146,33 +142,6 @@ public class PerspectivePanel extends JPanel {
         rightPanel.add(autoPerspective, BorderLayout.SOUTH);
         add(rightPanel, BorderLayout.WEST);
         add(perspectivePanel, BorderLayout.CENTER);
-
-        /*JButton btnClose = new JButton(Workspace.createImageIcon("resources/close_small.png"));
-        btnClose.setToolTipText("Close");
-        btnClose.addActionListener(new ActionListener() {
-        
-        public void actionPerformed(ActionEvent ae) {
-        SketchletEditor.showPerspectivePanel();
-        }
-        });*/
-
-        /*JToolBar tbRight = new JToolBar();
-        tbRight.setFloatable(false);
-        tbRight.setBorder(BorderFactory.createEmptyBorder());
-        tbRight.setOrientation(JToolBar.VERTICAL);
-        tbRight.add(btnClose);
-        final JButton help = new JButton("", MainFrame.createImageIcon(this, "resources/help-browser.png", ""));
-        help.addActionListener(new ActionListener() {
-        
-        public void actionPerformed(ActionEvent event) {
-        HelpUtils.openHelpFile("Perspective", "perspective");
-        }
-        });
-        help.setToolTipText("What is this?");
-        help.setMargin(new Insets(0, 0, 0, 0));
-        tbRight.add(help);
-        
-        add(tbRight, BorderLayout.EAST);*/
     }
 
     public Dimension getPreferredSize() {
@@ -237,7 +206,7 @@ class Perspective3D extends JPanel {
             g2.drawLine(x, h - mh, x + _w / 2, mh);
             g2.drawLine(x + _w, h - mh, x + _w / 2, mh);
 
-            if (SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().contains(region)) {
+            if (SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null && SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().contains(region)) {
                 g2.setColor(new Color(200, 100, 100, 80));
             } else {
                 g2.setColor(new Color(100, 100, 100, 80));
@@ -327,8 +296,8 @@ class Perspective3D extends JPanel {
                 public void stateChanged(ChangeEvent e) {
                     double depth = slider.getValue() / 100.0;
                     region.strPerspectiveDepth = "" + depth;
-                    SketchletEditor.getInstance().getCurrentPage().getRegions().setSelectedRegions(new Vector<ActiveRegion>());
-                    SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().add(region);
+                    SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().setSelectedRegions(new Vector<ActiveRegion>());
+                    SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().add(region);
                     parent.enableControls();
                     SketchletEditor.getInstance().repaint();
                 }
@@ -383,8 +352,8 @@ class Perspective3D extends JPanel {
                 depth = Math.min(1.0, depth);
                 depth = 1 - depth;
                 selectedRegion.strPerspectiveDepth = "" + depth;
-                SketchletEditor.getInstance().getCurrentPage().getRegions().setSelectedRegions(new Vector<ActiveRegion>());
-                SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().add(selectedRegion);
+                SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().setSelectedRegions(new Vector<ActiveRegion>());
+                SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().add(selectedRegion);
                 parent.enableControls();
                 repaint();
                 SketchletEditor.getInstance().forceRepaint();

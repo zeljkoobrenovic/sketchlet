@@ -1,16 +1,11 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.region;
 
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.common.context.SketchletContextUtils;
 import net.sf.sketchlet.common.file.FileDrop;
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.designer.tools.log.ActivityLog;
 import net.sf.sketchlet.designer.editor.ui.UIUtils;
 import net.sf.sketchlet.designer.editor.ui.desktop.Notepad;
 import net.sf.sketchlet.designer.editor.ui.eventpanels.KeyboardEventsPanel;
@@ -18,11 +13,12 @@ import net.sf.sketchlet.designer.editor.ui.eventpanels.MouseEventsPanel;
 import net.sf.sketchlet.designer.editor.ui.macros.ImageAreaSelect;
 import net.sf.sketchlet.designer.editor.ui.profiles.Profiles;
 import net.sf.sketchlet.designer.editor.ui.properties.PropertiesSetPanel;
-import net.sf.sketchlet.model.ActiveRegion;
-import net.sf.sketchlet.model.Pages;
-import net.sf.sketchlet.model.programming.screenscripts.AWTRobotUtil;
-import net.sf.sketchlet.model.programming.screenscripts.TextTransfer;
-import net.sf.sketchlet.model.programming.timers.curves.Curves;
+import net.sf.sketchlet.framework.model.log.ActivityLog;
+import net.sf.sketchlet.framework.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.Pages;
+import net.sf.sketchlet.framework.model.programming.screenscripts.AWTRobotUtil;
+import net.sf.sketchlet.framework.model.programming.screenscripts.TextTransfer;
+import net.sf.sketchlet.framework.model.programming.timers.curves.Curves;
 import net.sf.sketchlet.util.RefreshTime;
 import net.sf.sketchlet.util.SpringUtilities;
 import net.sf.sketchlet.util.ui.DataRowFrame;
@@ -47,90 +43,87 @@ import java.io.File;
 
 public class ActiveRegionPanel extends JPanel {
 
-    String[] columnInteractionNames = {Language.translate("Region"), Language.translate("Event"), Language.translate("Action"), Language.translate("Param1"), Language.translate("Param2")};
-    String[] columnNamesAnimation = {Language.translate("Dimension"), Language.translate("Animation Type"), Language.translate("Start Value"), Language.translate("End Value"), Language.translate("Cycle Duration"), Language.translate("Curve")};
-    String[] columnNamesUpdateTransformations = {Language.translate("Dimension"), Language.translate("Variable"), Language.translate("Start value"), Language.translate("End value"), Language.translate("Format")};
-    String[] columnLimits = {Language.translate("Dimension"), Language.translate("Min"), Language.translate("Max")};
-    ShapePanel shapePanel;
-    PropertiesSetPanel setPanel;
-    public AbstractTableModel modelAnimation;
-    public AbstractTableModel modelUpdateTransformations;
-    public JTable tableAnimation;
-    public JScrollPane scrollAnimation;
-    public JTable tableLimits;
-    public AbstractTableModel modelLimits;
-    public JScrollPane scrollLimits;
-    JComboBox interactionEvent;
-    public JTable tableUpdateTransformations;
-    public JScrollPane scrollUpdateTransformations;
-    public ActiveRegion region;
-    Pages pages;
-    public JTabbedPane tabs = new JTabbedPane();
-    public JTabbedPane tabsImage = new JTabbedPane();
-    public JTabbedPane tabsTransform = new JTabbedPane();
-    public JTabbedPane tabsMove = new JTabbedPane();
-    public JTabbedPane tabsRegionEvents = new JTabbedPane();
-    public ActiveRegionImageEditor imageEditor;
+    private String[] columnNamesAnimation = {Language.translate("Dimension"), Language.translate("Animation Type"), Language.translate("Start Value"), Language.translate("End Value"), Language.translate("Cycle Duration"), Language.translate("Curve")};
+    private String[] columnNamesUpdateTransformations = {Language.translate("Dimension"), Language.translate("Variable"), Language.translate("Start value"), Language.translate("End value"), Language.translate("Format")};
+    private String[] columnLimits = {Language.translate("Dimension"), Language.translate("Min"), Language.translate("Max")};
+    private ShapePanel shapePanel;
+    private PropertiesSetPanel setPanel;
+    private  AbstractTableModel modelAnimation;
+    private AbstractTableModel modelUpdateTransformations;
+    private JTable tableAnimation;
+    private JScrollPane scrollAnimation;
+    private JTable tableLimits;
+    private AbstractTableModel modelLimits;
+    private JScrollPane scrollLimits;
+    private JTable tableUpdateTransformations;
+    private JScrollPane scrollUpdateTransformations;
+    private ActiveRegion region;
+    private Pages pages;
+    private JTabbedPane tabs = new JTabbedPane();
+    private JTabbedPane tabsImage = new JTabbedPane();
+    private JTabbedPane tabsTransform = new JTabbedPane();
+    private JTabbedPane tabsMove = new JTabbedPane();
+    private JTabbedPane tabsRegionEvents = new JTabbedPane();
+    private ActiveRegionImageEditor imageEditor;
     private WidgetPanel widgetPanel;
     private GeneralSettingsPanel generalSettingsPanel;
-    JButton backwards = new JButton(Workspace.createImageIcon("resources/go-down.png"));
-    JButton upwards = new JButton(Workspace.createImageIcon("resources/go-up.png"));
-    JButton delete = new JButton(Workspace.createImageIcon("resources/user-trash.png"));
-    JTextField statusBar = new JTextField(25);
-    JComboBox paramComboBoxInteraction = new JComboBox();
-    public static JFileChooser fileChoser;
-    int eventRow = -1;
-    int mappingRow = -1;
-    static JComboBox regionComboBox = new JComboBox();
-    JButton deleteMapping = new JButton(Language.translate("Delete"));
-    JButton moveUpMapping = new JButton(Language.translate("Move Up"));
-    JButton moveDownMapping = new JButton(Language.translate("Move Down"));
-    JButton duplicateMapping = new JButton(Language.translate("Duplicate"));
-    JButton editMapping = new JButton(Language.translate("Edit"));
-    JComboBox comboBoxDim = new JComboBox();
-    double _start = 0.0;
-    double _end = 0.0;
-    double _init = 0.0;
-    boolean bCanUpdate = true;
-    public static ActiveRegionPanel currentActiveRegionPanel = null;
-    public static int indexGraphics = 0;
-    public static int indexWidget = 1;
-    public static int indexTransform = 2;
-    public static int indexEvents = 3;
-    public static int indexMouseEvents = 0;
-    public static int indexKeyboardEvents = 0;
-    public static int indexMotion = 1;
-    public static int indexOverlap = 2;
-    public static int indexGeneral = 4;
-    public JComboBox imageUrlField = new JComboBox();
-    public JComboBox imageIndex = new JComboBox();
-    public JComboBox animationMs = new JComboBox();
-    public JComboBox captureScreenX = new JComboBox();
-    public JComboBox captureScreenY = new JComboBox();
-    public JComboBox captureScreenWidth = new JComboBox();
-    public JComboBox captureScreenHeight = new JComboBox();
-    public RSyntaxTextArea textArea = Notepad.getInstance(RSyntaxTextArea.SYNTAX_STYLE_NONE);
-    public JTextArea trajectory1 = new JTextArea();
-    public JTextArea trajectory2 = new JTextArea();
-    public JTextField charactersPerLine = new JTextField(5);
-    public JTextField maxNumLines = new JTextField(5);
-    public JCheckBox canMove = new JCheckBox(Language.translate("Enable moving by mouse"), true);
-    public JCheckBox canRotate = new JCheckBox(Language.translate("Enable rotating by mouse"), true);
-    public JCheckBox canResize = new JCheckBox(Language.translate("Enable resizing"));
-    public JCheckBox wrapText = new JCheckBox(Language.translate("Wrap text"), false);
-    public JCheckBox trimText = new JCheckBox(Language.translate("Trim"), false);
-    public JCheckBox walkThrough = new JCheckBox(Language.translate("Make region solid (disable walk through)"));
-    public JCheckBox stickToTrajectory = new JCheckBox(Language.translate("Stick to Trajectory"), true);
-    public JCheckBox orientationTrajectory = new JCheckBox(Language.translate("Control Orientation"), true);
-    public JCheckBox captureScreen = new JCheckBox(Language.translate("Capture Part of the Screen"), false);
-    public JCheckBox captureScreenMouseMap = new JCheckBox(Language.translate("Map Mouse Clicks to Screen"), false);
+    private JButton backwards = new JButton(Workspace.createImageIcon("resources/go-down.png"));
+    private JButton upwards = new JButton(Workspace.createImageIcon("resources/go-up.png"));
+    private JButton delete = new JButton(Workspace.createImageIcon("resources/user-trash.png"));
+    private JTextField statusBar = new JTextField(25);
+    private static JFileChooser fileChoser;
+    private int eventRow = -1;
+    private int mappingRow = -1;
+    private static JComboBox regionComboBox = new JComboBox();
+    private JButton deleteMapping = new JButton(Language.translate("Delete"));
+    private JButton moveUpMapping = new JButton(Language.translate("Move Up"));
+    private JButton moveDownMapping = new JButton(Language.translate("Move Down"));
+    private JButton duplicateMapping = new JButton(Language.translate("Duplicate"));
+    private JButton editMapping = new JButton(Language.translate("Edit"));
+    private JComboBox comboBoxDim = new JComboBox();
+    private double _start = 0.0;
+    private double _end = 0.0;
+    private double _init = 0.0;
+    private boolean canUpdate = true;
+    private static ActiveRegionPanel currentActiveRegionPanel = null;
+    private static int indexGraphics = 0;
+    private static int indexWidget = 1;
+    private static int indexTransform = 2;
+    private static int indexEvents = 3;
+    private static int indexMouseEvents = 0;
+    private static int indexKeyboardEvents = 0;
+    private static int indexMotion = 1;
+    private static int indexOverlap = 2;
+    private static int indexGeneral = 4;
+    private JComboBox imageUrlField = new JComboBox();
+    private JComboBox imageIndex = new JComboBox();
+    private JComboBox animationMs = new JComboBox();
+    private JComboBox captureScreenX = new JComboBox();
+    private JComboBox captureScreenY = new JComboBox();
+    private JComboBox captureScreenWidth = new JComboBox();
+    private JComboBox captureScreenHeight = new JComboBox();
+    private RSyntaxTextArea textArea = Notepad.getInstance(RSyntaxTextArea.SYNTAX_STYLE_NONE);
+    private JTextArea trajectory1 = new JTextArea();
+    private JTextArea trajectory2 = new JTextArea();
+    private JTextField charactersPerLine = new JTextField(5);
+    private JTextField maxNumLines = new JTextField(5);
+    private JCheckBox canMove = new JCheckBox(Language.translate("Enable moving by mouse"), true);
+    private JCheckBox canRotate = new JCheckBox(Language.translate("Enable rotating by mouse"), true);
+    private JCheckBox canResize = new JCheckBox(Language.translate("Enable resizing"));
+    private JCheckBox wrapText = new JCheckBox(Language.translate("Wrap text"), false);
+    private JCheckBox trimText = new JCheckBox(Language.translate("Trim"), false);
+    private JCheckBox walkThrough = new JCheckBox(Language.translate("Make region solid (disable walk through)"));
+    private JCheckBox stickToTrajectory = new JCheckBox(Language.translate("Stick to Trajectory"), true);
+    private JCheckBox orientationTrajectory = new JCheckBox(Language.translate("Control Orientation"), true);
+    private JCheckBox captureScreen = new JCheckBox(Language.translate("Capture Part of the Screen"), false);
+    private JCheckBox captureScreenMouseMap = new JCheckBox(Language.translate("Map Mouse Clicks to Screen"), false);
 
-    public KeyboardEventsPanel keyboardEventsPanel;
-    public MouseEventsPanel mouseEventPanel;
-    public RegionOverlapEventsPanel regionOverlapEventsPanel;
+    private KeyboardEventsPanel keyboardEventsPanel;
+    private MouseEventsPanel mouseEventPanel;
+    private RegionOverlapEventsPanel regionOverlapEventsPanel;
 
     public ActiveRegionPanel() {
-        currentActiveRegionPanel = this;
+        setCurrentActiveRegionPanel(this);
     }
 
     public static JFileChooser getFileChooser() {
@@ -142,9 +135,9 @@ public class ActiveRegionPanel extends JPanel {
     }
 
     public ActiveRegionPanel(Pages pages, ActiveRegion _action, int tabIndex) {
-        currentActiveRegionPanel = this;
+        setCurrentActiveRegionPanel(this);
         this.pages = pages;
-        this.region = _action;
+        this.setRegion(_action);
         this.populateComboBoxes();
         modelUpdateTransformations = new AbstractTableModel() {
 
@@ -153,7 +146,7 @@ public class ActiveRegionPanel extends JPanel {
             }
 
             public int getRowCount() {
-                return region.updateTransformations.length;
+                return getRegion().updateTransformations.length;
             }
 
             public int getColumnCount() {
@@ -161,7 +154,7 @@ public class ActiveRegionPanel extends JPanel {
             }
 
             public Object getValueAt(int row, int col) {
-                return region.updateTransformations[row][col];
+                return getRegion().updateTransformations[row][col];
             }
 
             public boolean isCellEditable(int row, int col) {
@@ -172,9 +165,9 @@ public class ActiveRegionPanel extends JPanel {
                 if (!getValueAt(row, col).toString().equals(value.toString())) {
                     SketchletEditor.getInstance().saveRegionUndo();
                 }
-                region.updateTransformations[row][col] = value;
+                getRegion().updateTransformations[row][col] = value;
                 fireTableCellUpdated(row, col);
-                ActivityLog.log("setRegionContinousMouseEvent", row + " " + col + " " + region.updateTransformations[row][0] + " " + " " + region.updateTransformations[row][1] + " " + " " + region.updateTransformations[row][2]);
+                ActivityLog.log("setRegionContinuousMouseEvent", row + " " + col + " " + getRegion().updateTransformations[row][0] + " " + " " + getRegion().updateTransformations[row][1] + " " + " " + getRegion().updateTransformations[row][2]);
             }
 
             public Class getColumnClass(int c) {
@@ -189,7 +182,7 @@ public class ActiveRegionPanel extends JPanel {
             }
 
             public int getRowCount() {
-                return region.propertiesAnimation.length;
+                return getRegion().propertiesAnimation.length;
             }
 
             public int getColumnCount() {
@@ -197,36 +190,36 @@ public class ActiveRegionPanel extends JPanel {
             }
 
             public Object getValueAt(int row, int col) {
-                return region.propertiesAnimation[row][col] == null ? "" : region.propertiesAnimation[row][col];
+                return getRegion().propertiesAnimation[row][col] == null ? "" : getRegion().propertiesAnimation[row][col];
             }
 
             public boolean isCellEditable(int row, int col) {
-                return col > 0 && region.propertiesAnimation[row][1] != null;
+                return col > 0 && getRegion().propertiesAnimation[row][1] != null;
             }
 
             public void setValueAt(Object value, int row, int col) {
                 if (!getValueAt(row, col).toString().equals(value.toString())) {
                     SketchletEditor.getInstance().saveRegionUndo();
                 }
-                region.propertiesAnimation[row][col] = value.toString();
+                getRegion().propertiesAnimation[row][col] = value.toString();
                 if (col == 1) {
                     if (value == null || value.toString().isEmpty()) {
-                        region.propertiesAnimation[row][2] = "";
-                        region.propertiesAnimation[row][3] = "";
-                        region.propertiesAnimation[row][4] = "";
+                        getRegion().propertiesAnimation[row][2] = "";
+                        getRegion().propertiesAnimation[row][3] = "";
+                        getRegion().propertiesAnimation[row][4] = "";
                     } else {
-                        String strProperty = region.propertiesAnimation[row][0];
-                        String start = region.getMinValue(strProperty);
-                        String end = region.getMaxValue(strProperty);
+                        String strProperty = getRegion().propertiesAnimation[row][0];
+                        String start = getRegion().getMinValue(strProperty);
+                        String end = getRegion().getMaxValue(strProperty);
 
-                        if (region.propertiesAnimation[row][2].isEmpty() && start != null) {
-                            region.propertiesAnimation[row][2] = start;
+                        if (getRegion().propertiesAnimation[row][2].isEmpty() && start != null) {
+                            getRegion().propertiesAnimation[row][2] = start;
                         }
-                        if (region.propertiesAnimation[row][3].isEmpty() && end != null) {
-                            region.propertiesAnimation[row][3] = end;
+                        if (getRegion().propertiesAnimation[row][3].isEmpty() && end != null) {
+                            getRegion().propertiesAnimation[row][3] = end;
                         }
-                        if (region.propertiesAnimation[row][4].isEmpty()) {
-                            region.propertiesAnimation[row][4] = "1.0";
+                        if (getRegion().propertiesAnimation[row][4].isEmpty()) {
+                            getRegion().propertiesAnimation[row][4] = "1.0";
                         }
                     }
 
@@ -240,11 +233,9 @@ public class ActiveRegionPanel extends JPanel {
             }
         };
         tableAnimation = new JTable(modelAnimation);
-        TableColumn col = tableAnimation.getColumnModel().getColumn(2);
+        tableAnimation.setDefaultRenderer(String.class, new PropertiesTableRenderer(getRegion().propertiesAnimation));
 
-        tableAnimation.setDefaultRenderer(String.class, new PropertiesTableRenderer(region.propertiesAnimation));
-
-        col = tableAnimation.getColumnModel().getColumn(1);
+        TableColumn col = tableAnimation.getColumnModel().getColumn(1);
         JComboBox animationType = new JComboBox();
         animationType.setEditable(true);
         animationType.addItem("");
@@ -273,19 +264,19 @@ public class ActiveRegionPanel extends JPanel {
         tableAnimation.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
         tableAnimation.setFillsViewportHeight(true);
 
-        tableUpdateTransformations = new JTable(modelUpdateTransformations);
-        tableUpdateTransformations.addKeyListener(new KeyAdapter() {
+        setTableUpdateTransformations(new JTable(modelUpdateTransformations));
+        getTableUpdateTransformations().addKeyListener(new KeyAdapter() {
 
             public void keyPressed(KeyEvent ke) {
                 if ((ke.getModifiers() & Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()) != 0) {
                     if (ke.getKeyCode() == ke.VK_V) {
-                        int n = pasteInTable(tableUpdateTransformations, modelUpdateTransformations, region.updateTransformations);
+                        int n = pasteInTable(getTableUpdateTransformations(), modelUpdateTransformations, getRegion().updateTransformations);
                         ActivityLog.log("pasteInTable", "regionContinousEvents " + n);
                     }
                 }
             }
         });
-        tableUpdateTransformations.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+        getTableUpdateTransformations().putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
 
         modelLimits = new AbstractTableModel() {
 
@@ -294,7 +285,7 @@ public class ActiveRegionPanel extends JPanel {
             }
 
             public int getRowCount() {
-                return region.limits.length;
+                return getRegion().limits.length;
             }
 
             public int getColumnCount() {
@@ -303,7 +294,7 @@ public class ActiveRegionPanel extends JPanel {
 
             public Object getValueAt(int row, int col) {
                 if (row >= 0) {
-                    return region.limits[row][col];
+                    return getRegion().limits[row][col];
                 } else {
                     return "";
                 }
@@ -317,9 +308,9 @@ public class ActiveRegionPanel extends JPanel {
                 if (!getValueAt(row, col).toString().equals(value.toString())) {
                     SketchletEditor.getInstance().saveRegionUndo();
                 }
-                region.limits[row][col] = value;
+                getRegion().limits[row][col] = value;
                 fireTableCellUpdated(row, col);
-                ActivityLog.log("setRegionLimits", row + " " + col + " " + region.limits[row][0] + " " + " " + region.limits[row][1] + " " + " " + region.limits[row][2]);
+                ActivityLog.log("setRegionLimits", row + " " + col + " " + getRegion().limits[row][0] + " " + " " + getRegion().limits[row][1] + " " + " " + getRegion().limits[row][2]);
             }
 
             public Class getColumnClass(int c) {
@@ -327,10 +318,10 @@ public class ActiveRegionPanel extends JPanel {
             }
         };
 
-        tableLimits = new JTable(modelLimits);
-        tableLimits.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+        setTableLimits(new JTable(modelLimits));
+        getTableLimits().putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
 
-        TableColumn dimensionColumn = tableUpdateTransformations.getColumnModel().getColumn(0);
+        TableColumn dimensionColumn = getTableUpdateTransformations().getColumnModel().getColumn(0);
 
         comboBoxDim.setEditable(true);
         comboBoxDim.addItem("position x");
@@ -350,14 +341,14 @@ public class ActiveRegionPanel extends JPanel {
         mappingControls.add(editMapping);
 
 
-        tableUpdateTransformations.setFillsViewportHeight(true);
-        tableUpdateTransformations.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+        getTableUpdateTransformations().setFillsViewportHeight(true);
+        getTableUpdateTransformations().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 
             public void valueChanged(ListSelectionEvent event) {
                 if (event.getValueIsAdjusting()) {
                     return;
                 }
-                mappingRow = tableUpdateTransformations.getSelectedRow();
+                mappingRow = getTableUpdateTransformations().getSelectedRow();
                 enableControls();
             }
         });
@@ -465,62 +456,62 @@ public class ActiveRegionPanel extends JPanel {
 
         showTextPanel.add(Notepad.getEditorPanel(textArea, false), BorderLayout.CENTER);
 
-        this.textArea.setText(region.text);
+        this.textArea.setText(getRegion().text);
         this.textArea.addKeyListener(new KeyAdapter() {
 
             public void keyReleased(KeyEvent e) {
-                if (!region.text.equals(textArea.getText())) {
+                if (!getRegion().text.equals(textArea.getText())) {
                     SketchletEditor.getInstance().saveRegionUndo();
-                    region.text = textArea.getText();
+                    getRegion().text = textArea.getText();
                     RefreshTime.update();
                     SketchletEditor.getInstance().repaint();
                 }
             }
         });
-        this.trajectory1.setText(region.trajectory1);
+        this.trajectory1.setText(getRegion().trajectory1);
         this.trajectory1.addKeyListener(new KeyAdapter() {
 
             public void keyReleased(KeyEvent e) {
-                if (!region.trajectory1.equals(trajectory1.getText())) {
+                if (!getRegion().trajectory1.equals(trajectory1.getText())) {
                     SketchletEditor.getInstance().saveRegionUndo();
-                    region.trajectory1 = trajectory1.getText();
+                    getRegion().trajectory1 = trajectory1.getText();
                     RefreshTime.update();
                     SketchletEditor.getInstance().repaint();
                 }
             }
         });
-        this.trajectory2.setText(region.trajectory1);
+        this.trajectory2.setText(getRegion().trajectory1);
         this.trajectory2.addKeyListener(new KeyAdapter() {
 
             public void keyReleased(KeyEvent e) {
-                if (!region.trajectory2.equals(trajectory2.getText())) {
+                if (!getRegion().trajectory2.equals(trajectory2.getText())) {
                     SketchletEditor.getInstance().saveRegionUndo();
-                    region.trajectory2 = trajectory2.getText();
+                    getRegion().trajectory2 = trajectory2.getText();
                     RefreshTime.update();
                     SketchletEditor.getInstance().repaint();
                 }
             }
         });
 
-        this.charactersPerLine.setText(region.strCharactersPerLine);
+        this.charactersPerLine.setText(getRegion().charactersPerLine);
         this.charactersPerLine.addKeyListener(new KeyAdapter() {
 
             public void keyReleased(KeyEvent e) {
-                if (!region.strCharactersPerLine.equals(charactersPerLine.getText())) {
+                if (!getRegion().charactersPerLine.equals(charactersPerLine.getText())) {
                     SketchletEditor.getInstance().saveRegionUndo();
-                    region.strCharactersPerLine = charactersPerLine.getText();
+                    getRegion().charactersPerLine = charactersPerLine.getText();
                     RefreshTime.update();
                     SketchletEditor.getInstance().repaint();
                 }
             }
         });
-        this.maxNumLines.setText(region.maxNumLines);
+        this.maxNumLines.setText(getRegion().maxNumLines);
         this.maxNumLines.addKeyListener(new KeyAdapter() {
 
             public void keyReleased(KeyEvent e) {
-                if (!region.maxNumLines.equals(maxNumLines.getText())) {
+                if (!getRegion().maxNumLines.equals(maxNumLines.getText())) {
                     SketchletEditor.getInstance().saveRegionUndo();
-                    region.maxNumLines = maxNumLines.getText();
+                    getRegion().maxNumLines = maxNumLines.getText();
                     RefreshTime.update();
                     SketchletEditor.getInstance().repaint();
                 }
@@ -543,7 +534,7 @@ public class ActiveRegionPanel extends JPanel {
 
         final JPanel urlPanel = new JPanel();
         urlPanel.add(new JLabel(Language.translate("URL/path:")));
-        urlPanel.add(this.imageUrlField);
+        urlPanel.add(this.getImageUrlField());
         JButton selectFile = new JButton("...");
 
         selectFile.addActionListener(new ActionListener() {
@@ -552,7 +543,7 @@ public class ActiveRegionPanel extends JPanel {
                 int returnVal = fileChoser.showOpenDialog(urlPanel);
 
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    imageUrlField.setSelectedItem(fileChoser.getSelectedFile().getPath());
+                    getImageUrlField().setSelectedItem(fileChoser.getSelectedFile().getPath());
                     RefreshTime.update();
                     SketchletEditor.getInstance().repaint();
                 }
@@ -568,8 +559,8 @@ public class ActiveRegionPanel extends JPanel {
 
         checkPanel.add(this.canMove);
         checkPanel.add(this.canRotate);
-        scrollLimits = new JScrollPane(tableLimits);
-        scrollUpdateTransformations = new JScrollPane(tableUpdateTransformations);
+        scrollLimits = new JScrollPane(getTableLimits());
+        scrollUpdateTransformations = new JScrollPane(getTableUpdateTransformations());
         scrollUpdateTransformations.setBorder(BorderFactory.createTitledBorder(Language.translate("Mapping motion to variable updates")));
 
         mappingLeftPane.add(checkPanel, BorderLayout.NORTH);
@@ -588,7 +579,7 @@ public class ActiveRegionPanel extends JPanel {
         showImagePanelControl.add(fromURL);
         showImagePanelControl.add(fromFile);
 
-        showImagePanel.add(getDrawingPanel(region), BorderLayout.CENTER);
+        showImagePanel.add(getDrawingPanel(getRegion()), BorderLayout.CENTER);
 
         JButton buttonDefineCaptureArea = new JButton(Language.translate("Define capturing area"));
         buttonDefineCaptureArea.addActionListener(new ActionListener() {
@@ -602,10 +593,10 @@ public class ActiveRegionPanel extends JPanel {
                 int w = 100;
                 int h = 100;
                 try {
-                    x = Integer.parseInt(region.strCaptureScreenX);
-                    y = Integer.parseInt(region.strCaptureScreenY);
-                    w = Integer.parseInt(region.strCaptureScreenWidth);
-                    h = Integer.parseInt(region.strCaptureScreenHeight);
+                    x = Integer.parseInt(getRegion().captureScreenX);
+                    y = Integer.parseInt(getRegion().captureScreenY);
+                    w = Integer.parseInt(getRegion().captureScreenWidth);
+                    h = Integer.parseInt(getRegion().captureScreenHeight);
                 } catch (Throwable eNum) {
                 }
                 ImageAreaSelect.createAndShowGUI(ActiveRegionsFrame.reagionsAndActions, captureedImage, x, y, w, h, false);
@@ -613,10 +604,10 @@ public class ActiveRegionPanel extends JPanel {
                     captureScreen.setSelected(true);
                     String params[] = ImageAreaSelect.strArea.split(" ");
                     if (params.length >= 4) {
-                        captureScreenX.setSelectedItem(params[0]);
-                        captureScreenY.setSelectedItem(params[1]);
-                        captureScreenWidth.setSelectedItem(params[2]);
-                        captureScreenHeight.setSelectedItem(params[3]);
+                        getCaptureScreenX().setSelectedItem(params[0]);
+                        getCaptureScreenY().setSelectedItem(params[1]);
+                        getCaptureScreenWidth().setSelectedItem(params[2]);
+                        getCaptureScreenHeight().setSelectedItem(params[3]);
                     }
                 }
                 RefreshTime.update();
@@ -624,183 +615,183 @@ public class ActiveRegionPanel extends JPanel {
             }
         });
 
-        canMove.setSelected(region.movable);
-        canRotate.setSelected(region.rotatable);
-        canResize.setSelected(region.resizable);
-        wrapText.setSelected(region.textWrapped);
-        trimText.setSelected(region.textTrimmed);
-        walkThrough.setSelected(region.walkThroughEnabled);
-        stickToTrajectory.setSelected(region.stickToTrajectoryEnabled);
-        orientationTrajectory.setSelected(region.changingOrientationOnTrajectoryEnabled);
-        captureScreen.setSelected(region.screenCapturingEnabled);
-        captureScreenMouseMap.setSelected(region.screenCapturingMouseMappingEnabled);
+        canMove.setSelected(getRegion().movable);
+        canRotate.setSelected(getRegion().rotatable);
+        canResize.setSelected(getRegion().resizable);
+        wrapText.setSelected(getRegion().textWrapped);
+        trimText.setSelected(getRegion().textTrimmed);
+        walkThrough.setSelected(getRegion().walkThroughEnabled);
+        stickToTrajectory.setSelected(getRegion().stickToTrajectoryEnabled);
+        orientationTrajectory.setSelected(getRegion().changingOrientationOnTrajectoryEnabled);
+        captureScreen.setSelected(getRegion().screenCapturingEnabled);
+        captureScreenMouseMap.setSelected(getRegion().screenCapturingMouseMappingEnabled);
 
         canMove.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
-                region.movable = canMove.isSelected();
+                getRegion().movable = canMove.isSelected();
             }
         });
         canRotate.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
                 SketchletEditor.getInstance().saveRegionUndo();
-                region.rotatable = canRotate.isSelected();
+                getRegion().rotatable = canRotate.isSelected();
             }
         });
         canResize.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
                 SketchletEditor.getInstance().saveRegionUndo();
-                region.resizable = canResize.isSelected();
+                getRegion().resizable = canResize.isSelected();
             }
         });
         wrapText.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
                 SketchletEditor.getInstance().saveRegionUndo();
-                region.textWrapped = wrapText.isSelected();
+                getRegion().textWrapped = wrapText.isSelected();
             }
         });
         trimText.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
                 SketchletEditor.getInstance().saveRegionUndo();
-                region.textTrimmed = trimText.isSelected();
+                getRegion().textTrimmed = trimText.isSelected();
             }
         });
         walkThrough.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
                 SketchletEditor.getInstance().saveRegionUndo();
-                region.walkThroughEnabled = walkThrough.isSelected();
+                getRegion().walkThroughEnabled = walkThrough.isSelected();
             }
         });
         stickToTrajectory.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
                 SketchletEditor.getInstance().saveRegionUndo();
-                region.stickToTrajectoryEnabled = stickToTrajectory.isSelected();
+                getRegion().stickToTrajectoryEnabled = stickToTrajectory.isSelected();
             }
         });
         orientationTrajectory.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
                 SketchletEditor.getInstance().saveRegionUndo();
-                region.changingOrientationOnTrajectoryEnabled = orientationTrajectory.isSelected();
+                getRegion().changingOrientationOnTrajectoryEnabled = orientationTrajectory.isSelected();
             }
         });
         captureScreen.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
                 SketchletEditor.getInstance().saveRegionUndo();
-                region.screenCapturingEnabled = captureScreen.isSelected();
+                getRegion().screenCapturingEnabled = captureScreen.isSelected();
             }
         });
         captureScreenMouseMap.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
                 SketchletEditor.getInstance().saveRegionUndo();
-                region.screenCapturingMouseMappingEnabled = captureScreenMouseMap.isSelected();
+                getRegion().screenCapturingMouseMappingEnabled = captureScreenMouseMap.isSelected();
             }
         });
 
 
-        this.imageUrlField.setSelectedItem(region.strImageUrlField);
-        this.imageUrlField.addActionListener(new ActionListener() {
+        this.getImageUrlField().setSelectedItem(getRegion().imageUrlField);
+        this.getImageUrlField().addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                if (imageUrlField.getSelectedItem() != null) {
-                    if (!region.strImageUrlField.equals(imageUrlField.getSelectedItem().toString())) {
+                if (getImageUrlField().getSelectedItem() != null) {
+                    if (!getRegion().imageUrlField.equals(getImageUrlField().getSelectedItem().toString())) {
                         SketchletEditor.getInstance().saveRegionUndo();
-                        region.strImageUrlField = (String) imageUrlField.getSelectedItem();
+                        getRegion().imageUrlField = (String) getImageUrlField().getSelectedItem();
                         RefreshTime.update();
                         SketchletEditor.getInstance().repaint();
                     }
                 }
             }
         });
-        UIUtils.populateVariablesCombo(this.imageUrlField, true);
-        UIUtils.populateVariablesCombo(this.imageIndex, true);
-        UIUtils.populateVariablesCombo(this.animationMs, true);
-        UIUtils.populateVariablesCombo(this.captureScreenX, true);
-        UIUtils.populateVariablesCombo(this.captureScreenY, true);
-        UIUtils.populateVariablesCombo(this.captureScreenWidth, true);
-        UIUtils.populateVariablesCombo(this.captureScreenHeight, true);
+        UIUtils.populateVariablesCombo(this.getImageUrlField(), true);
+        UIUtils.populateVariablesCombo(this.getImageIndex(), true);
+        UIUtils.populateVariablesCombo(this.getAnimationMs(), true);
+        UIUtils.populateVariablesCombo(this.getCaptureScreenX(), true);
+        UIUtils.populateVariablesCombo(this.getCaptureScreenY(), true);
+        UIUtils.populateVariablesCombo(this.getCaptureScreenWidth(), true);
+        UIUtils.populateVariablesCombo(this.getCaptureScreenHeight(), true);
 
-        UIUtils.removeActionListeners(this.imageIndex);
-        this.imageIndex.setSelectedItem(region.strImageIndex);
-        this.imageIndex.addActionListener(new ActionListener() {
+        UIUtils.removeActionListeners(this.getImageIndex());
+        this.getImageIndex().setSelectedItem(getRegion().strImageIndex);
+        this.getImageIndex().addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                if (imageIndex.getSelectedItem() != null && !region.strImageIndex.equals(imageIndex.getSelectedItem().toString())) {
+                if (getImageIndex().getSelectedItem() != null && !getRegion().strImageIndex.equals(getImageIndex().getSelectedItem().toString())) {
                     SketchletEditor.getInstance().saveRegionUndo();
-                    region.strImageIndex = (String) imageIndex.getSelectedItem();
+                    getRegion().strImageIndex = (String) getImageIndex().getSelectedItem();
                     RefreshTime.update();
                     SketchletEditor.getInstance().repaint();
                 }
             }
         });
-        UIUtils.removeActionListeners(this.animationMs);
-        this.animationMs.setSelectedItem(region.strAnimationMs);
-        this.animationMs.addActionListener(new ActionListener() {
+        UIUtils.removeActionListeners(this.getAnimationMs());
+        this.getAnimationMs().setSelectedItem(getRegion().strAnimationMs);
+        this.getAnimationMs().addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                if (animationMs.getSelectedItem() != null && !region.strAnimationMs.equals(animationMs.getSelectedItem().toString())) {
+                if (getAnimationMs().getSelectedItem() != null && !getRegion().strAnimationMs.equals(getAnimationMs().getSelectedItem().toString())) {
                     SketchletEditor.getInstance().saveRegionUndo();
-                    region.strAnimationMs = (String) animationMs.getSelectedItem();
-                    RefreshTime.update();
-                    SketchletEditor.getInstance().repaint();
-                }
-            }
-        });
-
-        captureScreenX.setSelectedItem(region.strCaptureScreenX);
-        this.captureScreenX.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent ae) {
-                if (captureScreenX.getSelectedItem() != null && !region.strCaptureScreenX.equals(captureScreenX.getSelectedItem().toString())) {
-                    SketchletEditor.getInstance().saveRegionUndo();
-                    region.strCaptureScreenX = (String) captureScreenX.getSelectedItem();
+                    getRegion().strAnimationMs = (String) getAnimationMs().getSelectedItem();
                     RefreshTime.update();
                     SketchletEditor.getInstance().repaint();
                 }
             }
         });
 
-        captureScreenY.setSelectedItem(region.strCaptureScreenY);
-        this.captureScreenY.addActionListener(new ActionListener() {
+        getCaptureScreenX().setSelectedItem(getRegion().captureScreenX);
+        this.getCaptureScreenX().addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                if (captureScreenY.getSelectedItem() != null && !region.strCaptureScreenY.equals(captureScreenY.getSelectedItem().toString())) {
+                if (getCaptureScreenX().getSelectedItem() != null && !getRegion().captureScreenX.equals(getCaptureScreenX().getSelectedItem().toString())) {
                     SketchletEditor.getInstance().saveRegionUndo();
-                    region.strCaptureScreenY = (String) captureScreenY.getSelectedItem();
+                    getRegion().captureScreenX = (String) getCaptureScreenX().getSelectedItem();
                     RefreshTime.update();
                     SketchletEditor.getInstance().repaint();
                 }
             }
         });
 
-        captureScreenWidth.setSelectedItem(region.strCaptureScreenWidth);
-        this.captureScreenWidth.addActionListener(new ActionListener() {
+        getCaptureScreenY().setSelectedItem(getRegion().captureScreenY);
+        this.getCaptureScreenY().addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                if (captureScreenWidth.getSelectedItem() != null && !region.strCaptureScreenWidth.equals(captureScreenWidth.getSelectedItem().toString())) {
+                if (getCaptureScreenY().getSelectedItem() != null && !getRegion().captureScreenY.equals(getCaptureScreenY().getSelectedItem().toString())) {
                     SketchletEditor.getInstance().saveRegionUndo();
-                    region.strCaptureScreenWidth = (String) captureScreenWidth.getSelectedItem();
+                    getRegion().captureScreenY = (String) getCaptureScreenY().getSelectedItem();
                     RefreshTime.update();
                     SketchletEditor.getInstance().repaint();
                 }
             }
         });
 
-        captureScreenHeight.setSelectedItem(region.strCaptureScreenHeight);
-        this.captureScreenHeight.addActionListener(new ActionListener() {
+        getCaptureScreenWidth().setSelectedItem(getRegion().captureScreenWidth);
+        this.getCaptureScreenWidth().addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                if (captureScreenHeight.getSelectedItem() != null && !region.strCaptureScreenHeight.equals(captureScreenHeight.getSelectedItem().toString())) {
+                if (getCaptureScreenWidth().getSelectedItem() != null && !getRegion().captureScreenWidth.equals(getCaptureScreenWidth().getSelectedItem().toString())) {
                     SketchletEditor.getInstance().saveRegionUndo();
-                    region.strCaptureScreenHeight = (String) captureScreenHeight.getSelectedItem();
+                    getRegion().captureScreenWidth = (String) getCaptureScreenWidth().getSelectedItem();
+                    RefreshTime.update();
+                    SketchletEditor.getInstance().repaint();
+                }
+            }
+        });
+
+        getCaptureScreenHeight().setSelectedItem(getRegion().captureScreenHeight);
+        this.getCaptureScreenHeight().addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent ae) {
+                if (getCaptureScreenHeight().getSelectedItem() != null && !getRegion().captureScreenHeight.equals(getCaptureScreenHeight().getSelectedItem().toString())) {
+                    SketchletEditor.getInstance().saveRegionUndo();
+                    getRegion().captureScreenHeight = (String) getCaptureScreenHeight().getSelectedItem();
                     RefreshTime.update();
                     SketchletEditor.getInstance().repaint();
                 }
@@ -825,10 +816,10 @@ public class ActiveRegionPanel extends JPanel {
         btnScreenWidthToRegion.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                if (region.strCaptureScreenWidth != null && !region.strCaptureScreenWidth.isEmpty()) {
+                if (getRegion().captureScreenWidth != null && !getRegion().captureScreenWidth.isEmpty()) {
                     try {
                         SketchletEditor.getInstance().saveRegionUndo();
-                        region.setWidth((int) Double.parseDouble(region.strCaptureScreenWidth));
+                        getRegion().setWidth((int) Double.parseDouble(getRegion().captureScreenWidth));
                         RefreshTime.update();
                         SketchletEditor.getInstance().repaint();
                     } catch (Throwable e) {
@@ -839,10 +830,10 @@ public class ActiveRegionPanel extends JPanel {
         btnScreenHeightToRegion.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                if (region.strCaptureScreenHeight != null && !region.strCaptureScreenHeight.isEmpty()) {
+                if (getRegion().captureScreenHeight != null && !getRegion().captureScreenHeight.isEmpty()) {
                     try {
                         SketchletEditor.getInstance().saveRegionUndo();
-                        region.setHeight((int) Double.parseDouble(region.strCaptureScreenHeight));
+                        getRegion().setHeight((int) Double.parseDouble(getRegion().captureScreenHeight));
                         RefreshTime.update();
                         SketchletEditor.getInstance().repaint();
                     } catch (Throwable e) {
@@ -853,7 +844,7 @@ public class ActiveRegionPanel extends JPanel {
         btnRegionToScreenWidth.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                captureScreenWidth.setSelectedItem("" + region.getWidth());
+                getCaptureScreenWidth().setSelectedItem("" + getRegion().getWidth());
                 RefreshTime.update();
                 SketchletEditor.getInstance().repaint();
             }
@@ -861,7 +852,7 @@ public class ActiveRegionPanel extends JPanel {
         btnRegionToScreenHeight.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                captureScreenHeight.setSelectedItem("" + region.getHeight());
+                getCaptureScreenHeight().setSelectedItem("" + getRegion().getHeight());
                 RefreshTime.update();
                 SketchletEditor.getInstance().repaint();
             }
@@ -875,18 +866,18 @@ public class ActiveRegionPanel extends JPanel {
         screenCapturePanel.add(new JLabel(""));
 
         screenCapturePanel.add(new JLabel(Language.translate("X (left): "), JLabel.RIGHT));
-        screenCapturePanel.add(this.captureScreenX);
+        screenCapturePanel.add(this.getCaptureScreenX());
 
         screenCapturePanel.add(new JLabel(Language.translate("Width: "), JLabel.RIGHT));
-        screenCapturePanel.add(this.captureScreenWidth);
+        screenCapturePanel.add(this.getCaptureScreenWidth());
         screenCapturePanel.add(btnScreenWidthToRegion);
         screenCapturePanel.add(btnRegionToScreenWidth);
 
         screenCapturePanel.add(new JLabel(Language.translate("Y (top): "), JLabel.RIGHT));
-        screenCapturePanel.add(this.captureScreenY);
+        screenCapturePanel.add(this.getCaptureScreenY());
 
         screenCapturePanel.add(new JLabel(Language.translate("Height: "), JLabel.RIGHT));
-        screenCapturePanel.add(captureScreenHeight);
+        screenCapturePanel.add(getCaptureScreenHeight());
         screenCapturePanel.add(btnScreenHeightToRegion);
         screenCapturePanel.add(btnRegionToScreenHeight);
 
@@ -905,7 +896,7 @@ public class ActiveRegionPanel extends JPanel {
         deleteMapping.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                UIUtils.deleteTableRows(tableUpdateTransformations, modelUpdateTransformations, region.updateTransformations);
+                UIUtils.deleteTableRows(getTableUpdateTransformations(), modelUpdateTransformations, getRegion().updateTransformations);
             }
         });
 
@@ -922,36 +913,36 @@ public class ActiveRegionPanel extends JPanel {
             public void actionPerformed(ActionEvent ae) {
                 if (mappingRow > 0) {
                     SketchletEditor.getInstance().saveRegionUndo();
-                    Object[] rowData1 = region.updateTransformations[mappingRow];
-                    Object[] rowData2 = region.updateTransformations[mappingRow - 1];
+                    Object[] rowData1 = getRegion().updateTransformations[mappingRow];
+                    Object[] rowData2 = getRegion().updateTransformations[mappingRow - 1];
 
-                    region.updateTransformations[mappingRow] = rowData2;
-                    region.updateTransformations[mappingRow - 1] = rowData1;
+                    getRegion().updateTransformations[mappingRow] = rowData2;
+                    getRegion().updateTransformations[mappingRow - 1] = rowData1;
 
                     int r = mappingRow - 1;
 
                     modelUpdateTransformations.fireTableDataChanged();
 
-                    tableUpdateTransformations.getSelectionModel().setSelectionInterval(r, r);
+                    getTableUpdateTransformations().getSelectionModel().setSelectionInterval(r, r);
                 }
             }
         });
         moveDownMapping.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                if (mappingRow < region.updateTransformations.length - 1) {
+                if (mappingRow < getRegion().updateTransformations.length - 1) {
                     SketchletEditor.getInstance().saveRegionUndo();
-                    Object[] rowData1 = region.updateTransformations[mappingRow];
-                    Object[] rowData2 = region.updateTransformations[mappingRow + 1];
+                    Object[] rowData1 = getRegion().updateTransformations[mappingRow];
+                    Object[] rowData2 = getRegion().updateTransformations[mappingRow + 1];
 
-                    region.updateTransformations[mappingRow] = rowData2;
-                    region.updateTransformations[mappingRow + 1] = rowData1;
+                    getRegion().updateTransformations[mappingRow] = rowData2;
+                    getRegion().updateTransformations[mappingRow + 1] = rowData1;
 
                     int r = mappingRow + 1;
 
                     modelUpdateTransformations.fireTableDataChanged();
 
-                    tableUpdateTransformations.getSelectionModel().setSelectionInterval(r, r);
+                    getTableUpdateTransformations().getSelectionModel().setSelectionInterval(r, r);
                 }
             }
         });
@@ -959,33 +950,32 @@ public class ActiveRegionPanel extends JPanel {
 
             public void actionPerformed(ActionEvent ae) {
                 int row = mappingRow;
-                if (row < region.updateTransformations.length - 1) {
+                if (row < getRegion().updateTransformations.length - 1) {
                     SketchletEditor.getInstance().saveRegionUndo();
-                    Object[] rowData1 = region.updateTransformations[row];
 
-                    for (int i = region.updateTransformations.length - 2; i >= row + 1; i--) {
-                        region.updateTransformations[i + 1] = region.updateTransformations[i];
+                    for (int i = getRegion().updateTransformations.length - 2; i >= row + 1; i--) {
+                        getRegion().updateTransformations[i + 1] = getRegion().updateTransformations[i];
                     }
 
-                    region.updateTransformations[row + 1] = new Object[]{
-                            "" + region.updateTransformations[row][0],
-                            "" + region.updateTransformations[row][1],
-                            "" + region.updateTransformations[row][2],
-                            "" + region.updateTransformations[row][3],
-                            "" + region.updateTransformations[row][4]
+                    getRegion().updateTransformations[row + 1] = new Object[]{
+                            "" + getRegion().updateTransformations[row][0],
+                            "" + getRegion().updateTransformations[row][1],
+                            "" + getRegion().updateTransformations[row][2],
+                            "" + getRegion().updateTransformations[row][3],
+                            "" + getRegion().updateTransformations[row][4]
                     };
 
                     int r = row + 1;
 
                     modelUpdateTransformations.fireTableDataChanged();
-                    tableUpdateTransformations.getSelectionModel().setSelectionInterval(r, r);
+                    getTableUpdateTransformations().getSelectionModel().setSelectionInterval(r, r);
                 }
             }
         });
 
         enableControls();
 
-        shapePanel = new ShapePanel(this.region);
+        shapePanel = new ShapePanel(this.getRegion());
 
         JPanel trajectPanel = new JPanel();
         trajectPanel.setLayout(new BorderLayout());
@@ -1012,9 +1002,9 @@ public class ActiveRegionPanel extends JPanel {
         mappingGridPane.add(mappingLeftPane, BorderLayout.WEST);
         mappingGridPane.add(panelVariablesMapping);
 
-        tabsMove.putClientProperty("JComponent.sizeVariant", "small");
-        SwingUtilities.updateComponentTreeUI(tabsMove);
-        tabsMove.addTab(Language.translate("Settings"), mappingGridPane);
+        getTabsMove().putClientProperty("JComponent.sizeVariant", "small");
+        SwingUtilities.updateComponentTreeUI(getTabsMove());
+        getTabsMove().addTab(Language.translate("Settings"), mappingGridPane);
         JPanel panelTrajectoryPoints = new JPanel(new GridLayout(1, 2));
 
         JScrollPane tp1 = new JScrollPane(trajectory1);
@@ -1023,10 +1013,10 @@ public class ActiveRegionPanel extends JPanel {
         tp2.setBorder(BorderFactory.createTitledBorder(Language.translate("Secondary trajectory (x y time)")));
         panelTrajectoryPoints.add(tp1);
         panelTrajectoryPoints.add(tp2);
-        tabsMove.setTabPlacement(JTabbedPane.LEFT);
-        tabsMove.add(Language.translate("Motion Limits"), scrollLimits);
-        tabsMove.addTab(Language.translate("Trajectory Points"), panelTrajectoryPoints);
-        movablePanel.add(tabsMove);
+        getTabsMove().setTabPlacement(JTabbedPane.LEFT);
+        getTabsMove().add(Language.translate("Motion Limits"), scrollLimits);
+        getTabsMove().addTab(Language.translate("Trajectory Points"), panelTrajectoryPoints);
+        movablePanel.add(getTabsMove());
 
         final JButton defineClip = new JButton(Language.translate("Define Visible Area"), Workspace.createImageIcon("resources/clip.png"));
         defineClip.addActionListener(new ActionListener() {
@@ -1041,41 +1031,41 @@ public class ActiveRegionPanel extends JPanel {
         JPanel panel = new JPanel();
         panel.add(defineClip);
 
-        tabsImage.setFont(tabsImage.getFont().deriveFont(9.0f));
-        tabsImage.putClientProperty("JComponent.sizeVariant", "small");
-        SwingUtilities.updateComponentTreeUI(tabsImage);
+        getTabsImage().setFont(getTabsImage().getFont().deriveFont(9.0f));
+        getTabsImage().putClientProperty("JComponent.sizeVariant", "small");
+        SwingUtilities.updateComponentTreeUI(getTabsImage());
 
-        tabsImage.add(showImagePanel, Language.translate("Image"));
+        getTabsImage().add(showImagePanel, Language.translate("Image"));
         if (Profiles.isActive("active_region_shape")) {
             JPanel shapePanelWrapper = new JPanel(new FlowLayout(FlowLayout.LEFT));
             shapePanelWrapper.add(shapePanel);
-            tabsImage.add(shapePanelWrapper, Language.translate("Shape"));
+            getTabsImage().add(shapePanelWrapper, Language.translate("Shape"));
         }
         if (Profiles.isActive("active_region_url")) {
             JPanel urlPanelWrapper = new JPanel(new FlowLayout(FlowLayout.LEFT));
             urlPanelWrapper.add(urlPanel);
-            tabsImage.add(urlPanel, Language.translate("URL/file path"));
+            getTabsImage().add(urlPanel, Language.translate("URL/file path"));
         }
         if (Profiles.isActive("active_region_screen_capture")) {
             JPanel screenCapturePanelWrapper = new JPanel(new FlowLayout(FlowLayout.LEFT));
             screenCapturePanelWrapper.add(screenCapturePanel);
-            tabsImage.add(screenCapturePanelWrapper, Language.translate("Screen Capture"));
+            getTabsImage().add(screenCapturePanelWrapper, Language.translate("Screen Capture"));
         }
         if (Profiles.isActive("active_region_text")) {
-            tabsImage.add(showTextPanel, Language.translate("Text"));
+            getTabsImage().add(showTextPanel, Language.translate("Text"));
         }
 
-        tabs.setFont(tabsImage.getFont().deriveFont(9.0f));
-        tabs.putClientProperty("JComponent.sizeVariant", "small");
-        SwingUtilities.updateComponentTreeUI(tabs);
+        getTabs().setFont(getTabsImage().getFont().deriveFont(9.0f));
+        getTabs().putClientProperty("JComponent.sizeVariant", "small");
+        SwingUtilities.updateComponentTreeUI(getTabs());
 
-        tabs.applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
-        tabs.setTabPlacement(JTabbedPane.LEFT);
-        tabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+        getTabs().applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+        getTabs().setTabPlacement(JTabbedPane.LEFT);
+        getTabs().setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 
-        tabs.add(tabsImage, Language.translate("Graphics "));
-        indexGraphics = tabs.getTabCount() - 1;
-        setPanel = new PropertiesSetPanel(region);
+        getTabs().add(getTabsImage(), Language.translate("Graphics "));
+        setIndexGraphics(getTabs().getTabCount() - 1);
+        setPanel = new PropertiesSetPanel(getRegion());
         setPanel.setSaveUndoAction(new Runnable() {
 
             public void run() {
@@ -1091,12 +1081,12 @@ public class ActiveRegionPanel extends JPanel {
 
             public void actionPerformed(ActionEvent ae) {
                 int row = tableAnimation.getSelectedRow();
-                if (row >= 0 && region.propertiesAnimation[row][1] != null) {
-                    region.propertiesAnimation[row][1] = "";
-                    region.propertiesAnimation[row][2] = "";
-                    region.propertiesAnimation[row][3] = "";
-                    region.propertiesAnimation[row][4] = "";
-                    region.propertiesAnimation[row][5] = "";
+                if (row >= 0 && getRegion().propertiesAnimation[row][1] != null) {
+                    getRegion().propertiesAnimation[row][1] = "";
+                    getRegion().propertiesAnimation[row][2] = "";
+                    getRegion().propertiesAnimation[row][3] = "";
+                    getRegion().propertiesAnimation[row][4] = "";
+                    getRegion().propertiesAnimation[row][5] = "";
                     modelAnimation.fireTableDataChanged();
                 }
             }
@@ -1107,8 +1097,8 @@ public class ActiveRegionPanel extends JPanel {
 
             public void actionPerformed(ActionEvent ae) {
                 int row = tableAnimation.getSelectedRow();
-                if (row >= 0 && region.propertiesAnimation[row][1] != null) {
-                    region.propertiesAnimation[row][2] = region.getProperty(region.propertiesAnimation[row][0]);
+                if (row >= 0 && getRegion().propertiesAnimation[row][1] != null) {
+                    getRegion().propertiesAnimation[row][2] = getRegion().getProperty(getRegion().propertiesAnimation[row][0]);
                     modelAnimation.fireTableRowsUpdated(row, row);
                 }
             }
@@ -1119,8 +1109,8 @@ public class ActiveRegionPanel extends JPanel {
 
             public void actionPerformed(ActionEvent ae) {
                 int row = tableAnimation.getSelectedRow();
-                if (row >= 0 && region.propertiesAnimation[row][1] != null) {
-                    region.propertiesAnimation[row][3] = region.getProperty(region.propertiesAnimation[row][0]);
+                if (row >= 0 && getRegion().propertiesAnimation[row][1] != null) {
+                    getRegion().propertiesAnimation[row][3] = getRegion().getProperty(getRegion().propertiesAnimation[row][0]);
                     modelAnimation.fireTableRowsUpdated(row, row);
                 }
             }
@@ -1158,7 +1148,7 @@ public class ActiveRegionPanel extends JPanel {
 
             public void valueChanged(ListSelectionEvent event) {
                 int row = tableAnimation.getSelectedRow();
-                boolean bEnable = row >= 0 && region.propertiesAnimation[row][1] != null;
+                boolean bEnable = row >= 0 && getRegion().propertiesAnimation[row][1] != null;
                 btnClear.setEnabled(bEnable);
                 btnStart.setEnabled(bEnable);
                 btnEnd.setEnabled(bEnable);
@@ -1168,14 +1158,14 @@ public class ActiveRegionPanel extends JPanel {
 
                 String start = null;
                 String end = null;
-                String init = "";
+                String init;
                 if (bEnable) {
-                    String strProperty = region.propertiesAnimation[row][0];
-                    start = region.getMinValue(strProperty);
-                    end = region.getMaxValue(strProperty);
-                    init = region.getProperty(strProperty);
+                    String strProperty = getRegion().propertiesAnimation[row][0];
+                    start = getRegion().getMinValue(strProperty);
+                    end = getRegion().getMaxValue(strProperty);
+                    init = getRegion().getProperty(strProperty);
                     if (init == null || init.isEmpty()) {
-                        String defaultValue = region.getDefaultValue(strProperty);
+                        String defaultValue = getRegion().getDefaultValue(strProperty);
                         if (defaultValue != null && !defaultValue.isEmpty()) {
                             init = defaultValue;
                         }
@@ -1195,9 +1185,9 @@ public class ActiveRegionPanel extends JPanel {
                             _init = Double.parseDouble(init);
                         }
 
-                        bCanUpdate = false;
+                        canUpdate = false;
                         slider.setValue(slider.getMinimum() + (int) ((slider.getMaximum() - slider.getMinimum()) * (_init - Math.min(_start, _end)) / Math.abs(_end - _start)));
-                        bCanUpdate = true;
+                        canUpdate = true;
                     } catch (Exception e) {
                         bEnable = false;
                     }
@@ -1208,38 +1198,38 @@ public class ActiveRegionPanel extends JPanel {
                 }
             }
         });
-        tabsImage.addChangeListener(new ChangeListener() {
+        getTabsImage().addChangeListener(new ChangeListener() {
 
             public void stateChanged(ChangeEvent e) {
-                int index = tabsImage.getSelectedIndex();
+                int index = getTabsImage().getSelectedIndex();
                 if (index >= 0) {
-                    ActivityLog.log("selectTabRegionImage", tabsImage.getTitleAt(index));
+                    ActivityLog.log("selectTabRegionImage", getTabsImage().getTitleAt(index));
                 }
             }
         });
-        tabsRegionEvents.addChangeListener(new ChangeListener() {
+        getTabsRegionEvents().addChangeListener(new ChangeListener() {
 
             public void stateChanged(ChangeEvent e) {
                 SketchletEditor.getInstance().getExtraEditorPanel().openRelevantHelpPage(false);
             }
         });
-        tabsTransform.addChangeListener(new ChangeListener() {
+        getTabsTransform().addChangeListener(new ChangeListener() {
 
             public void stateChanged(ChangeEvent e) {
-                int index = tabsTransform.getSelectedIndex();
+                int index = getTabsTransform().getSelectedIndex();
                 if (index >= 0) {
-                    ActivityLog.log("selectTabRegionTransform", tabsTransform.getTitleAt(index));
+                    ActivityLog.log("selectTabRegionTransform", getTabsTransform().getTitleAt(index));
                 }
             }
         });
         slider.addChangeListener(new ChangeListener() {
 
             public void stateChanged(ChangeEvent e) {
-                if (!bCanUpdate) {
+                if (!canUpdate) {
                     return;
                 }
 
-                bCanUpdate = false;
+                canUpdate = false;
                 try {
                     int row = tableAnimation.getSelectedRow();
                     if (row >= 0) {
@@ -1250,14 +1240,14 @@ public class ActiveRegionPanel extends JPanel {
                             _end = Double.parseDouble(end);
                             int fps = (int) slider.getValue();
 
-                            region.setProperty(region.propertiesAnimation[row][0], "" + (Math.min(_start, _end) + Math.abs(_start - _end) * fps / (slider.getMaximum() - slider.getMinimum())));
+                            getRegion().setProperty(getRegion().propertiesAnimation[row][0], "" + (Math.min(_start, _end) + Math.abs(_start - _end) * fps / (slider.getMaximum() - slider.getMinimum())));
                             SketchletEditor.getInstance().repaint();
                         }
                     }
                 } catch (Exception e2) {
                 }
 
-                bCanUpdate = true;
+                canUpdate = true;
             }
         });
 
@@ -1266,50 +1256,50 @@ public class ActiveRegionPanel extends JPanel {
         scrollAnimation = new JScrollPane(tableAnimation);
         panelAnimation.add(scrollAnimation);
 
-        tabsTransform.add(Language.translate("Set Transformation"), setPanel);
-        tabsTransform.add(Language.translate("Animate Transformation"), panelAnimation);
-        tabsTransform.setFont(tabsImage.getFont().deriveFont(9.0f));
-        tabsTransform.putClientProperty("JComponent.sizeVariant", "small");
-        SwingUtilities.updateComponentTreeUI(tabsTransform);
+        getTabsTransform().add(Language.translate("Set Transformation"), setPanel);
+        getTabsTransform().add(Language.translate("Animate Transformation"), panelAnimation);
+        getTabsTransform().setFont(getTabsImage().getFont().deriveFont(9.0f));
+        getTabsTransform().putClientProperty("JComponent.sizeVariant", "small");
+        SwingUtilities.updateComponentTreeUI(getTabsTransform());
 
 
         if (Profiles.isActive("active_region_widget")) {
-            widgetPanel = new WidgetPanel(this.region);
-            tabs.add(widgetPanel, Language.translate("Widget "));
-            indexWidget = tabs.getTabCount() - 1;
+            widgetPanel = new WidgetPanel(this.getRegion());
+            getTabs().add(widgetPanel, Language.translate("Widget "));
+            setIndexWidget(getTabs().getTabCount() - 1);
         }
         if (Profiles.isActive("active_region_transformations")) {
-            tabs.add(tabsTransform, Language.translate("Transformations "));
-            indexTransform = tabs.getTabCount() - 1;
+            getTabs().add(getTabsTransform(), Language.translate("Transformations "));
+            setIndexTransform(getTabs().getTabCount() - 1);
         }
 
-        tabs.addChangeListener(new ChangeListener() {
+        getTabs().addChangeListener(new ChangeListener() {
 
             public void stateChanged(ChangeEvent e) {
-                if (!tabs.isShowing()) {
+                if (!getTabs().isShowing()) {
                     return;
                 }
-                int n = tabs.getSelectedIndex();
+                int n = getTabs().getSelectedIndex();
                 if (n >= 0) {
-                    String title = tabs.getTitleAt(n).trim().toLowerCase();
+                    String title = getTabs().getTitleAt(n).trim().toLowerCase();
 
-                    if (n == indexGraphics) {
+                    if (n == getIndexGraphics()) {
                         SketchletEditor.getInstance().getHelpViewer().showAutoHelpByID("active_region_image");
-                    } else if (n == indexTransform) {
+                    } else if (n == getIndexTransform()) {
                         SketchletEditor.getInstance().getHelpViewer().showAutoHelpByID("active_region_transform");
-                    } else if (n == indexEvents) {
-                        int n2 = tabsRegionEvents.getSelectedIndex();
+                    } else if (n == getIndexEvents()) {
+                        int n2 = getTabsRegionEvents().getSelectedIndex();
 
-                        if (n2 == indexMotion) {
+                        if (n2 == getIndexMotion()) {
                             SketchletEditor.getInstance().getHelpViewer().showAutoHelpByID("active_region_move");
-                        } else if (n2 == indexMouseEvents) {
+                        } else if (n2 == getIndexMouseEvents()) {
                             SketchletEditor.getInstance().getHelpViewer().showAutoHelpByID("active_region_mouse");
-                        } else if (n2 == indexOverlap) {
+                        } else if (n2 == getIndexOverlap()) {
                             SketchletEditor.getInstance().getHelpViewer().showAutoHelpByID("active_region_interaction");
                         }
-                    } else if (n == indexWidget) {
+                    } else if (n == getIndexWidget()) {
                         SketchletEditor.getInstance().getHelpViewer().showAutoHelpByID("active_region_widget");
-                    } else if (n == indexGeneral) {
+                    } else if (n == getIndexGeneral()) {
                         SketchletEditor.getInstance().getHelpViewer().showAutoHelpByID("active_region_general");
                     }
                     ActivityLog.log("selectTabRegionSettings", title);
@@ -1317,46 +1307,46 @@ public class ActiveRegionPanel extends JPanel {
             }
         });
 
-        tabs.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+        getTabs().setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
 
-        tabsRegionEvents.putClientProperty("JComponent.sizeVariant", "small");
-        SwingUtilities.updateComponentTreeUI(tabsRegionEvents);
+        getTabsRegionEvents().putClientProperty("JComponent.sizeVariant", "small");
+        SwingUtilities.updateComponentTreeUI(getTabsRegionEvents());
 
         if (Profiles.isActiveAny("active_region_move,active_region_mouse,active_region_mouse,active_region_overlap")) {
-            tabs.add(tabsRegionEvents, Language.translate("Region Events "));
-            indexEvents = tabs.getTabCount() - 1;
+            getTabs().add(getTabsRegionEvents(), Language.translate("Region Events "));
+            setIndexEvents(getTabs().getTabCount() - 1);
         }
         if (Profiles.isActive("active_region_mouse")) {
-            mouseEventPanel = new MouseEventsPanel(this.region.mouseProcessor);
-            tabsRegionEvents.add(mouseEventPanel, Language.translate("Mouse Events "));
-            indexMouseEvents = tabsRegionEvents.getTabCount() - 1;
+            setMouseEventPanel(new MouseEventsPanel(this.getRegion().mouseProcessor));
+            getTabsRegionEvents().add(getMouseEventPanel(), Language.translate("Mouse Events "));
+            setIndexMouseEvents(getTabsRegionEvents().getTabCount() - 1);
         }
         if (Profiles.isActive("active_region_keyboard")) {
-            keyboardEventsPanel = new KeyboardEventsPanel(this.region.keyboardProcessor);
-            tabsRegionEvents.add(keyboardEventsPanel, Language.translate("Keyboard Events "));
-            indexKeyboardEvents = tabsRegionEvents.getTabCount() - 1;
+            setKeyboardEventsPanel(new KeyboardEventsPanel(this.getRegion().keyboardProcessor));
+            getTabsRegionEvents().add(getKeyboardEventsPanel(), Language.translate("Keyboard Events "));
+            setIndexKeyboardEvents(getTabsRegionEvents().getTabCount() - 1);
         }
         if (Profiles.isActive("active_region_move")) {
-            tabsRegionEvents.add(movablePanel, Language.translate("Move & Rotate "));
-            indexMotion = tabsRegionEvents.getTabCount() - 1;
+            getTabsRegionEvents().add(movablePanel, Language.translate("Move & Rotate "));
+            setIndexMotion(getTabsRegionEvents().getTabCount() - 1);
         }
         if (Profiles.isActive("active_region_overlap")) {
-            regionOverlapEventsPanel = new RegionOverlapEventsPanel(this.region);
-            tabsRegionEvents.add(regionOverlapEventsPanel, Language.translate("Overlap & Touch "));
-            indexOverlap = tabsRegionEvents.getTabCount() - 1;
+            setRegionOverlapEventsPanel(new RegionOverlapEventsPanel(this.getRegion()));
+            getTabsRegionEvents().add(getRegionOverlapEventsPanel(), Language.translate("Overlap & Touch "));
+            setIndexOverlap(getTabsRegionEvents().getTabCount() - 1);
         }
 
         if (Profiles.isActive("active_region_general")) {
-            generalSettingsPanel = new GeneralSettingsPanel(region);
-            tabs.add(generalSettingsPanel, Language.translate("General "));
-            indexGeneral = tabs.getTabCount() - 1;
+            generalSettingsPanel = new GeneralSettingsPanel(getRegion());
+            getTabs().add(generalSettingsPanel, Language.translate("General "));
+            setIndexGeneral(getTabs().getTabCount() - 1);
         }
 
-        if (tabIndex >= 0 && tabIndex < tabs.getTabCount()) {
-            tabs.setSelectedIndex(tabIndex);
+        if (tabIndex >= 0 && tabIndex < getTabs().getTabCount()) {
+            getTabs().setSelectedIndex(tabIndex);
         }
 
-        this.add(tabs, BorderLayout.CENTER);
+        this.add(getTabs(), BorderLayout.CENTER);
 
         JPanel controlPanel = new JPanel();
 
@@ -1400,8 +1390,88 @@ public class ActiveRegionPanel extends JPanel {
         }
     }
 
+    public static int getIndexGraphics() {
+        return indexGraphics;
+    }
+
+    public static void setIndexGraphics(int indexGraphics) {
+        ActiveRegionPanel.indexGraphics = indexGraphics;
+    }
+
+    public static int getIndexWidget() {
+        return indexWidget;
+    }
+
+    public static void setIndexWidget(int indexWidget) {
+        ActiveRegionPanel.indexWidget = indexWidget;
+    }
+
+    public static int getIndexTransform() {
+        return indexTransform;
+    }
+
+    public static void setIndexTransform(int indexTransform) {
+        ActiveRegionPanel.indexTransform = indexTransform;
+    }
+
+    public static int getIndexEvents() {
+        return indexEvents;
+    }
+
+    public static void setIndexEvents(int indexEvents) {
+        ActiveRegionPanel.indexEvents = indexEvents;
+    }
+
+    public static int getIndexMouseEvents() {
+        return indexMouseEvents;
+    }
+
+    public static void setIndexMouseEvents(int indexMouseEvents) {
+        ActiveRegionPanel.indexMouseEvents = indexMouseEvents;
+    }
+
+    public static int getIndexKeyboardEvents() {
+        return indexKeyboardEvents;
+    }
+
+    public static void setIndexKeyboardEvents(int indexKeyboardEvents) {
+        ActiveRegionPanel.indexKeyboardEvents = indexKeyboardEvents;
+    }
+
+    public static int getIndexMotion() {
+        return indexMotion;
+    }
+
+    public static void setIndexMotion(int indexMotion) {
+        ActiveRegionPanel.indexMotion = indexMotion;
+    }
+
+    public static int getIndexOverlap() {
+        return indexOverlap;
+    }
+
+    public static void setIndexOverlap(int indexOverlap) {
+        ActiveRegionPanel.indexOverlap = indexOverlap;
+    }
+
+    public static int getIndexGeneral() {
+        return indexGeneral;
+    }
+
+    public static void setIndexGeneral(int indexGeneral) {
+        ActiveRegionPanel.indexGeneral = indexGeneral;
+    }
+
+    public static ActiveRegionPanel getCurrentActiveRegionPanel() {
+        return currentActiveRegionPanel;
+    }
+
+    public static void setCurrentActiveRegionPanel(ActiveRegionPanel currentActiveRegionPanel) {
+        ActiveRegionPanel.currentActiveRegionPanel = currentActiveRegionPanel;
+    }
+
     public void setDropHandlers() {
-        new FileDrop(System.out, this.tableUpdateTransformations, new FileDrop.Listener() {
+        new FileDrop(System.out, this.getTableUpdateTransformations(), new FileDrop.Listener() {
 
             public void filesDropped(Point p, java.io.File[] files) {
                 if (files.length > 0) {
@@ -1415,9 +1485,9 @@ public class ActiveRegionPanel extends JPanel {
                 DataRowFrame.emptyOnCancel = true;
                 if (strText.startsWith("=")) {
                     ActiveRegionsFrame.showRegionsAndActions();
-                    ActiveRegionPanel ap = ActiveRegionsFrame.refresh(region, ActiveRegionPanel.indexEvents, ActiveRegionPanel.indexMotion);
+                    ActiveRegionPanel ap = ActiveRegionsFrame.refresh(getRegion(), ActiveRegionPanel.getIndexEvents(), ActiveRegionPanel.getIndexMotion());
                     int row = ap.getFreeMappingRow();
-                    region.updateTransformations[row][1] = strText.substring(1);
+                    getRegion().updateTransformations[row][1] = strText.substring(1);
                     ap.editUpdateTransformationsEvent(row);
                 }
                 DataRowFrame.emptyOnCancel = false;
@@ -1437,7 +1507,7 @@ public class ActiveRegionPanel extends JPanel {
         comboBoxFormat.addItem("000");
         comboBoxFormat.addItem("0.00");
 
-        TableColumn formatColumn = this.tableUpdateTransformations.getColumnModel().getColumn(4);
+        TableColumn formatColumn = this.getTableUpdateTransformations().getColumnModel().getColumn(4);
         formatColumn.setCellEditor(new DefaultCellEditor(comboBoxFormat));
         formatColumn.setCellEditor(new DefaultCellEditor(comboBoxFormat));
     }
@@ -1453,7 +1523,7 @@ public class ActiveRegionPanel extends JPanel {
             comboBoxVariables.addItem(strVar);
         }
 
-        tableUpdateTransformations.getColumnModel().getColumn(1).setCellEditor(new DefaultCellEditor(comboBoxVariables));
+        getTableUpdateTransformations().getColumnModel().getColumn(1).setCellEditor(new DefaultCellEditor(comboBoxVariables));
     }
 
     JComboBox comboBox = new JComboBox();
@@ -1467,8 +1537,8 @@ public class ActiveRegionPanel extends JPanel {
             comboBox.addItem("=" + strVar);
         }
 
-        tableUpdateTransformations.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(comboBox));
-        tableUpdateTransformations.getColumnModel().getColumn(3).setCellEditor(new DefaultCellEditor(comboBox));
+        getTableUpdateTransformations().getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(comboBox));
+        getTableUpdateTransformations().getColumnModel().getColumn(3).setCellEditor(new DefaultCellEditor(comboBox));
     }
 
     public static int pasteInTable(JTable table, AbstractTableModel model, Object data[][]) {
@@ -1489,7 +1559,7 @@ public class ActiveRegionPanel extends JPanel {
     }
 
     public JPanel getDrawingPanel(ActiveRegion a) {
-        imageEditor = new ActiveRegionImageEditor(a, this);
+        setImageEditor(new ActiveRegionImageEditor(a, this));
 
         JPanel freeHandPanel = new JPanel();
         freeHandPanel.setLayout(new BorderLayout());
@@ -1501,67 +1571,67 @@ public class ActiveRegionPanel extends JPanel {
         JLabel label1 = new JLabel(Language.translate("  active frame: "));
         label1.setFont(label1.getFont().deriveFont(9.0f));
         frameGrid.add(label1);
-        frameGrid.add(this.imageIndex);
-        this.imageIndex.setPreferredSize(new Dimension(70, 25));
+        frameGrid.add(this.getImageIndex());
+        this.getImageIndex().setPreferredSize(new Dimension(70, 25));
         JLabel label2 = new JLabel(Language.translate("  animation (ms): "));
         label2.setFont(label2.getFont().deriveFont(9.0f));
         frameGrid.add(label2);
-        frameGrid.add(this.animationMs);
+        frameGrid.add(this.getAnimationMs());
 
         colorPanelWrapper.add(frameGrid, BorderLayout.NORTH);
-        colorPanelWrapper.add(imageEditor.getColorPanel(), BorderLayout.SOUTH);
+        colorPanelWrapper.add(getImageEditor().getColorPanel(), BorderLayout.SOUTH);
 
         freeHandPanel.add(colorPanelWrapper, BorderLayout.EAST);
 
         loadDrawingTabs();
 
-        freeHandPanel.add(imageEditor.getDrawingPanels(), BorderLayout.CENTER);
-        freeHandPanel.add(imageEditor.getControlPanel(), BorderLayout.WEST);
+        freeHandPanel.add(getImageEditor().getDrawingPanels(), BorderLayout.CENTER);
+        freeHandPanel.add(getImageEditor().getControlPanel(), BorderLayout.WEST);
 
-        imageEditor.enableControls();
+        getImageEditor().enableControls();
 
         return freeHandPanel;
     }
 
 
     public void loadDrawingTabs() {
-        imageEditor.setScrollPane(null);
-        imageEditor.getDrawingPanels().removeAll();
-        JScrollPane scrollPane = new JScrollPane(imageEditor);
+        getImageEditor().setScrollPane(null);
+        getImageEditor().getDrawingPanels().removeAll();
+        JScrollPane scrollPane = new JScrollPane(getImageEditor());
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-        imageEditor.getDrawingPanels().addTab("1", scrollPane);
+        getImageEditor().getDrawingPanels().addTab("1", scrollPane);
 
-        for (String strAdditionalFile : region.additionalImageFile) {
-            int index = imageEditor.getDrawingPanels().getTabCount();
-            imageEditor.getDrawingPanels().add("" + (index + 1), new JPanel());
+        for (String strAdditionalFile : getRegion().additionalImageFile) {
+            int index = getImageEditor().getDrawingPanels().getTabCount();
+            getImageEditor().getDrawingPanels().add("" + (index + 1), new JPanel());
         }
 
-        imageEditor.setScrollPane(scrollPane);
+        getImageEditor().setScrollPane(scrollPane);
     }
 
     public void enableControls() {
         this.deleteMapping.setEnabled(mappingRow >= 0);
         editMapping.setEnabled(mappingRow >= 0);
         this.moveUpMapping.setEnabled(mappingRow > 0);
-        this.moveDownMapping.setEnabled(mappingRow >= 0 && mappingRow < region.updateTransformations.length - 1);
-        this.duplicateMapping.setEnabled(mappingRow >= 0 && eventRow < region.updateTransformations.length - 1);
+        this.moveDownMapping.setEnabled(mappingRow >= 0 && mappingRow < getRegion().updateTransformations.length - 1);
+        this.duplicateMapping.setEnabled(mappingRow >= 0 && eventRow < getRegion().updateTransformations.length - 1);
 
-        if (mouseEventPanel != null) {
-            mouseEventPanel.enableControls();
+        if (getMouseEventPanel() != null) {
+            getMouseEventPanel().enableControls();
         }
 
-        if (regionOverlapEventsPanel != null) {
-            regionOverlapEventsPanel.enableControls();
+        if (getRegionOverlapEventsPanel() != null) {
+            getRegionOverlapEventsPanel().enableControls();
         }
     }
 
     public void refresh() {
-        int index = region.parent.getRegions().indexOf(region);
+        int index = getRegion().parent.getRegions().indexOf(getRegion());
         upwards.setEnabled(index > 0);
-        backwards.setEnabled(index < region.parent.getRegions().size() - 1);
+        backwards.setEnabled(index < getRegion().parent.getRegions().size() - 1);
 
-        statusBar.setText("position (left,up) : " + region.x1 + "," + region.y1 + "    size : " + (region.x2 - region.x1) + "," + (region.y2 - region.y1));
+        statusBar.setText("position (left,up) : " + getRegion().x1 + "," + getRegion().y1 + "    size : " + (getRegion().x2 - getRegion().x1) + "," + (getRegion().y2 - getRegion().y1));
 
         RefreshTime.update();
         SketchletEditor.getInstance().repaint();
@@ -1608,7 +1678,7 @@ public class ActiveRegionPanel extends JPanel {
                     row,
                     this.columnNamesUpdateTransformations,
                     editors, null, null,
-                    tableUpdateTransformations,
+                    getTableUpdateTransformations(),
                     modelUpdateTransformations);
         }
     }
@@ -1617,17 +1687,17 @@ public class ActiveRegionPanel extends JPanel {
 
 
     public void populateComboBoxes() {
-        UIUtils.populateVariablesCombo(this.imageUrlField, true);
-        UIUtils.populateVariablesCombo(this.imageIndex, true);
-        UIUtils.populateVariablesCombo(this.animationMs, true);
-        UIUtils.populateVariablesCombo(this.captureScreenX, true);
-        UIUtils.populateVariablesCombo(this.captureScreenY, true);
-        UIUtils.populateVariablesCombo(this.captureScreenWidth, true);
-        UIUtils.populateVariablesCombo(this.captureScreenHeight, true);
+        UIUtils.populateVariablesCombo(this.getImageUrlField(), true);
+        UIUtils.populateVariablesCombo(this.getImageIndex(), true);
+        UIUtils.populateVariablesCombo(this.getAnimationMs(), true);
+        UIUtils.populateVariablesCombo(this.getCaptureScreenX(), true);
+        UIUtils.populateVariablesCombo(this.getCaptureScreenY(), true);
+        UIUtils.populateVariablesCombo(this.getCaptureScreenWidth(), true);
+        UIUtils.populateVariablesCombo(this.getCaptureScreenHeight(), true);
 
-        this.imageUrlField.setPreferredSize(new Dimension(280, 30));
-        this.imageIndex.setPreferredSize(new Dimension(85, 18));
-        this.animationMs.setPreferredSize(new Dimension(85, 18));
+        this.getImageUrlField().setPreferredSize(new Dimension(280, 30));
+        this.getImageIndex().setPreferredSize(new Dimension(85, 18));
+        this.getAnimationMs().setPreferredSize(new Dimension(85, 18));
 
         if (generalSettingsPanel != null) {
             generalSettingsPanel.populateComboBoxes();
@@ -1635,55 +1705,55 @@ public class ActiveRegionPanel extends JPanel {
     }
 
     public void refreshComponents() {
-        UIUtils.refreshComboBox(this.imageUrlField, region.strImageUrlField);
-        UIUtils.refreshComboBox(this.imageIndex, region.strImageIndex);
-        UIUtils.refreshComboBox(this.animationMs, region.strAnimationMs);
-        UIUtils.refreshComboBox(this.captureScreenX, region.strCaptureScreenX);
-        UIUtils.refreshComboBox(this.captureScreenY, region.strCaptureScreenY);
-        UIUtils.refreshComboBox(this.captureScreenWidth, region.strCaptureScreenWidth);
-        UIUtils.refreshComboBox(this.captureScreenHeight, region.strCaptureScreenHeight);
-        UIUtils.refreshComboBox(this.shapePanel.fillColor, region.strFillColor);
-        UIUtils.refreshComboBox(this.shapePanel.lineColor, region.lineColor);
-        UIUtils.refreshComboBox(this.shapePanel.lineStyle, region.lineStyle);
-        UIUtils.refreshComboBox(this.shapePanel.lineThickness, region.lineThickness);
-        UIUtils.refreshComboBox(this.shapePanel.shapeList, region.shape);
-        this.shapePanel.shapeArguments.setText(region.strShapeArgs);
+        UIUtils.refreshComboBox(this.getImageUrlField(), getRegion().imageUrlField);
+        UIUtils.refreshComboBox(this.getImageIndex(), getRegion().strImageIndex);
+        UIUtils.refreshComboBox(this.getAnimationMs(), getRegion().strAnimationMs);
+        UIUtils.refreshComboBox(this.getCaptureScreenX(), getRegion().captureScreenX);
+        UIUtils.refreshComboBox(this.getCaptureScreenY(), getRegion().captureScreenY);
+        UIUtils.refreshComboBox(this.getCaptureScreenWidth(), getRegion().captureScreenWidth);
+        UIUtils.refreshComboBox(this.getCaptureScreenHeight(), getRegion().captureScreenHeight);
+        UIUtils.refreshComboBox(this.shapePanel.fillColor, getRegion().strFillColor);
+        UIUtils.refreshComboBox(this.shapePanel.lineColor, getRegion().lineColor);
+        UIUtils.refreshComboBox(this.shapePanel.lineStyle, getRegion().lineStyle);
+        UIUtils.refreshComboBox(this.shapePanel.lineThickness, getRegion().lineThickness);
+        UIUtils.refreshComboBox(this.shapePanel.shapeList, getRegion().shape);
+        this.shapePanel.shapeArguments.setText(getRegion().shapeArguments);
 
         if (this.widgetPanel != null) {
             this.widgetPanel.refreshComponents();
         }
-        if (this.mouseEventPanel != null) {
-            this.mouseEventPanel.refresh();
+        if (this.getMouseEventPanel() != null) {
+            this.getMouseEventPanel().refresh();
         }
-        if (this.regionOverlapEventsPanel != null) {
-            this.regionOverlapEventsPanel.refresh();
+        if (this.getRegionOverlapEventsPanel() != null) {
+            this.getRegionOverlapEventsPanel().refresh();
         }
         if (generalSettingsPanel != null) {
             generalSettingsPanel.refreshComponents();
         }
 
-        this.textArea.setText(region.text);
-        this.trajectory1.setText(region.trajectory1);
-        this.trajectory2.setText(region.trajectory1);
+        this.textArea.setText(getRegion().text);
+        this.trajectory1.setText(getRegion().trajectory1);
+        this.trajectory2.setText(getRegion().trajectory1);
 
-        this.charactersPerLine.setText(region.strCharactersPerLine);
-        this.maxNumLines.setText(region.maxNumLines);
+        this.charactersPerLine.setText(getRegion().charactersPerLine);
+        this.maxNumLines.setText(getRegion().maxNumLines);
 
-        UIUtils.refreshCheckBox(canMove, region.movable);
-        UIUtils.refreshCheckBox(canRotate, region.rotatable);
-        UIUtils.refreshCheckBox(canResize, region.resizable);
-        UIUtils.refreshCheckBox(wrapText, region.textWrapped);
-        UIUtils.refreshCheckBox(trimText, region.textTrimmed);
-        UIUtils.refreshCheckBox(walkThrough, region.walkThroughEnabled);
-        UIUtils.refreshCheckBox(stickToTrajectory, region.stickToTrajectoryEnabled);
-        UIUtils.refreshCheckBox(orientationTrajectory, region.changingOrientationOnTrajectoryEnabled);
-        UIUtils.refreshCheckBox(captureScreen, region.screenCapturingEnabled);
-        UIUtils.refreshCheckBox(captureScreenMouseMap, region.screenCapturingMouseMappingEnabled);
+        UIUtils.refreshCheckBox(canMove, getRegion().movable);
+        UIUtils.refreshCheckBox(canRotate, getRegion().rotatable);
+        UIUtils.refreshCheckBox(canResize, getRegion().resizable);
+        UIUtils.refreshCheckBox(wrapText, getRegion().textWrapped);
+        UIUtils.refreshCheckBox(trimText, getRegion().textTrimmed);
+        UIUtils.refreshCheckBox(walkThrough, getRegion().walkThroughEnabled);
+        UIUtils.refreshCheckBox(stickToTrajectory, getRegion().stickToTrajectoryEnabled);
+        UIUtils.refreshCheckBox(orientationTrajectory, getRegion().changingOrientationOnTrajectoryEnabled);
+        UIUtils.refreshCheckBox(captureScreen, getRegion().screenCapturingEnabled);
+        UIUtils.refreshCheckBox(captureScreenMouseMap, getRegion().screenCapturingMouseMappingEnabled);
 
         UIUtils.refreshTable(setPanel.table);
         UIUtils.refreshTable(tableAnimation);
-        UIUtils.refreshTable(tableUpdateTransformations);
-        UIUtils.refreshTable(tableLimits);
+        UIUtils.refreshTable(getTableUpdateTransformations());
+        UIUtils.refreshTable(getTableLimits());
     }
 
     public void installPluginAutoCompletion() {
@@ -1696,5 +1766,157 @@ public class ActiveRegionPanel extends JPanel {
         if (generalSettingsPanel != null) {
             generalSettingsPanel.updateUIControls();
         }
+    }
+
+    public JTabbedPane getTabs() {
+        return tabs;
+    }
+
+    public void setTabs(JTabbedPane tabs) {
+        this.tabs = tabs;
+    }
+
+    public JTabbedPane getTabsRegionEvents() {
+        return tabsRegionEvents;
+    }
+
+    public void setTabsRegionEvents(JTabbedPane tabsRegionEvents) {
+        this.tabsRegionEvents = tabsRegionEvents;
+    }
+
+    public JTabbedPane getTabsImage() {
+        return tabsImage;
+    }
+
+    public void setTabsImage(JTabbedPane tabsImage) {
+        this.tabsImage = tabsImage;
+    }
+
+    public JTabbedPane getTabsTransform() {
+        return tabsTransform;
+    }
+
+    public void setTabsTransform(JTabbedPane tabsTransform) {
+        this.tabsTransform = tabsTransform;
+    }
+
+    public JTabbedPane getTabsMove() {
+        return tabsMove;
+    }
+
+    public void setTabsMove(JTabbedPane tabsMove) {
+        this.tabsMove = tabsMove;
+    }
+
+    public JTable getTableLimits() {
+        return tableLimits;
+    }
+
+    public void setTableLimits(JTable tableLimits) {
+        this.tableLimits = tableLimits;
+    }
+
+    public JTable getTableUpdateTransformations() {
+        return tableUpdateTransformations;
+    }
+
+    public void setTableUpdateTransformations(JTable tableUpdateTransformations) {
+        this.tableUpdateTransformations = tableUpdateTransformations;
+    }
+
+    public ActiveRegion getRegion() {
+        return region;
+    }
+
+    public void setRegion(ActiveRegion region) {
+        this.region = region;
+    }
+
+    public JComboBox getImageUrlField() {
+        return imageUrlField;
+    }
+
+    public void setImageUrlField(JComboBox imageUrlField) {
+        this.imageUrlField = imageUrlField;
+    }
+
+    public JComboBox getImageIndex() {
+        return imageIndex;
+    }
+
+    public void setImageIndex(JComboBox imageIndex) {
+        this.imageIndex = imageIndex;
+    }
+
+    public JComboBox getAnimationMs() {
+        return animationMs;
+    }
+
+    public void setAnimationMs(JComboBox animationMs) {
+        this.animationMs = animationMs;
+    }
+
+    public JComboBox getCaptureScreenX() {
+        return captureScreenX;
+    }
+
+    public void setCaptureScreenX(JComboBox captureScreenX) {
+        this.captureScreenX = captureScreenX;
+    }
+
+    public JComboBox getCaptureScreenY() {
+        return captureScreenY;
+    }
+
+    public void setCaptureScreenY(JComboBox captureScreenY) {
+        this.captureScreenY = captureScreenY;
+    }
+
+    public JComboBox getCaptureScreenWidth() {
+        return captureScreenWidth;
+    }
+
+    public void setCaptureScreenWidth(JComboBox captureScreenWidth) {
+        this.captureScreenWidth = captureScreenWidth;
+    }
+
+    public JComboBox getCaptureScreenHeight() {
+        return captureScreenHeight;
+    }
+
+    public void setCaptureScreenHeight(JComboBox captureScreenHeight) {
+        this.captureScreenHeight = captureScreenHeight;
+    }
+
+    public ActiveRegionImageEditor getImageEditor() {
+        return imageEditor;
+    }
+
+    public void setImageEditor(ActiveRegionImageEditor imageEditor) {
+        this.imageEditor = imageEditor;
+    }
+
+    public KeyboardEventsPanel getKeyboardEventsPanel() {
+        return keyboardEventsPanel;
+    }
+
+    public void setKeyboardEventsPanel(KeyboardEventsPanel keyboardEventsPanel) {
+        this.keyboardEventsPanel = keyboardEventsPanel;
+    }
+
+    public MouseEventsPanel getMouseEventPanel() {
+        return mouseEventPanel;
+    }
+
+    public void setMouseEventPanel(MouseEventsPanel mouseEventPanel) {
+        this.mouseEventPanel = mouseEventPanel;
+    }
+
+    public RegionOverlapEventsPanel getRegionOverlapEventsPanel() {
+        return regionOverlapEventsPanel;
+    }
+
+    public void setRegionOverlapEventsPanel(RegionOverlapEventsPanel regionOverlapEventsPanel) {
+        this.regionOverlapEventsPanel = regionOverlapEventsPanel;
     }
 }

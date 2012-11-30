@@ -1,15 +1,11 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.tool;
 
 import net.sf.sketchlet.common.geom.DistancePointSegment;
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.model.ActiveRegion;
-import net.sf.sketchlet.model.TrajectoryPoint;
+import net.sf.sketchlet.framework.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.TrajectoryPoint;
 
 import javax.swing.*;
 import java.awt.*;
@@ -325,9 +321,9 @@ public class TrajectoryPointsTool extends Tool {
     }
 
     public ActiveRegion getRegion() {
-        if (editor.getCurrentPage().getRegions().getSelectedRegions() != null) {
-            if (editor.getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
-                return editor.getCurrentPage().getRegions().getSelectedRegions().lastElement();
+        if (editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null) {
+            if (editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().size() > 0) {
+                return editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
             }
         }
 

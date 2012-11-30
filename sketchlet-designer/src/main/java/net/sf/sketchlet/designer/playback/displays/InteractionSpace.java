@@ -1,11 +1,8 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.playback.displays;
 
 import net.sf.sketchlet.common.context.SketchletContextUtils;
 import net.sf.sketchlet.designer.playback.ui.InteractionSpaceFrame;
+import net.sf.sketchlet.loaders.InteractionSpaceSaxLoader;
 
 import java.awt.*;
 import java.io.File;

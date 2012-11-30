@@ -1,27 +1,8 @@
-/*
- * @(#)BrushStroke.java
- *
- * $Date: 2009-04-05 03:06:52 -0500 (Sun, 05 Apr 2009) $
- *
- * Copyright (c) 2009 by Jeremy Wood.
- * All rights reserved.
- *
- * The copyright of this software is owned by Jeremy Wood. 
- * You may not use, copy or modify this software, except in  
- * accordance with the license agreement you entered into with  
- * Jeremy Wood. For details see accompanying license terms.
- * 
- * This software is probably, but not necessarily, discussed here:
- * http://javagraphics.blogspot.com/
- * 
- * And the latest version should be available here:
- * https://javagraphics.dev.java.net/
- */
 package net.sf.sketchlet.designer.editor.tool.stroke;
 
-import net.sf.sketchlet.model.geom.GeneralPathWriter;
-import net.sf.sketchlet.model.geom.InsetPathWriter;
-import net.sf.sketchlet.model.geom.MeasuredShape;
+import net.sf.sketchlet.framework.model.geom.GeneralPathWriter;
+import net.sf.sketchlet.framework.model.geom.InsetPathWriter;
+import net.sf.sketchlet.framework.model.geom.MeasuredShape;
 
 import java.awt.*;
 import java.awt.geom.GeneralPath;

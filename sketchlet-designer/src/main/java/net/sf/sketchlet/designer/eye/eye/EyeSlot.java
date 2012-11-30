@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.eye.eye;
 
 import java.awt.*;
@@ -87,7 +83,6 @@ public class EyeSlot {
         for (int i = 0; i < data.length; i++) {
             String strAction = (String) data[i][index1];
             String strParam1 = (String) data[i][index2];
-            String strParam2 = (String) data[i][index2 + 1];
             if (!strAction.isEmpty() && !strParam1.isEmpty()) {
                 if (strAction.equalsIgnoreCase(strName1) && strParam1.equalsIgnoreCase(strName2)) {
                     addRelationToSlot(relatedSlot, desc1, desc2);

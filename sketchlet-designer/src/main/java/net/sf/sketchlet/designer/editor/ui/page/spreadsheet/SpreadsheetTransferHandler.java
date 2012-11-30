@@ -1,11 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.editor.ui.page.spreadsheet;
 
 import net.sf.sketchlet.common.dnd.StringTransferHandler;
-
 import javax.swing.*;
 
 public class SpreadsheetTransferHandler extends StringTransferHandler {

@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.toolbars;
 
 import net.sf.sketchlet.common.translation.Language;
@@ -17,7 +13,7 @@ import net.sf.sketchlet.designer.editor.tool.stroke.BrushStroke;
 import net.sf.sketchlet.designer.editor.tool.stroke.CompositeStroke;
 import net.sf.sketchlet.designer.editor.tool.stroke.StrokeCombo;
 import net.sf.sketchlet.designer.editor.tool.stroke.WobbleStroke;
-import net.sf.sketchlet.designer.tools.log.ActivityLog;
+import net.sf.sketchlet.framework.model.log.ActivityLog;
 import net.sf.sketchlet.designer.editor.ui.OutlineFillCombo;
 
 import javax.swing.*;
@@ -257,7 +253,7 @@ public class ColorToolbar extends JToolBar {
         } else if (strStroke.equals("brush")) {
             return new BrushStroke(value, (float) Math.min(value / 20.f, 1.0f));
         } else if (strStroke.equals("wobble")) {
-            float v = 1.0f;
+            float v;
             if (value < 5) {
                 v = 1.0f;
             } else if (value < 10) {

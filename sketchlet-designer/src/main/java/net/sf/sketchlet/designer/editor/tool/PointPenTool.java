@@ -1,12 +1,8 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.tool;
 
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.designer.tools.log.ActivityLog;
+import net.sf.sketchlet.framework.model.log.ActivityLog;
 import net.sf.sketchlet.designer.playback.ui.PlaybackFrame;
 
 import java.awt.*;
@@ -90,7 +86,7 @@ public class PointPenTool extends Tool {
 
         if (SketchletEditor.getInstance() != null && PlaybackFrame.playbackFrame != null) {
             for (int i = 0; i < PlaybackFrame.playbackFrame.length; i++) {
-                Graphics2D g2 = PlaybackFrame.playbackFrame[i].playbackPanel.currentPage.getImages()[SketchletEditor.getInstance().getLayer()].createGraphics();
+                Graphics2D g2 = PlaybackFrame.playbackFrame[i].playbackPanel.getCurrentPage().getImages()[SketchletEditor.getInstance().getLayer()].createGraphics();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setPaint(toolInterface.getColor());
                 g2.setStroke(toolInterface.getStroke());

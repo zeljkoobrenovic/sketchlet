@@ -1,12 +1,3 @@
-/*
- * TextTransfer.java
- *
- * Created on October 5, 2007, 4:31 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package net.sf.sketchlet.designer.editor.ui;
 
 import org.apache.log4j.Logger;

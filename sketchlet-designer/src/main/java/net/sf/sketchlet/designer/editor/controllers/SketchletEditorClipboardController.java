@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.editor.controllers;
 
 import net.sf.sketchlet.context.SketchletGraphicsContext;
@@ -13,7 +9,7 @@ import net.sf.sketchlet.designer.editor.tool.SelectTool;
 import net.sf.sketchlet.designer.editor.ui.BufferedImageClipboardObject;
 import net.sf.sketchlet.designer.editor.ui.PasteSpecialDialog;
 import net.sf.sketchlet.designer.editor.ui.region.ActiveRegionsFrame;
-import net.sf.sketchlet.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.ActiveRegion;
 import net.sf.sketchlet.util.RefreshTime;
 import org.apache.log4j.Logger;
 
@@ -79,8 +75,8 @@ public class SketchletEditorClipboardController {
                     a2.y2 += (i + 1) * oy;
 
                     editor.getCurrentPage().getRegions().getRegions().insertElementAt(a2, 0);
-                    editor.getCurrentPage().getRegions().setSelectedRegions(new Vector<ActiveRegion>());
-                    editor.getCurrentPage().getRegions().addToSelection(a2);
+                    editor.getCurrentPage().getRegions().getMouseHelper().setSelectedRegions(new Vector<ActiveRegion>());
+                    editor.getCurrentPage().getRegions().getMouseHelper().addToSelection(a2);
                 }
 
                 SketchletEditor.getInstance().setInCtrlMode(false);
@@ -157,35 +153,35 @@ public class SketchletEditorClipboardController {
     }
 
     public void pasteImageAsRegion(int x, int y) {
-        ActiveRegion a = new ActiveRegion(editor.getCurrentPage().getRegions());
+        ActiveRegion region = new ActiveRegion(editor.getCurrentPage().getRegions());
 
-        a.setDrawImageChanged(0, true);
+        region.setDrawImageChanged(0, true);
 
         Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
         Transferable transferable = clip.getContents(null);
-        RenderedImage img = null;
+        RenderedImage img;
 
         if (transferable.isDataFlavorSupported(new DataFlavor("image/x-java-image; class=java.awt.Image", "Image"))) {
             try {
                 img = (RenderedImage) transferable.getTransferData(new DataFlavor("image/x-java-image; class=java.awt.Image", "Image"));
 
-                a.setDrawImage(0, Workspace.createCompatibleImage(img.getWidth(), img.getHeight(), a.getDrawImage(0)));
-                a.x1 = x;
-                a.y1 = y;
-                a.x2 = x + img.getWidth();
-                a.y2 = y + img.getHeight();
+                region.setDrawImage(0, Workspace.createCompatibleImage(img.getWidth(), img.getHeight(), region.getDrawImage(0)));
+                region.x1 = x;
+                region.y1 = y;
+                region.x2 = x + img.getWidth();
+                region.y2 = y + img.getHeight();
 
-                Graphics2D g2a = a.getDrawImage(0).createGraphics();
+                Graphics2D g2a = region.getDrawImage(0).createGraphics();
                 g2a.drawRenderedImage(img, null);
                 g2a.dispose();
 
                 RefreshTime.update();
                 editor.repaint();
-                editor.getCurrentPage().getRegions().getRegions().insertElementAt(a, 0);
-                editor.getCurrentPage().getRegions().setSelectedRegions(new Vector<ActiveRegion>());
-                editor.getCurrentPage().getRegions().addToSelection(a);
+                editor.getCurrentPage().getRegions().getRegions().insertElementAt(region, 0);
+                editor.getCurrentPage().getRegions().getMouseHelper().setSelectedRegions(new Vector<ActiveRegion>());
+                editor.getCurrentPage().getRegions().getMouseHelper().addToSelection(region);
                 editor.setEditorMode(SketchletEditorMode.ACTIONS);
-                ActiveRegionsFrame.reload(a);
+                ActiveRegionsFrame.reload(region);
                 editor.editorFrame.requestFocus();
             } catch (Throwable ex) {
                 ex.printStackTrace();
@@ -236,8 +232,8 @@ public class SketchletEditorClipboardController {
 
     public void copySelectedAction() {
         editor.copiedActions = new Vector<ActiveRegion>();
-        if (editor.getCurrentPage().getRegions().getSelectedRegions() != null) {
-            for (ActiveRegion a : editor.getCurrentPage().getRegions().getSelectedRegions()) {
+        if (editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null) {
+            for (ActiveRegion a : editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions()) {
                 editor.copiedActions.add(new ActiveRegion(a, true));
             }
         }
@@ -246,8 +242,8 @@ public class SketchletEditorClipboardController {
     }
 
     public void printRegionImageToClipboard() {
-        if (editor.getMode() == SketchletEditorMode.ACTIONS && editor.getCurrentPage().getRegions().getSelectedRegions() != null) {
-            ActiveRegion region = editor.getCurrentPage().getRegions().getSelectedRegions().lastElement();
+        if (editor.getMode() == SketchletEditorMode.ACTIONS && editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null) {
+            ActiveRegion region = editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
             int w = region.getWidth();
             int h = region.getHeight();
             BufferedImage image = SketchletGraphicsContext.getInstance().createCompatibleImage(w, h);
@@ -268,8 +264,8 @@ public class SketchletEditorClipboardController {
     }
 
     public void copyRegionImageToClipboard() {
-        if (editor.getMode() == SketchletEditorMode.ACTIONS && editor.getCurrentPage().getRegions().getSelectedRegions() != null) {
-            ActiveRegion region = editor.getCurrentPage().getRegions().getSelectedRegions().lastElement();
+        if (editor.getMode() == SketchletEditorMode.ACTIONS && editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null) {
+            ActiveRegion region = editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
             int w = region.getWidth();
             int h = region.getHeight();
             BufferedImage image = SketchletGraphicsContext.getInstance().createCompatibleImage(w, h);
@@ -290,11 +286,11 @@ public class SketchletEditorClipboardController {
     }
 
     public void saveRegionImageToFile() {
-        if (editor.getMode() == SketchletEditorMode.ACTIONS && editor.getCurrentPage().getRegions().getSelectedRegions() != null) {
+        if (editor.getMode() == SketchletEditorMode.ACTIONS && editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null) {
             File file = SketchletEditor.selectImageFile("");
 
             if (file != null) {
-                ActiveRegion region = editor.getCurrentPage().getRegions().getSelectedRegions().lastElement();
+                ActiveRegion region = editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
                 int w = region.getWidth();
                 int h = region.getHeight();
                 // BufferedImage image = SketchletGraphicsContext.getInstance().createCompatibleImage(w, h);
@@ -326,8 +322,8 @@ public class SketchletEditorClipboardController {
     }
 
     public void fromClipboardCurrentAction(int index) {
-        if (editor.getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && editor.getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
-            ActiveRegion action = editor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
+        if (editor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null && editor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().size() > 0) {
+            ActiveRegion action = editor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
             editor.saveImageUndo();
 
             Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();

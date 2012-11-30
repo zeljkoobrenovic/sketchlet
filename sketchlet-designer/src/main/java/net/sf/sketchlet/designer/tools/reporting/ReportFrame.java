@@ -1,21 +1,17 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.tools.reporting;
 
 import net.sf.sketchlet.common.context.SketchletContextUtils;
 import net.sf.sketchlet.common.file.FileUtils;
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.ui.MessageFrame;
 import net.sf.sketchlet.designer.editor.ui.SketchletDesignerMainPanel;
 import net.sf.sketchlet.designer.editor.ui.toolbars.SketchToolbar;
-import net.sf.sketchlet.model.Page;
-import net.sf.sketchlet.model.Pages;
-import net.sf.sketchlet.model.programming.macros.Macro;
-import net.sf.sketchlet.model.programming.macros.Macros;
+import net.sf.sketchlet.framework.model.Page;
+import net.sf.sketchlet.framework.model.Pages;
+import net.sf.sketchlet.framework.model.programming.macros.Macro;
+import net.sf.sketchlet.framework.model.programming.macros.Macros;
 import net.sf.sketchlet.script.ScriptPluginProxy;
 import net.sf.sketchlet.util.XMLUtils;
 
@@ -121,7 +117,7 @@ public class ReportFrame extends JDialog {
 
         add(panelNorth, BorderLayout.NORTH);
 
-        title.setText(Workspace.getMainPanel().projectTitle);
+        title.setText(Workspace.getMainPanel().getProjectTitle());
         shortIntro.setText(FileUtils.getFileText(SketchletContextUtils.getCurrentProjectDir() + SketchletContextUtils.sketchletDataDir() + "/report_abstract.txt"));
 
         try {
@@ -424,7 +420,7 @@ public class ReportFrame extends JDialog {
             getImageXY();
             BufferedImage img = Workspace.createCompatibleImage(width, height);
             Graphics2D g2 = img.createGraphics();
-            SketchletDesignerMainPanel.desktopPanel.paintComponent(g2);
+            SketchletDesignerMainPanel.getDesktopPanel().paintComponent(g2);
 
             g2.dispose();
             ImageIO.write(img, "png", file);
@@ -444,7 +440,7 @@ public class ReportFrame extends JDialog {
                 SketchletEditor.getInstance().setSelectedModesTabIndex(0);
             }
             SketchletEditor.getInstance().openSketchByIndex(index);
-            while (SketchletEditor.getInstance().isbLoading()) {
+            while (SketchletEditor.getInstance().isLoading()) {
                 Thread.sleep(10);
             }
 

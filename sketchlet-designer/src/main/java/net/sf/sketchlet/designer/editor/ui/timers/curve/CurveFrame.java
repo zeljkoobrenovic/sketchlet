@@ -1,13 +1,9 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.editor.ui.timers.curve;
 
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.model.programming.timers.curves.Curve;
-import net.sf.sketchlet.model.programming.timers.curves.CurveSegment;
-import net.sf.sketchlet.model.programming.timers.curves.StiffnessSegment;
+import net.sf.sketchlet.framework.model.programming.timers.curves.Curve;
+import net.sf.sketchlet.framework.model.programming.timers.curves.CurveSegment;
+import net.sf.sketchlet.framework.model.programming.timers.curves.StiffnessSegment;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;

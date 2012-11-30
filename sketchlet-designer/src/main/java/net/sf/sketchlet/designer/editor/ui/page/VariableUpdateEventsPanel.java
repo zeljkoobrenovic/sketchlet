@@ -6,20 +6,16 @@ import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.ui.ActionDialogUtils;
 import net.sf.sketchlet.designer.editor.ui.region.AbstractEventsPanel;
 import net.sf.sketchlet.designer.editor.ui.region.AddActionRunnable;
-import net.sf.sketchlet.model.EventMacroFactory;
-import net.sf.sketchlet.model.Page;
-import net.sf.sketchlet.model.VariableUpdateEventMacro;
+import net.sf.sketchlet.framework.model.events.EventMacroFactory;
+import net.sf.sketchlet.framework.model.Page;
+import net.sf.sketchlet.framework.model.events.variable.VariableUpdateEventMacro;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
 /**
- * Created with IntelliJ IDEA.
- * User: zeljko
- * Date: 11-10-12
- * Time: 9:13
- * To change this template use File | Settings | File Templates.
+ * @author zeljko
  */
 public class VariableUpdateEventsPanel extends AbstractEventsPanel {
     private Page page;
@@ -40,7 +36,7 @@ public class VariableUpdateEventsPanel extends AbstractEventsPanel {
 
             @Override
             public List<VariableUpdateEventMacro> getEventMacroList() {
-                return SketchletEditor.getInstance().getSketch().getVariableUpdateEventMacros();
+                return SketchletEditor.getInstance().getPage().getVariableUpdateEventMacros();
             }
 
             @Override

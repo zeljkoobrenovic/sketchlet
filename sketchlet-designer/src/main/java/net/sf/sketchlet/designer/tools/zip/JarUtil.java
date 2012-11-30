@@ -1,11 +1,3 @@
-/*
- * JarUtil.java
- *
- * Created on April 22, 2008, 3:02 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.tools.zip;
 
 import net.sf.sketchlet.common.context.SketchletContextUtils;
@@ -77,7 +69,7 @@ public class JarUtil {
         try {
             File f = new File(strFile);
             byte[] readBuffer = new byte[2156];
-            int bytesIn = 0;
+            int bytesIn;
 
             FileInputStream fis = new FileInputStream(f);
 
@@ -127,7 +119,7 @@ public class JarUtil {
 
             String[] dirList = zipDir.list();
             byte[] readBuffer = new byte[2156];
-            int bytesIn = 0;
+            int bytesIn;
 
             for (int i = 0; i < dirList.length; i++) {
                 File f = new File(zipDir, dirList[i]);

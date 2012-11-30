@@ -1,13 +1,9 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.playback.ui;
 
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.playback.displays.ScreenMapping;
-import net.sf.sketchlet.blackboard.evaluator.Evaluator;
+import net.sf.sketchlet.framework.blackboard.evaluator.Evaluator;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,12 +13,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 
-/**
- * Grabs a frame from a Webcam, overlays the current date and time, and saves the frame as a PNG to c:\webcam.png
- *
- * @author David
- * @version 1.0, 16/01/2004
- */
 public class CalibrationFrame extends JPanel {
 
     private static boolean saved = false;
@@ -342,8 +332,6 @@ public class CalibrationFrame extends JPanel {
             this.frame = frame;
 
             setLayout(new BorderLayout());
-
-            final CommandPanel parent = this;
 
             saveButton = new JButton(Language.translate("Save"), Workspace.createImageIcon("resources/ok.png"));
             saveButton.addActionListener(new ActionListener() {

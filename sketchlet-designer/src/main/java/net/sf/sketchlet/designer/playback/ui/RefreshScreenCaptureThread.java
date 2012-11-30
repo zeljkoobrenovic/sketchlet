@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.playback.ui;
 
 import net.sf.sketchlet.designer.editor.SketchletEditor;
@@ -20,15 +16,15 @@ public class RefreshScreenCaptureThread implements Runnable {
     }
 
     public static void start() {
-        if (PlaybackPanel.refreshCaptureThread == null) {
-            PlaybackPanel.refreshCaptureThread = new RefreshScreenCaptureThread();
+        if (PlaybackPanel.getRefreshCaptureThread() == null) {
+            PlaybackPanel.setRefreshCaptureThread(new RefreshScreenCaptureThread());
         }
     }
 
     public static void stop() {
-        if (PlaybackPanel.refreshCaptureThread != null) {
-            PlaybackPanel.refreshCaptureThread.stopped = true;
-            PlaybackPanel.refreshCaptureThread = null;
+        if (PlaybackPanel.getRefreshCaptureThread() != null) {
+            PlaybackPanel.getRefreshCaptureThread().stopped = true;
+            PlaybackPanel.setRefreshCaptureThread(null);
         }
     }
 

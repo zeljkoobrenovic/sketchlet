@@ -1,11 +1,3 @@
-/*
- * ZipVersion.java
- *
- * Created on April 10, 2008, 12:41 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.tools.zip;
 
 import net.sf.sketchlet.common.context.SketchletContextUtils;
@@ -15,7 +7,7 @@ import net.sf.sketchlet.designer.GlobalProperties;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.ui.CheckboxList;
-import net.sf.sketchlet.model.Page;
+import net.sf.sketchlet.framework.model.Page;
 
 import javax.swing.*;
 import java.awt.*;
@@ -32,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-/* ZipVersion.java requires no other files. */
 public class ZipVersion extends JFrame implements KeyListener, ZipProgressFeedback {
 
     private JRadioButton zipBtn = new JRadioButton(Language.translate("Create simple ZIP archive"));
@@ -395,53 +386,6 @@ public class ZipVersion extends JFrame implements KeyListener, ZipProgressFeedba
             }
             this.setVisible(false);
         }
-    }
-}
-
-class RemoteLocationInfo {
-
-    public RemoteLocationInfo(String name, String uri, String username, String password) {
-        this.setName(name);
-        this.setUri(uri);
-        this.setUsername(username);
-        this.setPassword(password);
-    }
-
-    private String name = "";
-    private String uri = "";
-    private String username = "";
-    private String password = "";
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getUri() {
-        return uri;
-    }
-
-    public void setUri(String uri) {
-        this.uri = uri;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 }
 

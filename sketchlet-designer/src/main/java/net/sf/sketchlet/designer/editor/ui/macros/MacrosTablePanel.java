@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.macros;
 
 import net.sf.sketchlet.common.dnd.GenericTableTransferHandler;
@@ -9,8 +5,8 @@ import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.help.HelpUtils;
-import net.sf.sketchlet.model.programming.macros.Macro;
-import net.sf.sketchlet.model.programming.macros.Macros;
+import net.sf.sketchlet.framework.model.programming.macros.Macro;
+import net.sf.sketchlet.framework.model.programming.macros.Macros;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -80,7 +76,7 @@ public class MacrosTablePanel extends JPanel {
             }
         });
         toolbarHelp.add(help);
-        help.setToolTipText("What are Macros?");
+        help.setToolTipText("What are Actions?");
         help.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {

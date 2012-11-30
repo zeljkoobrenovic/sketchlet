@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.timers;
 
 import net.sf.sketchlet.common.dnd.GenericTableTransferHandler;
@@ -9,8 +5,9 @@ import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.ui.timers.curve.CurvesFrame;
-import net.sf.sketchlet.model.programming.timers.Timer;
-import net.sf.sketchlet.model.programming.timers.Timers;
+import net.sf.sketchlet.help.HelpUtils;
+import net.sf.sketchlet.framework.model.programming.timers.Timer;
+import net.sf.sketchlet.framework.model.programming.timers.Timers;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -97,8 +94,7 @@ public class TimersTablePanel extends JPanel {
         help.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                // HelpUtils.openHelpFile("Timers", "timers");
-                SketchletEditor.getInstance().getHelpViewer().showAutoHelpByID("timers");
+                HelpUtils.openHelpFile("Timers", "timers");
             }
         });
 

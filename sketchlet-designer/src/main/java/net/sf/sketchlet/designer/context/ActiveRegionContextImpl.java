@@ -1,21 +1,16 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.context;
 
 import net.sf.sketchlet.context.ActiveRegionContext;
 import net.sf.sketchlet.context.PageContext;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.designer.tools.imagecache.ImageCache;
 import net.sf.sketchlet.designer.playback.ui.PlaybackFrame;
 import net.sf.sketchlet.designer.playback.ui.PlaybackPanel;
-import net.sf.sketchlet.model.ActiveRegion;
-import net.sf.sketchlet.model.events.MouseEventMacro;
-import net.sf.sketchlet.model.Page;
-import net.sf.sketchlet.model.events.WidgetEventMacro;
-import net.sf.sketchlet.model.programming.macros.Macro;
-import net.sf.sketchlet.model.programming.macros.MacroThread;
+import net.sf.sketchlet.framework.model.imagecache.ImageCache;
+import net.sf.sketchlet.framework.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.Page;
+import net.sf.sketchlet.framework.model.events.mouse.MouseEventMacro;
+import net.sf.sketchlet.framework.model.events.widget.WidgetEventMacro;
+import net.sf.sketchlet.framework.model.programming.macros.MacroThread;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -51,7 +46,7 @@ public class ActiveRegionContextImpl extends ActiveRegionContext {
 
     @Override
     public String getWidgetType() {
-        return region.strWidget;
+        return region.widget;
     }
 
     @Override
@@ -179,10 +174,8 @@ public class ActiveRegionContextImpl extends ActiveRegionContext {
     public String getFirstMousePageLink() {
         for (MouseEventMacro mouseEventMacro : region.mouseProcessor.getMouseEventMacros()) {
             for (int i = 0; i < mouseEventMacro.getMacro().getActions().length; i++) {
-                String event = mouseEventMacro.getMacro().getActions()[i][0].toString();
                 String action = mouseEventMacro.getMacro().getActions()[i][1].toString();
                 String param1 = mouseEventMacro.getMacro().getActions()[i][2].toString();
-                String param2 = mouseEventMacro.getMacro().getActions()[i][3].toString();
 
                 if (action.equalsIgnoreCase("go to page") && !param1.isEmpty()) {
                     return param1;
@@ -206,9 +199,9 @@ public class ActiveRegionContextImpl extends ActiveRegionContext {
     public void processEvent(String actionId, String... params) {
         for (WidgetEventMacro widgetEventMacro : region.widgetEventMacros) {
             if (widgetEventMacro.getEventName().equalsIgnoreCase(actionId)) {
-                Page page = null;
+                Page page;
                 if (PlaybackFrame.playbackFrame != null || (SketchletEditor.getInstance() != null && SketchletEditor.getInstance().getInternalPlaybackPanel() != null)) {
-                    page = PlaybackPanel.currentPage;
+                    page = PlaybackPanel.getCurrentPage();
                 } else {
                     page = SketchletEditor.getInstance().getCurrentPage();
                 }
@@ -219,7 +212,6 @@ public class ActiveRegionContextImpl extends ActiveRegionContext {
                     for (String param : params) {
                         strParams += "\"" + param + "\"";
                     }
-                    Macro macro = widgetEventMacro.getMacro();
                     MacroThread mt = new MacroThread(widgetEventMacro.getMacro(), strParams, "", "");
                     page.getActiveMacros().add(mt);
                 } catch (Throwable e) {

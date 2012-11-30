@@ -1,12 +1,8 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.playback.ui;
 
 import net.sf.sketchlet.common.filter.Filters;
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.playback.displays.InteractionSpace;
@@ -15,7 +11,7 @@ import net.sf.sketchlet.designer.editor.ui.UIUtils;
 import net.sf.sketchlet.designer.editor.ui.macros.ImageAreaSelect;
 import net.sf.sketchlet.designer.editor.ui.region.ActiveRegionPanel;
 import net.sf.sketchlet.help.HelpUtils;
-import net.sf.sketchlet.model.programming.screenscripts.AWTRobotUtil;
+import net.sf.sketchlet.framework.model.programming.screenscripts.AWTRobotUtil;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -54,15 +50,10 @@ public class InteractionSpaceFrame extends JFrame {
             }
         });
 
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-
-        // logicalSpace.add(new JLabel("Unit:"));
         String[] unitsStrings = {"", "pixel", "mm", "cm", "m", "inch", "foot"};
 
         JComboBox unitsList = new JComboBox(unitsStrings);
         unitsList.setSelectedIndex(0);
-        // logicalSpace.add(unitsList);
-        // logicalSpace.add( new JLabel(" ") );
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice[] gs = ge.getScreenDevices();
         String[] screens = new String[gs.length];

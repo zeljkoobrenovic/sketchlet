@@ -1,12 +1,8 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.eye.eye;
 
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.model.Page;
-import net.sf.sketchlet.model.Pages;
+import net.sf.sketchlet.framework.model.Page;
+import net.sf.sketchlet.framework.model.Pages;
 import org.apache.log4j.Logger;
 
 import java.awt.*;

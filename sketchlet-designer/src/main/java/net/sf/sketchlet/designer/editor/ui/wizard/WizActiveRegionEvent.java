@@ -1,17 +1,12 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.wizard;
-// WizActiveRegionEvent.java
 
-import net.sf.sketchlet.designer.animation.AnimationTimer;
+import net.sf.sketchlet.designer.animation.AnimationTimerDialog;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.designer.tools.log.ActivityLog;
+import net.sf.sketchlet.framework.model.log.ActivityLog;
 import net.sf.sketchlet.designer.editor.ui.extraeditor.ActiveRegionsExtraPanel;
 import net.sf.sketchlet.designer.editor.ui.page.PageDetailsPanel;
-import net.sf.sketchlet.model.ActiveRegion;
-import net.sf.sketchlet.model.programming.timers.Timer;
+import net.sf.sketchlet.framework.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.programming.timers.Timer;
 import org.netbeans.spi.wizard.DeferredWizardResult;
 import org.netbeans.spi.wizard.ResultProgressHandle;
 import org.netbeans.spi.wizard.Summary;
@@ -34,7 +29,7 @@ public class WizActiveRegionEvent {
 
     public static void showWizard(int type, final String strTitle) {
         ActivityLog.log("showWizard", type + " " + strTitle);
-        final MyProducer mp = new MyProducer(SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions() == null ? null : SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement());
+        final MyProducer mp = new MyProducer(SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() == null ? null : SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement());
 
         final WizardPage[] pages;
 
@@ -109,15 +104,9 @@ class Result extends DeferredWizardResult {
 
     public Result(MyProducer mp) {
         this.mp = mp;
-        // Uncomment the following line to make it possible to close the dialog
-        // while the operation is running (abort the operation, in other words).
-
-        // super (true);
     }
 
     public void start(Map settings, ResultProgressHandle progress) {
-        // progress.setProgress("Setting event trigger", 0, 3);
-
         Vector<String> comments = new Vector<String>();
 
         if (mp.actionPage.actionParamPage.action.equalsIgnoreCase("Region Animate")) {
@@ -220,7 +209,7 @@ class Result extends DeferredWizardResult {
         Object[][] transformations = mp.actionParamPage.activeRegionAnimatePanel.transformations;
         int regionIndex = Integer.parseInt((String) mp.actionParamPage.activeRegionAnimatePanel.regionCombo.getSelectedItem());
 
-        int nextIndex = AnimationTimer.addToTimer(timer, transformations, mp.actionParamPage.activeRegionAnimatePanel.region, mp.actionParamPage.activeRegionAnimatePanel.restartCheck.isSelected());
+        int nextIndex = AnimationTimerDialog.addToTimer(timer, transformations, mp.actionParamPage.activeRegionAnimatePanel.region, mp.actionParamPage.activeRegionAnimatePanel.restartCheck.isSelected());
 
         comments.add("Timer '" + timer.getName() + "' is configured to:");
         for (int p = 0; p < transformations.length; p++) {
@@ -300,13 +289,13 @@ class Result extends DeferredWizardResult {
                 setMouseEvent(mp.actionPage.actionParamPage.action, mp.actionPage.actionParamPage.param1, mp.actionPage.actionParamPage.param2, comments);
             }
             ActiveRegionsExtraPanel.showRegionsAndActions();
-            ActiveRegionsExtraPanel.reload(SketchletEditor.getInstance().getCurrentPage().getRegions().getLastSelectedRegion());
+            ActiveRegionsExtraPanel.reload(SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getLastSelectedRegion());
             if (ActiveRegionsExtraPanel.regionsAndActions != null) {
                 net.sf.sketchlet.designer.editor.ui.region.ActiveRegionPanel panel = (net.sf.sketchlet.designer.editor.ui.region.ActiveRegionPanel) ActiveRegionsExtraPanel.regionsAndActions.tabs.getSelectedComponent();
 
                 if (panel != null) {
-                    panel.tabs.setSelectedIndex(net.sf.sketchlet.designer.editor.ui.region.ActiveRegionPanel.indexEvents);
-                    panel.tabsRegionEvents.setSelectedIndex(net.sf.sketchlet.designer.editor.ui.region.ActiveRegionPanel.indexMouseEvents);
+                    panel.getTabs().setSelectedIndex(net.sf.sketchlet.designer.editor.ui.region.ActiveRegionPanel.getIndexEvents());
+                    panel.getTabsRegionEvents().setSelectedIndex(net.sf.sketchlet.designer.editor.ui.region.ActiveRegionPanel.getIndexMouseEvents());
                 }
             }
         } catch (Exception e) {
@@ -346,13 +335,13 @@ class Result extends DeferredWizardResult {
                 setInteractionEvent(mp.actionParamPage.action, mp.actionParamPage.param1, mp.actionParamPage.param2, comments);
             }
             ActiveRegionsExtraPanel.showRegionsAndActions();
-            ActiveRegionsExtraPanel.reload(SketchletEditor.getInstance().getCurrentPage().getRegions().getLastSelectedRegion());
+            ActiveRegionsExtraPanel.reload(SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getLastSelectedRegion());
             if (ActiveRegionsExtraPanel.regionsAndActions != null) {
                 net.sf.sketchlet.designer.editor.ui.region.ActiveRegionPanel panel = (net.sf.sketchlet.designer.editor.ui.region.ActiveRegionPanel) ActiveRegionsExtraPanel.regionsAndActions.tabs.getSelectedComponent();
 
                 if (panel != null) {
-                    panel.tabs.setSelectedIndex(net.sf.sketchlet.designer.editor.ui.region.ActiveRegionPanel.indexEvents);
-                    panel.tabsRegionEvents.setSelectedIndex(net.sf.sketchlet.designer.editor.ui.region.ActiveRegionPanel.indexOverlap);
+                    panel.getTabs().setSelectedIndex(net.sf.sketchlet.designer.editor.ui.region.ActiveRegionPanel.getIndexEvents());
+                    panel.getTabsRegionEvents().setSelectedIndex(net.sf.sketchlet.designer.editor.ui.region.ActiveRegionPanel.getIndexOverlap());
                 }
             }
         } catch (Exception e) {
@@ -370,7 +359,7 @@ class Result extends DeferredWizardResult {
                 comments.add("");
             } else if (p == 1) {
                 //region.imageUrlField.setSelectedItem(value);
-                region.strImageUrlField = value;
+                region.imageUrlField = value;
                 comments.add("    Image URL is set to '" + value + "'");
                 comments.add("");
             } else {

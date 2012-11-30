@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.toolbars;
 
 import net.sf.sketchlet.codegen.CodeGenUtils;
@@ -15,7 +11,7 @@ import net.sf.sketchlet.designer.editor.ui.region.ActiveRegionPanel;
 import net.sf.sketchlet.designer.editor.ui.region.ActiveRegionsFrame;
 import net.sf.sketchlet.designer.editor.ui.region.ShapePanel;
 import net.sf.sketchlet.help.HelpUtils;
-import net.sf.sketchlet.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.ActiveRegion;
 import net.sf.sketchlet.util.Colors;
 
 import javax.swing.*;
@@ -114,7 +110,7 @@ public class FormulaToolbar extends JPanel {
         colorFill.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getLastSelectedRegion();
+                ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getLastSelectedRegion();
                 if (region != null || SketchletEditor.getInstance().getCurrentPage().getSelectedConnector() != null) {
                     JPopupMenu menu = PopupMenus.loadFillColorMenu();
                     menu.show(null, 0, 0);
@@ -127,7 +123,7 @@ public class FormulaToolbar extends JPanel {
         colorLine.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getLastSelectedRegion();
+                ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getLastSelectedRegion();
                 if (region != null || SketchletEditor.getInstance().getCurrentPage().getSelectedConnector() != null) {
                     JPopupMenu menu = PopupMenus.loadLineColorMenu();
                     menu.show(null, 0, 0);
@@ -140,7 +136,7 @@ public class FormulaToolbar extends JPanel {
         colorText.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getLastSelectedRegion();
+                ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getLastSelectedRegion();
                 if (region != null || SketchletEditor.getInstance().getCurrentPage().getSelectedConnector() != null) {
                     JPopupMenu menu = PopupMenus.loadTextColorMenu();
                     menu.show(null, 0, 0);
@@ -154,7 +150,7 @@ public class FormulaToolbar extends JPanel {
         align.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getLastSelectedRegion();
+                ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getLastSelectedRegion();
                 if (region != null) {
                     JPopupMenu menu = PopupMenus.loadAlignmentMenu();
                     menu.show(null, 0, 0);
@@ -168,7 +164,7 @@ public class FormulaToolbar extends JPanel {
         shapes.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getLastSelectedRegion();
+                ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getLastSelectedRegion();
                 if (region != null) {
                     JPopupMenu menu = PopupMenus.loadShapeMenu();
                     menu.show(null, 0, 0);
@@ -203,7 +199,7 @@ public class FormulaToolbar extends JPanel {
 
             public void actionPerformed(ActionEvent ae) {
                 ActiveRegionsExtraPanel.showRegionsAndActions();
-                final ActiveRegionPanel ap = ActiveRegionsFrame.refresh(region, ActiveRegionPanel.indexWidget);
+                final ActiveRegionPanel ap = ActiveRegionsFrame.refresh(region, ActiveRegionPanel.getIndexWidget());
                 if (ap != null) {
                 }
             }
@@ -212,7 +208,7 @@ public class FormulaToolbar extends JPanel {
 
             public void actionPerformed(ActionEvent ae) {
                 ActiveRegionsExtraPanel.showRegionsAndActions();
-                final ActiveRegionPanel ap = ActiveRegionsFrame.refresh(region, ActiveRegionPanel.indexGraphics);
+                final ActiveRegionPanel ap = ActiveRegionsFrame.refresh(region, ActiveRegionPanel.getIndexGraphics());
                 if (ap != null) {
                 }
                 /*
@@ -429,28 +425,28 @@ public class FormulaToolbar extends JPanel {
 
             public void actionPerformed(ActionEvent ae) {
                 ActiveRegionsExtraPanel.showRegionsAndActions();
-                ActiveRegionPanel ap = ActiveRegionsFrame.refresh(region, ActiveRegionPanel.indexEvents, ActiveRegionPanel.indexMotion);
+                ActiveRegionPanel ap = ActiveRegionsFrame.refresh(region, ActiveRegionPanel.getIndexEvents(), ActiveRegionPanel.getIndexMotion());
             }
         });
         mouse.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
                 ActiveRegionsExtraPanel.showRegionsAndActions();
-                ActiveRegionPanel ap = ActiveRegionsFrame.refresh(region, ActiveRegionPanel.indexEvents, ActiveRegionPanel.indexMouseEvents);
+                ActiveRegionPanel ap = ActiveRegionsFrame.refresh(region, ActiveRegionPanel.getIndexEvents(), ActiveRegionPanel.getIndexMouseEvents());
             }
         });
         overlap.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
                 ActiveRegionsExtraPanel.showRegionsAndActions();
-                ActiveRegionPanel ap = ActiveRegionsFrame.refresh(region, ActiveRegionPanel.indexEvents, ActiveRegionPanel.indexOverlap);
+                ActiveRegionPanel ap = ActiveRegionsFrame.refresh(region, ActiveRegionPanel.getIndexEvents(), ActiveRegionPanel.getIndexOverlap());
             }
         });
         more.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
                 ActiveRegionsExtraPanel.showRegionsAndActions();
-                final ActiveRegionPanel ap = ActiveRegionsFrame.refresh(region, ActiveRegionPanel.indexGeneral);
+                final ActiveRegionPanel ap = ActiveRegionsFrame.refresh(region, ActiveRegionPanel.getIndexGeneral());
             }
         });
 
@@ -458,7 +454,7 @@ public class FormulaToolbar extends JPanel {
 
             public void actionPerformed(ActionEvent ae) {
                 ActiveRegionsExtraPanel.showRegionsAndActions();
-                final ActiveRegionPanel ap = ActiveRegionsFrame.refresh(region, ActiveRegionPanel.indexTransform);
+                final ActiveRegionPanel ap = ActiveRegionsFrame.refresh(region, ActiveRegionPanel.getIndexTransform());
             }
         });
         menu1.addActionListener(new ActionListener() {
@@ -602,7 +598,7 @@ public class FormulaToolbar extends JPanel {
     }
 
     public void refresh() {
-        ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getLastSelectedRegion();
+        ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getLastSelectedRegion();
         if (bLoading) {
             return;
         }
@@ -663,7 +659,7 @@ public class FormulaToolbar extends JPanel {
             try {
                 //int n = Integer.parseInt(strRegion);
                 //region = SketchletEditor.editorPanel.currentSketch.regions.getRegionByNumber(n);
-                region = SketchletEditor.getInstance().getCurrentPage().getRegions().getLastSelectedRegion();//SketchletEditor.editorPanel.currentSketch.regions.getRegionByNumber(n);
+                region = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getLastSelectedRegion();//SketchletEditor.editorPanel.currentSketch.regions.getRegionByNumber(n);
 
                 if (region != null) {
                     region.setProperty(strProperty, value.getText());
@@ -679,7 +675,7 @@ public class FormulaToolbar extends JPanel {
     boolean bLoading = false;
 
     public void enableControls() {
-        this.enableControls(SketchletEditor.getInstance().getCurrentPage().getRegions().getLastSelectedRegion() != null, SketchletEditor.getInstance().getCurrentPage().getSelectedConnector() != null);
+        this.enableControls(SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getLastSelectedRegion() != null, SketchletEditor.getInstance().getCurrentPage().getSelectedConnector() != null);
     }
 
     public void enableControls(boolean bEnableRegion, boolean bEnableConnector) {
@@ -938,9 +934,9 @@ public class FormulaToolbar extends JPanel {
     }
 
     public void setShape(final JTextField value, String shape) {
-        if (SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions() != null) {
+        if (SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null) {
             value.setText(shape);
-            for (ActiveRegion r : SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions()) {
+            for (ActiveRegion r : SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions()) {
                 r.setProperty("shape", shape);
 
                 String strArgs = "";
@@ -951,9 +947,9 @@ public class FormulaToolbar extends JPanel {
                         strArgs = arg;
                     }
                 }
-                r.strShapeArgs = strArgs;
+                r.shapeArguments = strArgs;
             }
-            ActiveRegionsExtraPanel.reload(SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement());
+            ActiveRegionsExtraPanel.reload(SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement());
             SketchletEditor.getInstance().forceRepaint();
         }
     }
@@ -1211,7 +1207,7 @@ public class FormulaToolbar extends JPanel {
         if (strProperty != null) {
             try {
                 //int n = Integer.parseInt(strRegion);
-                region = SketchletEditor.getInstance().getCurrentPage().getRegions().getLastSelectedRegion();//SketchletEditor.editorPanel.currentSketch.regions.getRegionByNumber(n);
+                region = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getLastSelectedRegion();//SketchletEditor.editorPanel.currentSketch.regions.getRegionByNumber(n);
                 if (region != null) {
                     strValue = region.getProperty(strProperty);
                     enableControls(true, false);

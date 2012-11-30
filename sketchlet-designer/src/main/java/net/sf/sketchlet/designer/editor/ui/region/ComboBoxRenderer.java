@@ -4,11 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * Created with IntelliJ IDEA.
- * User: zeljko
- * Date: 22-10-12
- * Time: 21:39
- * To change this template use File | Settings | File Templates.
+ * @author zeljko
  */
 public class ComboBoxRenderer extends JLabel implements ListCellRenderer {
     private ImageIcon images[];

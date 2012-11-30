@@ -1,15 +1,11 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.tool;
 
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.model.Connector;
-import net.sf.sketchlet.designer.tools.log.ActivityLog;
-import net.sf.sketchlet.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.Connector;
+import net.sf.sketchlet.framework.model.log.ActivityLog;
+import net.sf.sketchlet.framework.model.ActiveRegion;
 
 import javax.swing.*;
 import java.awt.*;
@@ -49,7 +45,6 @@ public class ActiveRegionConnectorTool extends Tool {
 
     @Override
     public void mouseMoved(MouseEvent e, int x, int y) {
-        ActiveRegion a = editor.getCurrentPage().getRegions().selectRegion(x, y, false);
         if (x < 0 || y < 0) {
             editor.setCursor(Cursor.getDefaultCursor());
         } else {
@@ -64,14 +59,14 @@ public class ActiveRegionConnectorTool extends Tool {
 
     @Override
     public void mousePressed(MouseEvent e, int x, int y) {
-        ActiveRegion region = editor.getCurrentPage().getRegions().selectRegion(x, y, false);
+        ActiveRegion region = editor.getCurrentPage().getRegions().getMouseHelper().selectRegion(x, y, false);
         if (region != null) {
             if (connector == null) {
                 connector = new Connector(region);
                 connector.getRenderer().setMouseX(x);
                 connector.getRenderer().setMouseY(y);
             } else {
-                if (region == null || region == connector.getRegion1()) {
+                if (region == connector.getRegion1()) {
                     JOptionPane.showMessageDialog(SketchletEditor.editorFrame, Language.translate("You have to select another region."), Language.translate("Connector"), JOptionPane.WARNING_MESSAGE);
                 } else {
                     connector.setRegion2(region);

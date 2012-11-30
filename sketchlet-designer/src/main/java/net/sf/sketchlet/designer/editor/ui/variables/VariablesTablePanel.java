@@ -1,19 +1,10 @@
-/*
- * VariablesTablePanel.java
- *
- * Created on 22 February 2006, 13:39
- *
- * To change this template, choose Tools | Options and locate the template under
- * the Source Creation and Management node. Right-click the template and choose
- * Open. You can then make changes to the template in the Source Editor.
- */
 package net.sf.sketchlet.designer.editor.ui.variables;
 
 import net.sf.sketchlet.common.file.FileDrop;
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.blackboard.VariableOperationsListener;
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
-import net.sf.sketchlet.blackboard.Variable;
+import net.sf.sketchlet.framework.blackboard.VariableOperationsListener;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.Variable;
 import net.sf.sketchlet.context.PageContext;
 import net.sf.sketchlet.context.SketchletContext;
 import net.sf.sketchlet.designer.Workspace;
@@ -695,9 +686,9 @@ public class VariablesTablePanel extends JPanel {
 
         private void showPopup(MouseEvent e) {
             if ((e.getModifiers() & InputEvent.BUTTON3_MASK) == InputEvent.BUTTON3_MASK) {
-                if (table.getSelectedRow() == -1) {
+                if (table.getSelectedRow() == -1 || table.getSelectedRow() >= VariablesTableModel.variableRows.size()) {
                     int row = table.rowAtPoint(e.getPoint());
-                    if (row == -1) {
+                    if (row == -1 || row >= VariablesTableModel.variableRows.size()) {
                         return;
                     }
                     table.getSelectionModel().setSelectionInterval(row, row);

@@ -1,30 +1,17 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.help;
 
 import net.sf.sketchlet.common.context.SketchletContextUtils;
-import net.sf.sketchlet.common.html.HTMLImageRenderer;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.designer.editor.SketchletEditorMode;
-import net.sf.sketchlet.designer.editor.ui.region.ActiveRegionPanel;
-import net.sf.sketchlet.designer.editor.ui.region.ActiveRegionsFrame;
-import net.sf.sketchlet.model.ActiveRegion;
+import net.sf.sketchlet.designer.editor.ui.desktop.Notepad;
 import org.apache.log4j.Logger;
 import org.xhtmlrenderer.simple.FSScrollPane;
 import org.xhtmlrenderer.swing.BasicPanel;
 import org.xhtmlrenderer.swing.FSMouseListener;
 import org.xhtmlrenderer.swing.LinkListener;
 import org.xhtmlrenderer.swing.ScalableXHTMLPanel;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 
 import javax.swing.*;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -50,10 +37,7 @@ public class HelpViewer extends JPanel {
     private JButton edit = new JButton(".");
 
     private String indexPage = "";
-    private String strHTML = "";
-    private String strPrevURL = null;
-    private static DocumentBuilderFactory factory;
-    private static DocumentBuilder builder;
+    private String prevURL = null;
 
     public HelpViewer() {
         this("index");
@@ -76,7 +60,7 @@ public class HelpViewer extends JPanel {
 
             public void actionPerformed(ActionEvent ae) {
                 if (history.size() > 0) {
-                    historyForward.add(strPrevURL);
+                    historyForward.add(prevURL);
                     String strPath = history.lastElement();
                     history.removeElement(strPath);
                     showHelp(strPath, false);
@@ -88,12 +72,7 @@ public class HelpViewer extends JPanel {
         edit.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                try {
-                    String strCmd = "\"C:\\Program Files\\Adobe\\Adobe Dreamweaver CS3\\Dreamweaver.exe\" \"" + strPrevURL + "\"";
-                    Runtime.getRuntime().exec(strCmd);
-                } catch (Exception e) {
-                    log.error(e);
-                }
+                Notepad.openNotepadFromFile(new File(prevURL), "Edit Help File", "text/html");
             }
         });
         forward.addActionListener(new ActionListener() {
@@ -152,11 +131,11 @@ public class HelpViewer extends JPanel {
                         SketchletContextUtils.openWebBrowser(uri);
                     } else {
                         super.linkClicked(panel, uri);
-                        if (strPrevURL != null) {
-                            history.add(strPrevURL);
+                        if (prevURL != null) {
+                            history.add(prevURL);
                             back.setEnabled(history.size() > 0);
                         }
-                        strPrevURL = SketchletContextUtils.getSketchletDesignerHelpDir() + uri;
+                        prevURL = SketchletContextUtils.getSketchletDesignerHelpDir() + uri;
                     }
                 }
             });
@@ -172,14 +151,14 @@ public class HelpViewer extends JPanel {
             scrollPane = new FSScrollPane(panel);
             add(scrollPane);
             revalidate();
-            if (bAddToHistory && strPrevURL != null) {
-                history.add(strPrevURL);
+            if (bAddToHistory && prevURL != null) {
+                history.add(prevURL);
                 back.setEnabled(history.size() > 0);
                 historyForward.removeAllElements();
                 historyForward.removeAllElements();
                 forward.setEnabled(historyForward.size() > 0);
             }
-            strPrevURL = strFile;
+            prevURL = strFile;
         } catch (Exception e) {
             System.err.println("Error in the Help File: " + strFile);
             System.err.println("    " + e.getMessage());
@@ -222,51 +201,6 @@ public class HelpViewer extends JPanel {
         }
     }
 
-    private ActiveRegion createActiveRegion(int x, int y, int width, int height) {
-        ActiveRegion reg = new ActiveRegion(SketchletEditor.getInstance().getCurrentPage().getRegions());
-        reg.x1 = x;
-        reg.y1 = y;
-        reg.x2 = x + width;
-        reg.y2 = y + height;
-        SketchletEditor.getInstance().setEditorMode(SketchletEditorMode.ACTIONS);
-        SketchletEditor.getInstance().getCurrentPage().getRegions().getRegions().insertElementAt(reg, 0);
-        SketchletEditor.getInstance().getCurrentPage().getRegions().setSelectedRegions(null);
-        SketchletEditor.getInstance().getCurrentPage().getRegions().addToSelection(reg);
-
-        return reg;
-    }
-
-    private void refreshRegion(ActiveRegion reg, int tab, int subtab) {
-        SketchletEditor.getInstance().repaint();
-        ActiveRegionsFrame.showRegionsAndActions();
-        ActiveRegionsFrame.reload(reg);
-
-        switch (tab) {
-            case 0:
-                tab = ActiveRegionPanel.indexGraphics;
-                break;
-            case 1:
-                tab = ActiveRegionPanel.indexWidget;
-                break;
-            case 2:
-                tab = ActiveRegionPanel.indexTransform;
-                break;
-            case 3:
-                tab = ActiveRegionPanel.indexEvents;
-                break;
-            case 6:
-                tab = ActiveRegionPanel.indexGeneral;
-                break;
-        }
-
-        final ActiveRegionPanel ap = ActiveRegionsFrame.refresh(reg, tab);
-        if (ap != null && subtab >= 0) {
-            if (tab == ActiveRegionPanel.indexGraphics) {
-                ap.tabsImage.setSelectedIndex(subtab);
-            }
-        }
-    }
-
     private void regionAction(String command) {
     }
 
@@ -293,33 +227,6 @@ public class HelpViewer extends JPanel {
         }
         String strPath = SketchletContextUtils.getSketchletDesignerHelpDir() + strID + ".html";
         showHelp(strPath);
-    }
-
-    private void fillHTMLPanel() {
-        try {
-            factory = DocumentBuilderFactory.newInstance();
-            factory.setNamespaceAware(true);
-            factory.setExpandEntityReferences(false);
-            factory.setIgnoringComments(true);
-            factory.setValidating(false);
-            builder = factory.newDocumentBuilder();
-            builder.setErrorHandler(new ErrorHandler() {
-
-                public void warning(SAXParseException exception) throws SAXException {
-                }
-
-                public void error(SAXParseException exception) throws SAXException {
-                }
-
-                public void fatalError(SAXParseException exception) throws SAXException {
-                }
-            });
-            panel = new ScalableXHTMLPanel();
-            panel.setDocument(builder.parse(HTMLImageRenderer.getInputStream(strHTML)));
-            panel.relayout();
-        } catch (Exception e) {
-            log.error(e);
-        }
     }
 
     public String getIndexPage() {

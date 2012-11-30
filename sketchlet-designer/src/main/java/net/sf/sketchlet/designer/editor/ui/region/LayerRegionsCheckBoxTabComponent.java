@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.region;
 
 import net.sf.sketchlet.designer.Workspace;
@@ -34,7 +30,7 @@ public class LayerRegionsCheckBoxTabComponent extends JPanel {
                 if (SketchletEditor.getInstance().getTool() != null) {
                     SketchletEditor.getInstance().getTool().deactivate();
                 }
-                SketchletEditor.getInstance().getCurrentPage().setbLayerRegions(button.isSelected());
+                SketchletEditor.getInstance().getCurrentPage().setRegionsLayer(button.isSelected());
                 setAppearance();
                 SketchletEditor.getInstance().repaintEverything();
             }

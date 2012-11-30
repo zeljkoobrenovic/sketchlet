@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.editor.tool.stroke;
 
 import java.awt.*;
@@ -13,8 +9,8 @@ public class WobbleStroke implements Stroke {
 
     private float detail = 2;
     private float amplitude = 2;
-    private static final float FLATNESS = 1;
-    int size = 10;
+    private float flatness = 1;
+    private int size = 10;
 
     public WobbleStroke(int size, float detail, float amplitude) {
         this.size = size;
@@ -25,13 +21,12 @@ public class WobbleStroke implements Stroke {
     public Shape createStrokedShape(Shape shape) {
         GeneralPath result = new GeneralPath();
         shape = new BasicStroke(size).createStrokedShape(shape);
-        PathIterator it = new FlatteningPathIterator(shape.getPathIterator(null), FLATNESS);
+        PathIterator it = new FlatteningPathIterator(shape.getPathIterator(null), flatness);
         float points[] = new float[6];
         float moveX = 0, moveY = 0;
         float lastX = 0, lastY = 0;
         float thisX = 0, thisY = 0;
         int type = 0;
-        boolean first = false;
         float next = 0;
 
         int index = 0;
@@ -43,14 +38,12 @@ public class WobbleStroke implements Stroke {
                     moveX = lastX = randomize(index++, points[0]);
                     moveY = lastY = randomize(index++, points[1]);
                     result.moveTo(moveX, moveY);
-                    first = true;
                     next = 0;
                     break;
 
                 case PathIterator.SEG_CLOSE:
                     points[0] = moveX;
                     points[1] = moveY;
-                    // Fall into....
 
                 case PathIterator.SEG_LINETO:
                     thisX = randomize(index++, points[0]);
@@ -69,7 +62,6 @@ public class WobbleStroke implements Stroke {
                         }
                     }
                     next -= distance;
-                    first = false;
                     lastX = thisX;
                     lastY = thisY;
                     break;
@@ -82,10 +74,6 @@ public class WobbleStroke implements Stroke {
 
     private float randomize(int index, float x) {
         return x + (float) rand[index % rand.length] * amplitude * 2 - 1;
-    }
-
-    private float randomize2(float x) {
-        return x + (float) Math.random() * amplitude * 2 - 1;
     }
 
     private static double rand[] = new double[2000];

@@ -1,12 +1,8 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.rulers;
 
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.playback.displays.InteractionSpace;
-import net.sf.sketchlet.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.ActiveRegion;
 import net.sf.sketchlet.util.RefreshTime;
 
 import javax.swing.*;
@@ -16,7 +12,6 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.Vector;
 
-/* Rule.java is used by ScrollDemo.java. */
 public class Ruler extends JComponent {
 
     public static final int HORIZONTAL = 0;
@@ -184,8 +179,8 @@ public class Ruler extends JComponent {
                 }
             }
         }
-        if (SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().size() == 1) {
-            ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().firstElement();
+        if (SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null && SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().size() == 1) {
+            ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().firstElement();
             calculateLimits(region);
 
             g.setColor(Color.WHITE);
@@ -225,8 +220,8 @@ public class Ruler extends JComponent {
 
     public void mousePressed(int x, int y) {
         selectedLimit = -1;
-        if (SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().size() == 1) {
-            selectedRegion = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().firstElement();
+        if (SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null && SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().size() == 1) {
+            selectedRegion = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().firstElement();
             if (this.getOrientation() == HORIZONTAL) {
                 if (p1.contains(x, y)) {
                     selectedLimit = 1;
@@ -262,8 +257,8 @@ public class Ruler extends JComponent {
 
         Rectangle rect;
 
-        if (SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().size() == 1) {
-            ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().firstElement();
+        if (SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null && SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().size() == 1) {
+            ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().firstElement();
             rect = region.getBounds(false);
             y = Math.max(y, 0);
             y = Math.min(y, h);
@@ -314,8 +309,8 @@ public class Ruler extends JComponent {
         }
 
         public void mousePressed(MouseEvent e) {
-            SketchletEditor.getInstance().getCurrentPage().getRegions().setSelectedRegions(new Vector<ActiveRegion>());
-            SketchletEditor.getInstance().getCurrentPage().getRegions().defocusAllRegions();
+            SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().setSelectedRegions(new Vector<ActiveRegion>());
+            SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().defocusAllRegions();
             int x = e.getX();
             int y = e.getY();
             Ruler.this.mousePressed(x, y);

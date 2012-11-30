@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.toolbars;
 
 import net.sf.sketchlet.common.translation.Language;
@@ -15,8 +11,8 @@ import net.sf.sketchlet.designer.editor.ui.region.ActiveRegionPanel;
 import net.sf.sketchlet.designer.editor.ui.region.ActiveRegionsFrame;
 import net.sf.sketchlet.designer.editor.ui.region.ShapePanel;
 import net.sf.sketchlet.loaders.pluginloader.WidgetPluginFactory;
-import net.sf.sketchlet.model.ActiveRegion;
-import net.sf.sketchlet.model.ActiveRegions;
+import net.sf.sketchlet.framework.model.ActiveRegion;
+import net.sf.sketchlet.framework.model.ActiveRegions;
 import net.sf.sketchlet.util.Colors;
 import org.apache.commons.lang.StringUtils;
 
@@ -115,8 +111,8 @@ public class ModeToolbar extends JToolBar {
                 SketchletEditor.getInstance().createGraphics();
                 SketchletEditor.getInstance().setCursor();
 
-                if (ActiveRegionPanel.currentActiveRegionPanel != null) {
-                    ActiveRegionImageEditor fhs = ActiveRegionPanel.currentActiveRegionPanel.imageEditor;
+                if (ActiveRegionPanel.getCurrentActiveRegionPanel() != null) {
+                    ActiveRegionImageEditor fhs = ActiveRegionPanel.getCurrentActiveRegionPanel().getImageEditor();
                     fhs.setTool(fhs.getPenTool(), null);
                 }
 
@@ -131,8 +127,8 @@ public class ModeToolbar extends JToolBar {
                 SketchletEditor.getInstance().setTool(SketchletEditor.getInstance().getColorPickerTool(), btnColorPicker);
                 SketchletEditor.getInstance().createGraphics();
                 SketchletEditor.getInstance().setCursor();
-                if (ActiveRegionPanel.currentActiveRegionPanel != null) {
-                    ActiveRegionImageEditor fhs = ActiveRegionPanel.currentActiveRegionPanel.imageEditor;
+                if (ActiveRegionPanel.getCurrentActiveRegionPanel() != null) {
+                    ActiveRegionImageEditor fhs = ActiveRegionPanel.getCurrentActiveRegionPanel().getImageEditor();
                     fhs.setTool(fhs.getColorPickerTool(), btnColorPicker);
                 }
                 SketchletEditor.getInstance().getHelpViewer().showAutoHelpByID("editor_mode_drawing");
@@ -146,8 +142,8 @@ public class ModeToolbar extends JToolBar {
                 SketchletEditor.getInstance().setTool(SketchletEditor.getInstance().getTransparentColorTool(), btnSelectColor);
                 SketchletEditor.getInstance().createGraphics();
                 SketchletEditor.getInstance().setCursor();
-                if (ActiveRegionPanel.currentActiveRegionPanel != null) {
-                    ActiveRegionImageEditor fhs = ActiveRegionPanel.currentActiveRegionPanel.imageEditor;
+                if (ActiveRegionPanel.getCurrentActiveRegionPanel() != null) {
+                    ActiveRegionImageEditor fhs = ActiveRegionPanel.getCurrentActiveRegionPanel().getImageEditor();
                     fhs.setTool(fhs.getTransparentColorTool(), btnSelectColor);
                 }
                 SketchletEditor.getInstance().getHelpViewer().showAutoHelpByID("editor_mode_drawing");
@@ -161,8 +157,8 @@ public class ModeToolbar extends JToolBar {
                 SketchletEditor.getInstance().setTool(SketchletEditor.getInstance().getBucketTool(), btnBucket);
                 SketchletEditor.getInstance().createGraphics();
                 SketchletEditor.getInstance().setCursor();
-                if (ActiveRegionPanel.currentActiveRegionPanel != null) {
-                    ActiveRegionImageEditor fhs = ActiveRegionPanel.currentActiveRegionPanel.imageEditor;
+                if (ActiveRegionPanel.getCurrentActiveRegionPanel() != null) {
+                    ActiveRegionImageEditor fhs = ActiveRegionPanel.getCurrentActiveRegionPanel().getImageEditor();
                     fhs.setTool(fhs.getBucketTool(), btnBucket);
                 }
                 SketchletEditor.getInstance().getHelpViewer().showAutoHelpByID("editor_mode_drawing");
@@ -177,8 +173,8 @@ public class ModeToolbar extends JToolBar {
                 SketchletEditor.getInstance().setTool(SketchletEditor.getInstance().getMagicWandTool(), btnMagicWand);
                 SketchletEditor.getInstance().createGraphics();
                 SketchletEditor.getInstance().setCursor();
-                if (ActiveRegionPanel.currentActiveRegionPanel != null) {
-                    ActiveRegionImageEditor fhs = ActiveRegionPanel.currentActiveRegionPanel.imageEditor;
+                if (ActiveRegionPanel.getCurrentActiveRegionPanel() != null) {
+                    ActiveRegionImageEditor fhs = ActiveRegionPanel.getCurrentActiveRegionPanel().getImageEditor();
                     fhs.setTool(fhs.getMagicWandTool(), btnMagicWand);
                 }
                 SketchletEditor.getInstance().getHelpViewer().showAutoHelpByID("editor_mode_drawing");
@@ -193,8 +189,8 @@ public class ModeToolbar extends JToolBar {
                 SketchletEditor.getInstance().setTool(SketchletEditor.getInstance().getLineTool(), btnLine);
                 SketchletEditor.getInstance().createGraphics();
                 SketchletEditor.getInstance().setCursor();
-                if (ActiveRegionPanel.currentActiveRegionPanel != null) {
-                    ActiveRegionImageEditor fhs = ActiveRegionPanel.currentActiveRegionPanel.imageEditor;
+                if (ActiveRegionPanel.getCurrentActiveRegionPanel() != null) {
+                    ActiveRegionImageEditor fhs = ActiveRegionPanel.getCurrentActiveRegionPanel().getImageEditor();
                     fhs.setTool(fhs.getLineTool(), btnLine);
                 }
                 SketchletEditor.getInstance().getHelpViewer().showAutoHelpByID("editor_mode_drawing");
@@ -208,8 +204,8 @@ public class ModeToolbar extends JToolBar {
                 SketchletEditor.getInstance().setTool(SketchletEditor.getInstance().getRectTool(), btnRect);
                 SketchletEditor.getInstance().createGraphics();
                 SketchletEditor.getInstance().setCursor();
-                if (ActiveRegionPanel.currentActiveRegionPanel != null) {
-                    ActiveRegionImageEditor fhs = ActiveRegionPanel.currentActiveRegionPanel.imageEditor;
+                if (ActiveRegionPanel.getCurrentActiveRegionPanel() != null) {
+                    ActiveRegionImageEditor fhs = ActiveRegionPanel.getCurrentActiveRegionPanel().getImageEditor();
                     fhs.setTool(fhs.getRectTool(), btnRect);
                 }
                 SketchletEditor.getInstance().getHelpViewer().showAutoHelpByID("editor_mode_drawing");
@@ -223,8 +219,8 @@ public class ModeToolbar extends JToolBar {
                 SketchletEditor.getInstance().setTool(SketchletEditor.getInstance().getOvalTool(), btnOval);
                 SketchletEditor.getInstance().createGraphics();
                 SketchletEditor.getInstance().setCursor();
-                if (ActiveRegionPanel.currentActiveRegionPanel != null) {
-                    ActiveRegionImageEditor fhs = ActiveRegionPanel.currentActiveRegionPanel.imageEditor;
+                if (ActiveRegionPanel.getCurrentActiveRegionPanel() != null) {
+                    ActiveRegionImageEditor fhs = ActiveRegionPanel.getCurrentActiveRegionPanel().getImageEditor();
                     fhs.setTool(fhs.getOvalTool(), btnOval);
                 }
                 SketchletEditor.getInstance().getHelpViewer().showAutoHelpByID("editor_mode_drawing");
@@ -238,8 +234,8 @@ public class ModeToolbar extends JToolBar {
                 SketchletEditor.getInstance().setTool(SketchletEditor.getInstance().getSelectTool(), btnSelect);
                 SketchletEditor.getInstance().createGraphics();
                 SketchletEditor.getInstance().setCursor();
-                if (ActiveRegionPanel.currentActiveRegionPanel != null) {
-                    ActiveRegionImageEditor fhs = ActiveRegionPanel.currentActiveRegionPanel.imageEditor;
+                if (ActiveRegionPanel.getCurrentActiveRegionPanel() != null) {
+                    ActiveRegionImageEditor fhs = ActiveRegionPanel.getCurrentActiveRegionPanel().getImageEditor();
                     fhs.setTool(fhs.getSelectTool(), btnSelect);
                 }
                 SketchletEditor.getInstance().getHelpViewer().showAutoHelpByID("editor_mode_drawing");
@@ -253,8 +249,8 @@ public class ModeToolbar extends JToolBar {
                 SketchletEditor.getInstance().setTool(SketchletEditor.getInstance().getFreeFormSelectTool(), btnFreeFormSelect);
                 SketchletEditor.getInstance().createGraphics();
                 SketchletEditor.getInstance().setCursor();
-                if (ActiveRegionPanel.currentActiveRegionPanel != null) {
-                    ActiveRegionImageEditor fhs = ActiveRegionPanel.currentActiveRegionPanel.imageEditor;
+                if (ActiveRegionPanel.getCurrentActiveRegionPanel() != null) {
+                    ActiveRegionImageEditor fhs = ActiveRegionPanel.getCurrentActiveRegionPanel().getImageEditor();
                     fhs.setTool(fhs.getFreeFormSelectTool(), btnFreeFormSelect);
                 }
                 SketchletEditor.getInstance().getHelpViewer().showAutoHelpByID("editor_mode_drawing");
@@ -270,8 +266,8 @@ public class ModeToolbar extends JToolBar {
                 SketchletEditor.getInstance().setTool(SketchletEditor.getInstance().getEraserTool(), btnEraser);
                 SketchletEditor.getInstance().createGraphics();
                 SketchletEditor.getInstance().setCursor();
-                if (ActiveRegionPanel.currentActiveRegionPanel != null) {
-                    ActiveRegionImageEditor fhs = ActiveRegionPanel.currentActiveRegionPanel.imageEditor;
+                if (ActiveRegionPanel.getCurrentActiveRegionPanel() != null) {
+                    ActiveRegionImageEditor fhs = ActiveRegionPanel.getCurrentActiveRegionPanel().getImageEditor();
                     fhs.setTool(fhs.getEraserTool(), btnEraser);
                 }
                 SketchletEditor.getInstance().getHelpViewer().showAutoHelpByID("editor_mode_drawing");
@@ -627,8 +623,8 @@ public class ModeToolbar extends JToolBar {
         align.add(alignMiddle);
         align.add(alignBottom);
 
-        if (SketchletEditor.getInstance().getInstance() != null && SketchletEditor.getInstance().getCurrentPage() != null && SketchletEditor.getInstance().getCurrentPage().getRegions() != null && SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions() != null && SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().size() > 0) {
-            ActiveRegion action = SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().lastElement();
+        if (SketchletEditor.getInstance().getInstance() != null && SketchletEditor.getInstance().getCurrentPage() != null && SketchletEditor.getInstance().getCurrentPage().getRegions() != null && SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null && SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().size() > 0) {
+            ActiveRegion action = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
             if (action.shape.isEmpty() || action.shape.equalsIgnoreCase("none")) {
                 colorsFill.setEnabled(false);
                 // colorsMenu.setEnabled(false);
@@ -1157,7 +1153,7 @@ public class ModeToolbar extends JToolBar {
 
     public void enableControls() {
         ActiveRegions actions = SketchletEditor.getInstance().getCurrentPage().getRegions();
-        boolean bEnable = actions.getSelectedRegions() != null && actions.getSelectedRegions().size() > 0;
+        boolean bEnable = actions.getMouseHelper().getSelectedRegions() != null && actions.getMouseHelper().getSelectedRegions().size() > 0;
         details.setEnabled(bEnable);
         extract.setEnabled(bEnable);
         stamp.setEnabled(bEnable);
@@ -1166,12 +1162,12 @@ public class ModeToolbar extends JToolBar {
         outline.setEnabled(bEnable);
         btnText.setEnabled(bEnable);
 
-        if (SketchletEditor.getInstance().getCurrentPage() == null || SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions() == null) {
+        if (SketchletEditor.getInstance().getCurrentPage() == null || SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() == null) {
             group.setEnabled(bEnable);
         } else {
             boolean bGroup = false;
-            for (ActiveRegion as : SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions()) {
-                if (as.regionGrouping.equals("") || !as.regionGrouping.equals(SketchletEditor.getInstance().getCurrentPage().getRegions().getSelectedRegions().firstElement().regionGrouping)) {
+            for (ActiveRegion as : SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions()) {
+                if (as.regionGrouping.equals("") || !as.regionGrouping.equals(SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().firstElement().regionGrouping)) {
                     bGroup = true;
                     break;
                 }
@@ -1183,9 +1179,9 @@ public class ModeToolbar extends JToolBar {
             }
 
             if (bGroup) {
-                group.setEnabled(actions.getSelectedRegions() != null && actions.getSelectedRegions().size() > 1);
+                group.setEnabled(actions.getMouseHelper().getSelectedRegions() != null && actions.getMouseHelper().getSelectedRegions().size() > 1);
             } else {
-                group.setEnabled(actions.getSelectedRegions() != null && actions.getSelectedRegions().size() > 0);
+                group.setEnabled(actions.getMouseHelper().getSelectedRegions() != null && actions.getMouseHelper().getSelectedRegions().size() > 0);
             }
         }
     }

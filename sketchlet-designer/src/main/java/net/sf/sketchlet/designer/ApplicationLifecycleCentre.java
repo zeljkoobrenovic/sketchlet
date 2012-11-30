@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer;
 
 import net.sf.sketchlet.context.PageContext;
@@ -10,7 +6,7 @@ import net.sf.sketchlet.designer.context.PageContextImpl;
 import net.sf.sketchlet.loaders.pluginloader.GenericPluginFactory;
 import net.sf.sketchlet.loaders.pluginloader.PluginInstance;
 import net.sf.sketchlet.loaders.pluginloader.PluginLoader;
-import net.sf.sketchlet.model.Page;
+import net.sf.sketchlet.framework.model.Page;
 import net.sf.sketchlet.plugin.SketchletProjectAware;
 
 import java.util.List;
@@ -79,6 +75,7 @@ public class ApplicationLifecycleCentre {
         ExecutorService executor = Executors.newCachedThreadPool();
         executor.execute(new Runnable() {
 
+            @Override
             public void run() {
                 PageContext page = new PageContextImpl(sketch);
                 for (PageEventsListener l : getPageListeners()) {
@@ -92,6 +89,7 @@ public class ApplicationLifecycleCentre {
         ExecutorService executor = Executors.newCachedThreadPool();
         executor.execute(new Runnable() {
 
+            @Override
             public void run() {
                 PageContext page = new PageContextImpl(sketch);
                 for (PageEventsListener l : getPageListeners()) {

@@ -1,15 +1,7 @@
-/*
- * AdvancedSettingsDialog.java
- *
- * Created on October 19, 2007, 11:18 AM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.editor.ui.variables;
 
 import net.sf.sketchlet.common.translation.Language;
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 
 import javax.swing.*;
 import java.awt.*;

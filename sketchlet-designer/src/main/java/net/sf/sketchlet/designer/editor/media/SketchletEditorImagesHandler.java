@@ -1,13 +1,9 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.editor.media;
 
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.playback.displays.InteractionSpace;
-import net.sf.sketchlet.designer.tools.imagecache.ImageCache;
+import net.sf.sketchlet.framework.model.imagecache.ImageCache;
 import net.sf.sketchlet.util.RefreshTime;
 
 import java.awt.*;

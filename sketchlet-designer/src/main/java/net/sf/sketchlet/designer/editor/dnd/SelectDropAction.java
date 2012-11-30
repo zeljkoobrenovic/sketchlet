@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.editor.dnd;
 
 import net.sf.sketchlet.designer.Workspace;
@@ -54,7 +50,7 @@ public class SelectDropAction extends JDialog {
     private JButton okButton = new JButton("OK", Workspace.createImageIcon("resources/ok.png"));
     private JButton cancelButton = new JButton("Cancel", Workspace.createImageIcon("resources/cancel.png"));
 
-    public SelectDropAction(JFrame frame, String strText, final net.sf.sketchlet.model.ActiveRegion region) {
+    public SelectDropAction(JFrame frame, String strText, final net.sf.sketchlet.framework.model.ActiveRegion region) {
         super(frame);
         setModal(true);
         setTitle("Set Region Property");
@@ -93,7 +89,7 @@ public class SelectDropAction extends JDialog {
                         if (index == 0) {
                             region.text = strText;
                         } else if (index == 1) {
-                            region.strImageUrlField = strText;
+                            region.imageUrlField = strText;
                         } else if (index == 2) {
                             region.strImageIndex = strText;
                         } else if (index < _n) {

@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.extraeditor;
 
 import net.sf.sketchlet.common.translation.Language;
@@ -248,26 +244,26 @@ public class ExtraEditorPanel extends JPanel {
                 ActiveRegionPanel p = (ActiveRegionPanel) activeRegionsExtraPanel.tabs.getSelectedComponent();
 
                 if (p != null) {
-                    int n = p.tabs.getSelectedIndex();
+                    int n = p.getTabs().getSelectedIndex();
                     if (n >= 0) {
-                        if (n == ActiveRegionPanel.indexGraphics) {
+                        if (n == ActiveRegionPanel.getIndexGraphics()) {
                             SketchletEditor.getInstance().getHelpViewer().showHelpByID("active_region_image", bForceShow);
-                        } else if (n == ActiveRegionPanel.indexTransform) {
+                        } else if (n == ActiveRegionPanel.getIndexTransform()) {
                             SketchletEditor.getInstance().getHelpViewer().showHelpByID("active_region_transform", bForceShow);
-                        } else if (n == ActiveRegionPanel.indexEvents) {
-                            int n2 = p.tabsRegionEvents.getSelectedIndex();
-                            if (n2 == ActiveRegionPanel.indexMotion) {
+                        } else if (n == ActiveRegionPanel.getIndexEvents()) {
+                            int n2 = p.getTabsRegionEvents().getSelectedIndex();
+                            if (n2 == ActiveRegionPanel.getIndexMotion()) {
                                 SketchletEditor.getInstance().getHelpViewer().showHelpByID("active_region_move", bForceShow);
-                            } else if (n2 == ActiveRegionPanel.indexMouseEvents) {
+                            } else if (n2 == ActiveRegionPanel.getIndexMouseEvents()) {
                                 SketchletEditor.getInstance().getHelpViewer().showHelpByID("active_region_mouse", bForceShow);
-                            } else if (n2 == ActiveRegionPanel.indexKeyboardEvents) {
+                            } else if (n2 == ActiveRegionPanel.getIndexKeyboardEvents()) {
                                 SketchletEditor.getInstance().getHelpViewer().showHelpByID("active_region_keyboard", bForceShow);
-                            } else if (n2 == ActiveRegionPanel.indexOverlap) {
+                            } else if (n2 == ActiveRegionPanel.getIndexOverlap()) {
                                 SketchletEditor.getInstance().getHelpViewer().showHelpByID("active_region_interaction", bForceShow);
                             }
-                        } else if (n == ActiveRegionPanel.indexWidget) {
+                        } else if (n == ActiveRegionPanel.getIndexWidget()) {
                             SketchletEditor.getInstance().getHelpViewer().showHelpByID("active_region_widget", bForceShow);
-                        } else if (n == ActiveRegionPanel.indexGeneral) {
+                        } else if (n == ActiveRegionPanel.getIndexGeneral()) {
                             SketchletEditor.getInstance().getHelpViewer().showHelpByID("active_region_general", bForceShow);
                         }
                     }

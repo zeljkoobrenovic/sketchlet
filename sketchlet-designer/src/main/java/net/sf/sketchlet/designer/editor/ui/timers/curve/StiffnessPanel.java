@@ -1,11 +1,7 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.sf.sketchlet.designer.editor.ui.timers.curve;
 
-import net.sf.sketchlet.model.programming.timers.curves.StiffnessCurve;
-import net.sf.sketchlet.model.programming.timers.curves.StiffnessSegment;
+import net.sf.sketchlet.framework.model.programming.timers.curves.StiffnessCurve;
+import net.sf.sketchlet.framework.model.programming.timers.curves.StiffnessSegment;
 
 import javax.swing.*;
 import java.awt.*;

@@ -1,23 +1,19 @@
 package net.sf.sketchlet.designer.editor.ui.page;
 
 import net.sf.sketchlet.common.QuotedStringTokenizer;
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.Workspace;
-import net.sf.sketchlet.blackboard.evaluator.Evaluator;
-import net.sf.sketchlet.model.Page;
-import net.sf.sketchlet.model.VariableUpdateEventMacro;
-import net.sf.sketchlet.model.events.hold.HoldData;
-import net.sf.sketchlet.model.events.hold.HoldProcessor;
-import net.sf.sketchlet.model.events.hold.HoldThreads;
+import net.sf.sketchlet.framework.blackboard.evaluator.Evaluator;
+import net.sf.sketchlet.framework.model.Page;
+import net.sf.sketchlet.framework.model.events.variable.VariableUpdateEventMacro;
+import net.sf.sketchlet.framework.model.events.hold.HoldData;
+import net.sf.sketchlet.framework.model.events.hold.HoldProcessor;
+import net.sf.sketchlet.framework.model.events.hold.HoldThreads;
 
 import java.util.Vector;
 
 /**
- * Created with IntelliJ IDEA.
- * User: zeljko
- * Date: 5-11-12
- * Time: 11:23
- * To change this template use File | Settings | File Templates.
+ * @author zeljko
  */
 public class VariableUpdatePageHandler {
     private HoldThreads holdThreads = new HoldThreads();
@@ -108,12 +104,12 @@ public class VariableUpdatePageHandler {
                     if (type.isEmpty()) {
                         variableUpdateEventMacro.startMacro();
                     } else if (type.equals("occurred") || type.equals("occured")) {
-                        if (operator.equalsIgnoreCase("updated") || !this.holdThreads.hasOccured(strFormula)) {
+                        if (operator.equalsIgnoreCase("updated") || !this.holdThreads.hasOccurred(strFormula)) {
                             variableUpdateEventMacro.startMacro();
                         }
                     } else if (type.startsWith("lasted ")) {
-                        if (!this.holdThreads.hasOccured(strFormula + " " + type)) {
-                            holdThreads.setOccured(strFormula + " " + type);
+                        if (!this.holdThreads.hasOccurred(strFormula + " " + type)) {
+                            holdThreads.setOccurred(strFormula + " " + type);
                             try {
                                 boolean bRepeat = type.endsWith("*");
                                 if (bRepeat) {
@@ -125,9 +121,9 @@ public class VariableUpdatePageHandler {
                             }
                         }
                     }
-                    holdThreads.setOccured(strFormula);
+                    holdThreads.setOccurred(strFormula);
                 } else {
-                    if (type.equals("ended") && holdThreads.hasOccured(strFormula)) {
+                    if (type.equals("ended") && holdThreads.hasOccurred(strFormula)) {
                         variableUpdateEventMacro.startMacro();
                     }
 
@@ -138,7 +134,7 @@ public class VariableUpdatePageHandler {
 
         for (String strID : removeOccuredIDs) {
             holdThreads.stopHold(strID);
-            holdThreads.removeOccured(strID);
+            holdThreads.removeOccurred(strID);
         }
 
         return bProcessed;

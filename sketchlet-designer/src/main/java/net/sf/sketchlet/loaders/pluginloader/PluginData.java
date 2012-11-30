@@ -1,11 +1,8 @@
 package net.sf.sketchlet.loaders.pluginloader;
 
 /**
- * Created with IntelliJ IDEA.
- * User: zeljko
- * Date: 24-9-12
- * Time: 10:08
- * To change this template use File | Settings | File Templates.
+ *
+ * @author zeljko
  */
 public class PluginData {
     private String name = "";

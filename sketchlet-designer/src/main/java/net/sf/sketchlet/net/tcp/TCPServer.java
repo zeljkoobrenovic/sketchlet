@@ -16,7 +16,7 @@ import net.sf.sketchlet.net.DataReceiver;
 import net.sf.sketchlet.net.SketchletNetworkProtocol;
 import net.sf.sketchlet.net.Template;
 import net.sf.sketchlet.net.TemplateHandler;
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 
 import java.io.BufferedReader;
 import java.io.IOException;

@@ -1,10 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editorPanel.
- */
 package net.sf.sketchlet.designer.editor.ui.region;
 
-import net.sf.sketchlet.blackboard.VariablesBlackboard;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.util.Colors;
@@ -73,10 +69,10 @@ public class FontChooserPanel extends JPanel {
             styleCombo.addItem("=" + strVar);
         }
 
-        fontListCombo.setSelectedItem(parent.region.fontName);
-        fontSizeCombo.setSelectedItem(parent.region.fontSize);
-        fontColorCombo.setSelectedItem(parent.region.fontColor);
-        styleCombo.setSelectedItem(parent.region.fontStyle);
+        fontListCombo.setSelectedItem(parent.getRegion().fontName);
+        fontSizeCombo.setSelectedItem(parent.getRegion().fontSize);
+        fontColorCombo.setSelectedItem(parent.getRegion().fontColor);
+        styleCombo.setSelectedItem(parent.getRegion().fontStyle);
 
         fontSizeCombo.addActionListener(new ActionListener() {
 
@@ -168,10 +164,10 @@ public class FontChooserPanel extends JPanel {
             String strColor = fontColorCombo.getSelectedItem().toString();
             String strStyle = styleCombo.getSelectedItem().toString();
 
-            parent.region.fontName = name;
-            parent.region.fontSize = strSize;
-            parent.region.fontStyle = strStyle;
-            parent.region.fontColor = strColor;
+            parent.getRegion().fontName = name;
+            parent.getRegion().fontSize = strSize;
+            parent.getRegion().fontStyle = strStyle;
+            parent.getRegion().fontColor = strColor;
 
             SketchletEditor.getInstance().repaint();
 
