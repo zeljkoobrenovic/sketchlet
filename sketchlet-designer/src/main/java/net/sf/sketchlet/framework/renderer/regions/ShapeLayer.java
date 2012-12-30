@@ -32,14 +32,14 @@ public class ShapeLayer extends DrawingLayer {
         if (region == null) {
             return;
         }
-        if (region.shape.isEmpty()) {
+        if (region.getShape().isEmpty()) {
             return;
         }
-        String strShape = region.processText(region.shape);
-        String strLineColor = region.processText(region.lineColor);
-        String strFillColor = region.processText(region.strFillColor);
-        String strLineThickness = region.processText(region.lineThickness);
-        String strLineStyle = region.processText(region.lineStyle);
+        String strShape = region.processText(region.getShape());
+        String strLineColor = region.processText(region.getLineColor());
+        String strFillColor = region.processText(region.getFillColor());
+        String strLineThickness = region.processText(region.getLineThickness());
+        String strLineStyle = region.processText(region.getLineStyle());
 
         Color lineColor = Colors.getColor(strLineColor);
         Color fillColor = Colors.getColor(strFillColor);
@@ -69,18 +69,18 @@ public class ShapeLayer extends DrawingLayer {
 
         int w, h;
 
-        w = region.x2 - region.x1;
-        h = region.y2 - region.y1;
+        w = region.getX2Value() - region.getX1Value();
+        h = region.getY2Value() - region.getY1Value();
 
-        int _center_x = region.x1 + w / 2;
-        int _center_y = region.y1 + h / 2;
+        int _center_x = region.getX1Value() + w / 2;
+        int _center_y = region.getY1Value() + h / 2;
 
         if (bFill && fillColor != null) {
             g2.setColor(fillColor);
             if (strShape.equalsIgnoreCase("Rectangle")) {
-                g2.fillRect(region.x1, region.y1, w, h);
+                g2.fillRect(region.getX1Value(), region.getY1Value(), w, h);
             } else if (strShape.equalsIgnoreCase("Oval")) {
-                g2.fillOval(region.x1 + 2, region.y1 + 2, w - 4, h - 4);
+                g2.fillOval(region.getX1Value() + 2, region.getY1Value() + 2, w - 4, h - 4);
             } else if (strShape.equalsIgnoreCase("Line 1")) {
             } else if (strShape.equalsIgnoreCase("Line 2")) {
             } else if (strShape.equalsIgnoreCase("Horizontal Line")) {
@@ -96,21 +96,21 @@ public class ShapeLayer extends DrawingLayer {
         if (bOutline && stroke != null) {
             g2.setColor(lineColor);
             if (strShape.equalsIgnoreCase("Rectangle")) {
-                g2.drawRect(region.x1, region.y1, w, h);
+                g2.drawRect(region.getX1Value(), region.getY1Value(), w, h);
             } else if (strShape.equalsIgnoreCase("Rounded Rectangle")) {
                 //} else if (strShape.equalsIgnoreCase("Rounded Rectangle")) {
                 //    g2.drawRoundRect(region.x1, region.y1, w, h, h / 5, h / 5);
                 g2.draw(region.getArea(bPlayback));
             } else if (strShape.equalsIgnoreCase("Oval")) {
-                g2.drawOval(region.x1 + 2, region.y1 + 2, w - 4, h - 4);
+                g2.drawOval(region.getX1Value() + 2, region.getY1Value() + 2, w - 4, h - 4);
             } else if (strShape.equalsIgnoreCase("Line 1")) {
-                g2.drawLine(region.x1, region.y1, region.x2, region.y2);
+                g2.drawLine(region.getX1Value(), region.getY1Value(), region.getX2Value(), region.getY2Value());
             } else if (strShape.equalsIgnoreCase("Line 2")) {
-                g2.drawLine(region.x1, region.y2, region.x2, region.y1);
+                g2.drawLine(region.getX1Value(), region.getY2Value(), region.getX2Value(), region.getY1Value());
             } else if (strShape.equalsIgnoreCase("Horizontal Line")) {
-                g2.drawLine(region.x1, _center_y, region.x2, _center_y);
+                g2.drawLine(region.getX1Value(), _center_y, region.getX2Value(), _center_y);
             } else if (strShape.equalsIgnoreCase("Vertical Line")) {
-                g2.drawLine(_center_x, region.y1, _center_x, region.y2);
+                g2.drawLine(_center_x, region.getY1Value(), _center_x, region.getY2Value());
             } else if (strShape.equalsIgnoreCase("Triangle 1")) {
                 g2.draw(region.getArea(bPlayback));
             } else if (strShape.equalsIgnoreCase("Triangle 2")) {

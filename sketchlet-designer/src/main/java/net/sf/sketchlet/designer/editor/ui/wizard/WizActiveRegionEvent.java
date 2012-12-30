@@ -354,12 +354,12 @@ class Result extends DeferredWizardResult {
             ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getRegions().elementAt(SketchletEditor.getInstance().getCurrentPage().getRegions().getRegions().size() - regionIndex);
             if (p == 0) {
                 //region.imageIndex.setSelectedItem(value);
-                region.strImageIndex = value;
+                region.setImageIndex(value);
                 comments.add("    Image index is set to '" + value + "'");
                 comments.add("");
             } else if (p == 1) {
                 //region.imageUrlField.setSelectedItem(value);
-                region.imageUrlField = value;
+                region.setImageUrlField(value);
                 comments.add("    Image URL is set to '" + value + "'");
                 comments.add("");
             } else {
@@ -377,7 +377,7 @@ class Result extends DeferredWizardResult {
             ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getRegions().elementAt(SketchletEditor.getInstance().getCurrentPage().getRegions().getRegions().size() - regionIndex);
             if (p == 0) {
                 //region.imageIndex.setSelectedItem(value);
-                region.strImageIndex = value;
+                region.setImageIndex(value);
                 comments.add("    Image index is set to '" + value + "'");
                 comments.add("");
             } else {
@@ -466,8 +466,8 @@ class Result extends DeferredWizardResult {
                 int index = mp.eventPage.regionsCombo.getSelectedIndex() - 1;
                 if (index > 0) {
                     ActiveRegion a = SketchletEditor.editorPanel.currentSketch.regions.regions.elementAt(SketchletEditor.editorPanel.currentSketch.regions.regions.size() - index);
-                    a.getDrawImageFileName(0);
-                    mp.region.interactionEvents[i][0] = a.getDrawImageFileName(0);
+                    a.getDrawnImageFileName(0);
+                    mp.region.interactionEvents[i][0] = a.getDrawnImageFileName(0);
                 } else {
                     mp.region.interactionEvents[i][0] = mp.eventPage.regionsCombo.getSelectedItem();
                 }

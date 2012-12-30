@@ -36,15 +36,8 @@ import java.io.IOException;
 public class PageRenderer {
     private static final Logger log = Logger.getLogger(PageRenderer.class);
 
-    public static final Image ENTRY_ICON = Workspace.createImageIcon("resources/entry.gif").getImage();
-    public static final Image EXIT_ICON = Workspace.createImageIcon("resources/exit.gif").getImage();
-    public static final Image VARIABLE_ICON_IN = Workspace.createImageIcon("resources/variable_in.jpg").getImage();
-    public static final Image KEYBOARD_ICON = Workspace.createImageIcon("resources/keyboard.png").getImage();
-    public static final Image MOUSE_ICON = Workspace.createImageIcon("resources/mouse.png").getImage();
-    public static final Image PROPERTIES_ICON = Workspace.createImageIcon("resources/details_transparent.png").getImage();
-
     private PanelRenderer panelRenderer;
-    private DropAreasRenderer dropAreasRenderer;
+    private DropAreasRenderer pageDropAreasRenderer;
 
     public PageRenderer(PanelRenderer panelRenderer) {
         this.setPanelRenderer(panelRenderer);
@@ -54,9 +47,9 @@ public class PageRenderer {
         this.setPanelRenderer(null);
     }
 
-    public void prepare(boolean bPlayback, boolean bProcessLimits) {
-        for (ActiveRegion r : getPanelRenderer().getPage().getRegions().getRegions()) {
-            r.getRenderer().prepare(bPlayback, bProcessLimits);
+    public void prepare(boolean bPlayback, boolean processLimits) {
+        for (ActiveRegion region : getPanelRenderer().getPage().getRegions().getRegions()) {
+            region.getRenderer().prepare(bPlayback, processLimits);
         }
     }
 
@@ -65,11 +58,13 @@ public class PageRenderer {
             return;
         }
 
-        SketchletPlaybackContext.getInstance().setCurrentPanel(getPanelRenderer().getComponent());
-        SketchletPlaybackContext.getInstance().setMargin(getPanelRenderer().getMarginX(), getPanelRenderer().getMarginY());
-        SketchletPlaybackContext.getInstance().setScale(getPanelRenderer().getScaleX());
+        SketchletPlaybackContext sketchlet = SketchletPlaybackContext.getInstance();
+        sketchlet.setCurrentPanel(getPanelRenderer().getComponent());
+        sketchlet.setMargin(getPanelRenderer().getMarginX(), getPanelRenderer().getMarginY());
+        sketchlet.setScale(getPanelRenderer().getScaleX());
 
-        double s = Math.min(1, SketchletEditor.getInstance().getScale());
+        SketchletEditor sketchletEditor = SketchletEditor.getInstance();
+        double s = Math.min(1, sketchletEditor.getScale());
         int imageOffset[] = getPanelRenderer().getPage().getBackgroundOffset(bPlayback);
         Graphics2D g2 = (Graphics2D) g;
         AffineTransform oldTransformation = g2.getTransform();
@@ -113,7 +108,7 @@ public class PageRenderer {
         if (bDrawRect) {
             g2.drawRect(-1, -1, w + 2, h + 2);
             g2.setPaint(Color.GRAY);
-            if (SketchletEditor.getInstance().getMode() == SketchletEditorMode.SKETCHING) {
+            if (sketchletEditor.getMode() == SketchletEditorMode.SKETCHING) {
                 g2.drawString("layer " + (this.getPanelRenderer().getLayer() + 1), 0, -3);
             }
         }
@@ -178,13 +173,13 @@ public class PageRenderer {
         getPanelRenderer().extraDraw(g2);
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f * transparency));
 
-        if (SketchletEditor.getInstance().getSketchToolbar().bVisualizeVariables) {
+        if (sketchletEditor.getSketchToolbar().bVisualizeVariables) {
             VariablesRelationsRenderer.drawVariables(getPanelRenderer().getPage().getRegions(), g2, bPlayback);
         }
 
-        if (!bPlayback && (getPanelRenderer().getMode() == SketchletEditorMode.ACTIONS || getPanelRenderer().getMode() == SketchletEditorMode.SKETCHING)) {
+        if (!bPlayback && (getPanelRenderer().getMode() == SketchletEditorMode.EDITING_REGIONS || getPanelRenderer().getMode() == SketchletEditorMode.SKETCHING)) {
             if (FileDrop.isDragging()) {
-                getDropAreasRenderer().draw((Graphics2D) g, s);
+                getPageDropAreasRenderer().draw((Graphics2D) g, s);
             }
 
             g2.setColor(Color.DARK_GRAY);
@@ -194,10 +189,10 @@ public class PageRenderer {
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.7f * transparency));
 
         int y = getPanelRenderer().getMarginY() + 20;
-        if (SketchletEditor.getInstance().getSketchToolbar().bVisualizeInfoSketch) {
+        if (sketchletEditor.getSketchToolbar().visualizationInfoEnabled) {
             y = drawSketchInfo(g2);
         }
-        if (SketchletEditor.getInstance().getSketchToolbar().bVisualizeInfoVariables) {
+        if (sketchletEditor.getSketchToolbar().bVisualizeInfoVariables) {
             drawVariablesInfo(g2, y);
         }
 
@@ -237,7 +232,7 @@ public class PageRenderer {
         panelRenderer.getPage().getRegions().setOffsetY(offset[1]);
         for (int i = panelRenderer.getPage().getRegions().getRegions().size() - 1; i >= 0; i--) {
             ActiveRegion reg = panelRenderer.getPage().getRegions().getRegions().elementAt(i);
-            if (reg.isActive(bPlayback) && reg.layer == layer) {
+            if (reg.isActive(bPlayback) && reg.getLayer() == layer) {
                 reg.getRenderer().draw(g2, component, mode, bPlayback, bHighlightRegions, transparency);
             }
         }
@@ -331,10 +326,10 @@ public class PageRenderer {
             }
         }
 
-        if (getPanelRenderer().getPage().getKeyboardProcessor().getKeyboardEventMacros().size() > 0) {
+        if (getPanelRenderer().getPage().getKeyboardEventsProcessor().getKeyboardEventMacros().size() > 0) {
             drawTexWithBackground(g2, "on keyboard events:", x, y, Color.BLUE);
             y += yStep;
-            for (KeyboardEventMacro keyboardEventMacro : getPanelRenderer().getPage().getKeyboardProcessor().getKeyboardEventMacros()) {
+            for (KeyboardEventMacro keyboardEventMacro : getPanelRenderer().getPage().getKeyboardEventsProcessor().getKeyboardEventMacros()) {
                 String eventInfo = (keyboardEventMacro.getModifiers() + " " + keyboardEventMacro.getKey()).trim() + " " + keyboardEventMacro.getEventName();
                 drawTexWithBackground(g2, "    when " + eventInfo + " then", x, y, Color.BLUE);
                 y += yStep;
@@ -347,10 +342,10 @@ public class PageRenderer {
             }
         }
 
-        if (getPanelRenderer().getPage().getMouseProcessor().getMouseEventMacros().size() > 0) {
+        if (getPanelRenderer().getPage().getMouseEventsProcessor().getMouseEventMacros().size() > 0) {
             drawTexWithBackground(g2, "on mouse events:", x, y, Color.BLUE);
             y += yStep;
-            for (MouseEventMacro mouseEventMacro : getPanelRenderer().getPage().getMouseProcessor().getMouseEventMacros()) {
+            for (MouseEventMacro mouseEventMacro : getPanelRenderer().getPage().getMouseEventsProcessor().getMouseEventMacros()) {
                 String eventInfo = mouseEventMacro.getEventName();
                 drawTexWithBackground(g2, "    when " + eventInfo + " then", x, y, Color.BLUE);
                 y += yStep;
@@ -462,7 +457,7 @@ public class PageRenderer {
             g2.drawLine(0, (int) h_y, w, (int) h_y);
             g2.drawLine((int) h_x, 0, (int) h_x, h);
 
-            if (getPanelRenderer().getMode() == SketchletEditorMode.ACTIONS) {
+            if (getPanelRenderer().getMode() == SketchletEditorMode.EDITING_REGIONS) {
                 g2.fillOval((int) h_x - 4, (int) h_y - 4, 9, 9);
             }
 
@@ -583,11 +578,11 @@ public class PageRenderer {
         this.panelRenderer = panelRenderer;
     }
 
-    private DropAreasRenderer getDropAreasRenderer() {
-        if (dropAreasRenderer == null) {
-            dropAreasRenderer = new DropAreasRenderer(SketchletEditor.getInstance().getDragAndDropController().getPageDropAreas());
+    private DropAreasRenderer getPageDropAreasRenderer() {
+        if (pageDropAreasRenderer == null) {
+            pageDropAreasRenderer = new DropAreasRenderer(SketchletEditor.getInstance().getDragAndDropController().getPageDropAreas());
         }
 
-        return dropAreasRenderer;
+        return pageDropAreasRenderer;
     }
 }

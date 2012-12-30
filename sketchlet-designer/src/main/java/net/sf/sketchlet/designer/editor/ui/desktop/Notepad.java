@@ -1,14 +1,16 @@
 package net.sf.sketchlet.designer.editor.ui.desktop;
 
-import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.common.file.FileUtils;
 import net.sf.sketchlet.context.VariableUpdateListener;
 import net.sf.sketchlet.context.VariablesBlackboardContext;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
+import net.sf.sketchlet.designer.editor.ui.SyntaxEditorWrapper;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.framework.model.ActiveRegion;
-import net.sf.sketchlet.framework.model.PageVariable;
 import net.sf.sketchlet.framework.model.Page;
+import net.sf.sketchlet.framework.model.PageVariable;
+import net.sf.sketchlet.util.SpringUtilities;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.fife.ui.autocomplete.AutoCompletion;
@@ -216,15 +218,15 @@ public class Notepad extends JPanel {
         FileUtils.saveFileText(f.getPath(), notepad.editor.getText());
     }
 
-    public static JPanel getEditorPanel(final RSyntaxTextArea editor, boolean showSearchToolbar) {
-        return getEditorPanel(editor, showSearchToolbar, true);
+    public static JPanel getEditorPanel(final RSyntaxTextArea editor, Runnable onChange, boolean showSearchToolbar) {
+        return getEditorPanel(new SyntaxEditorWrapper(editor, onChange), showSearchToolbar, true);
     }
 
-    public static JPanel getEditorPanel(final RSyntaxTextArea editor, boolean showSearchToolbar, boolean bLineNumbers) {
+    public static JPanel getEditorPanel(final SyntaxEditorWrapper editor, boolean showSearchToolbar, boolean bLineNumbers) {
         final JPanel panel = new JPanel(new BorderLayout());
         final JToolBar toolBar = new JToolBar();
         final JTextField searchField = new JTextField(15);
-        final RTextScrollPane scrollPane = new RTextScrollPane(editor);
+        final RTextScrollPane scrollPane = new RTextScrollPane(editor.getSyntaxTextArea());
         scrollPane.setLineNumbersEnabled(bLineNumbers);
         JButton hideButton = new JButton("X");
         toolBar.add(hideButton);
@@ -267,10 +269,10 @@ public class Notepad extends JPanel {
                 context.setSearchForward(forward);
                 context.setWholeWord(false);
 
-                boolean found = SearchEngine.find(editor, context);
+                boolean found = SearchEngine.find(editor.getSyntaxTextArea(), context);
                 if (!found && forward) {
-                    editor.setCaretPosition(0);
-                    found = SearchEngine.find(editor, context);
+                    editor.getSyntaxTextArea().setCaretPosition(0);
+                    found = SearchEngine.find(editor.getSyntaxTextArea(), context);
                 }
                 if (!found) {
                     JOptionPane.showMessageDialog(scrollPane, "Text not found");
@@ -284,7 +286,7 @@ public class Notepad extends JPanel {
         toolBar.add(matchCaseCB);
         nextButton.addActionListener(l);
 
-        editor.addKeyListener(new KeyAdapter() {
+        editor.getSyntaxTextArea().addKeyListener(new KeyAdapter() {
 
             public void keyPressed(KeyEvent e) {
                 if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_F) {
@@ -292,6 +294,8 @@ public class Notepad extends JPanel {
                     panel.add(toolBar, BorderLayout.SOUTH);
                     panel.revalidate();
                     searchField.requestFocus();
+                } else if (e.isControlDown() && (e.getKeyCode() == KeyEvent.VK_H || e.getKeyCode() == KeyEvent.VK_R)) {
+                    ReplaceDialog.getInstance(editor);
                 }
             }
         });
@@ -315,14 +319,14 @@ public class Notepad extends JPanel {
         return editor;
     }
 
-    public static RSyntaxTextArea getInstance(String editingStyle) {
+    public static SyntaxEditorWrapper getInstance(String editingStyle) {
         RSyntaxTextArea editor = new RSyntaxTextArea();
         Notepad.installVariablesAutoCompletion(editor);
         Notepad.installPagePropertiesAutoCompletion(editor);
         Notepad.installRegionPropertiesAutoCompletion(editor);
         editor.setSyntaxEditingStyle(editingStyle);
         editor.setCodeFoldingEnabled(false);
-        return editor;
+        return new SyntaxEditorWrapper(editor);
     }
 
     static DefaultCompletionProvider variablesCompletionProvider = new DefaultCompletionProvider() {
@@ -465,12 +469,12 @@ public class Notepad extends JPanel {
         };
         provider.setAutoActivationRules(false, null);
         provider.setAutoActivationRules(true, "this[");
-        for (String property[] : ActiveRegion.showProperties) {
+        for (String property[] : ActiveRegion.getShowProperties()) {
             if (property[1] != null) {
                 provider.addCompletion(new ShorthandCompletion(provider, property[0], "'" + property[0] + "']", property[1]));
             }
         }
-        for (String property[] : ActiveRegion.showImageProperties) {
+        for (String property[] : ActiveRegion.getShowImageProperties()) {
             if (property[1] != null) {
                 provider.addCompletion(new ShorthandCompletion(provider, property[0], "'" + property[0] + "']", property[1]));
             }
@@ -527,7 +531,7 @@ public class Notepad extends JPanel {
         menuItems = new Hashtable();
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
-        panel.add("Center", getEditorPanel(editor, true));
+        panel.add("Center", getEditorPanel(editor, null, true));
         add("Center", panel);
         add("South", createStatusbar());
     }
@@ -963,5 +967,98 @@ class RSyntaxTextAreaCellEditor extends AbstractCellEditor implements TableCellE
 
     public Object getCellEditorValue() {
         return component.getText();
+    }
+}
+
+class ReplaceDialog extends JPanel {
+    private static final JCheckBox matchCase = new JCheckBox("Match Case");
+
+    private ReplaceDialog(final SyntaxEditorWrapper editor) {
+        final JDialog frame = new JDialog((Frame) null, "Replace Text", true);
+        final JTextField searchText = new JTextField(20);
+        final JTextField replaceText = new JTextField(20);
+        setLayout(new SpringLayout());
+        add(new JLabel("Search: "));
+        String selectedText = editor.getSyntaxTextArea().getSelectedText();
+        if (selectedText != null) {
+            searchText.setText(selectedText);
+        }
+        add(searchText);
+        add(new JLabel("Replace: "));
+        add(replaceText);
+        JPanel btnPanel = new JPanel();
+        JButton btnReplace = new JButton("Replace All");
+        JButton btnCancel = new JButton("Cancel");
+        btnReplace.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int caretPosition = editor.getSyntaxTextArea().getCaretPosition();
+                String text = editor.getSyntaxTextArea().getText();
+                int count = 0;
+                if (matchCase.isSelected()) {
+                    String textForCounting = text;
+                    String searchTextForCounting = searchText.getText();
+                    count = getCount(textForCounting, searchTextForCounting);
+                    if (count > 0) {
+                        editor.getSyntaxTextArea().setText(text.replace(searchText.getText(), replaceText.getText()));
+                    }
+                } else {
+                    String textForCounting = text.toLowerCase();
+                    String searchTextForCounting = searchText.getText().toLowerCase();
+                    count = getCount(textForCounting, searchTextForCounting);
+                    if (count > 0) {
+                        editor.getSyntaxTextArea().setText(text.replaceAll("(?i)" + searchText.getText(), replaceText.getText()));
+                    }
+                }
+                if (count > 0) {
+                    Runnable onChange = editor.getOnChange();
+                    if (onChange != null) {
+                        onChange.run();
+                    }
+                    JOptionPane.showMessageDialog(editor.getSyntaxTextArea().getParent(), "Replaced " + count + ((count > 1) ? " occurrences." : "occurrence."), "Done.", JOptionPane.INFORMATION_MESSAGE);
+                    if (caretPosition >= 0 && caretPosition < text.length()) {
+                        editor.getSyntaxTextArea().setCaretPosition(caretPosition);
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(editor.getSyntaxTextArea().getParent(), "Search text not found.", "Nothing to replace", JOptionPane.INFORMATION_MESSAGE);
+                }
+                frame.setVisible(false);
+            }
+        });
+        btnPanel.add(btnReplace);
+        btnPanel.add(btnCancel);
+        btnPanel.add(matchCase);
+        btnCancel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.setVisible(false);
+            }
+        });
+        SpringUtilities.makeCompactGrid(this,
+                2, 2, //rows, cols
+                5, 5, //initialX, initialY
+                5, 5);//xPad, yPad    }
+
+        frame.add(this);
+        frame.add(btnPanel, BorderLayout.SOUTH);
+        frame.pack();
+        frame.setLocationRelativeTo(editor.getSyntaxTextArea().getParent());
+        frame.getRootPane().setDefaultButton(btnReplace);
+        frame.setVisible(true);
+    }
+
+    private int getCount(String textForCounting, String searchTextForCounting) {
+        int index;
+        int count = 0;
+        while ((index = textForCounting.indexOf(searchTextForCounting)) >= 0) {
+            count++;
+            textForCounting = textForCounting.substring(index + searchTextForCounting.length());
+        }
+
+        return count;
+    }
+
+    public static ReplaceDialog getInstance(final SyntaxEditorWrapper editor) {
+        return new ReplaceDialog(editor);
     }
 }

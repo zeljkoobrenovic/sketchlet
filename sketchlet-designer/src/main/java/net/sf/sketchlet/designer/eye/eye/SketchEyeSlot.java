@@ -2,7 +2,7 @@ package net.sf.sketchlet.designer.eye.eye;
 
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.framework.model.Page;
-import net.sf.sketchlet.framework.model.Pages;
+import net.sf.sketchlet.framework.model.Project;
 import org.apache.log4j.Logger;
 
 import java.awt.*;
@@ -159,7 +159,7 @@ public class SketchEyeSlot extends EyeSlot {
         SketchletEditor.getInstance().selectSketch(page);
 
         try {
-            while (Pages.getMessageFrame() != null) {
+            while (Project.getMessageFrame() != null) {
                 Thread.sleep(10);
             }
         } catch (Exception e) {

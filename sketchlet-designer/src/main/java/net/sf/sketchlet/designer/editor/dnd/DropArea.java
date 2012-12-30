@@ -1,5 +1,6 @@
 package net.sf.sketchlet.designer.editor.dnd;
 
+import net.sf.sketchlet.common.file.FileDrop;
 import net.sf.sketchlet.designer.editor.ui.profiles.Profiles;
 import org.apache.commons.lang.StringUtils;
 
@@ -13,10 +14,10 @@ public class DropArea {
     private String text;
     private int width = 24;
     private int height = 24;
-    private boolean acceptVariables = true;
-    private boolean acceptMacros = true;
-    private boolean acceptTimers = true;
-    private boolean acceptPages = true;
+    private boolean acceptVariablesEnabled = true;
+    private boolean acceptMacrosEnabled = true;
+    private boolean acceptTimersEnabled = true;
+    private boolean acceptPagesEnabled = true;
     private String profiles = "";
 
     private InternallyDroppedRunnable runnable;
@@ -92,36 +93,36 @@ public class DropArea {
         this.text = text;
     }
 
-    public boolean isAcceptVariables() {
-        return acceptVariables;
+    public boolean isAcceptVariablesEnabled() {
+        return acceptVariablesEnabled;
     }
 
-    public void setAcceptVariables(boolean acceptVariables) {
-        this.acceptVariables = acceptVariables;
+    public void setAcceptVariablesEnabled(boolean acceptVariablesEnabled) {
+        this.acceptVariablesEnabled = acceptVariablesEnabled;
     }
 
-    public boolean isAcceptMacros() {
-        return acceptMacros;
+    public boolean isAcceptMacrosEnabled() {
+        return acceptMacrosEnabled;
     }
 
-    public void setAcceptMacros(boolean acceptMacros) {
-        this.acceptMacros = acceptMacros;
+    public void setAcceptMacrosEnabled(boolean acceptMacrosEnabled) {
+        this.acceptMacrosEnabled = acceptMacrosEnabled;
     }
 
-    public boolean isAcceptTimers() {
-        return acceptTimers;
+    public boolean isAcceptTimersEnabled() {
+        return acceptTimersEnabled;
     }
 
-    public void setAcceptTimers(boolean acceptTimers) {
-        this.acceptTimers = acceptTimers;
+    public void setAcceptTimersEnabled(boolean acceptTimersEnabled) {
+        this.acceptTimersEnabled = acceptTimersEnabled;
     }
 
-    public boolean isAcceptPages() {
-        return acceptPages;
+    public boolean isAcceptPagesEnabled() {
+        return acceptPagesEnabled;
     }
 
-    public void setAcceptPages(boolean acceptPages) {
-        this.acceptPages = acceptPages;
+    public void setAcceptPagesEnabled(boolean acceptPagesEnabled) {
+        this.acceptPagesEnabled = acceptPagesEnabled;
     }
 
     public String getProfiles() {
@@ -133,7 +134,22 @@ public class DropArea {
     }
 
     public boolean isActive() {
-        return StringUtils.isBlank(getProfiles()) || Profiles.isActive(getProfiles());
+        return acceptDroppedString() && (StringUtils.isBlank(profiles) || Profiles.isActive(profiles));
+    }
+
+    private boolean acceptDroppedString() {
+        String strText = FileDrop.getCurrentString();
+        if (strText.startsWith("=")) {
+            return isAcceptVariablesEnabled();
+        } else if (strText.startsWith("@timer ")) {
+            return isAcceptTimersEnabled();
+        } else if (strText.startsWith("@sketch ")) {
+            return isAcceptPagesEnabled();
+        } else if (strText.startsWith("@macro ")) {
+            return isAcceptMacrosEnabled();
+        } else {
+            return true;
+        }
     }
 
     public InternallyDroppedRunnable getRunnable() {

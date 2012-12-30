@@ -55,7 +55,7 @@ public class ImageCache {
                         getImages().clear();
                     }
                     images = new Hashtable<File, BufferedImage>();
-                    for (Page s : SketchletEditor.getPages().getPages()) {
+                    for (Page s : SketchletEditor.getProject().getPages()) {
                         Vector<File> imageFiles = s.getImageFiles();
                         for (File file : imageFiles) {
                             if (file.exists() && file.getName().endsWith(".png")) {

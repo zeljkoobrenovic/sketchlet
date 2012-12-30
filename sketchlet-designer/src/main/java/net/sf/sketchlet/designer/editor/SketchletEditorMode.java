@@ -7,7 +7,7 @@ public enum SketchletEditorMode {
 
     UNDEFINED,
     SKETCHING,
-    ACTIONS,
+    EDITING_REGIONS,
     PREVIEW,
     TRAJECTORY
 }

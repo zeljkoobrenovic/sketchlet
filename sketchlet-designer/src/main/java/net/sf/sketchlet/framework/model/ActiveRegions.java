@@ -1,11 +1,9 @@
 package net.sf.sketchlet.framework.model;
 
-import net.sf.sketchlet.designer.editor.SketchletEditorMode;
 import net.sf.sketchlet.framework.controller.ActiveRegionsMouseHelper;
 import net.sf.sketchlet.framework.controller.ActiveRegionsOverlapHelper;
 import net.sf.sketchlet.framework.controller.ActiveRegionsVariablesHelper;
 
-import java.awt.*;
 import java.io.PrintWriter;
 import java.util.Vector;
 
@@ -72,7 +70,7 @@ public class ActiveRegions {
 
     public ActiveRegion getRegionByImageFileName(String name) {
         for (ActiveRegion region : getRegions()) {
-            if (region.getDrawImageFileName().equalsIgnoreCase(name)) {
+            if (region.getDrawnImageFileName().equalsIgnoreCase(name)) {
                 return region;
             }
         }
@@ -91,7 +89,7 @@ public class ActiveRegions {
     public int getActionIndex(String imageFile) {
         int i = 0;
         for (ActiveRegion a : getRegions()) {
-            if (a.getDrawImageFileName(0).equals(imageFile)) {
+            if (a.getDrawnImageFileName(0).equals(imageFile)) {
                 return i;
             }
             i++;

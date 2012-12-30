@@ -1,6 +1,6 @@
 package net.sf.sketchlet.designer.editor.ui;
 
-import net.sf.sketchlet.framework.model.Pages;
+import net.sf.sketchlet.framework.model.Project;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -39,7 +39,7 @@ public class PreviewList extends JPanel {
         Object data[][];
 
         public void refreshData() {
-            data = Pages.getSketchInfoFromDir();
+            data = Project.getSketchInfoFromDir();
             this.fireTableDataChanged();
         }
 

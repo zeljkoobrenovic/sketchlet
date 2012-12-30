@@ -73,7 +73,7 @@ public class GlobalProperties {
             try {
                 return Double.parseDouble(str);
             } catch (Exception e) {
-                log.error(e);
+                log.error("global properties error", e);
             }
         }
         return defaultValue;

@@ -100,7 +100,7 @@ public class EyeData {
         }
 
         if (selector.showSketches.isSelected()) {
-            for (Page s : SketchletEditor.getPages().getPages()) {
+            for (Page s : SketchletEditor.getProject().getPages()) {
                 EyeSlot slot = new SketchEyeSlot(s, this);
                 if (s == SketchletEditor.getInstance().getCurrentPage() && n > 0) {
                     slots.add(new EmptyEyeSlot(this));

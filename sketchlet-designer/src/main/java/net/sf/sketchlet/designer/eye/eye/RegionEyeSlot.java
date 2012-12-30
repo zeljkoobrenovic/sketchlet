@@ -27,9 +27,9 @@ public class RegionEyeSlot extends EyeSlot {
 
     public void addRelatedSlot(EyeSlot relatedSlot) {
         if (relatedSlot instanceof VariableEyeSlot) {
-            String value = getValue(region.updateTransformations, relatedSlot.name, 1, 0);
+            String value = getValue(region.getMotionAndRotationVariablesMapping(), relatedSlot.name, 1, 0);
             String vname = relatedSlot.name;
-            checkAndAdd(relatedSlot, region.updateTransformations, relatedSlot.name, 1,
+            checkAndAdd(relatedSlot, region.getMotionAndRotationVariablesMapping(), relatedSlot.name, 1,
                     "connected to dimension '" + value + "' of region " + region.getNumber(),
                     "dimension '" + value + "' connected to variable '" + vname + "'");
 
@@ -49,9 +49,9 @@ public class RegionEyeSlot extends EyeSlot {
             checkAndAdd(relatedSlot, region.mouseEvents, "Variable increment", relatedSlot.name, 1, 2,
                     "incremented on '" + value + "' in region " + region.getNumber() + " to " + value2,
                     "on '" + value + "' increment variable '" + vname + "'" + " to " + value2);*/
-            for (int i = 0; i < ActiveRegion.propertiesInfo.length; i++) {
-                if (region.getProperty(ActiveRegion.propertiesInfo[i][0]).equalsIgnoreCase("=" + relatedSlot.name)) {
-                    value = ActiveRegion.propertiesInfo[i][0];
+            for (int i = 0; i < ActiveRegion.getPropertiesInfo().length; i++) {
+                if (region.getProperty(ActiveRegion.getPropertiesInfo()[i][0]).equalsIgnoreCase("=" + relatedSlot.name)) {
+                    value = ActiveRegion.getPropertiesInfo()[i][0];
                     addRelationToSlot(relatedSlot,
                             "used as property '" + value + "' of region " + region.getNumber(),
                             "property '" + value + "' taken from variable '" + vname + "'");
@@ -129,7 +129,7 @@ this.checkAndAdd(relatedSlot, region.mouseEvents, "Go to page", relatedSlot.name
     }
 
     public void openItem() {
-        SketchletEditor.getInstance().setEditorMode(SketchletEditorMode.ACTIONS);
+        SketchletEditor.getInstance().setEditorMode(SketchletEditorMode.EDITING_REGIONS);
         ActiveRegionsFrame.showRegionsAndActions();
         ActiveRegionsFrame.refresh(region);
     }

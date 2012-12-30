@@ -14,7 +14,7 @@ import net.sf.sketchlet.framework.controller.InteractionContext;
 import net.sf.sketchlet.framework.controller.KeyboardController;
 import net.sf.sketchlet.framework.controller.MouseController;
 import net.sf.sketchlet.framework.model.Page;
-import net.sf.sketchlet.framework.model.Pages;
+import net.sf.sketchlet.framework.model.Project;
 import net.sf.sketchlet.framework.model.imagecache.ImageCache;
 import net.sf.sketchlet.framework.model.programming.macros.Commands;
 import net.sf.sketchlet.framework.renderer.page.PageRenderer;
@@ -47,7 +47,7 @@ import java.util.Vector;
 public class PlaybackPanel extends JPanel implements VariableUpdateListener, MouseListener, MouseMotionListener, MouseWheelListener, KeyListener, PanelRenderer, SketchletPainter {
     private static final Logger log = Logger.getLogger(PlaybackPanel.class);
 
-    private static Pages pages;
+    private static Project project;
     private static Page currentPage;
     private PlaybackFrame frame;
     private static Vector<Page> history = new Vector<Page>();
@@ -84,10 +84,10 @@ public class PlaybackPanel extends JPanel implements VariableUpdateListener, Mou
     private static RefreshScreenCaptureThread refreshCaptureThread = null;
 
 
-    public PlaybackPanel(ScreenMapping display, Pages pages, PlaybackFrame frame) {
+    public PlaybackPanel(ScreenMapping display, Project project, PlaybackFrame frame) {
         context = null;
         this.setDisplay(display);
-        this.setPages(pages);
+        this.setProject(project);
         this.frame = frame;
         this.setScale(SketchletEditor.getInstance().getScale());
         WidgetPlugin.setActiveWidget(null);
@@ -123,12 +123,12 @@ public class PlaybackPanel extends JPanel implements VariableUpdateListener, Mou
         PlaybackPanel.refreshCaptureThread = refreshCaptureThread;
     }
 
-    public static Pages getPages() {
-        return pages;
+    public static Project getProject() {
+        return project;
     }
 
-    public static void setPages(Pages pages) {
-        PlaybackPanel.pages = pages;
+    public static void setProject(Project project) {
+        PlaybackPanel.project = project;
     }
 
     public static Page getCurrentPage() {
@@ -186,7 +186,7 @@ public class PlaybackPanel extends JPanel implements VariableUpdateListener, Mou
 
         setDisplay(null);
         setDisplayThread(null);
-        setPages(null);
+        setProject(null);
         setCurrentPage(null);
         InteractionContext.setSelectedRegion(null);
         frame = null;
@@ -220,7 +220,7 @@ public class PlaybackPanel extends JPanel implements VariableUpdateListener, Mou
         context.setCurrentPage(getCurrentPage());
         context.setFrame(frame != null ? frame : SketchletContext.getInstance().getEditorFrame());
         context.setMasterPage(getMasterPage());
-        context.setPages(getPages());
+        context.setProject(getProject());
         context.setScale(getScale());
         context.setSelectedRegion(InteractionContext.getSelectedRegion());
         context.setAffineTransform(affine);
@@ -240,7 +240,7 @@ public class PlaybackPanel extends JPanel implements VariableUpdateListener, Mou
             masterPage.deactivate(true);
         }
         setCurrentPage(page);
-        setMasterPage(getPages().getSketch("Master"));
+        setMasterPage(getProject().getSketch("Master"));
         if (masterPage != null) {
             initMasterImage();
             masterPage.activate(true);
@@ -267,7 +267,7 @@ public class PlaybackPanel extends JPanel implements VariableUpdateListener, Mou
                 this.getMasterPage().deactivate(true);
             }
             this.setCurrentPage(page);
-            setMasterPage(this.getPages().getSketch("Master"));
+            setMasterPage(this.getProject().getSketch("Master"));
             if (this.getMasterPage() != null) {
                 initMasterImage();
                 this.getMasterPage().activate(true);
@@ -563,7 +563,7 @@ public class PlaybackPanel extends JPanel implements VariableUpdateListener, Mou
             repaint();
         }
         if (strGoTo != null && !strGoTo.equalsIgnoreCase("")) {
-            Page s = this.getPages().getSketch(strGoTo);
+            Page s = this.getProject().getSketch(strGoTo);
             if (getCurrentPage() != s) {
                 if (getCurrentPage() != null) {
                     affine = null;
@@ -580,18 +580,18 @@ public class PlaybackPanel extends JPanel implements VariableUpdateListener, Mou
 
                 if (s != null || strGoTo.equalsIgnoreCase("next") || strGoTo.equalsIgnoreCase("previous")) {
                     if (s == null) {
-                        int i = getPages().getPages().indexOf(getCurrentPage());
-                        if (strGoTo.equalsIgnoreCase("next") && i < getPages().getPages().size() - 1) {
-                            setCurrentPage(getPages().getPages().elementAt(i + 1));
+                        int i = getProject().getPages().indexOf(getCurrentPage());
+                        if (strGoTo.equalsIgnoreCase("next") && i < getProject().getPages().size() - 1) {
+                            setCurrentPage(getProject().getPages().elementAt(i + 1));
                         } else if (strGoTo.equalsIgnoreCase("previous") && i > 0) {
-                            setCurrentPage(getPages().getPages().elementAt(i - 1));
+                            setCurrentPage(getProject().getPages().elementAt(i - 1));
                         } else {
                             return;
                         }
                     } else {
                         setCurrentPage(s);
                     }
-                    setMasterPage(this.getPages().getSketch("Master"));
+                    setMasterPage(this.getProject().getSketch("Master"));
                     if (masterPage != null) {
                         initMasterImage();
                         masterPage.activate(true);
@@ -623,14 +623,14 @@ public class PlaybackPanel extends JPanel implements VariableUpdateListener, Mou
             return;
         }
 
-        getCurrentPage().getRegions().getVariablesHelper().changePerformed(name, value, true);
+        getCurrentPage().getRegions().getVariablesHelper().variableUpdated(name, value, true);
         boolean processEventsMaster = false;
         if (getCurrentPage() != null && getCurrentPage().getVariableUpdatePageHandler() != null) {
             processEventsMaster = getCurrentPage().getVariableUpdatePageHandler().process(name, value);
         }
 
         if (masterPage != null && getCurrentPage() != masterPage) {
-            masterPage.getRegions().getVariablesHelper().changePerformed(name, value, true);
+            masterPage.getRegions().getVariablesHelper().variableUpdated(name, value, true);
             if (masterPage.getVariableUpdatePageHandler() != null && !processEventsMaster) {
                 masterPage.getVariableUpdatePageHandler().process(name, value);
             }

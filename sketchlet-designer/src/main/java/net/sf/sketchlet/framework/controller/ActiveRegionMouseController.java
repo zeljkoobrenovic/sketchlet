@@ -9,17 +9,25 @@ import net.sf.sketchlet.common.filter.PerspectiveFilter;
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.animation.AnimationTimerDialog;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
+import net.sf.sketchlet.designer.editor.dnd.DropArea;
+import net.sf.sketchlet.designer.editor.dnd.DropAreas;
+import net.sf.sketchlet.designer.editor.dnd.InternalDroppedString;
+import net.sf.sketchlet.designer.editor.dnd.InternallyDroppedRunnable;
+import net.sf.sketchlet.designer.editor.dnd.SelectDropAction;
+import net.sf.sketchlet.designer.editor.ui.region.ActiveRegionPanel;
+import net.sf.sketchlet.designer.editor.ui.region.ActiveRegionsFrame;
 import net.sf.sketchlet.designer.editor.ui.timers.curve.CurvesFrame;
 import net.sf.sketchlet.designer.playback.displays.InteractionSpace;
 import net.sf.sketchlet.designer.playback.ui.PlaybackFrame;
 import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.framework.model.ActiveRegion;
 import net.sf.sketchlet.framework.model.TrajectoryPoint;
-import net.sf.sketchlet.framework.model.events.mouse.MouseProcessor;
+import net.sf.sketchlet.framework.model.events.mouse.MouseEventsProcessor;
 import net.sf.sketchlet.framework.model.programming.screenscripts.AWTRobotUtil;
 import net.sf.sketchlet.framework.model.programming.timers.Timer;
 import net.sf.sketchlet.framework.model.programming.timers.curves.Curve;
 import net.sf.sketchlet.framework.model.programming.timers.curves.Curves;
+import net.sf.sketchlet.framework.renderer.DropAreasRenderer;
 import net.sf.sketchlet.framework.renderer.regions.ActiveRegionRenderer;
 import net.sf.sketchlet.util.SpringUtilities;
 import org.apache.log4j.Logger;
@@ -55,6 +63,7 @@ public class ActiveRegionMouseController {
     public static final int TRAJECTORY2_POINT = 14;
 
     private ActiveRegion region;
+    private DropAreas dropAreas;
     private int selectedCorner = MIDDLE;
     private int startX;
     private int startY;
@@ -81,50 +90,50 @@ public class ActiveRegionMouseController {
     }
 
     public void mouseMoved(MouseEvent e, double scale, JFrame frame, boolean bPlayback) {
-        if (!region.parent.getPage().isRegionsLayer()) {
+        if (!region.getParent().getPage().isRegionsLayer()) {
             return;
         }
-        int marginX = bPlayback ? region.parent.getOffsetX() : SketchletEditor.getInstance().getMarginX();
-        int marginY = bPlayback ? region.parent.getOffsetY() : SketchletEditor.getInstance().getMarginY();
+        int marginX = bPlayback ? region.getParent().getOffsetX() : SketchletEditor.getInstance().getMarginX();
+        int marginY = bPlayback ? region.getParent().getOffsetY() : SketchletEditor.getInstance().getMarginY();
         int x = (int) ((e.getPoint().x) / scale) - marginX;
         int y = (int) ((e.getPoint().y) / scale) - marginY;
         mouseMoved(x, y, scale, e, frame, bPlayback);
     }
 
     public void mouseMoved(int x, int y, double scale, MouseEvent e, JFrame frame, boolean bPlayback) {
-        if (!region.parent.getPage().isRegionsLayer()) {
+        if (!region.getParent().getPage().isRegionsLayer()) {
             return;
         }
         Point ip = inversePoint(x, y, bPlayback);
         x = ip.x;
         y = ip.y;
         if (!bPlayback) {
-            int w = region.x2 - region.x1;
-            int h = region.y2 - region.y1;
-            int cx = region.x1 + w / 2;
-            int cy = region.y1 + h / 2;
+            int w = region.getX2Value() - region.getX1Value();
+            int h = region.getY2Value() - region.getY1Value();
+            int cx = region.getX1Value() + w / 2;
+            int cy = region.getY1Value() + h / 2;
 
             Cursor cursor;
 
             int cs2 = (int) (ActiveRegionRenderer.CORNER_SIZE / SketchletEditor.getInstance().getScale() / 2) + 1;
 
-            if (x >= region.x1 - cs2 && x <= region.x1 + cs2 && y >= region.y1 - cs2 && y <= region.y1 + cs2) {
+            if (x >= region.getX1Value() - cs2 && x <= region.getX1Value() + cs2 && y >= region.getY1Value() - cs2 && y <= region.getY1Value() + cs2) {
                 cursor = Cursor.getPredefinedCursor(Cursor.NW_RESIZE_CURSOR);
-            } else if (x >= region.x2 - cs2 && x <= region.x2 + cs2 && y >= region.y1 - cs2 && y <= region.y1 + cs2) {
+            } else if (x >= region.getX2Value() - cs2 && x <= region.getX2Value() + cs2 && y >= region.getY1Value() - cs2 && y <= region.getY1Value() + cs2) {
                 cursor = Cursor.getPredefinedCursor(Cursor.NE_RESIZE_CURSOR);
-            } else if (x >= region.x2 - cs2 && x <= region.x2 + cs2 && y >= region.y2 - cs2 && y <= region.y2 + cs2) {
+            } else if (x >= region.getX2Value() - cs2 && x <= region.getX2Value() + cs2 && y >= region.getY2Value() - cs2 && y <= region.getY2Value() + cs2) {
                 cursor = Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR);
-            } else if (x >= region.x1 - cs2 && x <= region.x1 + cs2 && y >= region.y2 - cs2 && y <= region.y2 + cs2) {
+            } else if (x >= region.getX1Value() - cs2 && x <= region.getX1Value() + cs2 && y >= region.getY2Value() - cs2 && y <= region.getY2Value() + cs2) {
                 cursor = Cursor.getPredefinedCursor(Cursor.SW_RESIZE_CURSOR);
-            } else if (x >= region.x1 - cs2 && x <= region.x1 + cs2 && y >= cy - cs2 && y <= cy + cs2) {
+            } else if (x >= region.getX1Value() - cs2 && x <= region.getX1Value() + cs2 && y >= cy - cs2 && y <= cy + cs2) {
                 cursor = Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR);
-            } else if (x >= region.x2 - cs2 && x <= region.x2 + cs2 && y >= cy - cs2 && y <= cy + cs2) {
+            } else if (x >= region.getX2Value() - cs2 && x <= region.getX2Value() + cs2 && y >= cy - cs2 && y <= cy + cs2) {
                 cursor = Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR);
-            } else if (x >= cx - cs2 && x <= cx + cs2 && y >= region.y1 - cs2 && y <= region.y1 + cs2) {
+            } else if (x >= cx - cs2 && x <= cx + cs2 && y >= region.getY1Value() - cs2 && y <= region.getY1Value() + cs2) {
                 cursor = Cursor.getPredefinedCursor(Cursor.N_RESIZE_CURSOR);
-            } else if (x >= cx - cs2 && x <= cx + cs2 && y >= region.y2 - cs2 && y <= region.y2 + cs2) {
+            } else if (x >= cx - cs2 && x <= cx + cs2 && y >= region.getY2Value() - cs2 && y <= region.getY2Value() + cs2) {
                 cursor = Cursor.getPredefinedCursor(Cursor.S_RESIZE_CURSOR);
-            } else if (x >= cx - cs2 && x <= cx + cs2 && y >= region.y1 - 35 - cs2 && y <= region.y1 - 35 + cs2) {
+            } else if (x >= cx - cs2 && x <= cx + cs2 && y >= region.getY1Value() - 35 - cs2 && y <= region.getY1Value() - 35 + cs2) {
                 cursor = Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR);
             } else {
                 cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
@@ -142,17 +151,17 @@ public class ActiveRegionMouseController {
     }
 
     public void mouseMovedEmbedded(int x, int y, long when, MouseEvent e, JFrame frame, boolean bPlayback) {
-        if (!region.parent.getPage().isRegionsLayer()) {
+        if (!region.getParent().getPage().isRegionsLayer()) {
             return;
         }
     }
 
     public void mousePressed(MouseEvent e, double scale, JFrame frame, boolean bPlayback) {
-        if (!region.parent.getPage().isRegionsLayer()) {
+        if (!region.getParent().getPage().isRegionsLayer()) {
             return;
         }
-        int marginX = bPlayback ? region.parent.getOffsetX() : SketchletEditor.getInstance().getMarginX();
-        int marginY = bPlayback ? region.parent.getOffsetY() : SketchletEditor.getInstance().getMarginY();
+        int marginX = bPlayback ? region.getParent().getOffsetX() : SketchletEditor.getInstance().getMarginX();
+        int marginY = bPlayback ? region.getParent().getOffsetY() : SketchletEditor.getInstance().getMarginY();
         int x = (int) ((e.getPoint().x) / scale) - marginX;
         int y = (int) ((e.getPoint().y) / scale) - marginY;
 
@@ -160,27 +169,27 @@ public class ActiveRegionMouseController {
     }
 
     public void mousePressed(int x, int y, int modifiers, long when, MouseEvent e, JFrame frame, boolean bPlayback) {
-        if (!region.parent.getPage().isRegionsLayer()) {
+        if (!region.getParent().getPage().isRegionsLayer()) {
             return;
         }
         setPressedX(x);
         setPressedY(y);
-            setStartX(x);
-            setStartY(y);
-        if (region.inTrajectoryMode && region.trajectory1.trim().isEmpty()) {
-            int xCenter = region.x1 + (int) ((region.x2 - region.x1) * region.center_rotation_x);
-            int yCenter = region.y1 + (int) ((region.y2 - region.y1) * region.center_rotation_y);
+        setStartX(x);
+        setStartY(y);
+        if (region.isInTrajectoryMode() && region.getTrajectory1().trim().isEmpty()) {
+            int xCenter = region.getX1Value() + (int) ((region.getX2Value() - region.getX1Value()) * region.getCenterOfRotationX());
+            int yCenter = region.getY1Value() + (int) ((region.getY2Value() - region.getY1Value()) * region.getCenterOfRotationY());
             this.startMouseXCenter = xCenter;
             this.startMouseYCenter = yCenter;
-            region.trajectory1 += xCenter + " " + yCenter + " " + 0 + "\n";
+            region.setTrajectory1(region.getTrajectory1() + xCenter + " " + yCenter + " " + 0 + "\n");
         }
-        if (region.inTrajectoryMode2 && region.trajectory2.trim().isEmpty()) {
-            int xCenter = region.x1 + (int) ((region.x2 - region.x1) * region.trajectory2_x);
-            int yCenter = region.y1 + (int) ((region.y2 - region.y1) * region.trajectory2_y);
+        if (region.isInTrajectoryMode2() && region.getTrajectory2().trim().isEmpty()) {
+            int xCenter = region.getX1Value() + (int) ((region.getX2Value() - region.getX1Value()) * region.getTrajectory2X());
+            int yCenter = region.getY1Value() + (int) ((region.getY2Value() - region.getY1Value()) * region.getTrajectory2Y());
             Point2D p = rotate(xCenter, yCenter);
             this.startMouseXCenter2 = (int) p.getX();
             this.startMouseYCenter2 = (int) p.getY();
-            region.trajectory2 += (int) p.getX() + " " + (int) p.getY() + " " + 0 + "\n";
+            region.setTrajectory2(region.getTrajectory2() + (int) p.getX() + " " + (int) p.getY() + " " + 0 + "\n");
         }
         startTime = when;
         Point ip = inversePoint(x, y, bPlayback);
@@ -190,33 +199,16 @@ public class ActiveRegionMouseController {
             if ((modifiers & InputEvent.BUTTON1_MASK) == InputEvent.BUTTON1_MASK) {
                 setSelectedCorner(MIDDLE);
             } else if ((modifiers & InputEvent.BUTTON3_MASK) == InputEvent.BUTTON3_MASK) {
-                setSelectedCorner(MIDDLE);
-                int xCenter = region.x1 + (int) ((region.x2 - region.x1) * region.center_rotation_x);
-                int yCenter = region.y1 + (int) ((region.y2 - region.y1) * region.center_rotation_y);
-
-                if (x == xCenter) {
-                    setStartAngle(y > yCenter ? Math.PI / 2 : -Math.PI / 2);
-                } else {
-                    setStartAngle(Math.atan((double) (y - yCenter) / (x - xCenter)));
-                }
-
-                setStartAngle(getStartAngle() - region.rotation);
-
-                if (x < xCenter) {
-                    setStartAngle(getStartAngle() + Math.PI);
-                }
-
-                if (getStartAngle() < 0) {
-                    setStartAngle(getStartAngle() + 2 * Math.PI);
-                }
+                setSelectedCorner(ROTATE);
+                startRotate(getStartX(), getStartY());
             }
 
-            if (region.screenCapturingMouseMappingEnabled) {
+            if (region.isScreenCapturingMouseMappingEnabled()) {
                 try {
-                    int sx = (int) Double.parseDouble(region.captureScreenX);
-                    int sy = (int) Double.parseDouble(region.captureScreenY);
-                    sx += (int) (Double.parseDouble(region.captureScreenWidth) * ((double) x - region.x1) / region.getWidth());
-                    sy += (int) (Double.parseDouble(region.captureScreenHeight) * ((double) y - region.y1) / region.getHeight());
+                    int sx = (int) Double.parseDouble(region.getCaptureScreenX());
+                    int sy = (int) Double.parseDouble(region.getCaptureScreenY());
+                    sx += (int) (Double.parseDouble(region.getCaptureScreenWidth()) * ((double) x - region.getX1Value()) / region.getWidthValue());
+                    sy += (int) (Double.parseDouble(region.getCaptureScreenHeight()) * ((double) y - region.getY1Value()) / region.getHeightValue());
                     try {
                         AWTRobotUtil.releaseMouse(InputEvent.BUTTON1_MASK);
                         AWTRobotUtil.releaseMouse(InputEvent.BUTTON2_MASK);
@@ -238,67 +230,67 @@ public class ActiveRegionMouseController {
                 }
             }
         } else {
-            aspectRatio = (double) (region.y2 - region.y1) / (region.x2 - region.x1);
+            aspectRatio = (double) (region.getY2Value() - region.getY1Value()) / (region.getX2Value() - region.getX1Value());
             if ((modifiers & InputEvent.BUTTON1_MASK) == InputEvent.BUTTON1_MASK) {
                 if (!SketchletEditor.getInstance().isInCtrlMode()) {
-                    int w = region.x2 - region.x1;
-                    int h = region.y2 - region.y1;
-                    int cx = region.x1 + w / 2;
-                    int cy = region.y1 + h / 2;
+                    int w = region.getX2Value() - region.getX1Value();
+                    int h = region.getY2Value() - region.getY1Value();
+                    int cx = region.getX1Value() + w / 2;
+                    int cy = region.getY1Value() + h / 2;
 
                     int cs2 = (int) (ActiveRegionRenderer.CORNER_SIZE / SketchletEditor.getInstance().getScale() / 2) + 1;
 
-                    if (x >= region.x1 - cs2 && x <= region.x1 + cs2 && y >= region.y1 - cs2 && y <= region.y1 + cs2) {
+                    if (x >= region.getX1Value() - cs2 && x <= region.getX1Value() + cs2 && y >= region.getY1Value() - cs2 && y <= region.getY1Value() + cs2) {
                         setSelectedCorner(UPPER_LEFT);
-                    } else if (x >= region.x2 - cs2 && x <= region.x2 + cs2 && y >= region.y1 - cs2 && y <= region.y1 + cs2) {
+                    } else if (x >= region.getX2Value() - cs2 && x <= region.getX2Value() + cs2 && y >= region.getY1Value() - cs2 && y <= region.getY1Value() + cs2) {
                         setSelectedCorner(UPPER_RIGHT);
-                    } else if (x >= region.x2 - cs2 && x <= region.x2 + cs2 && y >= region.y2 - cs2 && y <= region.y2 + cs2) {
+                    } else if (x >= region.getX2Value() - cs2 && x <= region.getX2Value() + cs2 && y >= region.getY2Value() - cs2 && y <= region.getY2Value() + cs2) {
                         setSelectedCorner(BOTTOM_RIGHT);
-                    } else if (x >= region.x1 - cs2 && x <= region.x1 + cs2 && y >= region.y2 - cs2 && y <= region.y2 + cs2) {
+                    } else if (x >= region.getX1Value() - cs2 && x <= region.getX1Value() + cs2 && y >= region.getY2Value() - cs2 && y <= region.getY2Value() + cs2) {
                         setSelectedCorner(BOTTOM_LEFT);
-                    } else if (x >= region.x1 - cs2 && x <= region.x1 + cs2 && y >= cy - cs2 && y <= cy + cs2) {
+                    } else if (x >= region.getX1Value() - cs2 && x <= region.getX1Value() + cs2 && y >= cy - cs2 && y <= cy + cs2) {
                         setSelectedCorner(LEFT);
-                    } else if (x >= region.x2 - cs2 && x <= region.x2 + cs2 && y >= cy - cs2 && y <= cy + cs2) {
+                    } else if (x >= region.getX2Value() - cs2 && x <= region.getX2Value() + cs2 && y >= cy - cs2 && y <= cy + cs2) {
                         setSelectedCorner(RIGHT);
-                    } else if (x >= cx - cs2 && x <= cx + cs2 && y >= region.y1 - cs2 && y <= region.y1 + cs2) {
+                    } else if (x >= cx - cs2 && x <= cx + cs2 && y >= region.getY1Value() - cs2 && y <= region.getY1Value() + cs2) {
                         setSelectedCorner(UPPER);
-                    } else if (x >= cx - cs2 && x <= cx + cs2 && y >= region.y2 - cs2 && y <= region.y2 + cs2) {
+                    } else if (x >= cx - cs2 && x <= cx + cs2 && y >= region.getY2Value() - cs2 && y <= region.getY2Value() + cs2) {
                         setSelectedCorner(BOTTOM);
-                    } else if (x >= cx - cs2 && x <= cx + cs2 && y >= region.y1 - 35 - cs2 && y <= region.y1 - 35 + cs2) {
+                    } else if (x >= cx - cs2 && x <= cx + cs2 && y >= region.getY1Value() - 35 - cs2 && y <= region.getY1Value() - 35 + cs2) {
                         setSelectedCorner(ROTATE);
                         startRotate(getStartX(), getStartY());
                     } else {
                         setSelectedCorner(MIDDLE);
                     }
                 } else {
-                    int w = region.x2 - region.x1;
-                    int h = region.y2 - region.y1;
+                    int w = region.getX2Value() - region.getX1Value();
+                    int h = region.getY2Value() - region.getY1Value();
 
-                    int _x0 = region.x1 + (int) (w * region.p_x0);
-                    int _y0 = region.y1 + (int) (h * region.p_y0);
-                    int _x1 = region.x1 + (int) (w * region.p_x1);
-                    int _y1 = region.y1 + (int) (h * region.p_y1);
-                    int _x2 = region.x1 + (int) (w * region.p_x2);
-                    int _y2 = region.y1 + (int) (h * region.p_y2);
-                    int _x3 = region.x1 + (int) (w * region.p_x3);
-                    int _y3 = region.y1 + (int) (h * region.p_y3);
+                    int _x0 = region.getX1Value() + (int) (w * region.getP_x0());
+                    int _y0 = region.getY1Value() + (int) (h * region.getP_y0());
+                    int _x1 = region.getX1Value() + (int) (w * region.getP_x1());
+                    int _y1 = region.getY1Value() + (int) (h * region.getP_y1());
+                    int _x2 = region.getX1Value() + (int) (w * region.getP_x2());
+                    int _y2 = region.getY1Value() + (int) (h * region.getP_y2());
+                    int _x3 = region.getX1Value() + (int) (w * region.getP_x3());
+                    int _y3 = region.getY1Value() + (int) (h * region.getP_y3());
 
-                    int c_x = region.x1 + (int) (w * region.center_rotation_x);
-                    int c_y = region.y1 + (int) (h * region.center_rotation_y);
+                    int c_x = region.getX1Value() + (int) (w * region.getCenterOfRotationX());
+                    int c_y = region.getY1Value() + (int) (h * region.getCenterOfRotationY());
 
-                    int t2_x = region.x1 + (int) (w * region.trajectory2_x);
-                    int t2_y = region.y1 + (int) (h * region.trajectory2_y);
+                    int t2_x = region.getX1Value() + (int) (w * region.getTrajectory2X());
+                    int t2_y = region.getY1Value() + (int) (h * region.getTrajectory2Y());
 
                     int cs2 = (int) (ActiveRegionRenderer.CORNER_SIZE / SketchletEditor.getInstance().getScale() / 2) + 1;
 
                     if (!SketchletEditor.getInstance().isInShiftMode() && x >= c_x - cs2 && x <= c_x + cs2 && y >= c_y - cs2 && y <= c_y + cs2) {
                         setSelectedCorner(CENTER_ROTATION);
-                        setCenterRotationX(region.center_rotation_x);
-                        setCenterRotationY(region.center_rotation_y);
+                        setCenterRotationX(region.getCenterOfRotationX());
+                        setCenterRotationY(region.getCenterOfRotationY());
                     } else if (SketchletEditor.getInstance().isInShiftMode() && x >= t2_x - cs2 && x <= t2_x + cs2 && y >= t2_y - cs2 && y <= t2_y + cs2) {
                         setSelectedCorner(TRAJECTORY2_POINT);
-                        this.setTrajectory2X(region.trajectory2_x);
-                        this.setTrajectory2Y(region.trajectory2_y);
+                        this.setTrajectory2X(region.getTrajectory2X());
+                        this.setTrajectory2Y(region.getTrajectory2Y());
                     } else if (x >= _x0 - cs2 && x <= _x0 + cs2 && y >= _y0 - cs2 && y <= _y0 + cs2) {
                         setSelectedCorner(PERSPECTIVE_UPPER_LEFT);
                     } else if (x >= _x1 - cs2 && x <= _x1 + cs2 && y >= _y1 - cs2 && y <= _y1 + cs2) {
@@ -320,12 +312,12 @@ public class ActiveRegionMouseController {
     }
 
     public void startRotate(int x, int y) {
-        if (!region.parent.getPage().isRegionsLayer()) {
+        if (!region.getParent().getPage().isRegionsLayer()) {
             return;
         }
-        setbRotating(true);
-        int xCenter = region.x1 + (int) ((region.x2 - region.x1) * region.center_rotation_x);
-        int yCenter = region.y1 + (int) ((region.y2 - region.y1) * region.center_rotation_y);
+        setRotating(true);
+        int xCenter = region.getX1Value() + (int) ((region.getX2Value() - region.getX1Value()) * region.getCenterOfRotationX());
+        int yCenter = region.getY1Value() + (int) ((region.getY2Value() - region.getY1Value()) * region.getCenterOfRotationY());
 
         if (x == xCenter) {
             setStartAngle(y > yCenter ? Math.PI / 2 : -Math.PI / 2);
@@ -333,7 +325,7 @@ public class ActiveRegionMouseController {
             setStartAngle(Math.atan((double) (y - yCenter) / (x - xCenter)));
         }
 
-        setStartAngle(getStartAngle() - region.rotation);
+        setStartAngle(getStartAngle() - region.getRotationValue());
 
         if (x < xCenter) {
             setStartAngle(getStartAngle() + Math.PI);
@@ -346,7 +338,7 @@ public class ActiveRegionMouseController {
     }
 
     public boolean mousePressedEmbedded(int x, int y, int modifiers, long when, MouseEvent e, JFrame frame, boolean bPlayback) {
-        if (!region.parent.getPage().isRegionsLayer()) {
+        if (!region.getParent().getPage().isRegionsLayer()) {
             return false;
         }
 
@@ -354,46 +346,46 @@ public class ActiveRegionMouseController {
     }
 
     public void mouseReleased(MouseEvent e, double scale, JFrame frame, boolean bPlayback) {
-        region.bAdjusting = false;
-        if (!region.parent.getPage().isRegionsLayer()) {
+        region.setAdjusting(false);
+        if (!region.getParent().getPage().isRegionsLayer()) {
             return;
         }
-        int marginX = bPlayback ? region.parent.getOffsetX() : SketchletEditor.getInstance().getMarginX();
-        int marginY = bPlayback ? region.parent.getOffsetY() : SketchletEditor.getInstance().getMarginY();
+        int marginX = bPlayback ? region.getParent().getOffsetX() : SketchletEditor.getInstance().getMarginX();
+        int marginY = bPlayback ? region.getParent().getOffsetY() : SketchletEditor.getInstance().getMarginY();
         int x = (int) ((e.getPoint().x) / scale) - marginX;
         int y = (int) ((e.getPoint().y) / scale) - marginY;
         mouseReleased(x, y, e.getModifiers(), e.getWhen(), e, frame, bPlayback);
     }
 
     public void mouseReleased(int x, int y, int modifiers, long when, MouseEvent e, JFrame frame, boolean bPlayback) {
-        region.bAdjusting = false;
+        region.setAdjusting(false);
         if (this.getSelectedCorner() == CENTER_ROTATION) {
-            region.center_rotation_x = getCenterRotationX();
-            region.center_rotation_y = getCenterRotationY();
+            region.setCenterOfRotationX(getCenterRotationX());
+            region.setCenterOfRotationY(getCenterRotationY());
             return;
         } else if (this.getSelectedCorner() == TRAJECTORY2_POINT) {
-            region.trajectory2_x = getTrajectory2X();
-            region.trajectory2_y = getTrajectory2Y();
+            region.setTrajectory2X(getTrajectory2X());
+            region.setTrajectory2Y(getTrajectory2Y());
 
             setSelectedCorner(-1);
             return;
         }
-        if (!region.parent.getPage().isRegionsLayer()) {
+        if (!region.getParent().getPage().isRegionsLayer()) {
             return;
         }
-        if (isbRotating()) {
-            region.rotation = Math.toRadians((int) Math.toDegrees(region.rotation));
-            setbRotating(false);
+        if (isRotating()) {
+            region.setRotationValue(Math.toRadians((int) Math.toDegrees(region.getRotationValue())));
+            setRotating(false);
         }
         Point ip = inversePoint(x, y, bPlayback);
         x = ip.x;
         y = ip.y;
         if ((modifiers & InputEvent.BUTTON1_MASK) == InputEvent.BUTTON1_MASK) {
 
-            int _x1 = Math.min(region.x1, region.x2);
-            int _x2 = Math.max(region.x1, region.x2);
-            int _y1 = Math.min(region.y1, region.y2);
-            int _y2 = Math.max(region.y1, region.y2);
+            int _x1 = Math.min(region.getX1Value(), region.getX2Value());
+            int _x2 = Math.max(region.getX1Value(), region.getX2Value());
+            int _y1 = Math.min(region.getY1Value(), region.getY2Value());
+            int _y2 = Math.max(region.getY1Value(), region.getY2Value());
 
             if (!bPlayback && SketchletEditor.isSnapToGrid()) {
                 int s = InteractionSpace.getGridSpacing();
@@ -403,10 +395,10 @@ public class ActiveRegionMouseController {
                 _y2 = ((_y2 + s / 2) / s) * s;
             }
 
-            region.x1 = _x1;
-            region.y1 = _y1;
-            region.x2 = _x2;
-            region.y2 = _y2;
+            region.setX1Value(_x1);
+            region.setY1Value(_y1);
+            region.setX2Value(_x2);
+            region.setY2Value(_y2);
 
             SketchletEditor.getInstance().repaint();
         } else if ((modifiers & InputEvent.BUTTON3_MASK) == InputEvent.BUTTON3_MASK) {
@@ -414,35 +406,35 @@ public class ActiveRegionMouseController {
         }
         region.getMotionController().processLimits("speed", 0.0, 0.0, 0.0, true);
         if (bPlayback) {
-            region.mouseProcessor.processAction(e, frame, new int[]{MouseProcessor.MOUSE_LEFT_BUTTON_RELEASE, MouseProcessor.MOUSE_MIDDLE_BUTTON_RELEASE, MouseProcessor.MOUSE_RIGHT_BUTTON_RELEASE});
+            region.getMouseEventsProcessor().processAction(e, frame, new int[]{MouseEventsProcessor.MOUSE_LEFT_BUTTON_RELEASE, MouseEventsProcessor.MOUSE_MIDDLE_BUTTON_RELEASE, MouseEventsProcessor.MOUSE_RIGHT_BUTTON_RELEASE});
         }
 
-        if (region.inTrajectoryMode) {
-            if (region.trajectoryType < 2) {
+        if (region.isInTrajectoryMode()) {
+            if (region.getTrajectoryType() < 2) {
                 processTrajectory();
-                region.inTrajectoryMode = false;
-            } else if (region.trajectoryType == 2) {
-                int xCenter = region.x1 + (int) ((region.x2 - region.x1) * region.center_rotation_x);
-                int yCenter = region.y1 + (int) ((region.y2 - region.y1) * region.center_rotation_y);
-                region.trajectory1 += xCenter + " " + yCenter + " " + 0 + "\n";
-            } else if (region.trajectoryType == 3) {
+                region.setInTrajectoryMode(false);
+            } else if (region.getTrajectoryType() == 2) {
+                int xCenter = region.getX1Value() + (int) ((region.getX2Value() - region.getX1Value()) * region.getCenterOfRotationX());
+                int yCenter = region.getY1Value() + (int) ((region.getY2Value() - region.getY1Value()) * region.getCenterOfRotationY());
+                region.setTrajectory1(region.getTrajectory1() + xCenter + " " + yCenter + " " + 0 + "\n");
+            } else if (region.getTrajectoryType() == 3) {
                 processTrajectory();
-                region.inTrajectoryMode = false;
+                region.setInTrajectoryMode(false);
             }
-            region.trajectory1 = simplifyTrajectory(region.trajectory1);
-        } else if (region.inTrajectoryMode2) {
-            if (region.trajectoryType < 2) {
+            region.setTrajectory1(simplifyTrajectory(region.getTrajectory1()));
+        } else if (region.isInTrajectoryMode2()) {
+            if (region.getTrajectoryType() < 2) {
                 processTrajectory2();
-                region.inTrajectoryMode2 = false;
-            } else if (region.trajectoryType == 2) {
-                int xCenter = region.x1 + (int) ((region.x2 - region.x1) * region.trajectory2_x);
-                int yCenter = region.y1 + (int) ((region.y2 - region.y1) * region.trajectory2_y);
+                region.setInTrajectoryMode2(false);
+            } else if (region.getTrajectoryType() == 2) {
+                int xCenter = region.getX1Value() + (int) ((region.getX2Value() - region.getX1Value()) * region.getTrajectory2X());
+                int yCenter = region.getY1Value() + (int) ((region.getY2Value() - region.getY1Value()) * region.getTrajectory2Y());
                 Point2D p = rotate(xCenter, yCenter);
-                region.trajectory2 += (int) p.getX() + " " + (int) p.getY() + " " + 0 + "\n";
-            } else if (region.trajectoryType == 3) {
-                region.inTrajectoryMode2 = false;
+                region.setTrajectory2(region.getTrajectory2() + (int) p.getX() + " " + (int) p.getY() + " " + 0 + "\n");
+            } else if (region.getTrajectoryType() == 3) {
+                region.setInTrajectoryMode2(false);
             }
-            region.trajectory2 = simplifyTrajectory(region.trajectory2);
+            region.setTrajectory2(simplifyTrajectory(region.getTrajectory2()));
         }
         if (bPlayback) {
             region.getRenderer().getWidgetImageLayer().mouseReleased(e, x, y);
@@ -483,7 +475,7 @@ public class ActiveRegionMouseController {
     }
 
     public void processTrajectory() {
-        if (!region.parent.getPage().isRegionsLayer()) {
+        if (!region.getParent().getPage().isRegionsLayer()) {
             return;
         }
         JPanel panel = new JPanel(new SpringLayout());
@@ -491,10 +483,10 @@ public class ActiveRegionMouseController {
         JLabel label2 = new JLabel(Language.translate("using the trajectory timing data?"));
         JCheckBox curveCheck = new JCheckBox(Language.translate("Create timer curve with geture timing"), true);
         JCheckBox timerCheck = new JCheckBox(Language.translate("Create timer"), true);
-        JCheckBox controlOrientation = new JCheckBox(Language.translate("Control orientation"), region.changingOrientationOnTrajectoryEnabled);
+        JCheckBox controlOrientation = new JCheckBox(Language.translate("Control orientation"), region.isChangingOrientationOnTrajectoryEnabled());
         JCheckBox restartCheck = new JCheckBox(Language.translate("Restart variables on sketch entry and exit"), true);
         panel.add(label1);
-        if (region.trajectoryType == 0) {
+        if (region.getTrajectoryType() == 0) {
             panel.add(label2);
         } else {
             label1.setText(label1.getText() + "?");
@@ -502,12 +494,12 @@ public class ActiveRegionMouseController {
         panel.add(timerCheck);
         panel.add(restartCheck);
         panel.add(controlOrientation);
-        if (region.trajectoryType == 0) {
+        if (region.getTrajectoryType() == 0) {
             panel.add(curveCheck);
         } else {
             curveCheck.setSelected(false);
         }
-        if (region.trajectoryType == 0) {
+        if (region.getTrajectoryType() == 0) {
             SpringUtilities.makeCompactGrid(panel,
                     6, 1, //rows, cols
                     5, 5, //initialX, initialY
@@ -538,7 +530,7 @@ public class ActiveRegionMouseController {
                 Timer t = null;
                 if (timerCheck.isSelected()) {
                     t = SketchletEditor.getInstance().getExtraEditorPanel().timersExtraPanel.newTimer();
-                    if (region.trajectoryType == 0) {
+                    if (region.getTrajectoryType() == 0) {
                         t.setStrDurationInSec("" + (totalDuration / 1000.0));
                         if (t.getPanel() != null) {
                             t.getPanel().fieldDuration.setText(t.getStrDurationInSec() + "");
@@ -581,23 +573,23 @@ public class ActiveRegionMouseController {
                     t.getVariables()[0][2] = "1.0";
                 }
 
-                region.changingOrientationOnTrajectoryEnabled = controlOrientation.isSelected();
+                region.setChangingOrientationOnTrajectoryEnabled(controlOrientation.isSelected());
 
-                region.strTrajectoryPosition = "=" + newVariable;
-                if (t != null && region.trajectoryType == 0) {
+                region.setTrajectoryPosition("=" + newVariable);
+                if (t != null && region.getTrajectoryType() == 0) {
                     t.setStrDurationInSec("" + (totalDuration / 1000.0));
                 }
             }
         }
-        region.inTrajectoryMode = false;
+        region.setInTrajectoryMode(false);
     }
 
     public void processTrajectory2() {
-        region.inTrajectoryMode2 = false;
+        region.setInTrajectoryMode2(false);
     }
 
     public boolean mouseReleasedEmbedded(int x, int y, int modifiers, long when, MouseEvent e, JFrame frame, boolean bPlayback) {
-        if (!region.parent.getPage().isRegionsLayer()) {
+        if (!region.getParent().getPage().isRegionsLayer()) {
             return false;
         }
 
@@ -605,455 +597,457 @@ public class ActiveRegionMouseController {
     }
 
     public void mouseDragged(MouseEvent e, double scale, JFrame frame, boolean bPlayback) {
-        if (!region.parent.getPage().isRegionsLayer()) {
+        if (!region.getParent().getPage().isRegionsLayer()) {
             return;
         }
-        int marginX = bPlayback ? region.parent.getOffsetX() : SketchletEditor.getInstance().getMarginX();
-        int marginY = bPlayback ? region.parent.getOffsetY() : SketchletEditor.getInstance().getMarginY();
+        int marginX = bPlayback ? region.getParent().getOffsetX() : SketchletEditor.getInstance().getMarginX();
+        int marginY = bPlayback ? region.getParent().getOffsetY() : SketchletEditor.getInstance().getMarginY();
         int x = (int) ((e.getPoint().x) / scale) - marginX;
         int y = (int) ((e.getPoint().y) / scale) - marginY;
         mouseDragged(x, y, e.getModifiers(), e.getWhen(), scale, e, frame, bPlayback);
     }
 
-    public synchronized void mouseDragged(int x, int y, int modifiers, long when, double scale, MouseEvent e, JFrame frame, boolean bPlayback) {
-        if (!region.parent.getPage().isRegionsLayer()) {
+    public synchronized void mouseDragged(int x, int y, int modifiers, long when, double scale, MouseEvent e, JFrame frame, boolean playbackMode) {
+        if (!region.getParent().getPage().isRegionsLayer()) {
             return;
         }
-        if (!bPlayback && region.pinned) {
+        if (!playbackMode && region.isPinned()) {
             return;
         }
-        region.bAdjusting = true;
-        int prevX1 = region.x1;
-        int prevY1 = region.y1;
-        int prevX2 = region.x2;
-        int prevY2 = region.y2;
+        region.setAdjusting(true);
+        int prevX1 = region.getX1Value();
+        int prevY1 = region.getY1Value();
+        int prevX2 = region.getX2Value();
+        int prevY2 = region.getY2Value();
 
         int _x = x, _y = y;
 
-        boolean bMoved = true;
+        boolean moved = true;
 
-        if (bPlayback && (!region.widget.isEmpty())) {
-            Point ip = inversePoint(_x, _y, bPlayback);
-            bMoved = false;
+        if (playbackMode && (!region.getWidget().isEmpty())) {
+            moved = false;
             region.getRenderer().getWidgetImageLayer().mouseDragged(e, x, y);
-        } else if ((!bPlayback || region.movable) && (modifiers & InputEvent.BUTTON1_MASK) == InputEvent.BUTTON1_MASK) {
-            if (getSelectedCorner() != MIDDLE) {
-                if (bPlayback) {
-                    return;
+        }
+        if (!e.isConsumed()) {
+            if ((!playbackMode || region.isMovable()) && (modifiers & InputEvent.BUTTON1_MASK) == InputEvent.BUTTON1_MASK) {
+                if (getSelectedCorner() != MIDDLE) {
+                    if (playbackMode) {
+                        return;
+                    }
+                    Point ip = inversePoint(x, y, playbackMode);
+                    x = ip.x;
+                    y = ip.y;
                 }
-                Point ip = inversePoint(x, y, bPlayback);
-                x = ip.x;
-                y = ip.y;
+                int w = region.getX2Value() - region.getX1Value();
+                int h = region.getY2Value() - region.getY1Value();
+                switch (getSelectedCorner()) {
+                    case MIDDLE:
+                        int dx = x - getStartX();
+                        int dy = y - getStartY();
+                        region.setX1Value(region.getX1Value() + dx);
+                        region.setY1Value(region.getY1Value() + dy);
+                        region.setX2Value(region.getX2Value() + dx);
+                        region.setY2Value(region.getY2Value() + dy);
+
+                        break;
+                    case UPPER_LEFT:
+                        if (!SketchletEditor.getInstance().isInShiftMode()) {
+                            dx = x - region.getX1Value();
+                            dy = y - region.getY1Value();
+                            if (!region.getWidth().startsWith("=")) {
+                                region.setX1Value(x);
+                                if (region.getRotationValue() != 0) {
+                                    region.setX2Value(region.getX2Value() - dx);
+                                }
+                            }
+                            if (!region.getHeight().startsWith("=")) {
+                                region.setY1Value(y);
+                                if (region.getRotationValue() != 0) {
+                                    region.setY2Value(region.getY2Value() - dy);
+                                }
+                            }
+                        } else {
+                            dx = x - region.getX1Value();
+                            if (!region.getWidth().startsWith("=")) {
+                                region.setX1Value(x);
+                                if (region.getRotationValue() != 0) {
+                                    region.setX2Value(region.getX2Value() - dx);
+                                }
+                            }
+                            dy = region.getY2Value() - (int) ((region.getX2Value() - region.getX1Value()) * aspectRatio) - region.getY2Value();
+                            if (!region.getHeight().startsWith("=")) {
+                                region.setY1Value(region.getY2Value() - (int) ((region.getX2Value() - region.getX1Value()) * aspectRatio));
+                                if (region.getRotationValue() != 0) {
+                                    region.setY2Value(region.getY2Value() - dy);
+                                }
+                            }
+                        }
+                        break;
+                    case UPPER_RIGHT:
+                        if (!SketchletEditor.getInstance().isInShiftMode()) {
+                            dx = x - region.getX2Value();
+                            dy = y - region.getY1Value();
+                            if (!region.getWidth().startsWith("=")) {
+                                region.setX2Value(x);
+                                if (region.getRotationValue() != 0) {
+                                    region.setX1Value(region.getX1Value() - dx);
+                                }
+                            }
+                            if (!region.getHeight().startsWith("=")) {
+                                region.setY1Value(y);
+                                if (region.getRotationValue() != 0) {
+                                    region.setY2Value(region.getY2Value() - dy);
+                                }
+                            }
+                        } else {
+                            dx = x - region.getX1Value();
+                            if (!region.getWidth().startsWith("=")) {
+                                region.setX2Value(x);
+                                if (region.getRotationValue() != 0) {
+                                    region.setX1Value(region.getX1Value() - dx);
+                                }
+                            }
+                            dy = region.getY2Value() - (int) ((region.getX2Value() - region.getX1Value()) * aspectRatio) - region.getY1Value();
+                            if (!region.getHeight().startsWith("=")) {
+                                region.setY1Value(region.getY2Value() - (int) ((region.getX2Value() - region.getX1Value()) * aspectRatio));
+                                if (region.getRotationValue() != 0) {
+                                    region.setY2Value(region.getY2Value() - dy);
+                                }
+                            }
+                        }
+                        break;
+                    case BOTTOM_LEFT:
+                        if (!SketchletEditor.getInstance().isInShiftMode()) {
+                            dx = x - region.getX1Value();
+                            dy = y - region.getY2Value();
+                            if (!region.getWidth().startsWith("=")) {
+                                region.setX1Value(x);
+                                if (region.getRotationValue() != 0) {
+                                    region.setX2Value(region.getX2Value() - dx);
+                                }
+                            }
+                            if (!region.getHeight().startsWith("=")) {
+                                region.setY2Value(y);
+                                if (region.getRotationValue() != 0) {
+                                    region.setY1Value(region.getY1Value() - dy);
+                                }
+                            }
+                        } else {
+                            dx = x - region.getX1Value();
+                            if (!region.getWidth().startsWith("=")) {
+                                region.setX1Value(x);
+                                if (region.getRotationValue() != 0) {
+                                    region.setX2Value(region.getX2Value() - dx);
+                                }
+                            }
+                            dy = region.getY1Value() + (int) ((region.getX2Value() - region.getX1Value()) * aspectRatio) - region.getY2Value();
+                            if (!region.getHeight().startsWith("=")) {
+                                region.setY2Value(region.getY1Value() + (int) ((region.getX2Value() - region.getX1Value()) * aspectRatio));
+                                if (region.getRotationValue() != 0) {
+                                    region.setY1Value(region.getY1Value() - dy);
+                                }
+                            }
+                        }
+                        break;
+                    case BOTTOM_RIGHT:
+                        if (!SketchletEditor.getInstance().isInShiftMode()) {
+                            dx = x - region.getX2Value();
+                            dy = y - region.getY2Value();
+                            if (!region.getWidth().startsWith("=")) {
+                                region.setX2Value(x);
+                                if (region.getRotationValue() != 0) {
+                                    region.setX1Value(region.getX1Value() - dx);
+                                }
+                            }
+                            if (!region.getHeight().startsWith("=")) {
+                                region.setY2Value(y);
+                                if (region.getRotationValue() != 0) {
+                                    region.setY1Value(region.getY1Value() - dy);
+                                }
+                            }
+                        } else {
+                            dx = x - region.getX2Value();
+                            if (!region.getWidth().startsWith("=")) {
+                                region.setX2Value(x);
+                                if (region.getRotationValue() != 0) {
+                                    region.setX1Value(region.getX1Value() - dx);
+                                }
+                            }
+                            dy = region.getY1Value() + (int) ((region.getX2Value() - region.getX1Value()) * aspectRatio) - region.getY2Value();
+                            if (!region.getHeight().startsWith("=")) {
+                                region.setY2Value(region.getY1Value() + (int) ((region.getX2Value() - region.getX1Value()) * aspectRatio));
+                                if (region.getRotationValue() != 0) {
+                                    region.setY1Value(region.getY1Value() - dy);
+                                }
+                            }
+                        }
+                        break;
+                    case UPPER:
+                        if (!region.getHeight().startsWith("=")) {
+                            dy = y - region.getY1Value();
+                            region.setY1Value(y);
+                            if (region.getRotationValue() != 0) {
+                                region.setY2Value(region.getY2Value() - dy);
+                            }
+                        }
+                        break;
+                    case BOTTOM:
+                        if (!region.getHeight().startsWith("=")) {
+                            dy = y - region.getY2Value();
+                            region.setY2Value(y);
+                            if (region.getRotationValue() != 0) {
+                                region.setY1Value(region.getY1Value() - dy);
+                            }
+                        }
+                        break;
+                    case LEFT:
+                        if (!region.getWidth().startsWith("=")) {
+                            dx = x - region.getX1Value();
+                            region.setX1Value(x);
+                            if (region.getRotationValue() != 0) {
+                                region.setX2Value(region.getX2Value() - dx);
+                            }
+                        }
+                        break;
+                    case RIGHT:
+                        if (!region.getWidth().startsWith("=")) {
+                            dx = x - region.getX2Value();
+                            region.setX2Value(x);
+                            if (region.getRotationValue() != 0) {
+                                region.setX1Value(region.getX1Value() - dx);
+                            }
+                        }
+                        break;
+                    case PERSPECTIVE_UPPER_LEFT:
+                        region.setP_x0((double) (x - region.getX1Value()) / w);
+                        region.setP_y0((double) (y - region.getY1Value()) / h);
+
+                        region.setP_x0(Math.max(0.0, region.getP_x0()));
+                        region.setP_x0(Math.min(1.0, region.getP_x0()));
+                        region.setP_y0(Math.max(0.0, region.getP_y0()));
+                        region.setP_y0(Math.min(1.0, region.getP_y0()));
+                        break;
+                    case CENTER_ROTATION:
+                        setCenterRotationX((double) (x - region.getX1Value()) / w);
+                        setCenterRotationY((double) (y - region.getY1Value()) / h);
+
+                        setCenterRotationX(Math.max(0.0, getCenterRotationX()));
+                        setCenterRotationX(Math.min(1.0, getCenterRotationX()));
+                        setCenterRotationY(Math.max(0.0, getCenterRotationY()));
+                        setCenterRotationY(Math.min(1.0, getCenterRotationY()));
+                        break;
+                    case TRAJECTORY2_POINT:
+                        setTrajectory2X((double) (x - region.getX1Value()) / w);
+                        setTrajectory2Y((double) (y - region.getY1Value()) / h);
+
+                        setTrajectory2X(Math.max(0.0, getTrajectory2X()));
+                        setTrajectory2X(Math.min(1.0, getTrajectory2X()));
+                        setTrajectory2Y(Math.max(0.0, getTrajectory2Y()));
+                        setTrajectory2Y(Math.min(1.0, getTrajectory2Y()));
+
+                        break;
+                    case PERSPECTIVE_UPPER_RIGHT:
+                        region.setP_x1((double) (x - region.getX1Value()) / w);
+                        region.setP_y1((double) (y - region.getY1Value()) / h);
+                        region.setP_x1(Math.max(0.0, region.getP_x1()));
+                        region.setP_x1(Math.min(1.0, region.getP_x1()));
+                        region.setP_y1(Math.max(0.0, region.getP_y1()));
+                        region.setP_y1(Math.min(1.0, region.getP_y1()));
+                        break;
+                    case PERSPECTIVE_BOTTOM_RIGHT:
+                        region.setP_x2((double) (x - region.getX1Value()) / w);
+                        region.setP_y2((double) (y - region.getY1Value()) / h);
+                        region.setP_x2(Math.max(0.0, region.getP_x2()));
+                        region.setP_x2(Math.min(1.0, region.getP_x2()));
+                        region.setP_y2(Math.max(0.0, region.getP_y2()));
+                        region.setP_y2(Math.min(1.0, region.getP_y2()));
+                        break;
+                    case PERSPECTIVE_BOTTOM_LEFT:
+                        region.setP_x3((double) (x - region.getX1Value()) / w);
+                        region.setP_y3((double) (y - region.getY1Value()) / h);
+                        region.setP_x3(Math.max(0.0, region.getP_x3()));
+                        region.setP_x3(Math.min(1.0, region.getP_x3()));
+                        region.setP_y3(Math.max(0.0, region.getP_y3()));
+                        region.setP_y3(Math.min(1.0, region.getP_y3()));
+                        break;
+                    case ROTATE:
+                        rotate(_x, _y, playbackMode);
+                        break;
+                }
+
+                if (getSelectedCorner() != ROTATE && getSelectedCorner() != TRAJECTORY2_POINT && getSelectedCorner() != CENTER_ROTATION) {
+                    setStartX(x);
+                    setStartY(y);
+
+                    region.getInteractionController().processInteractionEvents(playbackMode, region.getParent().getPage().getActiveTimers(), region.getParent().getPage().getActiveMacros());
+                    region.getSketch().updateConnectors(region, playbackMode);
+
+                    if (!region.isWithinLimits(false) || region.getInteractionController().intersectsWithSolids(playbackMode)) {
+                        region.getParent().getOverlapHelper().findNonOverlappingLocation(region);
+                        return;
+                    }
+
+                    if (!playbackMode) {
+                        if (region.getParent() != null && region.getParent().getMouseHelper().getSelectedRegions() != null) {
+                            for (ActiveRegion as : region.getParent().getMouseHelper().getSelectedRegions()) {
+                                if (as != region) {
+                                    as.setX1Value(as.getX1Value() + region.getX1Value() - prevX1);
+                                    as.setY1Value(as.getY1Value() + region.getY1Value() - prevY1);
+                                    as.setX2Value(as.getX2Value() + region.getX2Value() - prevX2);
+                                    as.setY2Value(as.getY2Value() + region.getY2Value() - prevY2);
+                                }
+                            }
+                        }
+                    }
+                    if (region.getHorizontalAlignment().equalsIgnoreCase("center")) {
+                        region.getMotionController().processLimits("position x", region.getX1Value() + w / 2, w / 2, w / 2, true);
+                    } else if (region.getHorizontalAlignment().equalsIgnoreCase("right")) {
+                        region.getMotionController().processLimits("position x", region.getX1Value() + w, w, 0, true);
+                    } else {
+                        region.getMotionController().processLimits("position x", region.getX1Value(), 0, w, true);
+                    }
+                    if (region.getVerticalAlignment().equalsIgnoreCase("center")) {
+                        region.getMotionController().processLimits("position y", region.getY1Value() + h / 2, h / 2, h / 2, true);
+                    } else if (region.getVerticalAlignment().equalsIgnoreCase("right")) {
+                        region.getMotionController().processLimits("position y", region.getY1Value() + h, h, 0, true);
+                    } else {
+                        region.getMotionController().processLimits("position y", region.getY1Value(), 0, h, true);
+                    }
+
+                    if (region.isInTrajectoryMode()) {
+                        int xCenter = region.getX1Value() + (int) ((region.getX2Value() - region.getX1Value()) * region.getCenterOfRotationX());
+                        int yCenter = region.getY1Value() + (int) ((region.getY2Value() - region.getY1Value()) * region.getCenterOfRotationY());
+                        if (region.getTrajectoryType() == 0) {
+                            region.setTrajectory1(region.getTrajectory1() + xCenter + " " + yCenter + " " + (when - startTime) + "\n");
+                        } else if (region.getTrajectoryType() == 1) {
+                            region.setTrajectory1(startMouseXCenter + " " + startMouseYCenter + " " + 0 + "\n");
+                            region.setTrajectory1(region.getTrajectory1() + xCenter + " " + yCenter + " " + (when - startTime) + "\n");
+                        } else if (region.getTrajectoryType() == 2) {
+                        } else if (region.getTrajectoryType() == 3) {
+                            int xEnd = region.getX1Value() + (int) ((region.getX2Value() - region.getX1Value()) * region.getCenterOfRotationX());
+                            int yEnd = region.getY1Value() + (int) ((region.getY2Value() - region.getY1Value()) * region.getCenterOfRotationY());
+
+                            int __x1 = Math.min(getPressedX(), xEnd);
+                            int __x2 = Math.max(getPressedX(), xEnd);
+                            int __y1 = Math.min(getPressedY(), yEnd);
+                            int __y2 = Math.max(getPressedY(), yEnd);
+
+                            int _w = __x2 - __x1;
+                            int _h = __y2 - __y1;
+                            int _cx = __x1 + _w / 2;
+                            int _cy = __y1 + _h / 2;
+
+                            region.setTrajectory1("");
+                            for (int i = 0; i < 360; i += 10) {
+                                double __x = _cx + Math.cos(Math.toRadians(i)) * _w / 2;
+                                double __y;
+                                if (SketchletEditor.getInstance().isInShiftMode()) {
+                                    __y = _cy + Math.sin(Math.toRadians(i)) * _w / 2;
+                                } else {
+                                    __y = _cy + Math.sin(Math.toRadians(i)) * _h / 2;
+                                }
+                                region.setTrajectory1(region.getTrajectory1() + (int) __x + " " + (int) __y + " " + 0 + "\n");
+                            }
+                        }
+                    } else if (region.isInTrajectoryMode2()) {
+                        int xCenter2 = region.getX1Value() + (int) ((region.getX2Value() - region.getX1Value()) * region.getTrajectory2X());
+                        int yCenter2 = region.getY1Value() + (int) ((region.getY2Value() - region.getY1Value()) * region.getTrajectory2Y());
+                        Point2D p = rotate(xCenter2, yCenter2);
+                        xCenter2 = (int) p.getX();
+                        yCenter2 = (int) p.getY();
+                        if (region.getTrajectoryType() == 0) {
+                            region.setTrajectory2(region.getTrajectory2() + xCenter2 + " " + yCenter2 + " " + (when - startTime) + "\n");
+                        } else if (region.getTrajectoryType() == 1) {
+                            region.setTrajectory2(startMouseXCenter2 + " " + startMouseYCenter2 + " " + 0 + "\n");
+                            region.setTrajectory2(region.getTrajectory2() + xCenter2 + " " + yCenter2 + " " + (when - startTime) + "\n");
+                        } else if (region.getTrajectoryType() == 2) {
+                        } else if (region.getTrajectoryType() == 3) {
+                            int xEnd = region.getX1Value() + (int) ((region.getX2Value() - region.getX1Value()) * region.getCenterOfRotationX());
+                            int yEnd = region.getY1Value() + (int) ((region.getY2Value() - region.getY1Value()) * region.getCenterOfRotationY());
+
+                            int __x1 = Math.min(getPressedX(), xEnd);
+                            int __x2 = Math.max(getPressedX(), xEnd);
+                            int __y1 = Math.min(getPressedY(), yEnd);
+                            int __y2 = Math.max(getPressedY(), yEnd);
+
+                            int _w = __x2 - __x1;
+                            int _h = __y2 - __y1;
+                            int _cx = __x1 + _w / 2;
+                            int _cy = __y1 + _h / 2;
+
+                            region.setTrajectory2("");
+                            for (int i = 0; i < 360; i += 10) {
+                                double __x = _cx + Math.cos(Math.toRadians(i)) * _w / 2;
+                                double __y;
+                                if (SketchletEditor.getInstance().isInShiftMode()) {
+                                    __y = _cy + Math.sin(Math.toRadians(i)) * _w / 2;
+                                } else {
+                                    __y = _cy + Math.sin(Math.toRadians(i)) * _h / 2;
+                                }
+                                region.setTrajectory2(region.getTrajectory2() + (int) __x + " " + (int) __y + " " + 0 + "\n");
+                            }
+                        }
+                    } else {
+                        if (!region.getTrajectory1().trim().equals("")) {
+                            if (region.isStickToTrajectoryEnabled()) {
+                                Point p = region.getRenderer().getTrajectoryDrawingLayer().getClosestTrajectoryPoint(new Point(x, y));
+
+                                region.setX1Value((int) (p.x - region.getCenterOfRotationX() * w));
+                                region.setY1Value((int) (p.y - region.getCenterOfRotationY() * h));
+                                region.setX2Value(region.getX1Value() + w);
+                                region.setY2Value(region.getY1Value() + h);
+
+                                region.getMotionController().processLimits("trajectory position", region.getRenderer().getTrajectoryDrawingLayer().trajectoryPositionFromPoint, 0.0, 1.0, 0.0, 0.0, true);
+                                region.getMotionController().processLimits("trajectory position 2", region.getRenderer().getTrajectoryDrawingLayer().trajectoryPositionFromPoint2, 0.0, 1.0, 0.0, 0.0, true);
+                            }
+
+                            if (!region.isWithinLimits(false) || region.getInteractionController().intersectsWithSolids(playbackMode)) {
+                                region.getParent().getOverlapHelper().findNonOverlappingLocation(region);
+                                return;
+                            }
+
+                            if (region.isChangingOrientationOnTrajectoryEnabled()) {
+                                region.setRotationValue(region.getRenderer().getTrajectoryDrawingLayer().trajectoryOrientationFromPoint);
+                            }
+                        }
+                    }
+                }
+            } else if ((!playbackMode || region.isRotatable()) && (modifiers & InputEvent.BUTTON3_MASK) == InputEvent.BUTTON3_MASK) {
+                int marginX = playbackMode ? region.getParent().getOffsetX() : SketchletEditor.getInstance().getMarginX();
+                int marginY = playbackMode ? region.getParent().getOffsetY() : SketchletEditor.getInstance().getMarginY();
+                int __x = (int) ((e.getPoint().x) / scale) - marginX;
+                int __y = (int) ((e.getPoint().y) / scale) - marginY;
+                rotate(__x, __y, playbackMode);
+                moved = false;
+            } else {
+                Point ip = inversePoint(_x, _y, playbackMode);
+                _x = ip.x;
+                _y = ip.y;
+                mouseDragEmbedded(_x, _y, modifiers, when, e, frame, playbackMode);
+                moved = false;
             }
-            int w = region.x2 - region.x1;
-            int h = region.y2 - region.y1;
-            switch (getSelectedCorner()) {
-                case MIDDLE:
-                    int dx = x - getStartX();
-                    int dy = y - getStartY();
-                    region.x1 += dx;
-                    region.y1 += dy;
-                    region.x2 += dx;
-                    region.y2 += dy;
-
-                    break;
-                case UPPER_LEFT:
-                    if (!SketchletEditor.getInstance().isInShiftMode()) {
-                        dx = x - region.x1;
-                        dy = y - region.y1;
-                        if (!region.strWidth.startsWith("=")) {
-                            region.x1 = x;
-                            if (region.rotation != 0) {
-                                region.x2 -= dx;
-                            }
-                        }
-                        if (!region.strHeight.startsWith("=")) {
-                            region.y1 = y;
-                            if (region.rotation != 0) {
-                                region.y2 -= dy;
-                            }
-                        }
-                    } else {
-                        dx = x - region.x1;
-                        if (!region.strWidth.startsWith("=")) {
-                            region.x1 = x;
-                            if (region.rotation != 0) {
-                                region.x2 -= dx;
-                            }
-                        }
-                        dy = region.y2 - (int) ((region.x2 - region.x1) * aspectRatio) - region.y2;
-                        if (!region.strHeight.startsWith("=")) {
-                            region.y1 = region.y2 - (int) ((region.x2 - region.x1) * aspectRatio);
-                            if (region.rotation != 0) {
-                                region.y2 -= dy;
-                            }
-                        }
-                    }
-                    break;
-                case UPPER_RIGHT:
-                    if (!SketchletEditor.getInstance().isInShiftMode()) {
-                        dx = x - region.x2;
-                        dy = y - region.y1;
-                        if (!region.strWidth.startsWith("=")) {
-                            region.x2 = x;
-                            if (region.rotation != 0) {
-                                region.x1 -= dx;
-                            }
-                        }
-                        if (!region.strHeight.startsWith("=")) {
-                            region.y1 = y;
-                            if (region.rotation != 0) {
-                                region.y2 -= dy;
-                            }
-                        }
-                    } else {
-                        dx = x - region.x1;
-                        if (!region.strWidth.startsWith("=")) {
-                            region.x2 = x;
-                            if (region.rotation != 0) {
-                                region.x1 -= dx;
-                            }
-                        }
-                        dy = region.y2 - (int) ((region.x2 - region.x1) * aspectRatio) - region.y1;
-                        if (!region.strHeight.startsWith("=")) {
-                            region.y1 = region.y2 - (int) ((region.x2 - region.x1) * aspectRatio);
-                            if (region.rotation != 0) {
-                                region.y2 -= dy;
-                            }
-                        }
-                    }
-                    break;
-                case BOTTOM_LEFT:
-                    if (!SketchletEditor.getInstance().isInShiftMode()) {
-                        dx = x - region.x1;
-                        dy = y - region.y2;
-                        if (!region.strWidth.startsWith("=")) {
-                            region.x1 = x;
-                            if (region.rotation != 0) {
-                                region.x2 -= dx;
-                            }
-                        }
-                        if (!region.strHeight.startsWith("=")) {
-                            region.y2 = y;
-                            if (region.rotation != 0) {
-                                region.y1 -= dy;
-                            }
-                        }
-                    } else {
-                        dx = x - region.x1;
-                        if (!region.strWidth.startsWith("=")) {
-                            region.x1 = x;
-                            if (region.rotation != 0) {
-                                region.x2 -= dx;
-                            }
-                        }
-                        dy = region.y1 + (int) ((region.x2 - region.x1) * aspectRatio) - region.y2;
-                        if (!region.strHeight.startsWith("=")) {
-                            region.y2 = region.y1 + (int) ((region.x2 - region.x1) * aspectRatio);
-                            if (region.rotation != 0) {
-                                region.y1 -= dy;
-                            }
-                        }
-                    }
-                    break;
-                case BOTTOM_RIGHT:
-                    if (!SketchletEditor.getInstance().isInShiftMode()) {
-                        dx = x - region.x2;
-                        dy = y - region.y2;
-                        if (!region.strWidth.startsWith("=")) {
-                            region.x2 = x;
-                            if (region.rotation != 0) {
-                                region.x1 -= dx;
-                            }
-                        }
-                        if (!region.strHeight.startsWith("=")) {
-                            region.y2 = y;
-                            if (region.rotation != 0) {
-                                region.y1 -= dy;
-                            }
-                        }
-                    } else {
-                        dx = x - region.x2;
-                        if (!region.strWidth.startsWith("=")) {
-                            region.x2 = x;
-                            if (region.rotation != 0) {
-                                region.x1 -= dx;
-                            }
-                        }
-                        dy = region.y1 + (int) ((region.x2 - region.x1) * aspectRatio) - region.y2;
-                        if (!region.strHeight.startsWith("=")) {
-                            region.y2 = region.y1 + (int) ((region.x2 - region.x1) * aspectRatio);
-                            if (region.rotation != 0) {
-                                region.y1 -= dy;
-                            }
-                        }
-                    }
-                    break;
-                case UPPER:
-                    if (!region.strHeight.startsWith("=")) {
-                        dy = y - region.y1;
-                        region.y1 = y;
-                        if (region.rotation != 0) {
-                            region.y2 -= dy;
-                        }
-                    }
-                    break;
-                case BOTTOM:
-                    if (!region.strHeight.startsWith("=")) {
-                        dy = y - region.y2;
-                        region.y2 = y;
-                        if (region.rotation != 0) {
-                            region.y1 -= dy;
-                        }
-                    }
-                    break;
-                case LEFT:
-                    if (!region.strWidth.startsWith("=")) {
-                        dx = x - region.x1;
-                        region.x1 = x;
-                        if (region.rotation != 0) {
-                            region.x2 -= dx;
-                        }
-                    }
-                    break;
-                case RIGHT:
-                    if (!region.strWidth.startsWith("=")) {
-                        dx = x - region.x2;
-                        region.x2 = x;
-                        if (region.rotation != 0) {
-                            region.x1 -= dx;
-                        }
-                    }
-                    break;
-                case PERSPECTIVE_UPPER_LEFT:
-                    region.p_x0 = (double) (x - region.x1) / w;
-                    region.p_y0 = (double) (y - region.y1) / h;
-
-                    region.p_x0 = Math.max(0.0, region.p_x0);
-                    region.p_x0 = Math.min(1.0, region.p_x0);
-                    region.p_y0 = Math.max(0.0, region.p_y0);
-                    region.p_y0 = Math.min(1.0, region.p_y0);
-                    break;
-                case CENTER_ROTATION:
-                    setCenterRotationX((double) (x - region.x1) / w);
-                    setCenterRotationY((double) (y - region.y1) / h);
-
-                    setCenterRotationX(Math.max(0.0, getCenterRotationX()));
-                    setCenterRotationX(Math.min(1.0, getCenterRotationX()));
-                    setCenterRotationY(Math.max(0.0, getCenterRotationY()));
-                    setCenterRotationY(Math.min(1.0, getCenterRotationY()));
-                    break;
-                case TRAJECTORY2_POINT:
-                    setTrajectory2X((double) (x - region.x1) / w);
-                    setTrajectory2Y((double) (y - region.y1) / h);
-
-                    setTrajectory2X(Math.max(0.0, getTrajectory2X()));
-                    setTrajectory2X(Math.min(1.0, getTrajectory2X()));
-                    setTrajectory2Y(Math.max(0.0, getTrajectory2Y()));
-                    setTrajectory2Y(Math.min(1.0, getTrajectory2Y()));
-
-                    break;
-                case PERSPECTIVE_UPPER_RIGHT:
-                    region.p_x1 = (double) (x - region.x1) / w;
-                    region.p_y1 = (double) (y - region.y1) / h;
-                    region.p_x1 = Math.max(0.0, region.p_x1);
-                    region.p_x1 = Math.min(1.0, region.p_x1);
-                    region.p_y1 = Math.max(0.0, region.p_y1);
-                    region.p_y1 = Math.min(1.0, region.p_y1);
-                    break;
-                case PERSPECTIVE_BOTTOM_RIGHT:
-                    region.p_x2 = (double) (x - region.x1) / w;
-                    region.p_y2 = (double) (y - region.y1) / h;
-                    region.p_x2 = Math.max(0.0, region.p_x2);
-                    region.p_x2 = Math.min(1.0, region.p_x2);
-                    region.p_y2 = Math.max(0.0, region.p_y2);
-                    region.p_y2 = Math.min(1.0, region.p_y2);
-                    break;
-                case PERSPECTIVE_BOTTOM_LEFT:
-                    region.p_x3 = (double) (x - region.x1) / w;
-                    region.p_y3 = (double) (y - region.y1) / h;
-                    region.p_x3 = Math.max(0.0, region.p_x3);
-                    region.p_x3 = Math.min(1.0, region.p_x3);
-                    region.p_y3 = Math.max(0.0, region.p_y3);
-                    region.p_y3 = Math.min(1.0, region.p_y3);
-                    break;
-                case ROTATE:
-                    rotate(_x, _y, bPlayback);
-                    break;
-            }
-
-            if (getSelectedCorner() != ROTATE && getSelectedCorner() != TRAJECTORY2_POINT && getSelectedCorner() != CENTER_ROTATION) {
-                setStartX(x);
-                setStartY(y);
-
-                region.getInteractionController().processInteractionEvents(bPlayback, region.parent.getPage().getActiveTimers(), region.parent.getPage().getActiveMacros());
-                region.getSketch().updateConnectors(region, bPlayback);
-
-                if (!region.isWithinLimits(false) || region.getInteractionController().intersectsWithSolids(bPlayback)) {
-                    region.parent.getOverlapHelper().findNonOverlappingLocation(region);
-                    return;
-                }
-
-                if (!bPlayback) {
-                    if (region.parent != null && region.parent.getMouseHelper().getSelectedRegions() != null) {
-                        for (ActiveRegion as : region.parent.getMouseHelper().getSelectedRegions()) {
-                            if (as != region) {
-                                as.x1 += region.x1 - prevX1;
-                                as.y1 += region.y1 - prevY1;
-                                as.x2 += region.x2 - prevX2;
-                                as.y2 += region.y2 - prevY2;
-                            }
-                        }
-                    }
-                }
-                if (region.horizontalAlignment.equalsIgnoreCase("center")) {
-                    region.getMotionController().processLimits("position x", region.x1 + w / 2, w / 2, w / 2, true);
-                } else if (region.horizontalAlignment.equalsIgnoreCase("right")) {
-                    region.getMotionController().processLimits("position x", region.x1 + w, w, 0, true);
-                } else {
-                    region.getMotionController().processLimits("position x", region.x1, 0, w, true);
-                }
-                if (region.verticalAlignment.equalsIgnoreCase("center")) {
-                    region.getMotionController().processLimits("position y", region.y1 + h / 2, h / 2, h / 2, true);
-                } else if (region.verticalAlignment.equalsIgnoreCase("right")) {
-                    region.getMotionController().processLimits("position y", region.y1 + h, h, 0, true);
-                } else {
-                    region.getMotionController().processLimits("position y", region.y1, 0, h, true);
-                }
-
-                if (region.inTrajectoryMode) {
-                    int xCenter = region.x1 + (int) ((region.x2 - region.x1) * region.center_rotation_x);
-                    int yCenter = region.y1 + (int) ((region.y2 - region.y1) * region.center_rotation_y);
-                    if (region.trajectoryType == 0) {
-                        region.trajectory1 += xCenter + " " + yCenter + " " + (when - startTime) + "\n";
-                    } else if (region.trajectoryType == 1) {
-                        region.trajectory1 = startMouseXCenter + " " + startMouseYCenter + " " + 0 + "\n";
-                        region.trajectory1 += xCenter + " " + yCenter + " " + (when - startTime) + "\n";
-                    } else if (region.trajectoryType == 2) {
-                    } else if (region.trajectoryType == 3) {
-                        int xEnd = region.x1 + (int) ((region.x2 - region.x1) * region.center_rotation_x);
-                        int yEnd = region.y1 + (int) ((region.y2 - region.y1) * region.center_rotation_y);
-
-                        int __x1 = Math.min(getPressedX(), xEnd);
-                        int __x2 = Math.max(getPressedX(), xEnd);
-                        int __y1 = Math.min(getPressedY(), yEnd);
-                        int __y2 = Math.max(getPressedY(), yEnd);
-
-                        int _w = __x2 - __x1;
-                        int _h = __y2 - __y1;
-                        int _cx = __x1 + _w / 2;
-                        int _cy = __y1 + _h / 2;
-
-                        region.trajectory1 = "";
-                        for (int i = 0; i < 360; i += 10) {
-                            double __x = _cx + Math.cos(Math.toRadians(i)) * _w / 2;
-                            double __y;
-                            if (SketchletEditor.getInstance().isInShiftMode()) {
-                                __y = _cy + Math.sin(Math.toRadians(i)) * _w / 2;
-                            } else {
-                                __y = _cy + Math.sin(Math.toRadians(i)) * _h / 2;
-                            }
-                            region.trajectory1 += (int) __x + " " + (int) __y + " " + 0 + "\n";
-                        }
-                    }
-                } else if (region.inTrajectoryMode2) {
-                    int xCenter2 = region.x1 + (int) ((region.x2 - region.x1) * region.trajectory2_x);
-                    int yCenter2 = region.y1 + (int) ((region.y2 - region.y1) * region.trajectory2_y);
-                    Point2D p = rotate(xCenter2, yCenter2);
-                    xCenter2 = (int) p.getX();
-                    yCenter2 = (int) p.getY();
-                    if (region.trajectoryType == 0) {
-                        region.trajectory2 += xCenter2 + " " + yCenter2 + " " + (when - startTime) + "\n";
-                    } else if (region.trajectoryType == 1) {
-                        region.trajectory2 = startMouseXCenter2 + " " + startMouseYCenter2 + " " + 0 + "\n";
-                        region.trajectory2 += xCenter2 + " " + yCenter2 + " " + (when - startTime) + "\n";
-                    } else if (region.trajectoryType == 2) {
-                    } else if (region.trajectoryType == 3) {
-                        int xEnd = region.x1 + (int) ((region.x2 - region.x1) * region.center_rotation_x);
-                        int yEnd = region.y1 + (int) ((region.y2 - region.y1) * region.center_rotation_y);
-
-                        int __x1 = Math.min(getPressedX(), xEnd);
-                        int __x2 = Math.max(getPressedX(), xEnd);
-                        int __y1 = Math.min(getPressedY(), yEnd);
-                        int __y2 = Math.max(getPressedY(), yEnd);
-
-                        int _w = __x2 - __x1;
-                        int _h = __y2 - __y1;
-                        int _cx = __x1 + _w / 2;
-                        int _cy = __y1 + _h / 2;
-
-                        region.trajectory2 = "";
-                        for (int i = 0; i < 360; i += 10) {
-                            double __x = _cx + Math.cos(Math.toRadians(i)) * _w / 2;
-                            double __y;
-                            if (SketchletEditor.getInstance().isInShiftMode()) {
-                                __y = _cy + Math.sin(Math.toRadians(i)) * _w / 2;
-                            } else {
-                                __y = _cy + Math.sin(Math.toRadians(i)) * _h / 2;
-                            }
-                            region.trajectory2 += (int) __x + " " + (int) __y + " " + 0 + "\n";
-                        }
-                    }
-                } else {
-                    if (!region.trajectory1.trim().equals("")) {
-                        if (region.stickToTrajectoryEnabled) {
-                            Point p = region.getRenderer().getTrajectoryDrawingLayer().getClosestTrajectoryPoint(new Point(x, y));
-
-                            region.x1 = (int) (p.x - region.center_rotation_x * w);
-                            region.y1 = (int) (p.y - region.center_rotation_y * h);
-                            region.x2 = region.x1 + w;
-                            region.y2 = region.y1 + h;
-
-                            region.getMotionController().processLimits("trajectory position", region.getRenderer().getTrajectoryDrawingLayer().trajectoryPositionFromPoint, 0.0, 1.0, 0.0, 0.0, true);
-                            region.getMotionController().processLimits("trajectory position 2", region.getRenderer().getTrajectoryDrawingLayer().trajectoryPositionFromPoint2, 0.0, 1.0, 0.0, 0.0, true);
-                        }
-
-                        if (!region.isWithinLimits(false) || region.getInteractionController().intersectsWithSolids(bPlayback)) {
-                            region.parent.getOverlapHelper().findNonOverlappingLocation(region);
-                            return;
-                        }
-
-                        if (region.changingOrientationOnTrajectoryEnabled) {
-                            region.rotation = region.getRenderer().getTrajectoryDrawingLayer().trajectoryOrientationFromPoint;
-                        }
-                    }
-                }
-            }
-        } else if ((!bPlayback || region.rotatable) && (modifiers & InputEvent.BUTTON3_MASK) == InputEvent.BUTTON3_MASK) {
-            int marginX = bPlayback ? region.parent.getOffsetX() : SketchletEditor.getInstance().getMarginX();
-            int marginY = bPlayback ? region.parent.getOffsetY() : SketchletEditor.getInstance().getMarginY();
-            int __x = (int) ((e.getPoint().x) / scale) - marginX;
-            int __y = (int) ((e.getPoint().y) / scale) - marginY;
-            rotate(__x, __y, bPlayback);
-            bMoved = false;
-        } else {
-            Point ip = inversePoint(_x, _y, bPlayback);
-            _x = ip.x;
-            _y = ip.y;
-            mouseDragEmbedded(_x, _y, modifiers, when, e, frame, bPlayback);
-            bMoved = false;
         }
 
-        if (bMoved && bPlayback) {
-            int dx = region.x1 - prevX1;
-            int dy = region.y1 - prevY1;
+        if (moved && playbackMode) {
+            int dx = region.getX1Value() - prevX1;
+            int dy = region.getY1Value() - prevY1;
             if (dx != 0 || dy != 0) {
-                if (!region.regionGrouping.equals("")) {
-                    for (ActiveRegion as : region.parent.getRegions()) {
-                        if (as != region && as.regionGrouping.equals(region.regionGrouping)) {
-                            as.x1 += dx;
-                            as.y1 += dy;
-                            as.x2 += dx;
-                            as.y2 += dy;
-                            as.getMotionController().processLimits("position x", as.x1, 0, 0, true);
-                            as.getMotionController().processLimits("position y", as.y1, 0, 0, true);
+                if (!region.getRegionGrouping().equals("")) {
+                    for (ActiveRegion as : region.getParent().getRegions()) {
+                        if (as != region && as.getRegionGrouping().equals(region.getRegionGrouping())) {
+                            as.setX1Value(as.getX1Value() + dx);
+                            as.setY1Value(as.getY1Value() + dy);
+                            as.setX2Value(as.getX2Value() + dx);
+                            as.setY2Value(as.getY2Value() + dy);
+                            as.getMotionController().processLimits("position x", as.getX1Value(), 0, 0, true);
+                            as.getMotionController().processLimits("position y", as.getY1Value(), 0, 0, true);
                         }
                     }
                 }
             }
         }
 
-        if (bPlayback) {
+        if (playbackMode) {
             PlaybackFrame.repaintAllFrames();
         } else {
             SketchletEditor.getInstance().repaint();
@@ -1061,9 +1055,9 @@ public class ActiveRegionMouseController {
     }
 
     public Point2D rotate(int x, int y) {
-        int xCenter = region.x1 + (int) ((region.x2 - region.x1) * region.center_rotation_x);
-        int yCenter = region.y1 + (int) ((region.y2 - region.y1) * region.center_rotation_y);
-        AffineTransform transformer = AffineTransform.getRotateInstance(region.rotation, xCenter, yCenter);
+        int xCenter = region.getX1Value() + (int) ((region.getX2Value() - region.getX1Value()) * region.getCenterOfRotationX());
+        int yCenter = region.getY1Value() + (int) ((region.getY2Value() - region.getY1Value()) * region.getCenterOfRotationY());
+        AffineTransform transformer = AffineTransform.getRotateInstance(region.getRotationValue(), xCenter, yCenter);
         Point2D before = new Point2D.Double(x, y);
         Point2D after = new Point2D.Double();
         after = transformer.transform(before, after);
@@ -1071,18 +1065,18 @@ public class ActiveRegionMouseController {
     }
 
     public boolean correctPosition(int prevX1, int prevY1, int prevX2, int prevY2) {
-        int _x1 = region.x1;
-        int _x2 = region.x2;
+        int _x1 = region.getX1Value();
+        int _x2 = region.getX2Value();
 
-        region.x1 = prevX1;
-        region.x2 = prevX2;
+        region.setX1Value(prevX1);
+        region.setX2Value(prevX2);
         if (region.isWithinLimits(false)) {
             return true;
         }
-        region.x1 = _x1;
-        region.x2 = _x2;
-        region.y1 = prevY1;
-        region.y2 = prevY2;
+        region.setX1Value(_x1);
+        region.setX2Value(_x2);
+        region.setY1Value(prevY1);
+        region.setY2Value(prevY2);
         if (region.isWithinLimits(false)) {
             return true;
         }
@@ -1090,41 +1084,41 @@ public class ActiveRegionMouseController {
         return false;
     }
 
-    private boolean bRotating = false;
+    private boolean rotating = false;
 
-    public void rotate(int x, int y, boolean bPlayback) {
-        double prevRotation = region.rotation;
-        int xCenter = region.x1 + (int) ((region.x2 - region.x1) * region.center_rotation_x);
-        int yCenter = region.y1 + (int) ((region.y2 - region.y1) * region.center_rotation_y);
+    public void rotate(int x, int y, boolean playbackMode) {
+        double prevRotation = region.getRotationValue();
+        int xCenter = region.getX1Value() + (int) ((region.getX2Value() - region.getX1Value()) * region.getCenterOfRotationX());
+        int yCenter = region.getY1Value() + (int) ((region.getY2Value() - region.getY1Value()) * region.getCenterOfRotationY());
 
         if (x == xCenter) {
-            region.rotation = y > yCenter ? Math.PI / 2 : -Math.PI / 2;
+            region.setRotationValue(y > yCenter ? Math.PI / 2 : -Math.PI / 2);
         } else {
-            region.rotation = Math.atan((double) (y - yCenter) / (x - xCenter));
+            region.setRotationValue(Math.atan((double) (y - yCenter) / (x - xCenter)));
         }
 
         if (x < xCenter) {
-            region.rotation += Math.PI;
+            region.setRotationValue(region.getRotationValue() + Math.PI);
         }
 
-        region.rotation = region.rotation - (bPlayback ? 0 : getStartAngle());
-        region.rotation = InteractionSpace.toRadians(region.getMotionController().processLimits("rotation", InteractionSpace.toPhysicalAngle(region.rotation), 0.0, 0, true));
-        region.getInteractionController().processInteractionEvents(bPlayback, region.parent.getPage().getActiveTimers(), region.parent.getPage().getActiveMacros());
-        region.getSketch().updateConnectors(region, bPlayback);
+        region.setRotationValue(region.getRotationValue() - getStartAngle());
+        region.setRotationValue(InteractionSpace.toRadians(region.getMotionController().processLimits("rotation", InteractionSpace.toPhysicalAngle(region.getRotationValue()), 0.0, 0, true)));
+        region.getInteractionController().processInteractionEvents(playbackMode, region.getParent().getPage().getActiveTimers(), region.getParent().getPage().getActiveMacros());
+        region.getSketch().updateConnectors(region, playbackMode);
 
-        if (!region.isWithinLimits(false) || region.getInteractionController().intersectsWithSolids(bPlayback)) {
-            region.rotation = prevRotation;
-            region.parent.getOverlapHelper().findNonOverlappingLocation(region);
+        if (!region.isWithinLimits(false) || region.getInteractionController().intersectsWithSolids(playbackMode)) {
+            region.setRotationValue(prevRotation);
+            region.getParent().getOverlapHelper().findNonOverlappingLocation(region);
             return;
         }
 
     }
 
     public static Rectangle getResizedRect(ActiveRegion region, double angle, int x1, int y1, int x2, int y2, int new_x1, int new_y1, int new_x2, int new_y2) {
-        double oldCenterX = x1 + (x2 - x1) * region.center_rotation_x;
-        double oldCenterY = y1 + (y2 - y1) * region.center_rotation_y;
-        double newCenterX = new_x1 + (new_x2 - new_x1) * region.center_rotation_x;
-        double newCenterY = new_y1 + (new_y2 - new_y1) * region.center_rotation_y;
+        double oldCenterX = x1 + (x2 - x1) * region.getCenterOfRotationX();
+        double oldCenterY = y1 + (y2 - y1) * region.getCenterOfRotationY();
+        double newCenterX = new_x1 + (new_x2 - new_x1) * region.getCenterOfRotationX();
+        double newCenterY = new_y1 + (new_y2 - new_y1) * region.getCenterOfRotationY();
 
         AffineTransform aft1 = new AffineTransform();
         aft1.rotate(angle, oldCenterX, oldCenterY);
@@ -1137,7 +1131,7 @@ public class ActiveRegionMouseController {
     }
 
     public boolean mouseDragEmbedded(int x, int y, int modifiers, long when, MouseEvent e, JFrame frame, boolean bPlayback) {
-        if (!region.parent.getPage().isRegionsLayer()) {
+        if (!region.getParent().getPage().isRegionsLayer()) {
             return false;
         }
 
@@ -1150,19 +1144,19 @@ public class ActiveRegionMouseController {
         y = ip.y;
         if (bPlayback) {
             Polygon p = new Polygon();
-            int w = Math.abs(region.x2 - region.x1);
-            int h = Math.abs(region.y2 - region.y1);
-            p.addPoint(region.x1 + (int) (region.p_x0 * w), region.y1 + (int) (region.p_y0 * h));
-            p.addPoint(region.x1 + (int) (region.p_x1 * w), region.y1 + (int) (region.p_y1 * h));
-            p.addPoint(region.x1 + (int) (region.p_x2 * w), region.y1 + (int) (region.p_y2 * h));
-            p.addPoint(region.x1 + (int) (region.p_x3 * w), region.y1 + (int) (region.p_y3 * h));
+            int w = Math.abs(region.getX2Value() - region.getX1Value());
+            int h = Math.abs(region.getY2Value() - region.getY1Value());
+            p.addPoint(region.getX1Value() + (int) (region.getP_x0() * w), region.getY1Value() + (int) (region.getP_y0() * h));
+            p.addPoint(region.getX1Value() + (int) (region.getP_x1() * w), region.getY1Value() + (int) (region.getP_y1() * h));
+            p.addPoint(region.getX1Value() + (int) (region.getP_x2() * w), region.getY1Value() + (int) (region.getP_y2() * h));
+            p.addPoint(region.getX1Value() + (int) (region.getP_x3() * w), region.getY1Value() + (int) (region.getP_y3() * h));
             return region.getArea(true).contains(x, y);
         } else {
             if (SketchletEditor.getInstance() != null) {
                 int cs2 = (int) (ActiveRegionRenderer.CORNER_SIZE / SketchletEditor.getInstance().getScale() / 2) + 1;
 
-                boolean bInRect = x >= region.x1 - cs2 && x <= region.x2 + cs2 / 2 && y >= region.y1 - cs2 / 2 && y <= region.y2 + cs2 / 2;
-                boolean inRotateZone = x >= region.x1 + (region.x2 - region.x1) * region.center_rotation_x - cs2 / 2 && x <= region.x2 + (region.x2 - region.x1) * region.center_rotation_y + cs2 / 2 && y >= region.y1 - 35 - cs2 / 2 && y <= region.y1 - 35 + cs2 / 2;
+                boolean bInRect = x >= region.getX1Value() - cs2 && x <= region.getX2Value() + cs2 / 2 && y >= region.getY1Value() - cs2 / 2 && y <= region.getY2Value() + cs2 / 2;
+                boolean inRotateZone = x >= region.getX1Value() + (region.getX2Value() - region.getX1Value()) * region.getCenterOfRotationX() - cs2 / 2 && x <= region.getX2Value() + (region.getX2Value() - region.getX1Value()) * region.getCenterOfRotationY() + cs2 / 2 && y >= region.getY1Value() - 35 - cs2 / 2 && y <= region.getY1Value() - 35 + cs2 / 2;
                 boolean inDropZone = region.isInRegionsPropertiesArea(x, y) || region.isInMappingIconArea(x, y) || region.isInMouseIconArea(x, y) || region.isInRegionsIconArea(x, y);
                 return bInRect || inRotateZone || (inDropZone && (FileDrop.isDragging() || SketchletEditor.getInstance().isInCtrlMode()));
             } else {
@@ -1174,15 +1168,15 @@ public class ActiveRegionMouseController {
     public Point transformPoint(int x, int y, boolean bPlayback) {
         AffineTransform af = new AffineTransform();
         if (bPlayback) {
-            af.shear(region.shearX, region.shearY);
-            af.rotate(region.rotation,
-                    region.x1 + (region.x2 - region.x1) * region.center_rotation_x,
-                    region.y1 + (region.y2 - region.y1) * region.center_rotation_y);
+            af.shear(region.getShearXValue(), region.getShearYValue());
+            af.rotate(region.getRotationValue(),
+                    region.getX1Value() + (region.getX2Value() - region.getX1Value()) * region.getCenterOfRotationX(),
+                    region.getY1Value() + (region.getY2Value() - region.getY1Value()) * region.getCenterOfRotationY());
         } else {
-            af.shear(region.shearX, region.shearY);
-            af.rotate(region.rotation,
-                    region.x1 + (region.x2 - region.x1) * region.center_rotation_x,
-                    region.y1 + (region.y2 - region.y1) * region.center_rotation_y);
+            af.shear(region.getShearXValue(), region.getShearYValue());
+            af.rotate(region.getRotationValue(),
+                    region.getX1Value() + (region.getX2Value() - region.getX1Value()) * region.getCenterOfRotationX(),
+                    region.getY1Value() + (region.getY2Value() - region.getY1Value()) * region.getCenterOfRotationY());
         }
         try {
             Point2D ip = af.transform(new Point(x, y), null);
@@ -1196,15 +1190,15 @@ public class ActiveRegionMouseController {
     public static Point inversePoint(ActiveRegion region, int x, int y, boolean bPlayback) {
         AffineTransform af = new AffineTransform();
         if (bPlayback) {
-            af.shear(region.shearX, region.shearY);
-            af.rotate(region.rotation,
-                    region.x1 + (region.x2 - region.x1) * region.center_rotation_x,
-                    region.y1 + (region.y2 - region.y1) * region.center_rotation_y);
+            af.shear(region.getShearXValue(), region.getShearYValue());
+            af.rotate(region.getRotationValue(),
+                    region.getX1Value() + (region.getX2Value() - region.getX1Value()) * region.getCenterOfRotationX(),
+                    region.getY1Value() + (region.getY2Value() - region.getY1Value()) * region.getCenterOfRotationY());
         } else {
-            af.shear(region.shearX, region.shearY);
-            af.rotate(region.rotation,
-                    region.x1 + (region.x2 - region.x1) * region.center_rotation_x,
-                    region.y1 + (region.y2 - region.y1) * region.center_rotation_y);
+            af.shear(region.getShearXValue(), region.getShearYValue());
+            af.rotate(region.getRotationValue(),
+                    region.getX1Value() + (region.getX2Value() - region.getX1Value()) * region.getCenterOfRotationX(),
+                    region.getY1Value() + (region.getY2Value() - region.getY1Value()) * region.getCenterOfRotationY());
         }
         try {
             Point2D ip = af.inverseTransform(new Point(x, y), null);
@@ -1212,19 +1206,19 @@ public class ActiveRegionMouseController {
             y = (int) ip.getY();
             if (bPlayback) {
                 PerspectiveFilter perspectiveFilter = new PerspectiveFilter();
-                int w = region.getWidth();
-                int h = region.getHeight();
-                perspectiveFilter.setCorners((float) region.p_x0 * w, (float) region.p_y0 * h,
-                        (float) region.p_x1 * w, (float) region.p_y1 * h,
-                        (float) region.p_x2 * w, (float) region.p_y2 * h,
-                        (float) region.p_x3 * w, (float) region.p_y3 * h);
+                int w = region.getWidthValue();
+                int h = region.getHeightValue();
+                perspectiveFilter.setCorners((float) region.getP_x0() * w, (float) region.getP_y0() * h,
+                        (float) region.getP_x1() * w, (float) region.getP_y1() * h,
+                        (float) region.getP_x2() * w, (float) region.getP_y2() * h,
+                        (float) region.getP_x3() * w, (float) region.getP_y3() * h);
                 perspectiveFilter.originalSpace = new Rectangle(0, 0, w, h);
                 perspectiveFilter.transformedSpace = new Rectangle(0, 0, w, h);
                 perspectiveFilter.transformSpace(perspectiveFilter.transformedSpace);
                 float points[] = new float[2];
-                perspectiveFilter.transformInverse(x - region.x1, y - region.y1, points);
-                x = region.x1 + (int) points[0];
-                y = region.y1 + (int) points[1];
+                perspectiveFilter.transformInverse(x - region.getX1Value(), y - region.getY1Value(), points);
+                x = region.getX1Value() + (int) points[0];
+                y = region.getY1Value() + (int) points[1];
             }
         } catch (Throwable e) {
             log.error(e);
@@ -1317,11 +1311,94 @@ public class ActiveRegionMouseController {
         this.trajectory2Y = trajectory2Y;
     }
 
-    public boolean isbRotating() {
-        return bRotating;
+    public boolean isRotating() {
+        return rotating;
     }
 
-    public void setbRotating(boolean bRotating) {
-        this.bRotating = bRotating;
+    public void setRotating(boolean rotating) {
+        this.rotating = rotating;
+    }
+
+    public DropAreas getDropAreas() {
+        if (dropAreas == null) {
+            dropAreas = new DropAreas(DropAreas.Orientation.HORIZONTAL);
+            dropAreas.addDropArea(getNewMouseEventDropArea());
+            dropAreas.addDropArea(getNewKeyboardEventDropArea());
+            dropAreas.addDropArea(getNewOverlapEventDropArea());
+            dropAreas.addDropArea(getNewMoveAndRotateEventDropArea());
+            dropAreas.addDropArea(getNewPropertiesDropArea());
+        }
+        return dropAreas;
+    }
+
+    private DropArea getNewMouseEventDropArea() {
+        InternallyDroppedRunnable runnable = new InternallyDroppedRunnable() {
+            @Override
+            public void run(InternalDroppedString info) {
+                ActiveRegionsFrame.showRegionsAndActions();
+                ActiveRegionsFrame.refresh(region, ActiveRegionPanel.getIndexEvents(), ActiveRegionPanel.getIndexMouseEvents());
+                ActiveRegionPanel.getCurrentActiveRegionPanel().getMouseEventPanel().addNewEventMacro(info.getAction(), info.getParam1(), info.getParam2());
+            }
+        };
+        return new DropArea(DropAreasRenderer.MOUSE_ICON, "on mouse events (click, press, release, double click...)", 24, 24, "active_region_mouse", runnable);
+    }
+
+    private DropArea getNewKeyboardEventDropArea() {
+        InternallyDroppedRunnable runnable = new InternallyDroppedRunnable() {
+            @Override
+            public void run(InternalDroppedString info) {
+                ActiveRegionsFrame.showRegionsAndActions();
+                ActiveRegionsFrame.refresh(region, ActiveRegionPanel.getIndexEvents(), ActiveRegionPanel.getIndexKeyboardEvents());
+                ActiveRegionPanel.getCurrentActiveRegionPanel().getKeyboardEventsPanel().addNewEventMacro(info.getAction(), info.getParam1(), info.getParam2());
+            }
+        };
+        return new DropArea(DropAreasRenderer.KEYBOARD_ICON, "on keyboard event", 24, 24, "active_region_keyboard", runnable);
+    }
+
+    private DropArea getNewOverlapEventDropArea() {
+        InternallyDroppedRunnable runnable = new InternallyDroppedRunnable() {
+            @Override
+            public void run(InternalDroppedString info) {
+                ActiveRegionsFrame.showRegionsAndActions();
+                ActiveRegionsFrame.refresh(region, ActiveRegionPanel.getIndexEvents(), ActiveRegionPanel.getIndexOverlap());
+                ActiveRegionPanel.getCurrentActiveRegionPanel().getRegionOverlapEventsPanel().addNewRegionOverlapMacro(info.getAction(), info.getParam1(), info.getParam2());
+            }
+        };
+        return new DropArea(DropAreasRenderer.REGION_OVERLAP_ICON, "on region overlap event", 24, 24, "active_region_overlap", runnable);
+    }
+
+    private DropArea getNewMoveAndRotateEventDropArea() {
+        InternallyDroppedRunnable
+                runnable = new InternallyDroppedRunnable() {
+            @Override
+            public void run(InternalDroppedString info) {
+                ActiveRegionsFrame.showRegionsAndActions();
+                ActiveRegionPanel ap = ActiveRegionsFrame.refresh(region, ActiveRegionPanel.getIndexEvents(), ActiveRegionPanel.getIndexMotion());
+                int row = ap.getFreeMappingRow();
+                region.getMotionAndRotationVariablesMapping()[row][1] = info.getPastedText().substring(1);
+                ap.editUpdateTransformationsEvent(row);
+            }
+        };
+        DropArea dropArea = new DropArea(DropAreasRenderer.MOVE_ROTATE_ICON, "on move or rotate", 24, 24, "active_region_move", runnable);
+        dropArea.setAcceptMacrosEnabled(false);
+        dropArea.setAcceptTimersEnabled(false);
+        dropArea.setAcceptPagesEnabled(false);
+
+        return dropArea;
+    }
+
+    private DropArea getNewPropertiesDropArea() {
+        InternallyDroppedRunnable
+                runnable = new InternallyDroppedRunnable() {
+            @Override
+            public void run(InternalDroppedString info) {
+                new SelectDropAction(SketchletEditor.getInstance().editorFrame, info.getPastedText(), region);
+            }
+        };
+        DropArea dropArea = new DropArea(DropAreasRenderer.PROPERTIES_ICON, "set property", 24, 24, "active_region_general", runnable);
+        dropArea.setAcceptMacrosEnabled(false);
+        dropArea.setAcceptTimersEnabled(false);
+        dropArea.setAcceptPagesEnabled(false);
+        return dropArea;
     }
 }

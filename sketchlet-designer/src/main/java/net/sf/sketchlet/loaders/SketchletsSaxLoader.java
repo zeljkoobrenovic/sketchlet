@@ -180,7 +180,7 @@ public class SketchletsSaxLoader extends DefaultHandler {
         currentElement = strElem;
         strCharacters = "";
         if (path().equalsIgnoreCase("/page/active-regions/active-region/region-widget-event-actions/widget-event-action")) {
-            currentRegion.widgetEventMacros.add(new WidgetEventMacro(""));
+            currentRegion.getWidgetEventMacros().add(new WidgetEventMacro(""));
             indexOfWidgetAction = -1;
             return;
         } else if (path().equalsIgnoreCase("/page/active-regions/active-region/region-widget-event-actions/widget-event-action/action")) {
@@ -335,42 +335,42 @@ public class SketchletsSaxLoader extends DefaultHandler {
             try {
                 String regionName = atts.getValue("name");
                 if (regionName != null) {
-                    currentRegion.name = regionName;
+                    currentRegion.setName(regionName);
                 }
-                currentRegion.x1 = Integer.parseInt(atts.getValue("x1"));
-                currentRegion.y1 = Integer.parseInt(atts.getValue("y1"));
-                currentRegion.x2 = Integer.parseInt(atts.getValue("x2"));
-                currentRegion.y2 = Integer.parseInt(atts.getValue("y2"));
+                currentRegion.setX1Value(Integer.parseInt(atts.getValue("x1")));
+                currentRegion.setY1Value(Integer.parseInt(atts.getValue("y1")));
+                currentRegion.setX2Value(Integer.parseInt(atts.getValue("x2")));
+                currentRegion.setY2Value(Integer.parseInt(atts.getValue("y2")));
 
-                if (currentRegion.x2 < currentRegion.x1) {
-                    int tempX = currentRegion.x2;
-                    currentRegion.x2 = currentRegion.x1;
-                    currentRegion.x1 = tempX;
-                }
-
-                if (currentRegion.y2 < currentRegion.y1) {
-                    int tempY = currentRegion.x2;
-                    currentRegion.y2 = currentRegion.y1;
-                    currentRegion.y1 = tempY;
+                if (currentRegion.getX2Value() < currentRegion.getX1Value()) {
+                    int tempX = currentRegion.getX2Value();
+                    currentRegion.setX2Value(currentRegion.getX1Value());
+                    currentRegion.setX1Value(tempX);
                 }
 
-                currentRegion.shearX = Double.parseDouble(atts.getValue("shearX"));
-                currentRegion.shearY = Double.parseDouble(atts.getValue("shearY"));
+                if (currentRegion.getY2Value() < currentRegion.getY1Value()) {
+                    int tempY = currentRegion.getX2Value();
+                    currentRegion.setY2Value(currentRegion.getY1Value());
+                    currentRegion.setY1Value(tempY);
+                }
 
-                currentRegion.rotation = Double.parseDouble(atts.getValue("rotation"));
+                currentRegion.setShearXValue(Double.parseDouble(atts.getValue("shearX")));
+                currentRegion.setShearYValue(Double.parseDouble(atts.getValue("shearY")));
+
+                currentRegion.setRotationValue(Double.parseDouble(atts.getValue("rotation")));
             } catch (Throwable e) {
                 log.error(e);
             }
         } else if (strElem.equalsIgnoreCase("perspective") && currentRegion != null) {
             try {
-                currentRegion.p_x0 = Double.parseDouble(atts.getValue("p_x0"));
-                currentRegion.p_y0 = Double.parseDouble(atts.getValue("p_y0"));
-                currentRegion.p_x1 = Double.parseDouble(atts.getValue("p_x1"));
-                currentRegion.p_y1 = Double.parseDouble(atts.getValue("p_y1"));
-                currentRegion.p_x2 = Double.parseDouble(atts.getValue("p_x2"));
-                currentRegion.p_y2 = Double.parseDouble(atts.getValue("p_y2"));
-                currentRegion.p_x3 = Double.parseDouble(atts.getValue("p_x3"));
-                currentRegion.p_y3 = Double.parseDouble(atts.getValue("p_y3"));
+                currentRegion.setP_x0(Double.parseDouble(atts.getValue("p_x0")));
+                currentRegion.setP_y0(Double.parseDouble(atts.getValue("p_y0")));
+                currentRegion.setP_x1(Double.parseDouble(atts.getValue("p_x1")));
+                currentRegion.setP_y1(Double.parseDouble(atts.getValue("p_y1")));
+                currentRegion.setP_x2(Double.parseDouble(atts.getValue("p_x2")));
+                currentRegion.setP_y2(Double.parseDouble(atts.getValue("p_y2")));
+                currentRegion.setP_x3(Double.parseDouble(atts.getValue("p_x3")));
+                currentRegion.setP_y3(Double.parseDouble(atts.getValue("p_y3")));
             } catch (Throwable e) {
                 log.error(e);
             }
@@ -402,24 +402,24 @@ public class SketchletsSaxLoader extends DefaultHandler {
             }
         } else if (strElem.equalsIgnoreCase("rotation_center") && currentRegion != null) {
             try {
-                currentRegion.center_rotation_x = Double.parseDouble(atts.getValue("x"));
-                currentRegion.center_rotation_y = Double.parseDouble(atts.getValue("y"));
+                currentRegion.setCenterOfRotationX(Double.parseDouble(atts.getValue("x")));
+                currentRegion.setCenterOfRotationY(Double.parseDouble(atts.getValue("y")));
             } catch (Throwable e) {
                 log.error(e);
             }
         } else if (strElem.equalsIgnoreCase("trajectory_point") && currentRegion != null) {
             try {
-                currentRegion.trajectory2_x = Double.parseDouble(atts.getValue("x"));
-                currentRegion.trajectory2_y = Double.parseDouble(atts.getValue("y"));
+                currentRegion.setTrajectory2X(Double.parseDouble(atts.getValue("x")));
+                currentRegion.setTrajectory2Y(Double.parseDouble(atts.getValue("y")));
             } catch (Throwable e) {
                 log.error(e);
             }
         } else if (strElem.equalsIgnoreCase("event") && currentRegion != null) {
             String type = atts.getValue("type");
-            MouseEventMacro currentMouseEventMacro = currentRegion.mouseProcessor.getMouseEventMacro(type);
+            MouseEventMacro currentMouseEventMacro = currentRegion.getMouseEventsProcessor().getMouseEventMacro(type);
             if (currentMouseEventMacro == null) {
                 currentMouseEventMacro = new MouseEventMacro(type);
-                currentRegion.mouseProcessor.getMouseEventMacros().add(currentMouseEventMacro);
+                currentRegion.getMouseEventsProcessor().getMouseEventMacros().add(currentMouseEventMacro);
             }
             for (int i = 0; i < currentMouseEventMacro.getMacro().getActions().length; i++) {
                 Object row[] = currentMouseEventMacro.getMacro().getActions()[i];
@@ -438,11 +438,11 @@ public class SketchletsSaxLoader extends DefaultHandler {
             String dimEnd = atts.getValue("end");
             String dimFormat = atts.getValue("format");
 
-            currentRegion.updateTransformations[updateIndex][0] = dimName;
-            currentRegion.updateTransformations[updateIndex][1] = dimVariable;
-            currentRegion.updateTransformations[updateIndex][2] = dimStart;
-            currentRegion.updateTransformations[updateIndex][3] = dimEnd;
-            currentRegion.updateTransformations[updateIndex][4] = dimFormat == null ? "" : dimFormat;
+            currentRegion.getMotionAndRotationVariablesMapping()[updateIndex][0] = dimName;
+            currentRegion.getMotionAndRotationVariablesMapping()[updateIndex][1] = dimVariable;
+            currentRegion.getMotionAndRotationVariablesMapping()[updateIndex][2] = dimStart;
+            currentRegion.getMotionAndRotationVariablesMapping()[updateIndex][3] = dimEnd;
+            currentRegion.getMotionAndRotationVariablesMapping()[updateIndex][4] = dimFormat == null ? "" : dimFormat;
         } else if (strElem.equalsIgnoreCase("spreadsheet-cell")) {
             spreadsheet_x = -1;
             spreadsheet_y = -1;
@@ -454,7 +454,7 @@ public class SketchletsSaxLoader extends DefaultHandler {
             }
         } else if (strElem.equalsIgnoreCase("limit-motion") && currentRegion != null) {
             limitIndex++;
-            if (limitIndex < currentRegion.limits.length) {
+            if (limitIndex < currentRegion.getMotionAndRotationLimits().length) {
                 String dimName = atts.getValue("dimension");
                 String dimMin = atts.getValue("min");
                 String dimMax = atts.getValue("max");
@@ -463,9 +463,9 @@ public class SketchletsSaxLoader extends DefaultHandler {
                     dimMax = "360";
                 }
 
-                currentRegion.limits[limitIndex][0] = dimName;
-                currentRegion.limits[limitIndex][1] = dimMin;
-                currentRegion.limits[limitIndex][2] = dimMax;
+                currentRegion.getMotionAndRotationLimits()[limitIndex][0] = dimName;
+                currentRegion.getMotionAndRotationLimits()[limitIndex][1] = dimMin;
+                currentRegion.getMotionAndRotationLimits()[limitIndex][2] = dimMax;
             }
         }
     }
@@ -574,57 +574,57 @@ public class SketchletsSaxLoader extends DefaultHandler {
         }
 
         if (path().equalsIgnoreCase("/page/active-regions/active-region/region-widget-event-actions/widget-action/name")) {
-            currentRegion.widgetEventMacros.get(currentRegion.widgetEventMacros.size() - 1).setEventName(strCharacters);
+            currentRegion.getWidgetEventMacros().get(currentRegion.getWidgetEventMacros().size() - 1).setEventName(strCharacters);
             return;
         } else if (path().equalsIgnoreCase("/page/active-regions/active-region/region-widget-event-actions/widget-action/repeat")) {
             try {
-                currentRegion.widgetEventMacros.get(currentRegion.widgetEventMacros.size() - 1).getMacro().setRepeat((int) Double.parseDouble(strCharacters));
+                currentRegion.getWidgetEventMacros().get(currentRegion.getWidgetEventMacros().size() - 1).getMacro().setRepeat((int) Double.parseDouble(strCharacters));
             } catch (NumberFormatException e) {
                 log.error(e);
             }
             return;
         } else if (path().equalsIgnoreCase("/page/active-regions/active-region/region-widget-event-actions/widget-action/action/type")) {
-            Macro macro = currentRegion.widgetEventMacros.get(currentRegion.widgetEventMacros.size() - 1).getMacro();
+            Macro macro = currentRegion.getWidgetEventMacros().get(currentRegion.getWidgetEventMacros().size() - 1).getMacro();
             macro.getActions()[indexOfWidgetAction][0] = strCharacters;
             return;
         } else if (path().equalsIgnoreCase("/page/active-regions/active-region/region-widget-event-actions/widget-action/action/param1")) {
-            Macro macro = currentRegion.widgetEventMacros.get(currentRegion.widgetEventMacros.size() - 1).getMacro();
+            Macro macro = currentRegion.getWidgetEventMacros().get(currentRegion.getWidgetEventMacros().size() - 1).getMacro();
             macro.getActions()[indexOfWidgetAction][1] = strCharacters;
             return;
         } else if (path().equalsIgnoreCase("/page/active-regions/active-region/region-widget-event-actions/widget-action/action/param2")) {
-            Macro macro = currentRegion.widgetEventMacros.get(currentRegion.widgetEventMacros.size() - 1).getMacro();
+            Macro macro = currentRegion.getWidgetEventMacros().get(currentRegion.getWidgetEventMacros().size() - 1).getMacro();
             macro.getActions()[indexOfWidgetAction][2] = strCharacters;
             return;
         } else if (path().equalsIgnoreCase("/page/active-regions/active-region/region-mouse-event-actions/mouse-event-action/name")) {
-            MouseEventMacro mouseEventMacro = currentRegion.mouseProcessor.getMouseEventMacro(strCharacters);
+            MouseEventMacro mouseEventMacro = currentRegion.getMouseEventsProcessor().getMouseEventMacro(strCharacters);
             if (mouseEventMacro == null) {
                 mouseEventMacro = new MouseEventMacro(strCharacters);
-                currentRegion.mouseProcessor.getMouseEventMacros().add(mouseEventMacro);
+                currentRegion.getMouseEventsProcessor().getMouseEventMacros().add(mouseEventMacro);
             }
             mouseEventMacro.setEventName(strCharacters);
             currentMacroSaxUtil = new MacroSaxParserUtil(mouseEventMacro.getMacro(), "/page/active-regions/active-region/region-mouse-event-actions/mouse-event-action");
             currentMacroSaxUtil.processCharacters(path(), strCharacters);
         } else if (path().equalsIgnoreCase("/page/active-regions/active-region/region-overlap-event-actions/region-overlap-event-action/name")) {
             RegionOverlapEventMacro regionOverlapEventMacro = new RegionOverlapEventMacro(strCharacters);
-            currentRegion.regionOverlapEventMacros.add(regionOverlapEventMacro);
+            currentRegion.getRegionOverlapEventMacros().add(regionOverlapEventMacro);
             regionOverlapEventMacro.setEventName(strCharacters);
             currentMacroSaxUtil = new MacroSaxParserUtil(regionOverlapEventMacro.getMacro(), "/page/active-regions/active-region/region-overlap-event-actions/region-overlap-event-action");
             currentMacroSaxUtil.processCharacters(path(), strCharacters);
         } else if (path().equalsIgnoreCase("/page/keyboard-event-actions/keyboard-event-action/name")) {
             KeyboardEventMacro keyboardEventMacro = new KeyboardEventMacro(strCharacters);
-            currentPage.getKeyboardProcessor().getKeyboardEventMacros().add(keyboardEventMacro);
+            currentPage.getKeyboardEventsProcessor().getKeyboardEventMacros().add(keyboardEventMacro);
             keyboardEventMacro.setEventName(strCharacters);
             currentMacroSaxUtil = new MacroSaxParserUtil(keyboardEventMacro.getMacro(), "/page/keyboard-event-actions/keyboard-event-action");
             currentMacroSaxUtil.processCharacters(path(), strCharacters);
         } else if (path().equalsIgnoreCase("/page/mouse-event-actions/mouse-event-action/name")) {
             MouseEventMacro mouseEventMacro = new MouseEventMacro(strCharacters);
-            currentPage.getMouseProcessor().getMouseEventMacros().add(mouseEventMacro);
+            currentPage.getMouseEventsProcessor().getMouseEventMacros().add(mouseEventMacro);
             mouseEventMacro.setEventName(strCharacters);
             currentMacroSaxUtil = new MacroSaxParserUtil(mouseEventMacro.getMacro(), "/page/mouse-event-actions/mouse-event-action");
             currentMacroSaxUtil.processCharacters(path(), strCharacters);
         } else if (path().equalsIgnoreCase("/page/active-regions/active-region/region-keyboard-event-actions/region-keyboard-event-action/name")) {
             KeyboardEventMacro keyboardEventMacro = new KeyboardEventMacro(strCharacters);
-            currentRegion.keyboardProcessor.getKeyboardEventMacros().add(keyboardEventMacro);
+            currentRegion.getKeyboardEventsProcessor().getKeyboardEventMacros().add(keyboardEventMacro);
             keyboardEventMacro.setEventName(strCharacters);
             currentMacroSaxUtil = new MacroSaxParserUtil(keyboardEventMacro.getMacro(), "/page/active-regions/active-region/region-keyboard-event-actions/region-keyboard-event-action");
             currentMacroSaxUtil.processCharacters(path(), strCharacters);
@@ -729,47 +729,47 @@ public class SketchletsSaxLoader extends DefaultHandler {
             }
         }
         if (currentElement.equalsIgnoreCase("show-text") && currentRegion != null) {
-            currentRegion.textField = strCharacters;
+            currentRegion.setTextField(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("capture-screen-x") && currentRegion != null) {
-            currentRegion.captureScreenX = strCharacters;
+            currentRegion.setCaptureScreenX(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("capture-screen") && currentRegion != null) {
-            currentRegion.screenCapturingEnabled = strCharacters.equals("true");
+            currentRegion.setScreenCapturingEnabled(strCharacters.equals("true"));
         }
         if (currentElement.equalsIgnoreCase("capture-screen-mouse-map") && currentRegion != null) {
-            currentRegion.screenCapturingMouseMappingEnabled = strCharacters.equals("true");
+            currentRegion.setScreenCapturingMouseMappingEnabled(strCharacters.equals("true"));
         }
         if (currentElement.equalsIgnoreCase("capture-screen-y") && currentRegion != null) {
-            currentRegion.captureScreenY = strCharacters;
+            currentRegion.setCaptureScreenY(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("capture-screen-width") && currentRegion != null) {
-            currentRegion.captureScreenWidth = strCharacters;
+            currentRegion.setCaptureScreenWidth(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("capture-screen-height") && currentRegion != null) {
-            currentRegion.captureScreenHeight = strCharacters;
+            currentRegion.setCaptureScreenHeight(strCharacters);
         }
 
         if (currentElement.equalsIgnoreCase("basic-shape") && currentRegion != null) {
-            currentRegion.shape = strCharacters;
+            currentRegion.setShape(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("basic-shape-args") && currentRegion != null) {
-            currentRegion.shapeArguments = strCharacters;
+            currentRegion.setShapeArguments(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("group") && currentRegion != null) {
-            currentRegion.regionGrouping = strCharacters;
+            currentRegion.setRegionGrouping(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("show-image") && currentRegion != null) {
-            currentRegion.imageUrlField = strCharacters;
+            currentRegion.setImageUrlField(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("image-index") && currentRegion != null) {
-            currentRegion.strImageIndex = strCharacters;
+            currentRegion.setImageIndex(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("is-active") && currentRegion != null) {
-            currentRegion.active = strCharacters;
+            currentRegion.setActive(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("type") && currentRegion != null) {
-            currentRegion.type = strCharacters;
+            currentRegion.setType(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("control") && currentRegion != null) {
             if (strCharacters.equals("UMLGraph / Class Diagram / Simple DSL")) {
@@ -778,233 +778,233 @@ public class SketchletsSaxLoader extends DefaultHandler {
             if (strCharacters.equals("UMLGraph / Class Diagram / Cascading UML")) {
                 strCharacters = "Cascading UML";
             }
-            currentRegion.widget = strCharacters;
+            currentRegion.setWidget(strCharacters);
         }
 
         if (currentElement.equalsIgnoreCase("control-parameters") && currentRegion != null) {
-            currentRegion.widgetPropertiesString = strCharacters;
+            currentRegion.setWidgetPropertiesString(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("image-animation-ms") && currentRegion != null) {
-            currentRegion.strAnimationMs = strCharacters;
+            currentRegion.setAnimationFrameRateMs(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("text-area") && currentRegion != null) {
-            currentRegion.text = strCharacters;
+            currentRegion.setText(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("wrap-text") && currentRegion != null) {
-            currentRegion.textWrapped = strCharacters.equals("true");
+            currentRegion.setTextWrapped(strCharacters.equals("true"));
         }
         if (currentElement.equalsIgnoreCase("trim-text") && currentRegion != null) {
-            currentRegion.textTrimmed = strCharacters.equals("true");
+            currentRegion.setTextTrimmed(strCharacters.equals("true"));
         }
         if (currentElement.equalsIgnoreCase("is-solid") && currentRegion != null) {
-            currentRegion.walkThroughEnabled = strCharacters.equals("true");
+            currentRegion.setWalkThroughEnabled(strCharacters.equals("true"));
         }
         if (currentElement.equalsIgnoreCase("characters-per-line") && currentRegion != null) {
-            currentRegion.charactersPerLine = strCharacters;
+            currentRegion.setCharactersPerLine(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("max-lines") && currentRegion != null) {
-            currentRegion.maxNumLines = strCharacters;
+            currentRegion.setMaxNumLines(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("trajectory") && currentRegion != null) {
-            currentRegion.trajectory1 = strCharacters;
+            currentRegion.setTrajectory1(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("control-items") && currentRegion != null) {
-            currentRegion.widgetItems = strCharacters;
+            currentRegion.setWidgetItems(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("trajectory2") && currentRegion != null) {
-            currentRegion.trajectory2 = strCharacters;
+            currentRegion.setTrajectory2(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("image-draw") && currentRegion != null) {
             currentRegion.setImageFile(strCharacters, 0);
         }
         if (currentElement.equalsIgnoreCase("additional-image-draw") && currentRegion != null) {
-            currentRegion.additionalImageFile.add(strCharacters);
-            currentRegion.additionalDrawImages.add(null);
-            currentRegion.additionalImageChanged.add(new Boolean(false));
+            currentRegion.getAdditionalImageFileNames().add(strCharacters);
+            currentRegion.getAdditionalDrawnImages().add(null);
+            currentRegion.getAdditionalDrawnImagesChanged().add(new Boolean(false));
         }
         if (currentElement.equalsIgnoreCase("x") && currentRegion != null) {
-            currentRegion.strX = strCharacters;
+            currentRegion.setX(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("visible") && currentRegion != null) {
-            currentRegion.visible = strCharacters.equalsIgnoreCase("true");
+            currentRegion.setVisible(strCharacters.equalsIgnoreCase("true"));
         }
         if (currentElement.equalsIgnoreCase("layer") && currentRegion != null) {
-            currentRegion.layer = 0;
+            currentRegion.setLayer(0);
             try {
-                currentRegion.layer = (int) Double.parseDouble(strCharacters);
+                currentRegion.setLayer((int) Double.parseDouble(strCharacters));
             } catch (Exception e) {
             }
         }
         if (currentElement.equalsIgnoreCase("y") && currentRegion != null) {
-            currentRegion.strY = strCharacters;
+            currentRegion.setY(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("direct-x1") && currentRegion != null) {
-            currentRegion.strX1 = strCharacters;
+            currentRegion.setX1(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("direct-y2") && currentRegion != null) {
-            currentRegion.strY2 = strCharacters;
+            currentRegion.setY2(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("direct-x2") && currentRegion != null) {
-            currentRegion.strX2 = strCharacters;
+            currentRegion.setX2(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("direct-y2") && currentRegion != null) {
-            currentRegion.strY2 = strCharacters;
+            currentRegion.setY2(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("perspective-x1") && currentRegion != null) {
-            currentRegion.strPerspectiveX1 = strCharacters;
+            currentRegion.setPerspectiveX1(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("perspective-y1") && currentRegion != null) {
-            currentRegion.strPerspectiveY1 = strCharacters;
+            currentRegion.setPerspectiveY1(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("perspective-x2") && currentRegion != null) {
-            currentRegion.strPerspectiveX2 = strCharacters;
+            currentRegion.setPerspectiveX2(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("perspective-y2") && currentRegion != null) {
-            currentRegion.strPerspectiveY2 = strCharacters;
+            currentRegion.setPerspectiveY2(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("perspective-x3") && currentRegion != null) {
-            currentRegion.strPerspectiveX3 = strCharacters;
+            currentRegion.setPerspectiveX3(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("perspective-y3") && currentRegion != null) {
-            currentRegion.strPerspectiveY3 = strCharacters;
+            currentRegion.setPerspectiveY3(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("perspective-x4") && currentRegion != null) {
-            currentRegion.strPerspectiveX4 = strCharacters;
+            currentRegion.setPerspectiveX4(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("perspective-y4") && currentRegion != null) {
-            currentRegion.strPerspectiveY4 = strCharacters;
+            currentRegion.setPerspectiveY4(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("rotate-3d-horizontal") && currentRegion != null) {
-            currentRegion.strRotation3DHorizontal = strCharacters;
+            currentRegion.setRotation3DHorizontal(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("rotate-3d-vertical") && currentRegion != null) {
-            currentRegion.strRotation3DVertical = strCharacters;
+            currentRegion.setRotation3DVertical(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("automatic-perspective") && currentRegion != null) {
-            currentRegion.strAutomaticPerspective = strCharacters;
+            currentRegion.setAutomaticPerspective(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("perspective-depth") && currentRegion != null) {
-            currentRegion.strPerspectiveDepth = strCharacters;
+            currentRegion.setPerspectiveDepth(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("relative-x") && currentRegion != null) {
-            currentRegion.strRelX = strCharacters;
+            currentRegion.setRelativeX(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("region-zoom") && currentRegion != null) {
-            currentRegion.strZoom = strCharacters;
+            currentRegion.setZoom(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("relative-y") && currentRegion != null) {
-            currentRegion.strRelY = strCharacters;
+            currentRegion.setRelativeY(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("trajectory-position") && currentRegion != null) {
-            currentRegion.strTrajectoryPosition = strCharacters;
+            currentRegion.setTrajectoryPosition(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("width") && currentRegion != null) {
-            currentRegion.strWidth = strCharacters;
+            currentRegion.setWidth(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("height") && currentRegion != null) {
-            currentRegion.strHeight = strCharacters;
+            currentRegion.setHeight(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("rotation") && currentRegion != null) {
-            currentRegion.strRotate = strCharacters;
+            currentRegion.setRotation(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("shearX") && currentRegion != null) {
-            currentRegion.strShearX = strCharacters;
+            currentRegion.setShearX(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("shearY") && currentRegion != null) {
-            currentRegion.strShearY = strCharacters;
+            currentRegion.setShearY(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("windowX") && currentRegion != null) {
-            currentRegion.windowX = strCharacters;
+            currentRegion.setWindowX(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("windowY") && currentRegion != null) {
-            currentRegion.windowY = strCharacters;
+            currentRegion.setWindowY(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("windowWidth") && currentRegion != null) {
-            currentRegion.windowWidth = strCharacters;
+            currentRegion.setWindowWidth(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("windowHeight") && currentRegion != null) {
-            currentRegion.windowHeight = strCharacters;
+            currentRegion.setWindowHeight(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("transparency") && currentRegion != null) {
-            currentRegion.transparency = strCharacters;
+            currentRegion.setTransparency(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("speed") && currentRegion != null) {
-            currentRegion.strSpeed = strCharacters;
+            currentRegion.setSpeed(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("motionDirection") && currentRegion != null) {
-            currentRegion.strSpeedDirection = strCharacters;
+            currentRegion.setSpeedDirection(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("rotationSpeed") && currentRegion != null) {
-            currentRegion.strRotationSpeed = strCharacters;
+            currentRegion.setRotationSpeed(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("pen") && currentRegion != null) {
-            currentRegion.strPen = strCharacters;
+            currentRegion.setPenWidth(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("move") && currentRegion != null) {
-            currentRegion.movable = strCharacters.equals("true");
+            currentRegion.setMovable(strCharacters.equals("true"));
         }
         if (currentElement.equalsIgnoreCase("rotate") && currentRegion != null) {
-            currentRegion.rotatable = strCharacters.equals("true");
+            currentRegion.setRotatable(strCharacters.equals("true"));
         }
         if (currentElement.equalsIgnoreCase("resize") && currentRegion != null) {
-            currentRegion.resizable = strCharacters.equals("true");
+            currentRegion.setResizable(strCharacters.equals("true"));
         }
         if (currentElement.equalsIgnoreCase("fit-to-box") && currentRegion != null) {
-            currentRegion.fitToBoxEnabled = strCharacters.equals("true");
+            currentRegion.setFitToBoxEnabled(strCharacters.equals("true"));
         }
         if (currentElement.equalsIgnoreCase("stick-to-trajectory") && currentRegion != null) {
-            currentRegion.stickToTrajectoryEnabled = strCharacters.equals("true");
+            currentRegion.setStickToTrajectoryEnabled(strCharacters.equals("true"));
         }
         if (currentElement.equalsIgnoreCase("orientation-trajectory") && currentRegion != null) {
-            currentRegion.changingOrientationOnTrajectoryEnabled = strCharacters.equals("true");
+            currentRegion.setChangingOrientationOnTrajectoryEnabled(strCharacters.equals("true"));
         }
         if (currentElement.equalsIgnoreCase("font-name") && currentRegion != null) {
-            currentRegion.fontName = strCharacters;
+            currentRegion.setFontName(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("font-style") && currentRegion != null) {
-            currentRegion.fontStyle = strCharacters;
+            currentRegion.setFontStyle(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("font-size") && currentRegion != null) {
-            currentRegion.fontSize = strCharacters;
+            currentRegion.setFontSize(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("font-color") && currentRegion != null) {
-            currentRegion.fontColor = strCharacters;
+            currentRegion.setFontColor(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("fill-color") && currentRegion != null) {
-            currentRegion.strFillColor = strCharacters;
+            currentRegion.setFillColor(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("line-color") && currentRegion != null) {
-            currentRegion.lineColor = strCharacters;
+            currentRegion.setLineColor(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("line-style") && currentRegion != null) {
-            currentRegion.lineStyle = strCharacters;
+            currentRegion.setLineStyle(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("line-thickness") && currentRegion != null) {
-            currentRegion.lineThickness = strCharacters;
+            currentRegion.setLineThickness(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("horizontal-alignment") && currentRegion != null) {
-            currentRegion.horizontalAlignment = strCharacters;
+            currentRegion.setHorizontalAlignment(strCharacters);
         }
         if (currentElement.equalsIgnoreCase("vertical-alignment") && currentRegion != null) {
-            currentRegion.verticalAlignment = strCharacters;
+            currentRegion.setVerticalAlignment(strCharacters);
         }
         if (currentElement.startsWith("interaction-event-") && currentRegion != null) {
             if (currentElement.equalsIgnoreCase("interaction-event-region") && currentRegion != null) {
                 RegionOverlapEventMacro regionOverlapEventMacro = new RegionOverlapEventMacro("");
-                currentRegion.regionOverlapEventMacros.add(regionOverlapEventMacro);
+                currentRegion.getRegionOverlapEventMacros().add(regionOverlapEventMacro);
                 if (this.interactionEventIndex >= 0) {
                     regionOverlapEventMacro.getMacro().getParameters().put(RegionOverlapEventMacro.PARAMETER_REGION_ID, strCharacters);
                     // currentRegion.interactionEvents[interactionEventIndex][0] = strCharacters;
                 }
                 return;
             } else if (currentElement.equalsIgnoreCase("interaction-event-type") && currentRegion != null) {
-                RegionOverlapEventMacro regionOverlapEventMacro = currentRegion.regionOverlapEventMacros.get(currentRegion.regionOverlapEventMacros.size() - 1);
+                RegionOverlapEventMacro regionOverlapEventMacro = currentRegion.getRegionOverlapEventMacros().get(currentRegion.getRegionOverlapEventMacros().size() - 1);
                 if (this.interactionEventIndex >= 0) {
                     regionOverlapEventMacro.setEventName(strCharacters);
                 }
                 return;
             }
-            RegionOverlapEventMacro regionOverlapEventMacro = currentRegion.regionOverlapEventMacros.get(currentRegion.regionOverlapEventMacros.size() - 1);
+            RegionOverlapEventMacro regionOverlapEventMacro = currentRegion.getRegionOverlapEventMacros().get(currentRegion.getRegionOverlapEventMacros().size() - 1);
             if (currentElement.equalsIgnoreCase("interaction-event-action") && currentRegion != null) {
                 if (this.interactionEventIndex >= 0) {
                     strCharacters = Macro.checkOldCommand(strCharacters);

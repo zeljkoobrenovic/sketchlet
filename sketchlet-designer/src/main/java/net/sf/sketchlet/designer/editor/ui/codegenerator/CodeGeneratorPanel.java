@@ -101,7 +101,7 @@ public class CodeGeneratorPanel extends JPanel {
 
             public void actionPerformed(ActionEvent ae) {
                 progress.setMinimum(0);
-                progress.setMaximum(SketchletEditor.getPages().getPages().size());
+                progress.setMaximum(SketchletEditor.getProject().getPages().size());
                 fc.setApproveButtonText(Language.translate("Export"));
                 fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                 String strLastDir = GlobalProperties.get("codegen-last-export-dir");

@@ -141,13 +141,13 @@ public class SketchletEditorFrame {
         }
 
         if (SketchletEditor.getInstance().getCurrentPage() != null) {
-            int index = SketchletEditor.getInstance().getPages().getPages().indexOf(SketchletEditor.getInstance().getCurrentPage());
+            int index = SketchletEditor.getInstance().getProject().getPages().indexOf(SketchletEditor.getInstance().getCurrentPage());
             SketchletEditor.getInstance().getPageListPanel().table.getSelectionModel().setSelectionInterval(index, index);
         }
 
         if (Profiles.isActive("active_regions_layer")) {
             SketchletEditor.getInstance().setTool(SketchletEditor.getInstance().getActiveRegionSelectTool(), null);
-            SketchletEditor.getInstance().setEditorMode(SketchletEditorMode.ACTIONS);
+            SketchletEditor.getInstance().setEditorMode(SketchletEditorMode.EDITING_REGIONS);
         } else {
             SketchletEditor.getInstance().setTool(SketchletEditor.getInstance().getPenTool(), null);
             SketchletEditor.getInstance().setEditorMode(SketchletEditorMode.SKETCHING);
@@ -187,7 +187,7 @@ public class SketchletEditorFrame {
 
             public void filesDropped(Point p, File[] files) {
                 if (files.length > 0) {
-                    if (SketchletEditor.getInstance().getMode() == SketchletEditorMode.ACTIONS) {
+                    if (SketchletEditor.getInstance().getMode() == SketchletEditorMode.EDITING_REGIONS) {
                         int x = (int) ((p.getX()) / SketchletEditor.getInstance().getScale()) - SketchletEditor.getInstance().getMarginX();
                         int y = (int) ((p.getY()) / SketchletEditor.getInstance().getScale()) - SketchletEditor.getInstance().getMarginY();
                         ActiveRegion region = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().selectRegion(x, y, false);
@@ -215,7 +215,7 @@ public class SketchletEditorFrame {
 
             public void stringDropped(Point p, String strText) {
                 DataRowFrame.emptyOnCancel = true;
-                if (SketchletEditor.getInstance().getMode() == SketchletEditorMode.ACTIONS || SketchletEditor.getInstance().getMode() == SketchletEditorMode.SKETCHING) {
+                if (SketchletEditor.getInstance().getMode() == SketchletEditorMode.EDITING_REGIONS || SketchletEditor.getInstance().getMode() == SketchletEditorMode.SKETCHING) {
                     SketchletEditor.getInstance().getDragAndDropController().processDroppedString(p, strText);
                 }
 
@@ -328,7 +328,7 @@ public class SketchletEditorFrame {
                             SketchletEditor.getInstance().setEditorMode(SketchletEditorMode.UNDEFINED);
                         }
                         if (Profiles.isActive("active_regions_layer")) {
-                            SketchletEditor.getInstance().setEditorMode(SketchletEditorMode.ACTIONS, 0);
+                            SketchletEditor.getInstance().setEditorMode(SketchletEditorMode.EDITING_REGIONS, 0);
                         } else {
                             SketchletEditor.getInstance().setEditorMode(SketchletEditorMode.SKETCHING, 0);
                         }
@@ -415,7 +415,7 @@ public class SketchletEditorFrame {
 
         SketchletEditor.getInstance().getStatusPanel().add(profilePanel, BorderLayout.WEST);
         SketchletEditor.getInstance().getStatusPanel().add(SketchletEditor.getStatusBar(), BorderLayout.CENTER);
-        if (GlobalProperties.get("memory-monitor", "false").equalsIgnoreCase("true")) {
+        if (GlobalProperties.get("memory-monitor-enabled", "false").equalsIgnoreCase("true")) {
             SketchletEditor.getInstance().addMemoryPanel();
         }
         SketchletEditor.getInstance().setSnapToGrid(GlobalProperties.get("snap-to-grid", "false").equalsIgnoreCase("true"));
@@ -680,7 +680,7 @@ public class SketchletEditorFrame {
         SketchletEditor.getInstance().getPanelModes().remove(SketchletEditor.getInstance().getTabsModes());
         if (Profiles.isActive("active_regions_layer")) {
             SketchletEditor.getInstance().getPanelModes().add(SketchletEditor.getInstance().getTabsModes(), BorderLayout.NORTH);
-            SketchletEditor.getInstance().setEditorMode(SketchletEditorMode.ACTIONS, 0);
+            SketchletEditor.getInstance().setEditorMode(SketchletEditorMode.EDITING_REGIONS, 0);
         } else {
             SketchletEditor.getInstance().getTabsModes().setSelectedIndex(0);
             SketchletEditor.getInstance().setEditorMode(SketchletEditorMode.SKETCHING, 0);

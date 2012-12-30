@@ -14,187 +14,187 @@ public class ActiveRegionsOverlapHelper {
     }
 
     public static void findNonOverlappingLocationPlayback(ActiveRegion a) {
-        int ox1 = a.x1;
-        int ox2 = a.x2;
-        int oy1 = a.y1;
-        int oy2 = a.y2;
+        int ox1 = a.getX1Value();
+        int ox2 = a.getX2Value();
+        int oy1 = a.getY1Value();
+        int oy2 = a.getY2Value();
         for (int i = 1; i < 500; i++) {
-            a.x1 = ox1 + i;
-            a.x2 = ox2 + i;
+            a.setX1Value(ox1 + i);
+            a.setX2Value(ox2 + i);
             if (a.isWithinLimits(true) && !a.getInteractionController().intersectsWithSolids(true)) {
                 break;
             } else {
-                a.x1 = ox1;
-                a.x2 = ox2;
+                a.setX1Value(ox1);
+                a.setX2Value(ox2);
             }
-            a.y1 = oy1 + i;
-            a.y2 = oy2 + i;
+            a.setY1Value(oy1 + i);
+            a.setY2Value(oy2 + i);
             if (a.isWithinLimits(true) && !a.getInteractionController().intersectsWithSolids(true)) {
                 break;
             } else {
-                a.y1 = oy1;
-                a.y2 = oy2;
+                a.setY1Value(oy1);
+                a.setY2Value(oy2);
             }
-            a.x1 = ox1 - i;
-            a.x2 = ox2 - i;
+            a.setX1Value(ox1 - i);
+            a.setX2Value(ox2 - i);
             if (a.isWithinLimits(true) && !a.getInteractionController().intersectsWithSolids(true)) {
                 break;
             } else {
-                a.x1 = ox1;
-                a.x2 = ox2;
+                a.setX1Value(ox1);
+                a.setX2Value(ox2);
             }
-            a.y1 = oy1 - i;
-            a.y2 = oy2 - i;
+            a.setY1Value(oy1 - i);
+            a.setY2Value(oy2 - i);
             if (a.isWithinLimits(true) && !a.getInteractionController().intersectsWithSolids(true)) {
                 break;
             } else {
-                a.y1 = oy1;
-                a.y2 = oy2;
-            }
-
-            a.x1 = ox1 + i;
-            a.x2 = ox2 + i;
-            a.y1 = oy1 + i;
-            a.y2 = oy2 + i;
-            if (a.isWithinLimits(true) && !a.getInteractionController().intersectsWithSolids(true)) {
-                break;
-            } else {
-                a.x1 = ox1;
-                a.x2 = ox2;
-                a.y1 = oy1;
-                a.y2 = oy2;
+                a.setY1Value(oy1);
+                a.setY2Value(oy2);
             }
 
-            a.x1 = ox1 - i;
-            a.x2 = ox2 - i;
-            a.y1 = oy1 + i;
-            a.y2 = oy2 + i;
+            a.setX1Value(ox1 + i);
+            a.setX2Value(ox2 + i);
+            a.setY1Value(oy1 + i);
+            a.setY2Value(oy2 + i);
             if (a.isWithinLimits(true) && !a.getInteractionController().intersectsWithSolids(true)) {
                 break;
             } else {
-                a.x1 = ox1;
-                a.x2 = ox2;
-                a.y1 = oy1;
-                a.y2 = oy2;
+                a.setX1Value(ox1);
+                a.setX2Value(ox2);
+                a.setY1Value(oy1);
+                a.setY2Value(oy2);
             }
 
-            a.x1 = ox1 + i;
-            a.x2 = ox2 + i;
-            a.y1 = oy1 - i;
-            a.y2 = oy2 - i;
+            a.setX1Value(ox1 - i);
+            a.setX2Value(ox2 - i);
+            a.setY1Value(oy1 + i);
+            a.setY2Value(oy2 + i);
             if (a.isWithinLimits(true) && !a.getInteractionController().intersectsWithSolids(true)) {
                 break;
             } else {
-                a.x1 = ox1;
-                a.x2 = ox2;
-                a.y1 = oy1;
-                a.y2 = oy2;
+                a.setX1Value(ox1);
+                a.setX2Value(ox2);
+                a.setY1Value(oy1);
+                a.setY2Value(oy2);
             }
 
-            a.x1 = ox1 - i;
-            a.x2 = ox2 - i;
-            a.y1 = oy1 - i;
-            a.y2 = oy2 - i;
+            a.setX1Value(ox1 + i);
+            a.setX2Value(ox2 + i);
+            a.setY1Value(oy1 - i);
+            a.setY2Value(oy2 - i);
             if (a.isWithinLimits(true) && !a.getInteractionController().intersectsWithSolids(true)) {
                 break;
             } else {
-                a.x1 = ox1;
-                a.x2 = ox2;
-                a.y1 = oy1;
-                a.y2 = oy2;
+                a.setX1Value(ox1);
+                a.setX2Value(ox2);
+                a.setY1Value(oy1);
+                a.setY2Value(oy2);
+            }
+
+            a.setX1Value(ox1 - i);
+            a.setX2Value(ox2 - i);
+            a.setY1Value(oy1 - i);
+            a.setY2Value(oy2 - i);
+            if (a.isWithinLimits(true) && !a.getInteractionController().intersectsWithSolids(true)) {
+                break;
+            } else {
+                a.setX1Value(ox1);
+                a.setX2Value(ox2);
+                a.setY1Value(oy1);
+                a.setY2Value(oy2);
             }
         }
     }
 
     public static void findNonOverlappingLocation(ActiveRegion a) {
-        int ox1 = a.x1;
-        int oy1 = a.y1;
-        int ox2 = a.x2;
-        int oy2 = a.y2;
+        int ox1 = a.getX1Value();
+        int oy1 = a.getY1Value();
+        int ox2 = a.getX2Value();
+        int oy2 = a.getY2Value();
         for (int i = 1; i < 500; i++) {
-            a.x1 = ox1 + i;
-            a.x2 = ox2 + i;
+            a.setX1Value(ox1 + i);
+            a.setX2Value(ox2 + i);
             if (a.isWithinLimits(false) && !a.getInteractionController().intersectsWithSolids(false)) {
                 break;
             } else {
-                a.x1 = ox1;
-                a.x2 = ox2;
+                a.setX1Value(ox1);
+                a.setX2Value(ox2);
             }
-            a.y1 = oy1 + i;
-            a.y2 = oy2 + i;
+            a.setY1Value(oy1 + i);
+            a.setY2Value(oy2 + i);
             if (a.isWithinLimits(false) && !a.getInteractionController().intersectsWithSolids(false)) {
                 break;
             } else {
-                a.y1 = oy1;
-                a.y2 = oy2;
+                a.setY1Value(oy1);
+                a.setY2Value(oy2);
             }
-            a.x1 = ox1 - i;
-            a.x2 = ox2 - i;
+            a.setX1Value(ox1 - i);
+            a.setX2Value(ox2 - i);
             if (a.isWithinLimits(false) && !a.getInteractionController().intersectsWithSolids(false)) {
                 break;
             } else {
-                a.x1 = ox1;
-                a.x2 = ox2;
+                a.setX1Value(ox1);
+                a.setX2Value(ox2);
             }
-            a.y1 = oy1 - i;
-            a.y2 = oy2 - i;
+            a.setY1Value(oy1 - i);
+            a.setY2Value(oy2 - i);
             if (a.isWithinLimits(false) && !a.getInteractionController().intersectsWithSolids(false)) {
                 break;
             } else {
-                a.y1 = oy1;
-                a.y2 = oy2;
-            }
-
-            a.x1 = ox1 + i;
-            a.x2 = ox2 + i;
-            a.y1 = oy1 + i;
-            a.y2 = oy2 + i;
-            if (a.isWithinLimits(false) && !a.getInteractionController().intersectsWithSolids(false)) {
-                break;
-            } else {
-                a.x1 = ox1;
-                a.x2 = ox2;
-                a.y1 = oy1;
-                a.y2 = oy2;
+                a.setY1Value(oy1);
+                a.setY2Value(oy2);
             }
 
-            a.x1 = ox1 - i;
-            a.x2 = ox2 - i;
-            a.y1 = oy1 + i;
-            a.y2 = oy2 + i;
+            a.setX1Value(ox1 + i);
+            a.setX2Value(ox2 + i);
+            a.setY1Value(oy1 + i);
+            a.setY2Value(oy2 + i);
             if (a.isWithinLimits(false) && !a.getInteractionController().intersectsWithSolids(false)) {
                 break;
             } else {
-                a.x1 = ox1;
-                a.x2 = ox2;
-                a.y1 = oy1;
-                a.y2 = oy2;
+                a.setX1Value(ox1);
+                a.setX2Value(ox2);
+                a.setY1Value(oy1);
+                a.setY2Value(oy2);
             }
 
-            a.x1 = ox1 + i;
-            a.x2 = ox2 + i;
-            a.y1 = oy1 - i;
-            a.y2 = oy2 - i;
+            a.setX1Value(ox1 - i);
+            a.setX2Value(ox2 - i);
+            a.setY1Value(oy1 + i);
+            a.setY2Value(oy2 + i);
             if (a.isWithinLimits(false) && !a.getInteractionController().intersectsWithSolids(false)) {
                 break;
             } else {
-                a.x1 = ox1;
-                a.x2 = ox2;
-                a.y1 = oy1;
-                a.y2 = oy2;
+                a.setX1Value(ox1);
+                a.setX2Value(ox2);
+                a.setY1Value(oy1);
+                a.setY2Value(oy2);
             }
 
-            a.x1 = ox1 - i;
-            a.x2 = ox2 - i;
-            a.y1 = oy1 - i;
-            a.y2 = oy2 - i;
+            a.setX1Value(ox1 + i);
+            a.setX2Value(ox2 + i);
+            a.setY1Value(oy1 - i);
+            a.setY2Value(oy2 - i);
             if (a.isWithinLimits(false) && !a.getInteractionController().intersectsWithSolids(false)) {
                 break;
             } else {
-                a.x1 = ox1;
-                a.x2 = ox2;
-                a.y1 = oy1;
-                a.y2 = oy2;
+                a.setX1Value(ox1);
+                a.setX2Value(ox2);
+                a.setY1Value(oy1);
+                a.setY2Value(oy2);
+            }
+
+            a.setX1Value(ox1 - i);
+            a.setX2Value(ox2 - i);
+            a.setY1Value(oy1 - i);
+            a.setY2Value(oy2 - i);
+            if (a.isWithinLimits(false) && !a.getInteractionController().intersectsWithSolids(false)) {
+                break;
+            } else {
+                a.setX1Value(ox1);
+                a.setX2Value(ox2);
+                a.setY1Value(oy1);
+                a.setY2Value(oy2);
             }
         }
     }

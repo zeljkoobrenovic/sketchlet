@@ -2,6 +2,7 @@ package net.sf.sketchlet.designer.editor.ui.variables;
 
 import net.sf.sketchlet.common.file.FileDrop;
 import net.sf.sketchlet.common.translation.Language;
+import net.sf.sketchlet.designer.editor.ui.SyntaxEditorWrapper;
 import net.sf.sketchlet.framework.blackboard.VariableOperationsListener;
 import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.framework.blackboard.Variable;
@@ -325,7 +326,7 @@ public class VariablesTablePanel extends JPanel {
         editor.setRows(5);
         editor.setColumns(30);
         editor.setText(variable.getValue());
-        pane.add(Notepad.getEditorPanel(editor, false, false));
+        pane.add(Notepad.getEditorPanel(new SyntaxEditorWrapper(editor), false, false));
         pane.add(new JLabel(Language.translate(Language.translate("Description"))));
         final JTextField description = new JTextField(variable.getDescription());
         pane.add(description);

@@ -2,7 +2,7 @@ package net.sf.sketchlet.designer.editor.ui.wizard;
 
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
-import net.sf.sketchlet.framework.model.events.mouse.MouseProcessor;
+import net.sf.sketchlet.framework.model.events.mouse.MouseEventsProcessor;
 import net.sf.sketchlet.util.SpringUtilities;
 import org.netbeans.spi.wizard.WizardPage;
 
@@ -77,8 +77,8 @@ public class EventPage extends WizardPage {
 
         mouseEvent.addItem("");
 
-        for (int i = 0; i < MouseProcessor.MOUSE_EVENT_TYPES.length; i++) {
-            mouseEvent.addItem(MouseProcessor.MOUSE_EVENT_TYPES[i]);
+        for (int i = 0; i < MouseEventsProcessor.MOUSE_EVENT_TYPES.length; i++) {
+            mouseEvent.addItem(MouseEventsProcessor.MOUSE_EVENT_TYPES[i]);
         }
 
         panel.add(new JLabel("  Mouse event"));

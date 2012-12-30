@@ -3,7 +3,7 @@ package net.sf.sketchlet.framework.controller;
 import net.sf.sketchlet.designer.playback.displays.ScreenMapping;
 import net.sf.sketchlet.framework.model.ActiveRegion;
 import net.sf.sketchlet.framework.model.Page;
-import net.sf.sketchlet.framework.model.Pages;
+import net.sf.sketchlet.framework.model.Project;
 
 import javax.swing.*;
 import java.awt.geom.AffineTransform;
@@ -12,7 +12,7 @@ import java.awt.geom.AffineTransform;
  * @author zeljko
  */
 public class InteractionContext {
-    private Pages pages;
+    private Project project;
     private Page currentPage;
     private Page masterPage;
     private static ActiveRegion selectedRegion;
@@ -32,12 +32,12 @@ public class InteractionContext {
         scale = scale;
     }
 
-    public Pages getPages() {
-        return pages;
+    public Project getProject() {
+        return project;
     }
 
-    public void setPages(Pages pages) {
-        this.pages = pages;
+    public void setProject(Project project) {
+        this.project = project;
     }
 
     public Page getCurrentPage() {

@@ -54,7 +54,7 @@ public class UIUtils {
         comboBox.addItem("");
 
         if (SketchletEditor.getInstance() != null) {
-            for (Page page : SketchletEditor.getInstance().getPages().getPages()) {
+            for (Page page : SketchletEditor.getInstance().getProject().getPages()) {
                 comboBox.addItem(page.getTitle());
             }
         }

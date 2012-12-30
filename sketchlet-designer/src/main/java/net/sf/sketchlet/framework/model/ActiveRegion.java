@@ -16,8 +16,8 @@ import net.sf.sketchlet.framework.controller.ActiveRegionMotionController;
 import net.sf.sketchlet.framework.controller.ActiveRegionMouseController;
 import net.sf.sketchlet.framework.controller.ActiveRegionOverlapController;
 import net.sf.sketchlet.framework.model.events.EventMacro;
-import net.sf.sketchlet.framework.model.events.keyboard.KeyboardProcessor;
-import net.sf.sketchlet.framework.model.events.mouse.MouseProcessor;
+import net.sf.sketchlet.framework.model.events.keyboard.KeyboardEventsProcessor;
+import net.sf.sketchlet.framework.model.events.mouse.MouseEventsProcessor;
 import net.sf.sketchlet.framework.model.events.overlap.RegionOverlapEventMacro;
 import net.sf.sketchlet.framework.model.events.widget.WidgetEventMacro;
 import net.sf.sketchlet.framework.model.geom.RegularPolygon;
@@ -50,53 +50,94 @@ import java.util.Vector;
 public class ActiveRegion implements PropertiesInterface {
     private static Logger log = Logger.getLogger(ActiveRegion.class);
 
+    private ActiveRegions parent;
 
-    public List<RegionOverlapEventMacro> regionOverlapEventMacros = new Vector<RegionOverlapEventMacro>();
-    public List<WidgetEventMacro> widgetEventMacros = new Vector<WidgetEventMacro>();
-    public MouseProcessor mouseProcessor = new MouseProcessor();
-    public KeyboardProcessor keyboardProcessor = new KeyboardProcessor();
+    private List<RegionOverlapEventMacro> regionOverlapEventMacros = new Vector<RegionOverlapEventMacro>();
+    private List<WidgetEventMacro> widgetEventMacros = new Vector<WidgetEventMacro>();
+    private MouseEventsProcessor mouseEventsProcessor = new MouseEventsProcessor();
+    private KeyboardEventsProcessor keyboardEventsProcessor = new KeyboardEventsProcessor();
+    // renderer
+    private ActiveRegionRenderer renderer = new ActiveRegionRenderer(this);
+    // handlers
+    private ActiveRegionMouseController mouseController = new ActiveRegionMouseController(this);
+    private ActiveRegionOverlapController interactionController = new ActiveRegionOverlapController(this);
+    private ActiveRegionMotionController motionController = new ActiveRegionMotionController(this);
+    private Vector<String> updatingProperties = new Vector<String>();
 
-    public boolean visible = true;
-    public boolean pinned = false;
-    public boolean inFocus = false;
-    public String strX = "";
-    public String strY = "";
-    public String strRelX = "";
-    public String strRelY = "";
-    public String strZoom = "";
-    public String strTrajectoryPosition = "";
-    public String strWidth = "";
-    public String strHeight = "";
-    public String strRotate = "";
-    public String strShearX = "";
-    public String strShearY = "";
-    public String windowX = "";
-    public String windowY = "";
-    public String windowWidth = "";
-    public String windowHeight = "";
-    public String transparency = "";
-    public String strSpeed = "";
-    public String strSpeedDirection = "";
-    public String strRotationSpeed = "";
-    public String strPen = "";
-    public String strX1 = "";
-    public String strY1 = "";
-    public String strX2 = "";
-    public String strY2 = "";
-    public String strPerspectiveX1 = "";
-    public String strPerspectiveY1 = "";
-    public String strPerspectiveX2 = "";
-    public String strPerspectiveY2 = "";
-    public String strPerspectiveX3 = "";
-    public String strPerspectiveY3 = "";
-    public String strPerspectiveX4 = "";
-    public String strPerspectiveY4 = "";
-    public String strAutomaticPerspective = "";
-    public String strRotation3DHorizontal = "";
-    public String strRotation3DVertical = "";
-    public String strPerspectiveDepth = "";
-    public int layer = 0;
-    public Object[][] updateTransformations = {
+
+    private boolean visible = true;
+
+    private int x1Value;
+    private int y1Value;
+    private int x2Value;
+    private int y2Value;
+    private double centerOfRotationX = 0.5;
+    private double centerOfRotationY = 0.5;
+    private double trajectory2X = 0.25;
+    private double trajectory2Y = 0.5;
+    private double p_x0 = 0.0;
+    private double p_y0 = 0.0;
+    private double p_x1 = 1.0;
+    private double p_y1 = 0.0;
+    private double p_x2 = 1.0;
+    private double p_y2 = 1.0;
+    private double p_x3 = 0.0;
+    private double p_y3 = 1.0;
+
+    private int penX;
+    private int penY;
+    private double rotationValue;
+    private double shearXValue;
+    private double shearYValue;
+    private int speedPrevX1;
+    private int speedPrevY1;
+    private int speedPrevX2;
+    private int speedPrevY2;
+    private int speedWidth;
+    private int speedHeight;
+    private double speedX;
+    private double speedY;
+    private double speedPrevDirection;
+    private double speedValue;
+
+    private String x = "";
+    private String y = "";
+    private String relativeX = "";
+    private String relativeY = "";
+    private String zoom = "";
+    private String trajectoryPosition = "";
+    private String width = "";
+    private String height = "";
+    private String rotation = "";
+    private String shearX = "";
+    private String shearY = "";
+    private String windowX = "";
+    private String windowY = "";
+    private String windowWidth = "";
+    private String windowHeight = "";
+    private String transparency = "";
+    private String speed = "";
+    private String speedDirection = "";
+    private String rotationSpeed = "";
+    private String penWidth = "";
+    private String x1 = "";
+    private String y1 = "";
+    private String x2 = "";
+    private String y2 = "";
+    private String perspectiveX1 = "";
+    private String perspectiveY1 = "";
+    private String perspectiveX2 = "";
+    private String perspectiveY2 = "";
+    private String perspectiveX3 = "";
+    private String perspectiveY3 = "";
+    private String perspectiveX4 = "";
+    private String perspectiveY4 = "";
+    private String automaticPerspective = "";
+    private String rotation3DHorizontal = "";
+    private String rotation3DVertical = "";
+    private String perspectiveDepth = "";
+    private int layer = 0;
+    private Object[][] motionAndRotationVariablesMapping = {
             {"", "", "", "", ""},
             {"", "", "", "", ""},
             {"", "", "", "", ""},
@@ -111,114 +152,95 @@ public class ActiveRegion implements PropertiesInterface {
             {"", "", "", "", ""},
             {"", "", "", "", ""}
     };
-    public Object[][] limits = {
+    private Object[][] motionAndRotationLimits = {
             {"position x", "", ""},
             {"position y", "", ""},
             {"rotation", "", ""}
     };
 
-    public String shape = "None";
-    public String shapeArguments = "";
-    public String fontName = "";
-    public String fontSize = "";
-    public String fontColor = "";
-    public String fontStyle = "";
-    private String strImageFile = "";
-    public int x1, y1, x2, y2;
-    public double center_rotation_x = 0.5, center_rotation_y = 0.5;
-    public double trajectory2_x = 0.25, trajectory2_y = 0.5;
-    public double p_x0 = 0.0, p_y0 = 0.0, p_x1 = 1.0, p_y1 = 0.0, p_x2 = 1.0, p_y2 = 1.0, p_x3 = 0.0, p_y3 = 1.0;
-    public int pen_x, pen_y;
-    public double rotation, shearX, shearY;
-    public ActiveRegions parent;
-    private boolean drawImageChanged = false;
-    public Vector<String> additionalImageFile = new Vector<String>();
-    public boolean inTrajectoryMode = false;
-    public boolean inTrajectoryMode2 = false;
-    public int trajectoryType = 0;
-    public String horizontalAlignment = "";
-    public String verticalAlignment = "";
-    public String lineColor = "";
-    public String lineThickness = "";
-    public String lineStyle = "";
-    public String strFillColor = "";
-    public String captureScreenX = "";
-    public String captureScreenY = "";
-    public String captureScreenWidth = "";
-    public String captureScreenHeight = "";
-    public String textField = "";
-    public String embeddedSketch = "";
-    public String embeddedSketchVarPrefix = "";
-    public String embeddedSketchVarPostfix = "";
-    public String imageUrlField = "";
-    public String active = "";
-    public String type = "";
-    public String widget = "";
-    public String widgetPropertiesString = "";
-    public Properties widgetProperties = null;
-    public String strImageIndex = "";
-    public String strAnimationMs = "";
-
-    public int speed_prevX1;
-    public int speed_prevY1;
-    public int speed_prevX2;
-    public int speed_prevY2;
-    public int speed_w;
-    public int speed_h;
-    public double speed_x;
-    public double speed_y;
-    public double speed_prevDirection;
-    public double speed;
-    public long lastFrameTime = 0;
-    public String regionGrouping = "";
-    // renderer
-    private ActiveRegionRenderer renderer = new ActiveRegionRenderer(this);
-    // handlers
-    private ActiveRegionMouseController mouseController = new ActiveRegionMouseController(this);
-    private ActiveRegionOverlapController interactionController = new ActiveRegionOverlapController(this);
-    private ActiveRegionMotionController motionController = new ActiveRegionMotionController(this);
+    private String shape = "None";
+    private String shapeArguments = "";
+    private String fontName = "";
+    private String fontSize = "";
+    private String fontColor = "";
+    private String fontStyle = "";
+    private String imageFile = "";
+    private boolean drawnImageChanged = false;
+    private List<String> additionalImageFileNames = new Vector<String>();
+    private boolean inTrajectoryMode = false;
+    private boolean inTrajectoryMode2 = false;
+    private int trajectoryType = 0;
+    private String horizontalAlignment = "";
+    private String verticalAlignment = "";
+    private String lineColor = "";
+    private String lineThickness = "";
+    private String lineStyle = "";
+    private String fillColor = "";
+    private String captureScreenX = "";
+    private String captureScreenY = "";
+    private String captureScreenWidth = "";
+    private String captureScreenHeight = "";
+    private String textField = "";
+    private String embeddedSketch = "";
+    private String embeddedSketchVarPrefix = "";
+    private String embeddedSketchVarPostfix = "";
+    private String imageUrlField = "";
+    private String active = "";
+    private String type = "";
+    private String widget = "";
+    private String widgetPropertiesString = "";
+    private Properties widgetProperties = null;
+    private String imageIndex = "";
+    private String animationFrameRateMs = "";
+    private String regionGrouping = "";
     // images
-    public BufferedImage image = null;
-    private BufferedImage drawImage = null;
-    public Vector<BufferedImage> additionalDrawImages = new Vector<BufferedImage>();
-    public Vector<Boolean> additionalImageChanged = new Vector<Boolean>();
-    public String text = "";
-    public String trajectory1 = "";
-    public String trajectory2 = "";
-    public String name = "";
-    public boolean movable = false;
-    public boolean rotatable = false;
-    public boolean resizable = false;
-    public boolean fitToBoxEnabled = true;
-    public boolean textWrapped = false;
-    public boolean textTrimmed = false;
-    public boolean walkThroughEnabled = false;
-    public boolean stickToTrajectoryEnabled = true;
-    public boolean changingOrientationOnTrajectoryEnabled = true;
-    public boolean screenCapturingEnabled = false;
-    public boolean screenCapturingMouseMappingEnabled = false;
-    public String widgetItems = "";
-    public String charactersPerLine = "";
-    public String maxNumLines = "";
+    private BufferedImage image = null;
+    private BufferedImage drawnImage = null;
+    private List<BufferedImage> additionalDrawnImages = new Vector<BufferedImage>();
+    private List<Boolean> additionalDrawnImagesChanged = new Vector<Boolean>();
+    private String text = "";
+    private String trajectory1 = "";
+    private String trajectory2 = "";
+    private String name = "";
+    private boolean movable = false;
+    private boolean rotatable = false;
+    private boolean resizable = false;
+    private boolean fitToBoxEnabled = true;
+    private boolean textWrapped = false;
+    private boolean textTrimmed = false;
+    private boolean walkThroughEnabled = false;
+    private boolean stickToTrajectoryEnabled = true;
+    private boolean changingOrientationOnTrajectoryEnabled = true;
+    private boolean screenCapturingEnabled = false;
+    private boolean screenCapturingMouseMappingEnabled = false;
+    private String widgetItems = "";
+    private String charactersPerLine = "";
+    private String maxNumLines = "";
+
+    // auxiliary fields
+    private boolean pinned = false;
+    private boolean inFocus = false;
+    private String previousImage = "";
+    private long lastFrameTime = 0;
 
     public ActiveRegion() {
     }
 
     public ActiveRegion(ActiveRegions parent) {
         this.parent = parent;
-        this.getDrawImagePath();
+        this.getDrawnImagePath();
     }
 
     public ActiveRegion(ActiveRegion a, boolean bCopyFiles) {
         this(a, a.parent, bCopyFiles);
     }
 
-    public ActiveRegion(ActiveRegions parent, int x1, int y1, int x2, int y2) {
+    public ActiveRegion(ActiveRegions parent, int x1Value, int y1Value, int x2Value, int y2Value) {
         this(parent);
-        this.x1 = x1;
-        this.y1 = y1;
-        this.x2 = x2;
-        this.y2 = y2;
+        this.x1Value = x1Value;
+        this.y1Value = y1Value;
+        this.x2Value = x2Value;
+        this.y2Value = y2Value;
     }
 
     public ActiveRegion(ActiveRegion region, ActiveRegions actions, boolean bCopyFiles) {
@@ -227,30 +249,30 @@ public class ActiveRegion implements PropertiesInterface {
 
         this.activate(false);
         if (bCopyFiles) {
-            additionalImageFile.removeAllElements();
-            additionalDrawImages.removeAllElements();
-            additionalImageChanged.removeAllElements();
-            for (int aai = 0; aai <= region.additionalImageFile.size(); aai++) {
+            additionalImageFileNames.clear();
+            additionalDrawnImages.clear();
+            additionalDrawnImagesChanged.clear();
+            for (int aai = 0; aai <= region.additionalImageFileNames.size(); aai++) {
                 if (aai > 0) {
-                    additionalImageFile.add(null);
-                    additionalDrawImages.add(null);
-                    additionalImageChanged.add(new Boolean(false));
+                    additionalImageFileNames.add(null);
+                    additionalDrawnImages.add(null);
+                    additionalDrawnImagesChanged.add(new Boolean(false));
                 } else {
-                    strImageFile = "";
-                    this.drawImage = null;
-                    this.drawImageChanged = true;
+                    imageFile = "";
+                    this.drawnImage = null;
+                    this.drawnImageChanged = true;
                 }
                 File imgFile;
                 if (region.parent.getPage().getSourceDirectory() != null) {
-                    imgFile = new File(region.getDrawImageFile(region.parent.getPage().getSourceDirectory(), aai));
+                    imgFile = new File(region.getDrawnImageFile(region.parent.getPage().getSourceDirectory(), aai));
                 } else {
-                    imgFile = new File(region.getDrawImagePath(aai));
+                    imgFile = new File(region.getDrawnImagePath(aai));
                 }
 
                 try {
-                    String strNewImage = this.getDrawImagePath(aai);
+                    String newImageFileName = this.getDrawnImagePath(aai);
                     if (imgFile.exists()) {
-                        File newFile = new File(strNewImage);
+                        File newFile = new File(newImageFileName);
                         FileUtils.copyFile(imgFile, newFile);
                     }
                 } catch (Throwable e) {
@@ -261,25 +283,25 @@ public class ActiveRegion implements PropertiesInterface {
             this.getMouseController().setStartAngle(region.getMouseController().getStartAngle());
             this.getMouseController().setStartX(region.getMouseController().getStartX());
             this.getMouseController().setStartY(region.getMouseController().getStartY());
-            this.strImageFile = region.strImageFile;
-            this.drawImage = region.drawImage;
-            this.drawImageChanged = true;
-            additionalImageFile.removeAllElements();
-            for (String strAdditionalImageFile : region.additionalImageFile) {
-                additionalImageFile.add(strAdditionalImageFile);
+            this.imageFile = region.imageFile;
+            this.drawnImage = region.drawnImage;
+            this.drawnImageChanged = true;
+            additionalImageFileNames.clear();
+            for (String additionalImageFileName : region.additionalImageFileNames) {
+                additionalImageFileNames.add(additionalImageFileName);
             }
-            additionalDrawImages.removeAllElements();
-            for (BufferedImage additionalImage : region.additionalDrawImages) {
-                additionalDrawImages.add(additionalImage);
+            additionalDrawnImages.clear();
+            for (BufferedImage additionalImage : region.additionalDrawnImages) {
+                additionalDrawnImages.add(additionalImage);
             }
-            additionalImageChanged.removeAllElements();
-            for (Boolean imageChanged : region.additionalImageChanged) {
-                additionalImageChanged.add(imageChanged);
+            additionalDrawnImagesChanged.clear();
+            for (Boolean imageChanged : region.additionalDrawnImagesChanged) {
+                additionalDrawnImagesChanged.add(imageChanged);
             }
 
             this.type = region.type;
-            this.strImageIndex = region.strImageIndex;
-            this.strAnimationMs = region.strAnimationMs;
+            this.imageIndex = region.imageIndex;
+            this.animationFrameRateMs = region.animationFrameRateMs;
             image = region.image;
         }
 
@@ -294,6 +316,30 @@ public class ActiveRegion implements PropertiesInterface {
         ActiveRegion region = new ActiveRegion(page.getRegions());
 
         return region;
+    }
+
+    public static String[][] getShowProperties() {
+        return showProperties;
+    }
+
+    public static void setShowProperties(String[][] showProperties) {
+        ActiveRegion.showProperties = showProperties;
+    }
+
+    public static String[][] getPropertiesInfo() {
+        return propertiesInfo;
+    }
+
+    public static void setPropertiesInfo(String[][] propertiesInfo) {
+        ActiveRegion.propertiesInfo = propertiesInfo;
+    }
+
+    public static String[][] getShowImageProperties() {
+        return showImageProperties;
+    }
+
+    public static void setShowImageProperties(String[][] showImageProperties) {
+        ActiveRegion.showImageProperties = showImageProperties;
     }
 
     public Page getSketch() {
@@ -312,8 +358,16 @@ public class ActiveRegion implements PropertiesInterface {
         return this.type;
     }
 
+    public boolean hasMouseDiscreteEvents() {
+        return mouseEventsProcessor.getMouseActionsCount() > 0 || !this.widget.isEmpty();
+    }
+
+    public boolean isMouseDraggable() {
+        return movable || rotatable;
+    }
+
     public boolean isMouseActive() {
-        return mouseProcessor.getMouseActionsCount() > 0 || movable || rotatable || !this.widget.isEmpty();
+        return hasMouseDiscreteEvents() || movable || rotatable || !this.widget.isEmpty();
     }
 
     public void flush() {
@@ -321,17 +375,17 @@ public class ActiveRegion implements PropertiesInterface {
             image.flush();
             image = null;
         }
-        if (this.drawImage != null) {
-            this.drawImage.flush();
-            drawImage = null;
+        if (this.drawnImage != null) {
+            this.drawnImage.flush();
+            drawnImage = null;
         }
-        if (this.additionalDrawImages != null) {
-            for (int i = 0; i < this.additionalDrawImages.size(); i++) {
-                BufferedImage img = this.additionalDrawImages.elementAt(i);
+        if (this.additionalDrawnImages != null) {
+            for (int i = 0; i < this.additionalDrawnImages.size(); i++) {
+                BufferedImage img = this.additionalDrawnImages.get(i);
                 if (img != null) {
                     img.flush();
                 }
-                this.additionalDrawImages.setElementAt(null, i);
+                this.additionalDrawnImages.set(i, null);
             }
         }
         if (getRenderer() != null) {
@@ -351,19 +405,7 @@ public class ActiveRegion implements PropertiesInterface {
         return -1;
     }
 
-    public static int getLastNonEmptyRow(String data[][]) {
-        for (int i = data.length - 1; i >= 0; i--) {
-            for (int j = 0; j < data[i].length; j++) {
-                if (!data[i][j].isEmpty()) {
-                    return i;
-                }
-            }
-        }
-
-        return -1;
-    }
-
-    public Font getFont(float defaultFontSize) {
+    public Font getFontValue(float defaultFontSize) {
         double size = 0;
         if (fontSize.length() != 0) {
             try {
@@ -380,8 +422,8 @@ public class ActiveRegion implements PropertiesInterface {
         return TextDrawingLayer.getFont(name, style, (float) size);
     }
 
-    public Color getColor(String strColor) {
-        Color color = Colors.getColor(processText(strColor));
+    public Color getColor(String colorName) {
+        Color color = Colors.getColor(processText(colorName));
         if (color == null) {
             return Color.BLACK;
         }
@@ -389,12 +431,12 @@ public class ActiveRegion implements PropertiesInterface {
         return color;
     }
 
-    public Color getFontColor() {
+    public Color getFontColorValue() {
         return getColor(fontColor);
     }
 
-    public Color getBackgroundColor() {
-        Color color = Colors.getColor(processText(strFillColor));
+    public Color getBackgroundColorValue() {
+        Color color = Colors.getColor(processText(fillColor));
         if (color == null) {
             return new Color(0, 0, 0, 0);
         }
@@ -402,28 +444,28 @@ public class ActiveRegion implements PropertiesInterface {
         return color;
     }
 
-    public Stroke getStroke() {
-        String strLineThickness = this.processText(this.lineThickness);
-        String strLineStyle = this.processText(this.lineStyle);
+    public Stroke getStrokeValue() {
+        String lineThicknessExpression = this.processText(this.lineThickness);
+        String lineStyleExpression = this.processText(this.lineStyle);
 
         int lineThickness = 2;
         try {
-            lineThickness = Integer.parseInt(strLineThickness);
+            lineThickness = Integer.parseInt(lineThicknessExpression);
         } catch (Exception e) {
         }
 
-        return ColorToolbar.getStroke(strLineStyle, lineThickness);
+        return ColorToolbar.getStroke(lineStyleExpression, lineThickness);
     }
 
-    public Color getLineColor() {
+    public Color getLineColorValue() {
         return getColor(lineColor);
     }
 
-    public int getLineThickness() {
+    public int getLineThicknessValue() {
         int lineThickness = 2;
-        String strLineThickness = processText(this.lineThickness);
+        String lineThicknessExpression = processText(this.lineThickness);
         try {
-            lineThickness = Integer.parseInt(strLineThickness);
+            lineThickness = Integer.parseInt(lineThicknessExpression);
         } catch (Exception e) {
         }
         return lineThickness;
@@ -439,13 +481,13 @@ public class ActiveRegion implements PropertiesInterface {
 
     public Vector<File> getImageFiles() {
         Vector<File> files = new Vector<File>();
-        File file = new File(getDrawImagePath());
+        File file = new File(getDrawnImagePath());
         if (file.exists()) {
             files.add(file);
         }
-        if (this.additionalImageFile != null) {
-            for (int i = 0; i < this.additionalImageFile.size(); i++) {
-                file = new File(this.getDrawImagePath(i + 1));
+        if (this.additionalImageFileNames != null) {
+            for (int i = 0; i < this.additionalImageFileNames.size(); i++) {
+                file = new File(this.getDrawnImagePath(i + 1));
                 if (file.exists()) {
                     files.add(file);
                 }
@@ -469,63 +511,63 @@ public class ActiveRegion implements PropertiesInterface {
             getMotionController().dispose();
         }
 
-        mouseProcessor.dispose();
+        mouseEventsProcessor.dispose();
         for (EventMacro eventMacro : regionOverlapEventMacros) {
             eventMacro.dispose();
         }
         this.regionOverlapEventMacros.clear();
 
-        strX = null;
-        strY = null;
-        strRelX = null;
-        strZoom = null;
-        strRelY = null;
-        strTrajectoryPosition = null;
-        strWidth = null;
-        strHeight = null;
-        strRotate = null;
-        strShearX = null;
-        strShearY = null;
+        x = null;
+        y = null;
+        relativeX = null;
+        zoom = null;
+        relativeY = null;
+        trajectoryPosition = null;
+        width = null;
+        height = null;
+        rotation = null;
+        shearX = null;
+        shearY = null;
         windowX = null;
         windowY = null;
         windowWidth = null;
         windowHeight = null;
         transparency = null;
-        strSpeed = null;
-        strSpeedDirection = null;
-        strRotationSpeed = null;
-        strPen = null;
-        strX1 = null;
-        strY1 = null;
-        strX2 = null;
-        strY2 = null;
-        strPerspectiveX1 = null;
-        strPerspectiveY1 = null;
-        strPerspectiveX2 = null;
-        strPerspectiveY2 = null;
-        strPerspectiveX3 = null;
-        strPerspectiveY3 = null;
-        strPerspectiveX4 = null;
-        strPerspectiveY4 = null;
-        strAutomaticPerspective = null;
-        strRotation3DHorizontal = null;
-        strRotation3DVertical = null;
-        strPerspectiveDepth = null;
-        updateTransformations = null;
-        limits = null;
+        speed = null;
+        speedDirection = null;
+        rotationSpeed = null;
+        penWidth = null;
+        x1 = null;
+        y1 = null;
+        x2 = null;
+        y2 = null;
+        perspectiveX1 = null;
+        perspectiveY1 = null;
+        perspectiveX2 = null;
+        perspectiveY2 = null;
+        perspectiveX3 = null;
+        perspectiveY3 = null;
+        perspectiveX4 = null;
+        perspectiveY4 = null;
+        automaticPerspective = null;
+        rotation3DHorizontal = null;
+        rotation3DVertical = null;
+        perspectiveDepth = null;
+        motionAndRotationVariablesMapping = null;
+        motionAndRotationLimits = null;
         shape = null;
         fontName = null;
         fontSize = null;
         fontColor = null;
         fontStyle = null;
-        strImageFile = null;
+        imageFile = null;
         parent = null;
         image = null;
-        drawImage = null;
-        additionalImageFile = null;
-        additionalDrawImages = null;
-        additionalImageChanged = null;
-        regionGrouping = null;
+        drawnImage = null;
+        additionalImageFileNames = null;
+        additionalDrawnImages = null;
+        additionalDrawnImagesChanged = null;
+        setRegionGrouping(null);
         setRenderer(null);
         setMouseController(null);
         setInteractionController(null);
@@ -535,7 +577,7 @@ public class ActiveRegion implements PropertiesInterface {
         lineColor = null;
         lineThickness = null;
         lineStyle = null;
-        strFillColor = null;
+        fillColor = null;
         captureScreenX = null;
         captureScreenY = null;
         captureScreenWidth = null;
@@ -545,8 +587,8 @@ public class ActiveRegion implements PropertiesInterface {
         embeddedSketchVarPrefix = null;
         embeddedSketchVarPostfix = null;
         imageUrlField = null;
-        strImageIndex = null;
-        strAnimationMs = null;
+        imageIndex = null;
+        animationFrameRateMs = null;
     }
 
     public void closeAllImages() {
@@ -554,18 +596,18 @@ public class ActiveRegion implements PropertiesInterface {
             this.image.flush();
             this.image = null;
         }
-        if (this.drawImage != null) {
-            this.drawImage.flush();
-            this.drawImage = null;
+        if (this.drawnImage != null) {
+            this.drawnImage.flush();
+            this.drawnImage = null;
         }
-        if (this.additionalDrawImages != null) {
-            for (BufferedImage img : this.additionalDrawImages) {
+        if (this.additionalDrawnImages != null) {
+            for (BufferedImage img : this.additionalDrawnImages) {
                 if (img != null) {
                     img.flush();
                 }
             }
-            this.additionalDrawImages.removeAllElements();
-            this.additionalDrawImages = null;
+            this.additionalDrawnImages.clear();
+            this.additionalDrawnImages = null;
         }
     }
 
@@ -594,14 +636,14 @@ public class ActiveRegion implements PropertiesInterface {
     }
 
     public void setPropertiesFromRegion(ActiveRegion a) {
-        this.x1 = a.x1;
-        this.y1 = a.y1;
-        this.x2 = a.x2;
-        this.y2 = a.y2;
-        this.center_rotation_x = a.center_rotation_x;
-        this.center_rotation_y = a.center_rotation_y;
-        this.trajectory2_x = a.trajectory2_x;
-        this.trajectory2_y = a.trajectory2_y;
+        this.x1Value = a.x1Value;
+        this.y1Value = a.y1Value;
+        this.x2Value = a.x2Value;
+        this.y2Value = a.y2Value;
+        this.centerOfRotationX = a.centerOfRotationX;
+        this.centerOfRotationY = a.centerOfRotationY;
+        this.trajectory2X = a.trajectory2X;
+        this.trajectory2Y = a.trajectory2Y;
         this.p_x0 = a.p_x0;
         this.p_y0 = a.p_y0;
         this.p_x1 = a.p_x1;
@@ -610,61 +652,61 @@ public class ActiveRegion implements PropertiesInterface {
         this.p_y2 = a.p_y2;
         this.p_x3 = a.p_x3;
         this.p_y3 = a.p_y3;
-        this.rotation = a.rotation;
-        this.shearX = a.shearX;
-        this.shearY = a.shearY;
+        this.rotationValue = a.rotationValue;
+        this.shearXValue = a.shearXValue;
+        this.shearYValue = a.shearYValue;
         this.name = a.name;
 
         this.shape = a.shape;
         this.shapeArguments = a.shapeArguments;
-        this.regionGrouping = a.regionGrouping;
+        this.setRegionGrouping(a.getRegionGrouping());
 
-        this.strX = a.strX;
-        this.strY = a.strY;
-        this.strX1 = a.strX1;
-        this.strY1 = a.strY1;
-        this.strX2 = a.strX2;
-        this.strY2 = a.strY2;
-        this.strPerspectiveX1 = a.strPerspectiveX1;
-        this.strPerspectiveY1 = a.strPerspectiveY1;
-        this.strPerspectiveX2 = a.strPerspectiveX2;
-        this.strPerspectiveY2 = a.strPerspectiveY2;
-        this.strPerspectiveX3 = a.strPerspectiveX3;
-        this.strPerspectiveY3 = a.strPerspectiveY3;
-        this.strPerspectiveX4 = a.strPerspectiveX4;
-        this.strPerspectiveY4 = a.strPerspectiveY4;
-        this.strAutomaticPerspective = a.strAutomaticPerspective;
-        this.strPerspectiveDepth = a.strPerspectiveDepth;
-        this.strRotation3DHorizontal = a.strRotation3DHorizontal;
-        this.strRotation3DVertical = a.strRotation3DVertical;
-        this.strRelX = a.strRelX;
-        this.strRelY = a.strRelY;
-        this.strZoom = a.strZoom;
-        this.strTrajectoryPosition = a.strTrajectoryPosition;
-        this.strWidth = a.strWidth;
-        this.strHeight = a.strHeight;
-        this.strRotate = a.strRotate;
-        this.strShearX = a.strShearX;
-        this.strShearY = a.strShearY;
+        this.x = a.x;
+        this.y = a.y;
+        this.x1 = a.x1;
+        this.y1 = a.y1;
+        this.x2 = a.x2;
+        this.y2 = a.y2;
+        this.perspectiveX1 = a.perspectiveX1;
+        this.perspectiveY1 = a.perspectiveY1;
+        this.perspectiveX2 = a.perspectiveX2;
+        this.perspectiveY2 = a.perspectiveY2;
+        this.perspectiveX3 = a.perspectiveX3;
+        this.perspectiveY3 = a.perspectiveY3;
+        this.perspectiveX4 = a.perspectiveX4;
+        this.perspectiveY4 = a.perspectiveY4;
+        this.automaticPerspective = a.automaticPerspective;
+        this.perspectiveDepth = a.perspectiveDepth;
+        this.rotation3DHorizontal = a.rotation3DHorizontal;
+        this.rotation3DVertical = a.rotation3DVertical;
+        this.relativeX = a.relativeX;
+        this.relativeY = a.relativeY;
+        this.zoom = a.zoom;
+        this.trajectoryPosition = a.trajectoryPosition;
+        this.width = a.width;
+        this.height = a.height;
+        this.rotation = a.rotation;
+        this.shearX = a.shearX;
+        this.shearY = a.shearY;
         this.windowX = a.windowX;
         this.windowY = a.windowY;
         this.windowWidth = a.windowWidth;
         this.windowHeight = a.windowHeight;
         this.transparency = a.transparency;
-        this.strSpeed = a.strSpeed;
-        this.strSpeedDirection = a.strSpeedDirection;
-        this.strRotationSpeed = a.strRotationSpeed;
-        this.strPen = a.strPen;
+        this.speed = a.speed;
+        this.speedDirection = a.speedDirection;
+        this.rotationSpeed = a.rotationSpeed;
+        this.penWidth = a.penWidth;
 
-        for (int i = 0; i < a.updateTransformations.length; i++) {
-            for (int j = 0; j < a.updateTransformations[i].length; j++) {
-                this.updateTransformations[i][j] = (String) a.updateTransformations[i][j];
+        for (int i = 0; i < a.motionAndRotationVariablesMapping.length; i++) {
+            for (int j = 0; j < a.motionAndRotationVariablesMapping[i].length; j++) {
+                this.motionAndRotationVariablesMapping[i][j] = (String) a.motionAndRotationVariablesMapping[i][j];
             }
         }
 
-        for (int i = 0; i < a.limits.length; i++) {
-            for (int j = 0; j < a.limits[i].length; j++) {
-                this.limits[i][j] = (String) a.limits[i][j];
+        for (int i = 0; i < a.motionAndRotationLimits.length; i++) {
+            for (int j = 0; j < a.motionAndRotationLimits[i].length; j++) {
+                this.motionAndRotationLimits[i][j] = (String) a.motionAndRotationLimits[i][j];
             }
         }
 
@@ -702,13 +744,13 @@ public class ActiveRegion implements PropertiesInterface {
         this.walkThroughEnabled = a.walkThroughEnabled;
 
         this.imageUrlField = a.imageUrlField;
-        this.strImageIndex = a.strImageIndex;
+        this.imageIndex = a.imageIndex;
         this.active = a.active;
         this.type = a.type;
         this.widget = a.widget;
         this.widgetProperties = null;
         this.widgetPropertiesString = a.widgetPropertiesString;
-        this.strAnimationMs = a.strAnimationMs;
+        this.animationFrameRateMs = a.animationFrameRateMs;
 
         this.embeddedSketch = a.embeddedSketch;
         this.embeddedSketchVarPrefix = a.embeddedSketchVarPrefix;
@@ -725,7 +767,7 @@ public class ActiveRegion implements PropertiesInterface {
         this.lineColor = a.lineColor;
         this.lineStyle = a.lineStyle;
         this.lineThickness = a.lineThickness;
-        this.strFillColor = a.strFillColor;
+        this.fillColor = a.fillColor;
 
         this.captureScreenX = a.captureScreenX;
         this.captureScreenY = a.captureScreenY;
@@ -750,31 +792,31 @@ public class ActiveRegion implements PropertiesInterface {
         }
     }
 
-    public int getX1() {
-        return (parent != null ? parent.getOffsetX() : 0) + x1;
+    public int getX1Value() {
+        return (parent != null ? parent.getOffsetX() : 0) + x1Value;
     }
 
-    public int getY1() {
-        return (parent != null ? parent.getOffsetY() : 0) + y1;
+    public int getY1Value() {
+        return (parent != null ? parent.getOffsetY() : 0) + y1Value;
     }
 
-    public int getX2() {
-        return (parent != null ? parent.getOffsetX() : 0) + x2;
+    public int getX2Value() {
+        return (parent != null ? parent.getOffsetX() : 0) + x2Value;
     }
 
-    public int getY2() {
-        return (parent != null ? parent.getOffsetY() : 0) + y2;
+    public int getY2Value() {
+        return (parent != null ? parent.getOffsetY() : 0) + y2Value;
     }
 
     public void play() {
     }
 
-    public int getWidth() {
-        return Math.abs(x2 - x1);
+    public int getWidthValue() {
+        return Math.abs(x2Value - x1Value);
     }
 
-    public int getHeight() {
-        return Math.abs(y2 - y1);
+    public int getHeightValue() {
+        return Math.abs(y2Value - y1Value);
     }
 
     public void startDefiningTrajectory(int type) {
@@ -795,8 +837,8 @@ public class ActiveRegion implements PropertiesInterface {
     public void enableAnimation(boolean bEnabled) {
     }
 
-    public boolean bActive = false;
-    public boolean bAdjusting = false;
+    private boolean bActive = false;
+    private boolean adjusting = false;
 
     public void deactivate(boolean bPlayback) {
         bActive = false;
@@ -825,85 +867,85 @@ public class ActiveRegion implements PropertiesInterface {
         this.enableAnimation(false);
     }
 
-    private String getDrawImagePath() {
-        if (strImageFile == null || strImageFile.isEmpty()) {
-            strImageFile = "region_" + System.currentTimeMillis() + ".png";
+    private String getDrawnImagePath() {
+        if (imageFile == null || imageFile.isEmpty()) {
+            imageFile = "region_" + System.currentTimeMillis() + ".png";
         }
-        return SketchletContextUtils.getCurrentProjectSkecthletsDir() + strImageFile;
+        return SketchletContextUtils.getCurrentProjectSkecthletsDir() + imageFile;
     }
 
-    public String getDrawImageFileName() {
-        if (strImageFile == null || strImageFile.trim().equals("")) {
-            strImageFile = "region_" + System.currentTimeMillis() + ".png";
+    public String getDrawnImageFileName() {
+        if (imageFile == null || imageFile.trim().equals("")) {
+            imageFile = "region_" + System.currentTimeMillis() + ".png";
         }
-        return strImageFile;
+        return imageFile;
     }
 
-    public String getDrawImagePath(int index) {
+    public String getDrawnImagePath(int index) {
         if (index == 0) {
-            return getDrawImagePath();
+            return getDrawnImagePath();
         } else {
             try {
-                String strAdditionalImage = this.additionalImageFile.elementAt(index - 1);
+                String additionalImageFileName = this.additionalImageFileNames.get(index - 1);
 
-                if (strAdditionalImage == null || strAdditionalImage.isEmpty()) {
+                if (additionalImageFileName == null || additionalImageFileName.isEmpty()) {
                     do {
-                        strAdditionalImage = "region_" + System.currentTimeMillis() + ".png";
-                    } while (strImageFile.equalsIgnoreCase(strAdditionalImage) || additionalImageFile.contains(strAdditionalImage));
-                    this.additionalImageFile.set(index - 1, strAdditionalImage);
+                        additionalImageFileName = "region_" + System.currentTimeMillis() + ".png";
+                    } while (imageFile.equalsIgnoreCase(additionalImageFileName) || additionalImageFileNames.contains(additionalImageFileName));
+                    this.additionalImageFileNames.set(index - 1, additionalImageFileName);
                 }
-                return SketchletContextUtils.getCurrentProjectSkecthletsDir() + strAdditionalImage;
+                return SketchletContextUtils.getCurrentProjectSkecthletsDir() + additionalImageFileName;
             } catch (Throwable e) {
-                log.error("getDrawImagePath()", e);
+                log.error("getDrawnImagePath()", e);
             }
         }
         return "";
     }
 
     public String getId() {
-        return getDrawImageFileName(0);
+        return getDrawnImageFileName(0);
     }
 
-    public String getDrawImageFileName(int index) {
+    public String getDrawnImageFileName(int index) {
         if (index == 0) {
-            return getDrawImageFileName();
+            return getDrawnImageFileName();
         } else {
             try {
-                String strAdditionalImage = this.additionalImageFile.elementAt(index - 1);
+                String additionalImageFileName = this.additionalImageFileNames.get(index - 1);
 
-                if (strAdditionalImage == null || strAdditionalImage.trim().equals("")) {
-                    strAdditionalImage = "region_" + System.currentTimeMillis() + ".png";
-                    this.additionalImageFile.set(index - 1, strAdditionalImage);
+                if (additionalImageFileName == null || additionalImageFileName.trim().equals("")) {
+                    additionalImageFileName = "region_" + System.currentTimeMillis() + ".png";
+                    this.additionalImageFileNames.set(index - 1, additionalImageFileName);
                 }
-                return strAdditionalImage;
+                return additionalImageFileName;
             } catch (Throwable e) {
-                log.error("getDrawImageFileName()", e);
+                log.error("getDrawnImageFileName()", e);
             }
         }
         return "";
     }
 
-    public void deleteDrawImage(int index) {
-        if (additionalDrawImages.size() == 0) {
+    public void deleteDrawnImage(int index) {
+        if (additionalDrawnImages.size() == 0) {
             return;
         }
 
         try {
-            new File(getDrawImagePath(index)).delete();
+            new File(getDrawnImagePath(index)).delete();
             if (index == 0) {
-                this.drawImage = this.additionalDrawImages.elementAt(0);
-                this.drawImageChanged = true;
+                this.drawnImage = this.additionalDrawnImages.get(0);
+                this.drawnImageChanged = true;
 
-                this.additionalDrawImages.removeElementAt(0);
-                this.additionalImageChanged.removeElementAt(0);
-                this.additionalImageFile.removeElementAt(0);
+                this.additionalDrawnImages.remove(0);
+                this.additionalDrawnImagesChanged.remove(0);
+                this.additionalImageFileNames.remove(0);
             } else {
-                this.additionalDrawImages.removeElementAt(index - 1);
-                this.additionalImageChanged.removeElementAt(index - 1);
-                this.additionalImageFile.removeElementAt(index - 1);
+                this.additionalDrawnImages.remove(index - 1);
+                this.additionalDrawnImagesChanged.remove(index - 1);
+                this.additionalImageFileNames.remove(index - 1);
             }
         } catch (Throwable e) {
-            log.error("deleteDrawImage()", e);
+            log.error("deleteDrawnImage()", e);
         }
     }
 
@@ -911,43 +953,43 @@ public class ActiveRegion implements PropertiesInterface {
         return "" + (parent.getRegions().size() - parent.getRegions().indexOf(this));
     }
 
-    private String getDrawImageFile(String strDir) {
-        if (strImageFile == null || strImageFile.trim().equals("")) {
-            strImageFile = "region_" + System.currentTimeMillis() + ".png";
+    private String getDrawnImageFile(String directoryPath) {
+        if (imageFile == null || imageFile.trim().equals("")) {
+            imageFile = "region_" + System.currentTimeMillis() + ".png";
         }
-        return strDir + strImageFile;
+        return directoryPath + imageFile;
     }
 
     public int getImageCount() {
-        return this.additionalDrawImages.size() + 1;
+        return this.additionalDrawnImages.size() + 1;
     }
 
-    public BufferedImage getDrawImage(int index) {
+    public BufferedImage getDrawnImage(int index) {
         if (index == 0) {
-            return this.drawImage;
+            return this.drawnImage;
         } else {
-            if (index < 0 || index > additionalDrawImages.size()) {
+            if (index < 0 || index > additionalDrawnImages.size()) {
                 return null;
             } else {
-                return this.additionalDrawImages.elementAt(index - 1);
+                return this.additionalDrawnImages.get(index - 1);
             }
         }
     }
 
-    public void setDrawImage(int index, BufferedImage image) {
+    public void setDrawnImage(int index, BufferedImage image) {
         if (index == 0) {
-            if (this.drawImage != null) {
-                this.drawImage.flush();
+            if (this.drawnImage != null) {
+                this.drawnImage.flush();
             }
-            this.drawImage = image;
+            this.drawnImage = image;
         } else {
-            if (index < 0 || index > additionalDrawImages.size()) {
+            if (index < 0 || index > additionalDrawnImages.size()) {
                 return;
             } else {
-                if (this.additionalDrawImages.get(index - 1) != null) {
-                    this.additionalDrawImages.get(index - 1).flush();
+                if (this.additionalDrawnImages.get(index - 1) != null) {
+                    this.additionalDrawnImages.get(index - 1).flush();
                 }
-                this.additionalDrawImages.set(index - 1, image);
+                this.additionalDrawnImages.set(index - 1, image);
             }
         }
         File file = this.getImageFile(index);
@@ -959,98 +1001,93 @@ public class ActiveRegion implements PropertiesInterface {
         }
     }
 
-    public void setDrawImageChanged(int index, boolean bChanged) {
+    public void setDrawnImageChanged(int index, boolean bChanged) {
         if (index == 0) {
-            this.drawImageChanged = bChanged;
+            this.drawnImageChanged = bChanged;
         } else {
-            if (index < 0 || index > additionalDrawImages.size()) {
+            if (index < 0 || index > additionalDrawnImages.size()) {
                 return;
             } else {
-                this.additionalImageChanged.set(index - 1, new Boolean(bChanged));
+                this.additionalDrawnImagesChanged.set(index - 1, new Boolean(bChanged));
             }
         }
     }
 
-    public boolean isDrawImageChanged(int index) {
+    public boolean isDrawnImageChanged(int index) {
         if (index == 0) {
-            return this.drawImageChanged;
+            return this.drawnImageChanged;
         } else {
-            if (index < 0 || index > additionalDrawImages.size()) {
+            if (index < 0 || index > additionalDrawnImages.size()) {
                 return false;
             } else {
-                return this.additionalImageChanged.get(index - 1).booleanValue();
+                return this.additionalDrawnImagesChanged.get(index - 1).booleanValue();
             }
         }
     }
 
-    public String getDrawImageFile(String strDir, int index) {
+    public String getDrawnImageFile(String directoryPath, int index) {
         if (index == 0) {
-            return getDrawImageFile(strDir);
+            return getDrawnImageFile(directoryPath);
         } else {
-            if (index < 0 || index > additionalDrawImages.size()) {
+            if (index < 0 || index > additionalDrawnImages.size()) {
                 return null;
             } else {
                 try {
-                    String strAdditionalImage = this.additionalImageFile.elementAt(index - 1);
+                    String additionalImageFileName = this.additionalImageFileNames.get(index - 1);
 
-                    if (strAdditionalImage == null || strAdditionalImage.trim().equals("")) {
-                        strAdditionalImage = "region_" + System.currentTimeMillis() + ".png";
+                    if (additionalImageFileName == null || additionalImageFileName.trim().equals("")) {
+                        additionalImageFileName = "region_" + System.currentTimeMillis() + ".png";
                     }
-                    return strDir + strAdditionalImage;
+                    return directoryPath + additionalImageFileName;
                 } catch (Throwable e) {
-                    log.error("getDrawImageFile()", e);
+                    log.error("getDrawnImageFile()", e);
                 }
             }
         }
         return "";
     }
 
-    private void setImageFile(String strFile) {
-        this.strImageFile = strFile;
+    private void setImageFile(String fileName) {
+        this.imageFile = fileName;
     }
 
-    public void setImageFile(String strFile, int index) {
+    public void setImageFile(String fileName, int index) {
         if (index == 0) {
-            setImageFile(strFile);
-        } else if (index > 0 && this.additionalImageFile.size() > index - 1) {
-            this.additionalImageFile.set(index - 1, strFile);
+            setImageFile(fileName);
+        } else if (index > 0 && this.additionalImageFileNames.size() > index - 1) {
+            this.additionalImageFileNames.set(index - 1, fileName);
         }
     }
 
     public void animate() {
     }
 
-    public String strPrevImage = "";
-
-    public String processText(String strText) {
-        strText = Evaluator.processRegionReferences(this, strText);
-        return Evaluator.processText(strText, this.getVarPrefix(), this.getVarPostfix());
+    public String processText(String text) {
+        text = Evaluator.processRegionReferences(this, text);
+        return Evaluator.processText(text, this.getVarPrefix(), this.getVarPostfix());
     }
 
-    public boolean isAffected(String strVariable) {
+    public boolean isAffected(String variableName) {
         return true;
     }
 
     public void saveImage() {
         try {
-            if (this.drawImage != null && drawImageChanged) {
-                ImageCache.write(this.drawImage, new File(this.getDrawImagePath()));
-                drawImageChanged = false;
+            if (this.drawnImage != null && drawnImageChanged) {
+                ImageCache.write(this.drawnImage, new File(this.getDrawnImagePath()));
+                drawnImageChanged = false;
             }
-            for (int i = 0; i < this.additionalDrawImages.size(); i++) {
+            for (int i = 0; i < this.additionalDrawnImages.size(); i++) {
                 int index = i + 1;
-                if (this.getDrawImage(index) != null && this.isDrawImageChanged(index)) {
-                    ImageCache.write(this.getDrawImage(index), new File(this.getDrawImagePath(index)));
-                    this.setDrawImageChanged(index, false);
+                if (this.getDrawnImage(index) != null && this.isDrawnImageChanged(index)) {
+                    ImageCache.write(this.getDrawnImage(index), new File(this.getDrawnImagePath(index)));
+                    this.setDrawnImageChanged(index, false);
                 }
             }
 
         } catch (Throwable e) {
             log.error(e);
         }
-    }
-
-    public void saveElementIfNotEmpty(PrintWriter out, String strElement, String strValue, String strPrefix) {
     }
 
     public void save(PrintWriter out) {
@@ -1066,12 +1103,12 @@ public class ActiveRegion implements PropertiesInterface {
 
     public void save(PrintWriter out, boolean annonimous) {
         saveImage();
-        String strShowText = XMLUtils.prepareForXML(this.textField);
-        String strTextArea = this.text;
-        String strTrajectory = XMLUtils.prepareForXML(this.trajectory1);
-        String strTrajectory2 = XMLUtils.prepareForXML(this.trajectory2);
+        String textFieldValue = XMLUtils.prepareForXML(this.textField);
+        String textAreaValue = this.text;
+        String trajectory = XMLUtils.prepareForXML(this.trajectory1);
+        String trajectory2 = XMLUtils.prepareForXML(this.trajectory2);
 
-        String strControlItems = this.widgetItems;
+        String widgetItems = this.widgetItems;
 
         String strEmbedSketch = XMLUtils.prepareForXML(this.embeddedSketch);
         String strEmbedPrefix = XMLUtils.prepareForXML(this.embeddedSketchVarPrefix);
@@ -1083,7 +1120,7 @@ public class ActiveRegion implements PropertiesInterface {
 
         String strImage = this.imageUrlField;
         strImage = XMLUtils.prepareForXML(strImage);
-        String strIndex = this.strImageIndex;
+        String strIndex = this.imageIndex;
         String strActive = XMLUtils.prepareForXML(this.active);
         String strType = XMLUtils.prepareForXML(this.type);
         String strControl = XMLUtils.prepareForXML(this.widget);
@@ -1096,15 +1133,15 @@ public class ActiveRegion implements PropertiesInterface {
 
         long lastModified = 0;
         try {
-            lastModified = new File(getDrawImagePath()).lastModified();
+            lastModified = new File(getDrawnImagePath()).lastModified();
         } catch (Throwable e) {
         }
 
         out.println("<active-region>");
-        out.println("    <region name='" + name + "' x1='" + x1 + "' y1='" + y1 + "' x2='" + x2 + "' y2='" + y2 + "' shearX='" + shearX + "' shearY='" + shearY + "' rotation='" + rotation + "'/>");
+        out.println("    <region name='" + name + "' x1='" + x1Value + "' y1='" + y1Value + "' x2='" + x2Value + "' y2='" + y2Value + "' shearX='" + shearXValue + "' shearY='" + shearYValue + "' rotation='" + rotationValue + "'/>");
         out.println("    <perspective p_x0='" + p_x0 + "' p_y0='" + p_y0 + "' p_x1='" + p_x1 + "' p_y1='" + p_y1 + "' p_x2='" + p_x2 + "' p_y2='" + p_y2 + "' p_x3='" + p_x3 + "' p_y3='" + p_y3 + "'/>");
-        out.println("    <rotation_center x='" + center_rotation_x + "' y='" + center_rotation_y + "'/>");
-        out.println("    <trajectory_point x='" + trajectory2_x + "' y='" + trajectory2_y + "'/>");
+        out.println("    <rotation_center x='" + centerOfRotationX + "' y='" + centerOfRotationY + "'/>");
+        out.println("    <trajectory_point x='" + trajectory2X + "' y='" + trajectory2Y + "'/>");
         out.println("    <layer>" + this.layer + "</layer>");
         out.println("    <visible>" + this.visible + "</visible>");
         if (!this.shape.isEmpty()) {
@@ -1113,11 +1150,11 @@ public class ActiveRegion implements PropertiesInterface {
         if (!this.shapeArguments.isEmpty()) {
             out.println("    <basic-shape-args>" + XMLUtils.prepareForXML(shapeArguments) + "</basic-shape-args>");
         }
-        if (!this.regionGrouping.isEmpty()) {
-            out.println("    <group>" + this.regionGrouping + "</group>");
+        if (!this.getRegionGrouping().isEmpty()) {
+            out.println("    <group>" + this.getRegionGrouping() + "</group>");
         }
-        if (!strShowText.isEmpty()) {
-            out.println("    <show-text>" + strShowText + "</show-text>");
+        if (!textFieldValue.isEmpty()) {
+            out.println("    <show-text>" + textFieldValue + "</show-text>");
         }
         if (!strEmbedSketch.isEmpty()) {
             out.println("    <embedded-sketch>" + strEmbedSketch + "</embedded-sketch>");
@@ -1152,18 +1189,18 @@ public class ActiveRegion implements PropertiesInterface {
         if (!this.maxNumLines.isEmpty()) {
             out.println("    <max-lines>" + this.maxNumLines + "</max-lines>");
         }
-        if (!strTextArea.isEmpty()) {
-            out.println("    <text-area><![CDATA[" + strTextArea + "]]></text-area>");
+        if (!textAreaValue.isEmpty()) {
+            out.println("    <text-area><![CDATA[" + textAreaValue + "]]></text-area>");
         }
-        if (!strTrajectory.isEmpty()) {
-            out.println("    <trajectory>" + strTrajectory + "</trajectory>");
+        if (!trajectory.isEmpty()) {
+            out.println("    <trajectory>" + trajectory + "</trajectory>");
         }
-        if (!strControlItems.isEmpty()) {
-            out.println("    <control-items><![CDATA[" + strControlItems + "]]></control-items>");
+        if (!widgetItems.isEmpty()) {
+            out.println("    <control-items><![CDATA[" + widgetItems + "]]></control-items>");
         }
 
-        if (!strTrajectory2.isEmpty()) {
-            out.println("    <trajectory2>" + strTrajectory2 + "</trajectory2>");
+        if (!trajectory2.isEmpty()) {
+            out.println("    <trajectory2>" + trajectory2 + "</trajectory2>");
         }
         out.println("    <stick-to-trajectory>" + this.stickToTrajectoryEnabled + "</stick-to-trajectory>");
         out.println("    <orientation-trajectory>" + this.changingOrientationOnTrajectoryEnabled + "</orientation-trajectory>");
@@ -1185,15 +1222,15 @@ public class ActiveRegion implements PropertiesInterface {
         if (!strControlProperties.isEmpty()) {
             out.println("    <control-parameters>" + strControlProperties + "</control-parameters>");
         }
-        if (!strAnimationMs.isEmpty()) {
-            out.println("    <image-animation-ms>" + strAnimationMs + "</image-animation-ms>");
+        if (!animationFrameRateMs.isEmpty()) {
+            out.println("    <image-animation-ms>" + animationFrameRateMs + "</image-animation-ms>");
         }
         if (!annonimous) {
-            if (!strImageFile.isEmpty()) {
-                out.println("    <image-draw>" + strImageFile + "</image-draw>");
+            if (!imageFile.isEmpty()) {
+                out.println("    <image-draw>" + imageFile + "</image-draw>");
             }
-            for (String strAdditionalImage : this.additionalImageFile) {
-                out.println("    <additional-image-draw>" + strAdditionalImage + "</additional-image-draw>");
+            for (String additionalImageFileName : this.additionalImageFileNames) {
+                out.println("    <additional-image-draw>" + additionalImageFileName + "</additional-image-draw>");
             }
 
             out.println("    <image-draw-timestamp>" + lastModified + "</image-draw-timestamp>");
@@ -1208,74 +1245,74 @@ public class ActiveRegion implements PropertiesInterface {
         }
         out.println("    </alignment>");
         out.println("    <transform>");
-        if (!strX.isEmpty()) {
-            out.println("        <x>" + XMLUtils.prepareForXML(strX) + "</x>");
+        if (!x.isEmpty()) {
+            out.println("        <x>" + XMLUtils.prepareForXML(x) + "</x>");
         }
-        if (!strY.isEmpty()) {
-            out.println("        <y>" + XMLUtils.prepareForXML(strY) + "</y>");
+        if (!y.isEmpty()) {
+            out.println("        <y>" + XMLUtils.prepareForXML(y) + "</y>");
         }
-        if (!strX1.isEmpty()) {
-            out.println("        <direct-x1>" + XMLUtils.prepareForXML(strX1) + "</direct-x1>");
+        if (!x1.isEmpty()) {
+            out.println("        <direct-x1>" + XMLUtils.prepareForXML(x1) + "</direct-x1>");
         }
-        if (!strY1.isEmpty()) {
-            out.println("        <direct-y1>" + XMLUtils.prepareForXML(strY1) + "</direct-y1>");
+        if (!y1.isEmpty()) {
+            out.println("        <direct-y1>" + XMLUtils.prepareForXML(y1) + "</direct-y1>");
         }
-        if (!strX2.isEmpty()) {
-            out.println("        <direct-x2>" + XMLUtils.prepareForXML(strX2) + "</direct-x2>");
+        if (!x2.isEmpty()) {
+            out.println("        <direct-x2>" + XMLUtils.prepareForXML(x2) + "</direct-x2>");
         }
-        if (!strY2.isEmpty()) {
-            out.println("        <direct-y2>" + XMLUtils.prepareForXML(strY2) + "</direct-y2>");
+        if (!y2.isEmpty()) {
+            out.println("        <direct-y2>" + XMLUtils.prepareForXML(y2) + "</direct-y2>");
         }
-        if (!strPerspectiveX1.isEmpty()) {
-            out.println("        <perspective-x1>" + XMLUtils.prepareForXML(strPerspectiveX1) + "</perspective-x1>");
+        if (!perspectiveX1.isEmpty()) {
+            out.println("        <perspective-x1>" + XMLUtils.prepareForXML(perspectiveX1) + "</perspective-x1>");
         }
-        if (!strPerspectiveY1.isEmpty()) {
-            out.println("        <perspective-y1>" + XMLUtils.prepareForXML(strPerspectiveY1) + "</perspective-y1>");
+        if (!perspectiveY1.isEmpty()) {
+            out.println("        <perspective-y1>" + XMLUtils.prepareForXML(perspectiveY1) + "</perspective-y1>");
         }
-        if (!strPerspectiveX2.isEmpty()) {
-            out.println("        <perspective-x2>" + XMLUtils.prepareForXML(strPerspectiveX2) + "</perspective-x2>");
+        if (!perspectiveX2.isEmpty()) {
+            out.println("        <perspective-x2>" + XMLUtils.prepareForXML(perspectiveX2) + "</perspective-x2>");
         }
-        if (!strPerspectiveY2.isEmpty()) {
-            out.println("        <perspective-y2>" + XMLUtils.prepareForXML(strPerspectiveY2) + "</perspective-y2>");
+        if (!perspectiveY2.isEmpty()) {
+            out.println("        <perspective-y2>" + XMLUtils.prepareForXML(perspectiveY2) + "</perspective-y2>");
         }
-        if (!strPerspectiveX3.isEmpty()) {
-            out.println("        <perspective-x3>" + XMLUtils.prepareForXML(strPerspectiveX3) + "</perspective-x3>");
+        if (!perspectiveX3.isEmpty()) {
+            out.println("        <perspective-x3>" + XMLUtils.prepareForXML(perspectiveX3) + "</perspective-x3>");
         }
-        if (!strPerspectiveY3.isEmpty()) {
-            out.println("        <perspective-y3>" + XMLUtils.prepareForXML(strPerspectiveY3) + "</perspective-y3>");
+        if (!perspectiveY3.isEmpty()) {
+            out.println("        <perspective-y3>" + XMLUtils.prepareForXML(perspectiveY3) + "</perspective-y3>");
         }
-        if (!strPerspectiveX4.isEmpty()) {
-            out.println("        <perspective-x4>" + XMLUtils.prepareForXML(strPerspectiveX4) + "</perspective-x4>");
+        if (!perspectiveX4.isEmpty()) {
+            out.println("        <perspective-x4>" + XMLUtils.prepareForXML(perspectiveX4) + "</perspective-x4>");
         }
-        if (!strPerspectiveY4.isEmpty()) {
-            out.println("        <perspective-y4>" + XMLUtils.prepareForXML(strPerspectiveY4) + "</perspective-y4>");
+        if (!perspectiveY4.isEmpty()) {
+            out.println("        <perspective-y4>" + XMLUtils.prepareForXML(perspectiveY4) + "</perspective-y4>");
         }
-        if (!strAutomaticPerspective.isEmpty()) {
-            out.println("        <automatic-perspective>" + XMLUtils.prepareForXML(strAutomaticPerspective) + "</automatic-perspective>");
+        if (!automaticPerspective.isEmpty()) {
+            out.println("        <automatic-perspective>" + XMLUtils.prepareForXML(automaticPerspective) + "</automatic-perspective>");
         }
-        if (!strPerspectiveDepth.isEmpty()) {
-            out.println("        <perspective-depth>" + XMLUtils.prepareForXML(strPerspectiveDepth) + "</perspective-depth>");
+        if (!perspectiveDepth.isEmpty()) {
+            out.println("        <perspective-depth>" + XMLUtils.prepareForXML(perspectiveDepth) + "</perspective-depth>");
         }
-        if (!strRotation3DHorizontal.isEmpty()) {
-            out.println("        <rotate-3d-horizontal>" + XMLUtils.prepareForXML(strRotation3DHorizontal) + "</rotate-3d-horizontal>");
+        if (!rotation3DHorizontal.isEmpty()) {
+            out.println("        <rotate-3d-horizontal>" + XMLUtils.prepareForXML(rotation3DHorizontal) + "</rotate-3d-horizontal>");
         }
-        if (!strRotation3DVertical.isEmpty()) {
-            out.println("        <rotate-3d-vertical>" + XMLUtils.prepareForXML(strRotation3DVertical) + "</rotate-3d-vertical>");
+        if (!rotation3DVertical.isEmpty()) {
+            out.println("        <rotate-3d-vertical>" + XMLUtils.prepareForXML(rotation3DVertical) + "</rotate-3d-vertical>");
         }
-        if (!strWidth.isEmpty()) {
-            out.println("        <width>" + XMLUtils.prepareForXML(strWidth) + "</width>");
+        if (!width.isEmpty()) {
+            out.println("        <width>" + XMLUtils.prepareForXML(width) + "</width>");
         }
-        if (!strHeight.isEmpty()) {
-            out.println("        <height>" + XMLUtils.prepareForXML(strHeight) + "</height>");
+        if (!height.isEmpty()) {
+            out.println("        <height>" + XMLUtils.prepareForXML(height) + "</height>");
         }
-        if (!strRotate.isEmpty()) {
-            out.println("        <rotation>" + XMLUtils.prepareForXML(strRotate) + "</rotation>");
+        if (!rotation.isEmpty()) {
+            out.println("        <rotation>" + XMLUtils.prepareForXML(rotation) + "</rotation>");
         }
-        if (!strShearX.isEmpty()) {
-            out.println("        <shearX>" + XMLUtils.prepareForXML(strShearX) + "</shearX>");
+        if (!shearX.isEmpty()) {
+            out.println("        <shearX>" + XMLUtils.prepareForXML(shearX) + "</shearX>");
         }
-        if (!strShearY.isEmpty()) {
-            out.println("        <shearY>" + XMLUtils.prepareForXML(strShearY) + "</shearY>");
+        if (!shearY.isEmpty()) {
+            out.println("        <shearY>" + XMLUtils.prepareForXML(shearY) + "</shearY>");
         }
         if (!windowX.isEmpty()) {
             out.println("        <windowX>" + XMLUtils.prepareForXML(windowX) + "</windowX>");
@@ -1292,29 +1329,29 @@ public class ActiveRegion implements PropertiesInterface {
         if (!transparency.isEmpty()) {
             out.println("        <transparency>" + XMLUtils.prepareForXML(transparency) + "</transparency>");
         }
-        if (!strSpeed.isEmpty()) {
-            out.println("        <speed>" + XMLUtils.prepareForXML(strSpeed) + "</speed>");
+        if (!speed.isEmpty()) {
+            out.println("        <speed>" + XMLUtils.prepareForXML(speed) + "</speed>");
         }
-        if (!strSpeedDirection.isEmpty()) {
-            out.println("        <motionDirection>" + XMLUtils.prepareForXML(strSpeedDirection) + "</motionDirection>");
+        if (!speedDirection.isEmpty()) {
+            out.println("        <motionDirection>" + XMLUtils.prepareForXML(speedDirection) + "</motionDirection>");
         }
-        if (!strRotationSpeed.isEmpty()) {
-            out.println("        <rotationSpeed>" + XMLUtils.prepareForXML(strRotationSpeed) + "</rotationSpeed>");
+        if (!rotationSpeed.isEmpty()) {
+            out.println("        <rotationSpeed>" + XMLUtils.prepareForXML(rotationSpeed) + "</rotationSpeed>");
         }
-        if (!strPen.isEmpty()) {
-            out.println("        <pen>" + XMLUtils.prepareForXML(strPen) + "</pen>");
+        if (!penWidth.isEmpty()) {
+            out.println("        <pen>" + XMLUtils.prepareForXML(penWidth) + "</pen>");
         }
-        if (!strTrajectoryPosition.isEmpty()) {
-            out.println("        <trajectory-position>" + XMLUtils.prepareForXML(strTrajectoryPosition) + "</trajectory-position>");
+        if (!trajectoryPosition.isEmpty()) {
+            out.println("        <trajectory-position>" + XMLUtils.prepareForXML(trajectoryPosition) + "</trajectory-position>");
         }
-        if (!strRelX.isEmpty()) {
-            out.println("        <relative-x>" + XMLUtils.prepareForXML(strRelX) + "</relative-x>");
+        if (!relativeX.isEmpty()) {
+            out.println("        <relative-x>" + XMLUtils.prepareForXML(relativeX) + "</relative-x>");
         }
-        if (!strZoom.isEmpty()) {
-            out.println("        <region-zoom>" + XMLUtils.prepareForXML(strZoom) + "</region-zoom>");
+        if (!zoom.isEmpty()) {
+            out.println("        <region-zoom>" + XMLUtils.prepareForXML(zoom) + "</region-zoom>");
         }
-        if (!strRelY.isEmpty()) {
-            out.println("        <relative-y>" + XMLUtils.prepareForXML(strRelY) + "</relative-y>");
+        if (!relativeY.isEmpty()) {
+            out.println("        <relative-y>" + XMLUtils.prepareForXML(relativeY) + "</relative-y>");
         }
         out.println("    </transform>");
         out.println("    <animate>");
@@ -1359,24 +1396,24 @@ public class ActiveRegion implements PropertiesInterface {
         if (!lineThickness.isEmpty()) {
             out.println("       <line-thickness>" + XMLUtils.prepareForXML(this.lineThickness) + "</line-thickness>");
         }
-        if (!strFillColor.isEmpty()) {
-            out.println("       <fill-color>" + XMLUtils.prepareForXML(this.strFillColor) + "</fill-color>");
+        if (!fillColor.isEmpty()) {
+            out.println("       <fill-color>" + XMLUtils.prepareForXML(this.fillColor) + "</fill-color>");
         }
         out.println("    </appearance>");
         out.println("    <movable>");
 
-        for (int i = 0; i < limits.length; i++) {
-            out.println("        <limit-motion " + "dimension='" + limits[i][0] + "' " + "min='" + limits[i][1] + "' " + "max='" + limits[i][2] + "' " + "/>");
+        for (int i = 0; i < motionAndRotationLimits.length; i++) {
+            out.println("        <limit-motion " + "dimension='" + motionAndRotationLimits[i][0] + "' " + "min='" + motionAndRotationLimits[i][1] + "' " + "max='" + motionAndRotationLimits[i][2] + "' " + "/>");
         }
 
         out.println("        <move>" + strCanMove + "</move>");
         out.println("        <rotate>" + strCanRotate + "</rotate>");
         out.println("        <resize>" + strCanResize + "</resize>");
         out.println("        <update>");
-        for (int i = 0; i < this.updateTransformations.length; i++) {
+        for (int i = 0; i < this.motionAndRotationVariablesMapping.length; i++) {
             boolean bSave = false;
-            for (int j = 1; j < updateTransformations[i].length; j++) {
-                if (!updateTransformations[i][j].equals("")) {
+            for (int j = 1; j < motionAndRotationVariablesMapping[i].length; j++) {
+                if (!motionAndRotationVariablesMapping[i][j].equals("")) {
                     bSave = true;
                     break;
                 }
@@ -1386,11 +1423,11 @@ public class ActiveRegion implements PropertiesInterface {
             }
 
             out.print("        <dimension ");
-            out.print(" name='" + updateTransformations[i][0] + "'");
-            out.print(" variable='" + XMLUtils.prepareForXML((String) updateTransformations[i][1]) + "'");
-            out.print(" start='" + updateTransformations[i][2] + "'");
-            out.print(" end='" + updateTransformations[i][3] + "'");
-            out.print(" format='" + updateTransformations[i][4] + "'");
+            out.print(" name='" + motionAndRotationVariablesMapping[i][0] + "'");
+            out.print(" variable='" + XMLUtils.prepareForXML((String) motionAndRotationVariablesMapping[i][1]) + "'");
+            out.print(" start='" + motionAndRotationVariablesMapping[i][2] + "'");
+            out.print(" end='" + motionAndRotationVariablesMapping[i][3] + "'");
+            out.print(" format='" + motionAndRotationVariablesMapping[i][4] + "'");
             out.println("/>");
         }
 
@@ -1405,7 +1442,7 @@ public class ActiveRegion implements PropertiesInterface {
         }
         out.println("    </region-widget-event-actions>");
         out.println("    <region-mouse-event-actions>");
-        for (EventMacro mouseEventMacro : mouseProcessor.getMouseEventMacros()) {
+        for (EventMacro mouseEventMacro : mouseEventsProcessor.getMouseEventMacros()) {
             mouseEventMacro.getMacro().setName(mouseEventMacro.getEventName());
             mouseEventMacro.getMacro().saveSimple(out, "mouse-event-action", "        ");
         }
@@ -1417,7 +1454,7 @@ public class ActiveRegion implements PropertiesInterface {
         }
         out.println("    </region-overlap-event-actions>");
         out.println("    <region-keyboard-event-actions>");
-        for (EventMacro regionKeyboardEventMacro : keyboardProcessor.getKeyboardEventMacros()) {
+        for (EventMacro regionKeyboardEventMacro : keyboardEventsProcessor.getKeyboardEventMacros()) {
             regionKeyboardEventMacro.getMacro().setName(regionKeyboardEventMacro.getEventName());
             regionKeyboardEventMacro.getMacro().saveSimple(out, "region-keyboard-event-action", "        ");
         }
@@ -1428,12 +1465,12 @@ public class ActiveRegion implements PropertiesInterface {
     }
 
     public void initImages() {
-        if (!getDrawImageFileName(0).equals("") && getDrawImage(0) == null) {
+        if (!getDrawnImageFileName(0).equals("") && getDrawnImage(0) == null) {
             initImage(0);
         }
-        for (int i = 0; i < additionalDrawImages.size(); i++) {
-            String strAdditionalImage = additionalImageFile.elementAt(i);
-            BufferedImage additionalImage = additionalDrawImages.elementAt(i);
+        for (int i = 0; i < additionalDrawnImages.size(); i++) {
+            String strAdditionalImage = additionalImageFileNames.get(i);
+            BufferedImage additionalImage = additionalDrawnImages.get(i);
 
             if (!strAdditionalImage.equals("") && additionalImage == null) {
                 initImage(i + 1);
@@ -1447,8 +1484,8 @@ public class ActiveRegion implements PropertiesInterface {
 
     private void initImage(boolean bForceFileRead) {
         try {
-            File file = new File(getDrawImagePath());
-            drawImage = ImageCache.read(file, drawImage, bForceFileRead);
+            File file = new File(getDrawnImagePath());
+            drawnImage = ImageCache.read(file, drawnImage, bForceFileRead);
         } catch (Exception e) {
             clearImage(0);
         }
@@ -1464,9 +1501,9 @@ public class ActiveRegion implements PropertiesInterface {
             return;
         } else {
             try {
-                File file = new File(getDrawImagePath(index));
-                BufferedImage image = ImageCache.read(file, this.additionalDrawImages.elementAt(index - 1), bForceFileRead);
-                this.additionalDrawImages.set(index - 1, image);
+                File file = new File(getDrawnImagePath(index));
+                BufferedImage image = ImageCache.read(file, this.additionalDrawnImages.get(index - 1), bForceFileRead);
+                this.additionalDrawnImages.set(index - 1, image);
             } catch (Exception e) {
                 clearImage(index);
             }
@@ -1478,7 +1515,7 @@ public class ActiveRegion implements PropertiesInterface {
         int h = 1;
         BufferedImage img = null;
         try {
-            img = this.getDrawImage(index);
+            img = this.getDrawnImage(index);
             if (img != null) {
                 w = img.getWidth();
                 h = img.getHeight();
@@ -1488,33 +1525,33 @@ public class ActiveRegion implements PropertiesInterface {
 
         img = Workspace.createCompatibleImage(w, h, img);
 
-        this.setDrawImage(index, img);
-        this.setDrawImageChanged(index, true);
+        this.setDrawnImage(index, img);
+        this.setDrawnImageChanged(index, true);
     }
 
     public void clearImage11(int index) {
-        BufferedImage img = this.getDrawImage(index);
+        BufferedImage img = this.getDrawnImage(index);
         img = (BufferedImage) Workspace.createCompatibleImage(1, 1, img);
 
         try {
-            File file = index == 0 ? new File(getDrawImagePath()) : new File(getDrawImagePath(index));
+            File file = index == 0 ? new File(getDrawnImagePath()) : new File(getDrawnImagePath(index));
             ImageCache.write(img, file);
         } catch (Exception e) {
             log.error("clearImage11()", e);
         }
 
-        this.setDrawImage(index, img);
-        this.setDrawImageChanged(index, true);
+        this.setDrawnImage(index, img);
+        this.setDrawnImageChanged(index, true);
     }
 
     public Shape getShape(boolean bPlayback) {
-        return new Rectangle(x1, y1, getWidth(), getHeight());
+        return new Rectangle(x1Value, y1Value, getWidthValue(), getHeightValue());
     }
 
     public Rectangle getBounds(boolean bPlayback) {
         AffineTransform aft = new AffineTransform();
-        aft.shear(shearX, shearY);
-        aft.rotate(rotation, x1 + (x2 - x1) * center_rotation_x, y1 + (y2 - y1) * center_rotation_y);
+        aft.shear(shearXValue, shearYValue);
+        aft.rotate(rotationValue, x1Value + (x2Value - x1Value) * centerOfRotationX, y1Value + (y2Value - y1Value) * centerOfRotationY);
         Area area = getArea(bPlayback);
         area.transform(aft);
         return area.getBounds();
@@ -1522,8 +1559,8 @@ public class ActiveRegion implements PropertiesInterface {
 
     public Point getInversePoint(boolean bPlayback, int x, int y) {
         AffineTransform aft = new AffineTransform();
-        aft.shear(shearX, shearY);
-        aft.rotate(rotation, x1 + (x2 - x1) * center_rotation_x, y1 + (y2 - y1) * center_rotation_y);
+        aft.shear(shearXValue, shearYValue);
+        aft.rotate(rotationValue, x1Value + (x2Value - x1Value) * centerOfRotationX, y1Value + (y2Value - y1Value) * centerOfRotationY);
 
         Point ptSrc = new Point(x, y);
         Point ptDest = new Point(x, y);
@@ -1537,8 +1574,8 @@ public class ActiveRegion implements PropertiesInterface {
 
     public Area getTransformedArea(boolean bPlayback) {
         AffineTransform aft = new AffineTransform();
-        aft.shear(shearX, shearY);
-        aft.rotate(rotation, x1 + (x2 - x1) * center_rotation_x, y1 + (y2 - y1) * center_rotation_y);
+        aft.shear(shearXValue, shearYValue);
+        aft.rotate(rotationValue, x1Value + (x2Value - x1Value) * centerOfRotationX, y1Value + (y2Value - y1Value) * centerOfRotationY);
         Area area = getArea(bPlayback);
         area.transform(aft);
         return area;
@@ -1547,25 +1584,25 @@ public class ActiveRegion implements PropertiesInterface {
     public Area getArea(boolean bPlayback) {
         String strShape = this.processText(this.shape);
         if (strShape.equalsIgnoreCase("Oval")) {
-            return new Area(new Ellipse2D.Double(x1, y1, getWidth(), getHeight()));
+            return new Area(new Ellipse2D.Double(x1Value, y1Value, getWidthValue(), getHeightValue()));
         } else if (strShape.equalsIgnoreCase("Rounded Rectangle")) {
             try {
                 double n = Double.parseDouble(this.processText(shapeArguments));
-                return new Area(new RoundRectangle2D.Double(x1, y1, getWidth(), getHeight(), n, n));
+                return new Area(new RoundRectangle2D.Double(x1Value, y1Value, getWidthValue(), getHeightValue(), n, n));
             } catch (Exception e) {
             }
         } else if (strShape.equalsIgnoreCase("Triangle 1")) {
             Polygon p = new Polygon();
-            p.addPoint(x1 + (x2 - x1) / 2, y1);
-            p.addPoint(x1, y2);
-            p.addPoint(x2, y2);
+            p.addPoint(x1Value + (x2Value - x1Value) / 2, y1Value);
+            p.addPoint(x1Value, y2Value);
+            p.addPoint(x2Value, y2Value);
             Area area = new Area(p);
             return area;
         } else if (strShape.equalsIgnoreCase("Triangle 2")) {
             Polygon p = new Polygon();
-            p.addPoint(x1, y1);
-            p.addPoint(x1, y2);
-            p.addPoint(x2, y2);
+            p.addPoint(x1Value, y1Value);
+            p.addPoint(x1Value, y2Value);
+            p.addPoint(x2Value, y2Value);
             Area area = new Area(p);
             return area;
         } else if (strShape.toLowerCase().startsWith("regularpolygon")) {
@@ -1573,7 +1610,7 @@ public class ActiveRegion implements PropertiesInterface {
                 String args[] = strShape.split(" ");
                 if (args.length > 1) {
                     int n = (int) Double.parseDouble(args[1]);
-                    int r = Math.min(this.getWidth(), this.getHeight()) / 2;
+                    int r = Math.min(this.getWidthValue(), this.getHeightValue()) / 2;
                     Area area = new Area(scalePolygon(bPlayback, new RegularPolygon(this.getCenterX(bPlayback), this.getCenterY(bPlayback), r, n)));
                     return area;
                 }
@@ -1598,7 +1635,7 @@ public class ActiveRegion implements PropertiesInterface {
                         internalR = 1.0;
                     }
                     int n = (int) Double.parseDouble(args[1]);
-                    int r = Math.min(this.getWidth(), this.getHeight()) / 2;
+                    int r = Math.min(this.getWidthValue(), this.getHeightValue()) / 2;
                     Area area = new Area(scalePolygon(bPlayback, new StarPolygon(this.getCenterX(bPlayback), this.getCenterY(bPlayback), r, (int) (r * internalR), n)));
                     return area;
                 }
@@ -1639,27 +1676,27 @@ public class ActiveRegion implements PropertiesInterface {
                     internalR = 1.0;
                 }
 
-                Area area = new Area(new Arc2D.Double(getX1(), getY1(), getWidth(), getHeight(), -startAngle + 90, -extent, Arc2D.PIE));
+                Area area = new Area(new Arc2D.Double(getX1Value(), getY1Value(), getWidthValue(), getHeightValue(), -startAngle + 90, -extent, Arc2D.PIE));
 
                 if (internalR > 0 && internalR < 1) {
-                    double _w = getWidth() * internalR;
-                    double _h = getHeight() * internalR;
-                    double _x1 = getX1() + (getWidth() - _w) / 2;
-                    double _y1 = getY1() + (getHeight() - _h) / 2;
+                    double _w = getWidthValue() * internalR;
+                    double _h = getHeightValue() * internalR;
+                    double _x1 = getX1Value() + (getWidthValue() - _w) / 2;
+                    double _y1 = getY1Value() + (getHeightValue() - _h) / 2;
                     area.subtract(new Area(new Ellipse2D.Double((int) _x1, (int) _y1, (int) _w, (int) _h)));
                 }
                 return area;
             } catch (Throwable e) {
             }
         }
-        return new Area(new Rectangle(x1, y1, getWidth(), getHeight()));
+        return new Area(new Rectangle(x1Value, y1Value, getWidthValue(), getHeightValue()));
     }
 
     public Polygon scalePolygon(boolean bPlayback, Polygon p) {
-        int w = this.getWidth();
-        int h = this.getHeight();
-        int x = this.x1;
-        int y = this.y1;
+        int w = this.getWidthValue();
+        int h = this.getHeightValue();
+        int x = this.x1Value;
+        int y = this.y1Value;
 
         Rectangle r = p.getBounds();
 
@@ -1682,71 +1719,71 @@ public class ActiveRegion implements PropertiesInterface {
     }
 
     public Dimension getSize() {
-        return new Dimension(getWidth(), getHeight());
+        return new Dimension(getWidthValue(), getHeightValue());
     }
 
     public int getX(boolean bPlayback) {
         int x;
         if (this.horizontalAlignment.equalsIgnoreCase("center")) {
-            x = x1 + (x2 - x1) / 2;
+            x = x1Value + (x2Value - x1Value) / 2;
         } else if (this.horizontalAlignment.equalsIgnoreCase("right")) {
-            x = x2;
+            x = x2Value;
         } else {
-            x = x1;
+            x = x1Value;
         }
         return x;
     }
 
     public int getCenterX(boolean bPlayback) {
         int x;
-            x = x1 + (x2 - x1) / 2;
+        x = x1Value + (x2Value - x1Value) / 2;
         return x;
     }
 
     public void setX(int x, boolean bPlayback) {
-            int w = x2 - x1;
-            if (this.horizontalAlignment.equalsIgnoreCase("center")) {
-                x1 = x - w / 2;
-                x2 = x + w / 2;
-            } else if (this.horizontalAlignment.equalsIgnoreCase("right")) {
-                x1 = x - w;
-                x2 = x;
-            } else {
-                x1 = x;
-                x2 = x + w;
-            }
+        int w = x2Value - x1Value;
+        if (this.horizontalAlignment.equalsIgnoreCase("center")) {
+            x1Value = x - w / 2;
+            x2Value = x + w / 2;
+        } else if (this.horizontalAlignment.equalsIgnoreCase("right")) {
+            x1Value = x - w;
+            x2Value = x;
+        } else {
+            x1Value = x;
+            x2Value = x + w;
+        }
     }
 
     public int getY(boolean bPlayback) {
         int y;
-            if (this.verticalAlignment.equalsIgnoreCase("center")) {
-                y = y1 + (y2 - y1) / 2;
-            } else if (this.verticalAlignment.equalsIgnoreCase("bottom")) {
-                y = y2;
-            } else {
-                y = y1;
-            }
+        if (this.verticalAlignment.equalsIgnoreCase("center")) {
+            y = y1Value + (y2Value - y1Value) / 2;
+        } else if (this.verticalAlignment.equalsIgnoreCase("bottom")) {
+            y = y2Value;
+        } else {
+            y = y1Value;
+        }
         return y;
     }
 
     public int getCenterY(boolean bPlayback) {
         int y;
-            y = y1 + (y2 - y1) / 2;
+        y = y1Value + (y2Value - y1Value) / 2;
         return y;
     }
 
     public void setY(int y, boolean bPlayback) {
-            int h = y2 - y1;
-            if (this.verticalAlignment.equalsIgnoreCase("center")) {
-                y1 = y - h / 2;
-                y2 = y + h / 2;
-            } else if (this.verticalAlignment.equalsIgnoreCase("bottom")) {
-                y1 = y - h;
-                y2 = y;
-            } else {
-                y1 = y;
-                y2 = y + h;
-            }
+        int h = y2Value - y1Value;
+        if (this.verticalAlignment.equalsIgnoreCase("center")) {
+            y1Value = y - h / 2;
+            y2Value = y + h / 2;
+        } else if (this.verticalAlignment.equalsIgnoreCase("bottom")) {
+            y1Value = y - h;
+            y2Value = y;
+        } else {
+            y1Value = y;
+            y2Value = y + h;
+        }
     }
 
     public void processLimitsTrajectory(Point p) {
@@ -1756,24 +1793,24 @@ public class ActiveRegion implements PropertiesInterface {
     }
 
     public void processLimitsX() {
-        int w = this.x2 - this.x1;
+        int w = this.x2Value - this.x1Value;
         if (this.horizontalAlignment.equalsIgnoreCase("center")) {
-            this.getMotionController().processLimits("position x", this.x1 + w / 2, w / 2, w / 2, true);
+            this.getMotionController().processLimits("position x", this.x1Value + w / 2, w / 2, w / 2, true);
         } else if (this.horizontalAlignment.equalsIgnoreCase("right")) {
-            this.getMotionController().processLimits("position x", this.x1 + w, w, 0, true);
+            this.getMotionController().processLimits("position x", this.x1Value + w, w, 0, true);
         } else {
-            this.getMotionController().processLimits("position x", this.x1, 0, w, true);
+            this.getMotionController().processLimits("position x", this.x1Value, 0, w, true);
         }
     }
 
     public void processLimitsY() {
-        int h = this.y2 - this.y1;
+        int h = this.y2Value - this.y1Value;
         if (this.verticalAlignment.equalsIgnoreCase("center")) {
-            this.getMotionController().processLimits("position y", this.y1 + h / 2, h / 2, h / 2, true);
+            this.getMotionController().processLimits("position y", this.y1Value + h / 2, h / 2, h / 2, true);
         } else if (this.verticalAlignment.equalsIgnoreCase("right")) {
-            this.getMotionController().processLimits("position y", this.y1 + h, h, 0, true);
+            this.getMotionController().processLimits("position y", this.y1Value + h, h, 0, true);
         } else {
-            this.getMotionController().processLimits("position y", this.y1, 0, h, true);
+            this.getMotionController().processLimits("position y", this.y1Value, 0, h, true);
         }
     }
 
@@ -1800,27 +1837,27 @@ public class ActiveRegion implements PropertiesInterface {
 
     public Rectangle getPropertiesIconRectangle() {
         double s = Math.min(1, SketchletEditor.getInstance().getScale());
-        return new Rectangle((int) (x2 - 30 / s), (int) (y2 - 30 / s), (int) (30 / s), (int) (30 / s));
+        return new Rectangle((int) (x2Value - 30 / s), (int) (y2Value - 30 / s), (int) (30 / s), (int) (30 / s));
     }
 
     public Rectangle getMappingIconRectangle() {
         double s = Math.min(1, SketchletEditor.getInstance().getScale());
-        return new Rectangle((int) (x2 - 60 / s), (int) (y2 - 30 / s), (int) (30 / s), (int) (30 / s));
+        return new Rectangle((int) (x2Value - 60 / s), (int) (y2Value - 30 / s), (int) (30 / s), (int) (30 / s));
     }
 
     public Rectangle getMouseIconRectangle() {
         double s = Math.min(1, SketchletEditor.getInstance().getScale());
-        return new Rectangle((int) (x2 - 90 / s), (int) (y2 - 30 / s), (int) (30 / s), (int) (30 / s));
+        return new Rectangle((int) (x2Value - 90 / s), (int) (y2Value - 30 / s), (int) (30 / s), (int) (30 / s));
     }
 
     public Rectangle getKeyboardIconRectangle() {
         double s = Math.min(1, SketchletEditor.getInstance().getScale());
-        return new Rectangle((int) (x2 - 90 / s), (int) (y2 - 30 / s), (int) (30 / s), (int) (30 / s));
+        return new Rectangle((int) (x2Value - 90 / s), (int) (y2Value - 30 / s), (int) (30 / s), (int) (30 / s));
     }
 
     public Rectangle getInRegionsIconRectangle() {
         double s = Math.min(1, SketchletEditor.getInstance().getScale());
-        return new Rectangle((int) (x2 - 120 / s), (int) (y2 - 30 / s), (int) (30 / s), (int) (30 / s));
+        return new Rectangle((int) (x2Value - 120 / s), (int) (y2Value - 30 / s), (int) (30 / s), (int) (30 / s));
     }
 
     public boolean isInRegionsPropertiesArea(int x, int y) {
@@ -1882,39 +1919,39 @@ public class ActiveRegion implements PropertiesInterface {
     }
 
     public void setWidth(int w) {
-        int oldW = x2 - x1;
+        int oldW = x2Value - x1Value;
 
         if (horizontalAlignment.equalsIgnoreCase("center")) {
-            x1 = x1 + oldW / 2 - w / 2;
-            x2 = x1 + w;
+            x1Value = x1Value + oldW / 2 - w / 2;
+            x2Value = x1Value + w;
         } else if (horizontalAlignment.equalsIgnoreCase("right")) {
-            x1 = x1 + oldW - w;
-            x2 = x1 + w;
+            x1Value = x1Value + oldW - w;
+            x2Value = x1Value + w;
         } else {
-            x2 = x1 + w;
+            x2Value = x1Value + w;
         }
     }
 
     public void setHeight(int h) {
-        int oldH = y2 - y1;
+        int oldH = y2Value - y1Value;
 
         if (verticalAlignment.equalsIgnoreCase("center")) {
-            y1 = y1 + oldH / 2 - h / 2;
-            y2 = y1 + h;
+            y1Value = y1Value + oldH / 2 - h / 2;
+            y2Value = y1Value + h;
         } else if (verticalAlignment.equalsIgnoreCase("right")) {
-            y1 = y1 + oldH - h;
-            y2 = y1 + h;
+            y1Value = y1Value + oldH - h;
+            y2Value = y1Value + h;
         } else {
-            y2 = y1 + h;
+            y2Value = y1Value + h;
         }
     }
 
     public void initPlayback() {
-        pen_x = 0;
-        pen_y = 0;
+        penX = 0;
+        penY = 0;
     }
 
-    public static String[][] showProperties = {
+    private static String[][] showProperties = {
             {"Position", null},
             {"position x", Language.translate("horizontal position (left, 0 to 1000)")},
             {"position y", Language.translate("vertical position (top, 0 to 1000)")},
@@ -1962,7 +1999,7 @@ public class ActiveRegion implements PropertiesInterface {
             {"perspective y4", Language.translate("0 to 1, x bottom left corner")},
             {"automatic perspective", Language.translate("left, right, top, bottom, parallel")},
             {"perspective depth", Language.translate("relative perceptive depth 0.0 to 1.0")},};
-    static public String[][] propertiesInfo = {
+    private static String[][] propertiesInfo = {
             {"image url", Language.translate("The URL to the image drawn in the active region")},
             {"image frame", Language.translate("Index of the current frame to be shown in the active region")},
             {"position x", Language.translate("horizontal position (left, 0 to ") + Toolkit.getDefaultToolkit().getScreenSize().width + ")"},
@@ -2000,7 +2037,7 @@ public class ActiveRegion implements PropertiesInterface {
             {"perspective depth", Language.translate("")},
             {"horizontal 3d rotation", Language.translate("0 to 360")},
             {"vertical 3d rotation", Language.translate("0 to 360")},};
-    public String[][] propertiesDefaultLimits = {
+    private String[][] propertiesDefaultLimits = {
             {"position x", "0", "" + Toolkit.getDefaultToolkit().getScreenSize().width, ""},
             {"position y", "0", "" + Toolkit.getDefaultToolkit().getScreenSize().width, ""},
             {"x1", "0", "" + Toolkit.getDefaultToolkit().getScreenSize().width, ""},
@@ -2033,7 +2070,7 @@ public class ActiveRegion implements PropertiesInterface {
             {"perspective depth", "0.0", "1.0", "1"},
             {"horizontal 3d rotation", "0", "360", "0"},
             {"vertical 3d rotation", "0", "360", "0"}};
-    public String[][] propertiesAnimation = {
+    private String[][] propertiesAnimation = {
             {"Position", null, null, null, null, null},
             {"position x", "", "", "", "", ""},
             {"position y", "", "", "", "", ""},
@@ -2082,7 +2119,7 @@ public class ActiveRegion implements PropertiesInterface {
             {"automatic perspective", "", "", "", "", ""},
             {"perspective depth", "", "", "", "", ""}
     };
-    public static String[][] showImageProperties = {
+    private static String[][] showImageProperties = {
             {"Drawn Image", null},
             {"image frame", Language.translate("frame to be shown (1, 2...)")},
             {"animation ms", Language.translate("animatioan defined by the pause between frames")},
@@ -2198,9 +2235,9 @@ public class ActiveRegion implements PropertiesInterface {
         } else if (property.equalsIgnoreCase("image url")) {
             strValue = this.imageUrlField;
         } else if (property.equalsIgnoreCase("image frame")) {
-            strValue = this.strImageIndex;
+            strValue = this.imageIndex;
         } else if (property.equalsIgnoreCase("animation ms")) {
-            strValue = this.strAnimationMs;
+            strValue = this.animationFrameRateMs;
         } else if (property.equalsIgnoreCase("vertical alignment")) {
             strValue = this.verticalAlignment;
         } else if (property.equalsIgnoreCase("horizontal alignment")) {
@@ -2222,7 +2259,7 @@ public class ActiveRegion implements PropertiesInterface {
         } else if (property.equalsIgnoreCase("line color")) {
             strValue = this.lineColor;
         } else if (property.equalsIgnoreCase("fill color")) {
-            strValue = this.strFillColor;
+            strValue = this.fillColor;
         } else if (property.equalsIgnoreCase("font name")) {
             strValue = this.fontName;
         } else if (property.equalsIgnoreCase("font style")) {
@@ -2238,37 +2275,37 @@ public class ActiveRegion implements PropertiesInterface {
         } else if (property.equalsIgnoreCase("secondary trajectory") || property.equalsIgnoreCase("trajectory 2")) {
             strValue = this.trajectory2;
         } else if (property.equalsIgnoreCase("position x")) {
-            strValue = this.strX.isEmpty() ? this.getX(bPlayback) + "" : this.strX;
+            strValue = this.x.isEmpty() ? this.getX(bPlayback) + "" : this.x;
         } else if (property.equalsIgnoreCase("position y")) {
-            strValue = this.strY.isEmpty() ? this.getY(bPlayback) + "" : this.strY;
+            strValue = this.y.isEmpty() ? this.getY(bPlayback) + "" : this.y;
         } else if (property.equalsIgnoreCase("x1")) {
-            strValue = this.strX1.isEmpty() ? this.x1 + "" : this.strX1;
+            strValue = this.x1.isEmpty() ? this.x1Value + "" : this.x1;
         } else if (property.equalsIgnoreCase("y1")) {
-            strValue = this.strY1.isEmpty() ? this.y1 + "" : this.strY1;
+            strValue = this.y1.isEmpty() ? this.y1Value + "" : this.y1;
         } else if (property.equalsIgnoreCase("x2")) {
-            strValue = this.strX2.isEmpty() ? this.x2 + "" : this.strX2;
+            strValue = this.x2.isEmpty() ? this.x2Value + "" : this.x2;
         } else if (property.equalsIgnoreCase("y2")) {
-            strValue = this.strY2.isEmpty() ? this.y2 + "" : this.strY2;
+            strValue = this.y2.isEmpty() ? this.y2Value + "" : this.y2;
         } else if (property.equalsIgnoreCase("relative x")) {
-            strValue = this.strRelX;
+            strValue = this.relativeX;
         } else if (property.equalsIgnoreCase("zoom")) {
-            strValue = this.strZoom;
+            strValue = this.zoom;
         } else if (property.equalsIgnoreCase("relative y")) {
-            strValue = this.strRelY;
+            strValue = this.relativeY;
         } else if (property.equalsIgnoreCase("trajectory position")) {
-            strValue = this.strTrajectoryPosition;
+            strValue = this.trajectoryPosition;
         } else if (property.equalsIgnoreCase("trajectory position 2")) {
             strValue = this.getRenderer().getTrajectoryDrawingLayer().trajectoryPositionFromPoint2 + "";
         } else if (property.equalsIgnoreCase("width")) {
-            strValue = this.strWidth.isEmpty() ? "" + (this.getWidth()) : this.strWidth;
+            strValue = this.width.isEmpty() ? "" + (this.getWidthValue()) : this.width;
         } else if (property.equalsIgnoreCase("height")) {
-            strValue = this.strHeight.isEmpty() ? "" + (this.getHeight()) : this.strHeight;
+            strValue = this.height.isEmpty() ? "" + (this.getHeightValue()) : this.height;
         } else if (property.equalsIgnoreCase("rotation")) {
-            strValue = this.strRotate.isEmpty() ? Math.toDegrees(this.rotation) + "" : this.strRotate;
+            strValue = this.rotation.isEmpty() ? Math.toDegrees(this.rotationValue) + "" : this.rotation;
         } else if (property.equalsIgnoreCase("shear x")) {
-            strValue = this.strShearX;
+            strValue = this.shearX;
         } else if (property.equalsIgnoreCase("shear y")) {
-            strValue = this.strShearY;
+            strValue = this.shearY;
         } else if (property.equalsIgnoreCase("visible area x")) {
             strValue = this.windowX;
         } else if (property.equalsIgnoreCase("visible area y")) {
@@ -2280,37 +2317,37 @@ public class ActiveRegion implements PropertiesInterface {
         } else if (property.equalsIgnoreCase("transparency")) {
             strValue = this.transparency;
         } else if (property.equalsIgnoreCase("speed")) {
-            strValue = this.strSpeed;
+            strValue = this.speed;
         } else if (property.equalsIgnoreCase("direction")) {
-            strValue = this.strSpeedDirection;
+            strValue = this.speedDirection;
         } else if (property.equalsIgnoreCase("rotation speed")) {
-            strValue = this.strRotationSpeed;
+            strValue = this.rotationSpeed;
         } else if (property.equalsIgnoreCase("pen thickness")) {
-            strValue = this.strPen;
+            strValue = this.penWidth;
         } else if (property.equalsIgnoreCase("perspective x1")) {
-            strValue = this.strPerspectiveX1.isEmpty() ? this.p_x0 + "" : this.strPerspectiveX1;
+            strValue = this.perspectiveX1.isEmpty() ? this.p_x0 + "" : this.perspectiveX1;
         } else if (property.equalsIgnoreCase("perspective y1")) {
-            strValue = this.strPerspectiveY1.isEmpty() ? this.p_y0 + "" : this.strPerspectiveY1;
+            strValue = this.perspectiveY1.isEmpty() ? this.p_y0 + "" : this.perspectiveY1;
         } else if (property.equalsIgnoreCase("perspective x2")) {
-            strValue = this.strPerspectiveX2.isEmpty() ? this.p_x1 + "" : this.strPerspectiveX2;
+            strValue = this.perspectiveX2.isEmpty() ? this.p_x1 + "" : this.perspectiveX2;
         } else if (property.equalsIgnoreCase("perspective y2")) {
-            strValue = this.strPerspectiveY2.isEmpty() ? this.p_y1 + "" : this.strPerspectiveY2;
+            strValue = this.perspectiveY2.isEmpty() ? this.p_y1 + "" : this.perspectiveY2;
         } else if (property.equalsIgnoreCase("perspective x3")) {
-            strValue = this.strPerspectiveX3.isEmpty() ? this.p_x2 + "" : this.strPerspectiveX3;
+            strValue = this.perspectiveX3.isEmpty() ? this.p_x2 + "" : this.perspectiveX3;
         } else if (property.equalsIgnoreCase("perspective y3")) {
-            strValue = this.strPerspectiveY3.isEmpty() ? this.p_y2 + "" : this.strPerspectiveY3;
+            strValue = this.perspectiveY3.isEmpty() ? this.p_y2 + "" : this.perspectiveY3;
         } else if (property.equalsIgnoreCase("perspective x4")) {
-            strValue = this.strPerspectiveX4.isEmpty() ? this.p_x3 + "" : this.strPerspectiveX4;
+            strValue = this.perspectiveX4.isEmpty() ? this.p_x3 + "" : this.perspectiveX4;
         } else if (property.equalsIgnoreCase("perspective y4")) {
-            strValue = this.strPerspectiveY4.isEmpty() ? this.p_y3 + "" : this.strPerspectiveY4;
+            strValue = this.perspectiveY4.isEmpty() ? this.p_y3 + "" : this.perspectiveY4;
         } else if (property.equalsIgnoreCase("automatic perspective")) {
-            strValue = this.strAutomaticPerspective;
+            strValue = this.automaticPerspective;
         } else if (property.equalsIgnoreCase("perspective depth")) {
-            strValue = this.strPerspectiveDepth;
+            strValue = this.perspectiveDepth;
         } else if (property.equalsIgnoreCase("horizontal 3d rotation")) {
-            strValue = this.strRotation3DHorizontal;
+            strValue = this.rotation3DHorizontal;
         } else if (property.equalsIgnoreCase("vertical 3d rotation")) {
-            strValue = this.strRotation3DVertical;
+            strValue = this.rotation3DVertical;
         }
 
         return strValue;
@@ -2390,8 +2427,6 @@ public class ActiveRegion implements PropertiesInterface {
         }
     }
 
-    Vector<String> updatingProperties = new Vector<String>();
-
     public JComboBox getPropertiesCombo() {
         JComboBox combo = new JComboBox();
         combo.setEditable(true);
@@ -2432,9 +2467,9 @@ public class ActiveRegion implements PropertiesInterface {
             this.widgetProperties = null;
         } else if (property.equalsIgnoreCase("control variable")) {
         } else if (property.equalsIgnoreCase("image frame")) {
-            this.strImageIndex = value;
+            this.imageIndex = value;
         } else if (property.equalsIgnoreCase("animation ms")) {
-            this.strAnimationMs = value;
+            this.animationFrameRateMs = value;
         } else if (property.equalsIgnoreCase("horizontal alignment")) {
             this.horizontalAlignment = value;
         } else if (property.equalsIgnoreCase("fit to box")) {
@@ -2458,7 +2493,7 @@ public class ActiveRegion implements PropertiesInterface {
         } else if (property.equalsIgnoreCase("line color")) {
             this.lineColor = value;
         } else if (property.equalsIgnoreCase("fill color")) {
-            this.strFillColor = value;
+            this.fillColor = value;
         } else if (property.equalsIgnoreCase("font name")) {
             this.fontName = value;
         } else if (property.equalsIgnoreCase("font style")) {
@@ -2473,129 +2508,129 @@ public class ActiveRegion implements PropertiesInterface {
             this.trajectory2 = value;
         } else if (property.equalsIgnoreCase("position x")) {
             if (value.startsWith("=") || TemplateMarkers.containsStartMarker(value) || value.isEmpty()) {
-                this.strX = value;
+                this.x = value;
             } else {
                 try {
-                    strX = "";
+                    x = "";
                     int num = (int) Double.parseDouble(value);
                     this.setX(num, false);
                     this.setX(num, true);
                 } catch (Exception e) {
-                    strX = value;
+                    x = value;
                 }
             }
         } else if (property.equalsIgnoreCase("position y")) {
             if (value.startsWith("=") || TemplateMarkers.containsStartMarker(value) || value.isEmpty()) {
-                this.strY = value;
+                this.y = value;
             } else {
                 try {
-                    strY = "";
+                    y = "";
                     int num = (int) Double.parseDouble(value);
                     this.setY(num, false);
                     this.setY(num, true);
                 } catch (Exception e) {
-                    strY = value;
+                    y = value;
                 }
             }
         } else if (property.equalsIgnoreCase("x1")) {
             if (value.startsWith("=") || TemplateMarkers.containsStartMarker(value) || value.isEmpty()) {
-                this.strX1 = value;
+                this.x1 = value;
             } else {
                 try {
-                    strX1 = "";
+                    x1 = "";
                     int num = (int) Double.parseDouble(value);
-                    this.x1 = num;
+                    this.x1Value = num;
                 } catch (Exception e) {
-                    strX1 = "";
+                    x1 = "";
                 }
             }
         } else if (property.equalsIgnoreCase("x2")) {
             if (value.startsWith("=") || TemplateMarkers.containsStartMarker(value) || value.isEmpty()) {
-                this.strX2 = value;
+                this.x2 = value;
             } else {
                 try {
-                    strX2 = "";
+                    x2 = "";
                     int num = (int) Double.parseDouble(value);
-                    this.x2 = num;
+                    this.x2Value = num;
                 } catch (Exception e) {
-                    strX2 = "";
+                    x2 = "";
                 }
             }
         } else if (property.equalsIgnoreCase("y1")) {
             if (value.startsWith("=") || TemplateMarkers.containsStartMarker(value) || value.isEmpty()) {
-                this.strY1 = value;
+                this.y1 = value;
             } else {
                 try {
-                    strY1 = "";
+                    y1 = "";
                     int num = (int) Double.parseDouble(value);
-                    this.y1 = num;
+                    this.y1Value = num;
                 } catch (Exception e) {
-                    strY1 = "";
+                    y1 = "";
                 }
             }
         } else if (property.equalsIgnoreCase("y2")) {
             if (value.startsWith("=") || TemplateMarkers.containsStartMarker(value) || value.isEmpty()) {
-                this.strY2 = value;
+                this.y2 = value;
             } else {
                 try {
-                    strY2 = "";
+                    y2 = "";
                     int num = (int) Double.parseDouble(value);
-                    this.y2 = num;
+                    this.y2Value = num;
                 } catch (Exception e) {
-                    strY2 = "";
+                    y2 = "";
                 }
             }
         } else if (property.equalsIgnoreCase("relative x")) {
-            this.strRelX = value;
+            this.relativeX = value;
         } else if (property.equalsIgnoreCase("zoom")) {
-            this.strZoom = value;
+            this.zoom = value;
         } else if (property.equalsIgnoreCase("relative y")) {
-            this.strRelY = value;
+            this.relativeY = value;
         } else if (property.equalsIgnoreCase("trajectory position")) {
-            this.strTrajectoryPosition = value;
+            this.trajectoryPosition = value;
         } else if (property.equalsIgnoreCase("width")) {
             if (value.startsWith("=") || TemplateMarkers.containsStartMarker(value)) {
-                this.strWidth = value;
+                this.width = value;
             } else {
                 try {
-                    this.strWidth = "";
+                    this.width = "";
                     double num = Double.parseDouble(value);
                     this.setWidth((int) num);
                 } catch (Exception e) {
-                    strWidth = value;
+                    width = value;
                 }
             }
         } else if (property.equalsIgnoreCase("height")) {
             if (value.startsWith("=") || TemplateMarkers.containsStartMarker(value)) {
-                this.strHeight = value;
+                this.height = value;
             } else {
                 try {
-                    this.strHeight = "";
+                    this.height = "";
                     double num = Double.parseDouble(value);
                     this.setHeight((int) num);
                 } catch (Exception e) {
-                    strHeight = value;
+                    height = value;
                 }
             }
         } else if (property.equalsIgnoreCase("rotation")) {
             if (value.startsWith("=") || TemplateMarkers.containsStartMarker(value)) {
-                this.strRotate = value;
+                this.rotation = value;
             } else if (value.isEmpty()) {
-                this.strRotate = "";
-                this.rotation = 0.0;
+                this.rotation = "";
+                this.rotationValue = 0.0;
             } else {
                 try {
-                    this.strRotate = "";
+                    this.rotation = "";
                     double num = Double.parseDouble(value);
-                    this.rotation = Math.toRadians(num);
+                    this.rotationValue = Math.toRadians(num);
                 } catch (Exception e) {
-                    strRotate = value;
+                    rotation = value;
                 }
             }
         } else if (property.equalsIgnoreCase("shear x")) {
-            this.strShearX = value;
+            this.shearX = value;
         } else if (property.equalsIgnoreCase("shear y")) {
-            this.strShearY = value;
+            this.shearY = value;
         } else if (property.equalsIgnoreCase("visible area x")) {
             this.windowX = value;
         } else if (property.equalsIgnoreCase("visible area y")) {
@@ -2607,61 +2642,61 @@ public class ActiveRegion implements PropertiesInterface {
         } else if (property.equalsIgnoreCase("transparency")) {
             this.transparency = value;
         } else if (property.equalsIgnoreCase("speed")) {
-            this.strSpeed = value;
+            this.speed = value;
         } else if (property.equalsIgnoreCase("direction")) {
-            this.strSpeedDirection = value;
+            this.speedDirection = value;
         } else if (property.equalsIgnoreCase("rotation speed")) {
-            this.strRotationSpeed = value;
+            this.rotationSpeed = value;
         } else if (property.equalsIgnoreCase("pen thickness")) {
-            this.strPen = value;
+            this.penWidth = value;
         } else if (property.equalsIgnoreCase("perspective x1")) {
-            this.strPerspectiveX1 = value;
+            this.perspectiveX1 = value;
             if (value.isEmpty()) {
                 this.p_x0 = 0.0;
             }
         } else if (property.equalsIgnoreCase("perspective y1")) {
-            this.strPerspectiveY1 = value;
+            this.perspectiveY1 = value;
             if (value.isEmpty()) {
                 this.p_y0 = 0.0;
             }
         } else if (property.equalsIgnoreCase("perspective x2")) {
-            this.strPerspectiveX2 = value;
+            this.perspectiveX2 = value;
             if (value.isEmpty()) {
                 this.p_x1 = 1.0;
             }
         } else if (property.equalsIgnoreCase("perspective y2")) {
-            this.strPerspectiveY2 = value;
+            this.perspectiveY2 = value;
             if (value.isEmpty()) {
                 this.p_y1 = 0.0;
             }
         } else if (property.equalsIgnoreCase("perspective x3")) {
-            this.strPerspectiveX3 = value;
+            this.perspectiveX3 = value;
             if (value.isEmpty()) {
                 this.p_x2 = 1.0;
             }
         } else if (property.equalsIgnoreCase("perspective y3")) {
-            this.strPerspectiveY3 = value;
+            this.perspectiveY3 = value;
             if (value.isEmpty()) {
                 this.p_y2 = 1.0;
             }
         } else if (property.equalsIgnoreCase("perspective x4")) {
-            this.strPerspectiveX4 = value;
+            this.perspectiveX4 = value;
             if (value.isEmpty()) {
                 this.p_x3 = 0.0;
             }
         } else if (property.equalsIgnoreCase("perspective y4")) {
-            this.strPerspectiveY4 = value;
+            this.perspectiveY4 = value;
             if (value.isEmpty()) {
                 this.p_y3 = 1.0;
             }
         } else if (property.equalsIgnoreCase("automatic perspective")) {
-            this.strAutomaticPerspective = value;
+            this.automaticPerspective = value;
         } else if (property.equalsIgnoreCase("perspective depth")) {
-            this.strPerspectiveDepth = value;
+            this.perspectiveDepth = value;
         } else if (property.equalsIgnoreCase("horizontal 3d rotation")) {
-            this.strRotation3DHorizontal = value;
+            this.rotation3DHorizontal = value;
         } else if (property.equalsIgnoreCase("vertical 3d rotation")) {
-            this.strRotation3DVertical = value;
+            this.rotation3DVertical = value;
         }
 
         updatingProperties.remove(property);
@@ -2823,5 +2858,1089 @@ public class ActiveRegion implements PropertiesInterface {
 
     public void setMotionController(ActiveRegionMotionController motionController) {
         this.motionController = motionController;
+    }
+
+    public int getSpeedPrevX1() {
+        return speedPrevX1;
+    }
+
+    public void setSpeedPrevX1(int speedPrevX1) {
+        this.speedPrevX1 = speedPrevX1;
+    }
+
+    public int getSpeedPrevY1() {
+        return speedPrevY1;
+    }
+
+    public void setSpeedPrevY1(int speedPrevY1) {
+        this.speedPrevY1 = speedPrevY1;
+    }
+
+    public int getSpeedPrevX2() {
+        return speedPrevX2;
+    }
+
+    public void setSpeedPrevX2(int speedPrevX2) {
+        this.speedPrevX2 = speedPrevX2;
+    }
+
+    public int getSpeedPrevY2() {
+        return speedPrevY2;
+    }
+
+    public void setSpeedPrevY2(int speedPrevY2) {
+        this.speedPrevY2 = speedPrevY2;
+    }
+
+    public int getSpeedWidth() {
+        return speedWidth;
+    }
+
+    public void setSpeedWidth(int speedWidth) {
+        this.speedWidth = speedWidth;
+    }
+
+    public int getSpeedHeight() {
+        return speedHeight;
+    }
+
+    public void setSpeedHeight(int speedHeight) {
+        this.speedHeight = speedHeight;
+    }
+
+    public double getSpeedX() {
+        return speedX;
+    }
+
+    public void setSpeedX(double speedX) {
+        this.speedX = speedX;
+    }
+
+    public double getSpeedY() {
+        return speedY;
+    }
+
+    public void setSpeedY(double speedY) {
+        this.speedY = speedY;
+    }
+
+    public double getSpeedPrevDirection() {
+        return speedPrevDirection;
+    }
+
+    public void setSpeedPrevDirection(double speedPrevDirection) {
+        this.speedPrevDirection = speedPrevDirection;
+    }
+
+    public double getSpeedValue() {
+        return speedValue;
+    }
+
+    public void setSpeedValue(double speedValue) {
+        this.speedValue = speedValue;
+    }
+
+    public long getLastFrameTime() {
+        return lastFrameTime;
+    }
+
+    public void setLastFrameTime(long lastFrameTime) {
+        this.lastFrameTime = lastFrameTime;
+    }
+
+    public String getRegionGrouping() {
+        return regionGrouping;
+    }
+
+    public void setRegionGrouping(String regionGrouping) {
+        this.regionGrouping = regionGrouping;
+    }
+
+    public ActiveRegions getParent() {
+        return parent;
+    }
+
+    public void setParent(ActiveRegions parent) {
+        this.parent = parent;
+    }
+
+    public List<RegionOverlapEventMacro> getRegionOverlapEventMacros() {
+        return regionOverlapEventMacros;
+    }
+
+    public void setRegionOverlapEventMacros(List<RegionOverlapEventMacro> regionOverlapEventMacros) {
+        this.regionOverlapEventMacros = regionOverlapEventMacros;
+    }
+
+    public List<WidgetEventMacro> getWidgetEventMacros() {
+        return widgetEventMacros;
+    }
+
+    public void setWidgetEventMacros(List<WidgetEventMacro> widgetEventMacros) {
+        this.widgetEventMacros = widgetEventMacros;
+    }
+
+    public MouseEventsProcessor getMouseEventsProcessor() {
+        return mouseEventsProcessor;
+    }
+
+    public void setMouseEventsProcessor(MouseEventsProcessor mouseEventsProcessor) {
+        this.mouseEventsProcessor = mouseEventsProcessor;
+    }
+
+    public KeyboardEventsProcessor getKeyboardEventsProcessor() {
+        return keyboardEventsProcessor;
+    }
+
+    public void setKeyboardEventsProcessor(KeyboardEventsProcessor keyboardEventsProcessor) {
+        this.keyboardEventsProcessor = keyboardEventsProcessor;
+    }
+
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
+    }
+
+    public boolean isPinned() {
+        return pinned;
+    }
+
+    public void setPinned(boolean pinned) {
+        this.pinned = pinned;
+    }
+
+    public boolean isInFocus() {
+        return inFocus;
+    }
+
+    public void setInFocus(boolean inFocus) {
+        this.inFocus = inFocus;
+    }
+
+    public void setX1Value(int x1Value) {
+        this.x1Value = x1Value;
+    }
+
+    public void setY1Value(int y1Value) {
+        this.y1Value = y1Value;
+    }
+
+    public void setX2Value(int x2Value) {
+        this.x2Value = x2Value;
+    }
+
+    public void setY2Value(int y2Value) {
+        this.y2Value = y2Value;
+    }
+
+    public double getCenterOfRotationX() {
+        return centerOfRotationX;
+    }
+
+    public void setCenterOfRotationX(double centerOfRotationX) {
+        this.centerOfRotationX = centerOfRotationX;
+    }
+
+    public double getCenterOfRotationY() {
+        return centerOfRotationY;
+    }
+
+    public void setCenterOfRotationY(double centerOfRotationY) {
+        this.centerOfRotationY = centerOfRotationY;
+    }
+
+    public double getTrajectory2X() {
+        return trajectory2X;
+    }
+
+    public void setTrajectory2X(double trajectory2X) {
+        this.trajectory2X = trajectory2X;
+    }
+
+    public double getTrajectory2Y() {
+        return trajectory2Y;
+    }
+
+    public void setTrajectory2Y(double trajectory2Y) {
+        this.trajectory2Y = trajectory2Y;
+    }
+
+    public double getP_x0() {
+        return p_x0;
+    }
+
+    public void setP_x0(double p_x0) {
+        this.p_x0 = p_x0;
+    }
+
+    public double getP_y0() {
+        return p_y0;
+    }
+
+    public void setP_y0(double p_y0) {
+        this.p_y0 = p_y0;
+    }
+
+    public double getP_x1() {
+        return p_x1;
+    }
+
+    public void setP_x1(double p_x1) {
+        this.p_x1 = p_x1;
+    }
+
+    public double getP_y1() {
+        return p_y1;
+    }
+
+    public void setP_y1(double p_y1) {
+        this.p_y1 = p_y1;
+    }
+
+    public double getP_x2() {
+        return p_x2;
+    }
+
+    public void setP_x2(double p_x2) {
+        this.p_x2 = p_x2;
+    }
+
+    public double getP_y2() {
+        return p_y2;
+    }
+
+    public void setP_y2(double p_y2) {
+        this.p_y2 = p_y2;
+    }
+
+    public double getP_x3() {
+        return p_x3;
+    }
+
+    public void setP_x3(double p_x3) {
+        this.p_x3 = p_x3;
+    }
+
+    public double getP_y3() {
+        return p_y3;
+    }
+
+    public void setP_y3(double p_y3) {
+        this.p_y3 = p_y3;
+    }
+
+    public int getPenX() {
+        return penX;
+    }
+
+    public void setPenX(int penX) {
+        this.penX = penX;
+    }
+
+    public int getPenY() {
+        return penY;
+    }
+
+    public void setPenY(int penY) {
+        this.penY = penY;
+    }
+
+    public double getRotationValue() {
+        return rotationValue;
+    }
+
+    public void setRotationValue(double rotationValue) {
+        this.rotationValue = rotationValue;
+    }
+
+    public double getShearXValue() {
+        return shearXValue;
+    }
+
+    public void setShearXValue(double shearXValue) {
+        this.shearXValue = shearXValue;
+    }
+
+    public double getShearYValue() {
+        return shearYValue;
+    }
+
+    public void setShearYValue(double shearYValue) {
+        this.shearYValue = shearYValue;
+    }
+
+    public String getX() {
+        return x;
+    }
+
+    public void setX(String x) {
+        this.x = x;
+    }
+
+    public String getY() {
+        return y;
+    }
+
+    public void setY(String y) {
+        this.y = y;
+    }
+
+    public String getRelativeX() {
+        return relativeX;
+    }
+
+    public void setRelativeX(String relativeX) {
+        this.relativeX = relativeX;
+    }
+
+    public String getRelativeY() {
+        return relativeY;
+    }
+
+    public void setRelativeY(String relativeY) {
+        this.relativeY = relativeY;
+    }
+
+    public String getZoom() {
+        return zoom;
+    }
+
+    public void setZoom(String zoom) {
+        this.zoom = zoom;
+    }
+
+    public String getTrajectoryPosition() {
+        return trajectoryPosition;
+    }
+
+    public void setTrajectoryPosition(String trajectoryPosition) {
+        this.trajectoryPosition = trajectoryPosition;
+    }
+
+    public String getWidth() {
+        return width;
+    }
+
+    public void setWidth(String width) {
+        this.width = width;
+    }
+
+    public String getHeight() {
+        return height;
+    }
+
+    public void setHeight(String height) {
+        this.height = height;
+    }
+
+    public String getRotation() {
+        return rotation;
+    }
+
+    public void setRotation(String rotation) {
+        this.rotation = rotation;
+    }
+
+    public String getShearX() {
+        return shearX;
+    }
+
+    public void setShearX(String shearX) {
+        this.shearX = shearX;
+    }
+
+    public String getShearY() {
+        return shearY;
+    }
+
+    public void setShearY(String shearY) {
+        this.shearY = shearY;
+    }
+
+    public String getWindowX() {
+        return windowX;
+    }
+
+    public void setWindowX(String windowX) {
+        this.windowX = windowX;
+    }
+
+    public String getWindowY() {
+        return windowY;
+    }
+
+    public void setWindowY(String windowY) {
+        this.windowY = windowY;
+    }
+
+    public String getWindowWidth() {
+        return windowWidth;
+    }
+
+    public void setWindowWidth(String windowWidth) {
+        this.windowWidth = windowWidth;
+    }
+
+    public String getWindowHeight() {
+        return windowHeight;
+    }
+
+    public void setWindowHeight(String windowHeight) {
+        this.windowHeight = windowHeight;
+    }
+
+    public String getTransparency() {
+        return transparency;
+    }
+
+    public void setTransparency(String transparency) {
+        this.transparency = transparency;
+    }
+
+    public String getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(String speed) {
+        this.speed = speed;
+    }
+
+    public String getSpeedDirection() {
+        return speedDirection;
+    }
+
+    public void setSpeedDirection(String speedDirection) {
+        this.speedDirection = speedDirection;
+    }
+
+    public String getRotationSpeed() {
+        return rotationSpeed;
+    }
+
+    public void setRotationSpeed(String rotationSpeed) {
+        this.rotationSpeed = rotationSpeed;
+    }
+
+    public String getPenWidth() {
+        return penWidth;
+    }
+
+    public void setPenWidth(String penWidth) {
+        this.penWidth = penWidth;
+    }
+
+    public String getX1() {
+        return x1;
+    }
+
+    public void setX1(String x1) {
+        this.x1 = x1;
+    }
+
+    public String getY1() {
+        return y1;
+    }
+
+    public void setY1(String y1) {
+        this.y1 = y1;
+    }
+
+    public String getX2() {
+        return x2;
+    }
+
+    public void setX2(String x2) {
+        this.x2 = x2;
+    }
+
+    public String getY2() {
+        return y2;
+    }
+
+    public void setY2(String y2) {
+        this.y2 = y2;
+    }
+
+    public String getPerspectiveX1() {
+        return perspectiveX1;
+    }
+
+    public void setPerspectiveX1(String perspectiveX1) {
+        this.perspectiveX1 = perspectiveX1;
+    }
+
+    public String getPerspectiveY1() {
+        return perspectiveY1;
+    }
+
+    public void setPerspectiveY1(String perspectiveY1) {
+        this.perspectiveY1 = perspectiveY1;
+    }
+
+    public String getPerspectiveX2() {
+        return perspectiveX2;
+    }
+
+    public void setPerspectiveX2(String perspectiveX2) {
+        this.perspectiveX2 = perspectiveX2;
+    }
+
+    public String getPerspectiveY2() {
+        return perspectiveY2;
+    }
+
+    public void setPerspectiveY2(String perspectiveY2) {
+        this.perspectiveY2 = perspectiveY2;
+    }
+
+    public String getPerspectiveX3() {
+        return perspectiveX3;
+    }
+
+    public void setPerspectiveX3(String perspectiveX3) {
+        this.perspectiveX3 = perspectiveX3;
+    }
+
+    public String getPerspectiveY3() {
+        return perspectiveY3;
+    }
+
+    public void setPerspectiveY3(String perspectiveY3) {
+        this.perspectiveY3 = perspectiveY3;
+    }
+
+    public String getPerspectiveX4() {
+        return perspectiveX4;
+    }
+
+    public void setPerspectiveX4(String perspectiveX4) {
+        this.perspectiveX4 = perspectiveX4;
+    }
+
+    public String getPerspectiveY4() {
+        return perspectiveY4;
+    }
+
+    public void setPerspectiveY4(String perspectiveY4) {
+        this.perspectiveY4 = perspectiveY4;
+    }
+
+    public String getAutomaticPerspective() {
+        return automaticPerspective;
+    }
+
+    public void setAutomaticPerspective(String automaticPerspective) {
+        this.automaticPerspective = automaticPerspective;
+    }
+
+    public String getRotation3DHorizontal() {
+        return rotation3DHorizontal;
+    }
+
+    public void setRotation3DHorizontal(String rotation3DHorizontal) {
+        this.rotation3DHorizontal = rotation3DHorizontal;
+    }
+
+    public String getRotation3DVertical() {
+        return rotation3DVertical;
+    }
+
+    public void setRotation3DVertical(String rotation3DVertical) {
+        this.rotation3DVertical = rotation3DVertical;
+    }
+
+    public String getPerspectiveDepth() {
+        return perspectiveDepth;
+    }
+
+    public void setPerspectiveDepth(String perspectiveDepth) {
+        this.perspectiveDepth = perspectiveDepth;
+    }
+
+    public int getLayer() {
+        return layer;
+    }
+
+    public void setLayer(int layer) {
+        this.layer = layer;
+    }
+
+    public Object[][] getMotionAndRotationVariablesMapping() {
+        return motionAndRotationVariablesMapping;
+    }
+
+    public void setMotionAndRotationVariablesMapping(Object[][] motionAndRotationVariablesMapping) {
+        this.motionAndRotationVariablesMapping = motionAndRotationVariablesMapping;
+    }
+
+    public Object[][] getMotionAndRotationLimits() {
+        return motionAndRotationLimits;
+    }
+
+    public void setMotionAndRotationLimits(Object[][] motionAndRotationLimits) {
+        this.motionAndRotationLimits = motionAndRotationLimits;
+    }
+
+    public String getShape() {
+        return shape;
+    }
+
+    public void setShape(String shape) {
+        this.shape = shape;
+    }
+
+    public String getShapeArguments() {
+        return shapeArguments;
+    }
+
+    public void setShapeArguments(String shapeArguments) {
+        this.shapeArguments = shapeArguments;
+    }
+
+    public String getFontName() {
+        return fontName;
+    }
+
+    public void setFontName(String fontName) {
+        this.fontName = fontName;
+    }
+
+    public String getFontSize() {
+        return fontSize;
+    }
+
+    public void setFontSize(String fontSize) {
+        this.fontSize = fontSize;
+    }
+
+    public String getFontColor() {
+        return fontColor;
+    }
+
+    public void setFontColor(String fontColor) {
+        this.fontColor = fontColor;
+    }
+
+    public String getFontStyle() {
+        return fontStyle;
+    }
+
+    public void setFontStyle(String fontStyle) {
+        this.fontStyle = fontStyle;
+    }
+
+    public List<String> getAdditionalImageFileNames() {
+        return additionalImageFileNames;
+    }
+
+    public void setAdditionalImageFileNames(List<String> additionalImageFileNames) {
+        this.additionalImageFileNames = additionalImageFileNames;
+    }
+
+    public boolean isInTrajectoryMode() {
+        return inTrajectoryMode;
+    }
+
+    public void setInTrajectoryMode(boolean inTrajectoryMode) {
+        this.inTrajectoryMode = inTrajectoryMode;
+    }
+
+    public boolean isInTrajectoryMode2() {
+        return inTrajectoryMode2;
+    }
+
+    public void setInTrajectoryMode2(boolean inTrajectoryMode2) {
+        this.inTrajectoryMode2 = inTrajectoryMode2;
+    }
+
+    public int getTrajectoryType() {
+        return trajectoryType;
+    }
+
+    public void setTrajectoryType(int trajectoryType) {
+        this.trajectoryType = trajectoryType;
+    }
+
+    public String getHorizontalAlignment() {
+        return horizontalAlignment;
+    }
+
+    public void setHorizontalAlignment(String horizontalAlignment) {
+        this.horizontalAlignment = horizontalAlignment;
+    }
+
+    public String getVerticalAlignment() {
+        return verticalAlignment;
+    }
+
+    public void setVerticalAlignment(String verticalAlignment) {
+        this.verticalAlignment = verticalAlignment;
+    }
+
+    public String getLineColor() {
+        return lineColor;
+    }
+
+    public void setLineColor(String lineColor) {
+        this.lineColor = lineColor;
+    }
+
+    public String getLineStyle() {
+        return lineStyle;
+    }
+
+    public void setLineStyle(String lineStyle) {
+        this.lineStyle = lineStyle;
+    }
+
+    public String getFillColor() {
+        return fillColor;
+    }
+
+    public void setFillColor(String fillColor) {
+        this.fillColor = fillColor;
+    }
+
+    public String getCaptureScreenX() {
+        return captureScreenX;
+    }
+
+    public void setCaptureScreenX(String captureScreenX) {
+        this.captureScreenX = captureScreenX;
+    }
+
+    public String getCaptureScreenY() {
+        return captureScreenY;
+    }
+
+    public void setCaptureScreenY(String captureScreenY) {
+        this.captureScreenY = captureScreenY;
+    }
+
+    public String getCaptureScreenWidth() {
+        return captureScreenWidth;
+    }
+
+    public void setCaptureScreenWidth(String captureScreenWidth) {
+        this.captureScreenWidth = captureScreenWidth;
+    }
+
+    public String getCaptureScreenHeight() {
+        return captureScreenHeight;
+    }
+
+    public void setCaptureScreenHeight(String captureScreenHeight) {
+        this.captureScreenHeight = captureScreenHeight;
+    }
+
+    public String getTextField() {
+        return textField;
+    }
+
+    public void setTextField(String textField) {
+        this.textField = textField;
+    }
+
+    public String getEmbeddedSketch() {
+        return embeddedSketch;
+    }
+
+    public void setEmbeddedSketch(String embeddedSketch) {
+        this.embeddedSketch = embeddedSketch;
+    }
+
+    public String getEmbeddedSketchVarPrefix() {
+        return embeddedSketchVarPrefix;
+    }
+
+    public void setEmbeddedSketchVarPrefix(String embeddedSketchVarPrefix) {
+        this.embeddedSketchVarPrefix = embeddedSketchVarPrefix;
+    }
+
+    public String getEmbeddedSketchVarPostfix() {
+        return embeddedSketchVarPostfix;
+    }
+
+    public void setEmbeddedSketchVarPostfix(String embeddedSketchVarPostfix) {
+        this.embeddedSketchVarPostfix = embeddedSketchVarPostfix;
+    }
+
+    public String getImageUrlField() {
+        return imageUrlField;
+    }
+
+    public void setImageUrlField(String imageUrlField) {
+        this.imageUrlField = imageUrlField;
+    }
+
+    public String getActive() {
+        return active;
+    }
+
+    public void setActive(String active) {
+        this.active = active;
+    }
+
+    public String getWidget() {
+        return widget;
+    }
+
+    public void setWidget(String widget) {
+        this.widget = widget;
+    }
+
+    public String getWidgetPropertiesString() {
+        return widgetPropertiesString;
+    }
+
+    public void setWidgetPropertiesString(String widgetPropertiesString) {
+        this.widgetPropertiesString = widgetPropertiesString;
+    }
+
+    public Properties getWidgetProperties() {
+        return widgetProperties;
+    }
+
+    public void setWidgetProperties(Properties widgetProperties) {
+        this.widgetProperties = widgetProperties;
+    }
+
+    public String getImageIndex() {
+        return imageIndex;
+    }
+
+    public void setImageIndex(String imageIndex) {
+        this.imageIndex = imageIndex;
+    }
+
+    public String getAnimationFrameRateMs() {
+        return animationFrameRateMs;
+    }
+
+    public void setAnimationFrameRateMs(String animationFrameRateMs) {
+        this.animationFrameRateMs = animationFrameRateMs;
+    }
+
+    public BufferedImage getImage() {
+        return image;
+    }
+
+    public void setImage(BufferedImage image) {
+        this.image = image;
+    }
+
+    public List<BufferedImage> getAdditionalDrawnImages() {
+        return additionalDrawnImages;
+    }
+
+    public void setAdditionalDrawnImages(List<BufferedImage> additionalDrawnImages) {
+        this.additionalDrawnImages = additionalDrawnImages;
+    }
+
+    public List<Boolean> getAdditionalDrawnImagesChanged() {
+        return additionalDrawnImagesChanged;
+    }
+
+    public void setAdditionalDrawnImagesChanged(List<Boolean> additionalDrawnImagesChanged) {
+        this.additionalDrawnImagesChanged = additionalDrawnImagesChanged;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public String getTrajectory1() {
+        return trajectory1;
+    }
+
+    public void setTrajectory1(String trajectory1) {
+        this.trajectory1 = trajectory1;
+    }
+
+    public String getTrajectory2() {
+        return trajectory2;
+    }
+
+    public void setTrajectory2(String trajectory2) {
+        this.trajectory2 = trajectory2;
+    }
+
+    public boolean isMovable() {
+        return movable;
+    }
+
+    public void setMovable(boolean movable) {
+        this.movable = movable;
+    }
+
+    public boolean isRotatable() {
+        return rotatable;
+    }
+
+    public void setRotatable(boolean rotatable) {
+        this.rotatable = rotatable;
+    }
+
+    public boolean isResizable() {
+        return resizable;
+    }
+
+    public void setResizable(boolean resizable) {
+        this.resizable = resizable;
+    }
+
+    public boolean isFitToBoxEnabled() {
+        return fitToBoxEnabled;
+    }
+
+    public void setFitToBoxEnabled(boolean fitToBoxEnabled) {
+        this.fitToBoxEnabled = fitToBoxEnabled;
+    }
+
+    public boolean isTextWrapped() {
+        return textWrapped;
+    }
+
+    public void setTextWrapped(boolean textWrapped) {
+        this.textWrapped = textWrapped;
+    }
+
+    public boolean isTextTrimmed() {
+        return textTrimmed;
+    }
+
+    public void setTextTrimmed(boolean textTrimmed) {
+        this.textTrimmed = textTrimmed;
+    }
+
+    public boolean isWalkThroughEnabled() {
+        return walkThroughEnabled;
+    }
+
+    public void setWalkThroughEnabled(boolean walkThroughEnabled) {
+        this.walkThroughEnabled = walkThroughEnabled;
+    }
+
+    public boolean isStickToTrajectoryEnabled() {
+        return stickToTrajectoryEnabled;
+    }
+
+    public void setStickToTrajectoryEnabled(boolean stickToTrajectoryEnabled) {
+        this.stickToTrajectoryEnabled = stickToTrajectoryEnabled;
+    }
+
+    public boolean isChangingOrientationOnTrajectoryEnabled() {
+        return changingOrientationOnTrajectoryEnabled;
+    }
+
+    public void setChangingOrientationOnTrajectoryEnabled(boolean changingOrientationOnTrajectoryEnabled) {
+        this.changingOrientationOnTrajectoryEnabled = changingOrientationOnTrajectoryEnabled;
+    }
+
+    public boolean isScreenCapturingEnabled() {
+        return screenCapturingEnabled;
+    }
+
+    public void setScreenCapturingEnabled(boolean screenCapturingEnabled) {
+        this.screenCapturingEnabled = screenCapturingEnabled;
+    }
+
+    public boolean isScreenCapturingMouseMappingEnabled() {
+        return screenCapturingMouseMappingEnabled;
+    }
+
+    public void setScreenCapturingMouseMappingEnabled(boolean screenCapturingMouseMappingEnabled) {
+        this.screenCapturingMouseMappingEnabled = screenCapturingMouseMappingEnabled;
+    }
+
+    public String getWidgetItems() {
+        return widgetItems;
+    }
+
+    public void setWidgetItems(String widgetItems) {
+        this.widgetItems = widgetItems;
+    }
+
+    public String getCharactersPerLine() {
+        return charactersPerLine;
+    }
+
+    public void setCharactersPerLine(String charactersPerLine) {
+        this.charactersPerLine = charactersPerLine;
+    }
+
+    public String getMaxNumLines() {
+        return maxNumLines;
+    }
+
+    public void setMaxNumLines(String maxNumLines) {
+        this.maxNumLines = maxNumLines;
+    }
+
+    public String getPreviousImage() {
+        return previousImage;
+    }
+
+    public void setPreviousImage(String previousImage) {
+        this.previousImage = previousImage;
+    }
+
+    public boolean isbActive() {
+        return bActive;
+    }
+
+    public void setbActive(boolean bActive) {
+        this.bActive = bActive;
+    }
+
+    public boolean isAdjusting() {
+        return adjusting;
+    }
+
+    public void setAdjusting(boolean adjusting) {
+        this.adjusting = adjusting;
+    }
+
+    public String[][] getPropertiesDefaultLimits() {
+        return propertiesDefaultLimits;
+    }
+
+    public void setPropertiesDefaultLimits(String[][] propertiesDefaultLimits) {
+        this.propertiesDefaultLimits = propertiesDefaultLimits;
+    }
+
+    public String[][] getPropertiesAnimation() {
+        return propertiesAnimation;
+    }
+
+    public void setPropertiesAnimation(String[][] propertiesAnimation) {
+        this.propertiesAnimation = propertiesAnimation;
+    }
+
+    public Vector<String> getUpdatingProperties() {
+        return updatingProperties;
+    }
+
+    public void setUpdatingProperties(Vector<String> updatingProperties) {
+        this.updatingProperties = updatingProperties;
+    }
+
+    public String getLineThickness() {
+        return lineThickness;
+    }
+
+    public void setLineThickness(String lineThickness) {
+        this.lineThickness = lineThickness;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

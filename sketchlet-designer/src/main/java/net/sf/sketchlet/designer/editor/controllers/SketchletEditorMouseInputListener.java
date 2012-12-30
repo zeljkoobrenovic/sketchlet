@@ -32,7 +32,7 @@ public class SketchletEditorMouseInputListener extends MouseInputAdapter {
         }
         int x = (int) ((e.getPoint().x) / SketchletEditor.getInstance().getScale()) - SketchletEditor.getInstance().getMarginX();
         int y = (int) ((e.getPoint().y) / SketchletEditor.getInstance().getScale()) - SketchletEditor.getInstance().getMarginY();
-        if (SketchletEditor.getInstance().getMode() == SketchletEditorMode.ACTIONS) {
+        if (SketchletEditor.getInstance().getMode() == SketchletEditorMode.EDITING_REGIONS) {
             if (SketchletEditor.getInstance().getTool() != null) {
                 SketchletEditor.getInstance().getTool().mouseMoved(e, x, y);
             }
@@ -70,12 +70,12 @@ public class SketchletEditorMouseInputListener extends MouseInputAdapter {
                     strMessage = Language.translate("Active regions mode") + "  |  x=" + x + ", y=" + y + "";
                 }
 
-                if (SketchletEditor.getInstance().getMode() == SketchletEditorMode.ACTIONS && SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null && SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().size() > 0) {
+                if (SketchletEditor.getInstance().getMode() == SketchletEditorMode.EDITING_REGIONS && SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null && SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().size() > 0) {
                     ActiveRegion a = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
-                    strMessage += "  " + Language.translate("selected region") + ": x=" + a.x1;
-                    strMessage += ", y=" + a.y1;
-                    strMessage += ", " + Language.translate("width=") + (a.x2 - a.x1);
-                    strMessage += ", " + Language.translate("height=") + (a.y2 - a.y1);
+                    strMessage += "  " + Language.translate("selected region") + ": x=" + a.getX1Value();
+                    strMessage += ", y=" + a.getY1Value();
+                    strMessage += ", " + Language.translate("width=") + (a.getX2Value() - a.getX1Value());
+                    strMessage += ", " + Language.translate("height=") + (a.getY2Value() - a.getY1Value());
                 }
                 SketchletEditor.getInstance().getStatusBar().setText(strMessage);
             }
@@ -143,7 +143,7 @@ public class SketchletEditorMouseInputListener extends MouseInputAdapter {
             }
             RefreshTime.update();
             return;
-        } else if (SketchletEditor.getInstance().getMode() == SketchletEditorMode.ACTIONS && SketchletEditor.getInstance().getCurrentPage() != null) {
+        } else if (SketchletEditor.getInstance().getMode() == SketchletEditorMode.EDITING_REGIONS && SketchletEditor.getInstance().getCurrentPage() != null) {
             SketchletEditor.getInstance().getTool().mouseReleased(e, x, y);
             SketchletEditor.getInstance().getFormulaToolbar().refresh();
         }
@@ -170,8 +170,8 @@ public class SketchletEditorMouseInputListener extends MouseInputAdapter {
                     y = (int) ip.getY();
 
                     if (SketchletEditor.getInstance().getTool() instanceof ActiveRegionTool || SketchletEditor.getInstance().getTool() instanceof ActiveRegionSelectTool) {
-                        if (region.widget.isEmpty()) {
-                            if (region.text.trim().isEmpty()) {
+                        if (region.getWidget().isEmpty()) {
+                            if (region.getText().trim().isEmpty()) {
                                 ActiveRegionsFrame.refresh(region, ActiveRegionPanel.getIndexGraphics());
                             } else {
                                 ActiveRegionsFrame.refresh(region, ActiveRegionPanel.getIndexGraphics(), 4);

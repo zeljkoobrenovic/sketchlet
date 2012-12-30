@@ -121,11 +121,11 @@ public class ActiveRegionTool extends Tool {
                 speed = _s / speeds.length;
 
                 if (dx != 0 || dy != 0) {
-                    if (!a.regionGrouping.equals("")) {
-                        for (ActiveRegion as : a.parent.getRegions()) {
-                            if (as != a && as.regionGrouping.equals(a.regionGrouping)) {
-                                as.getMotionController().processLimits("position x", as.x1, 0, 0, true);
-                                as.getMotionController().processLimits("position y", as.y1, 0, 0, true);
+                    if (!a.getRegionGrouping().equals("")) {
+                        for (ActiveRegion as : a.getParent().getRegions()) {
+                            if (as != a && as.getRegionGrouping().equals(a.getRegionGrouping())) {
+                                as.getMotionController().processLimits("position x", as.getX1Value(), 0, 0, true);
+                                as.getMotionController().processLimits("position y", as.getY1Value(), 0, 0, true);
                             }
                         }
                     }

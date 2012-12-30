@@ -16,7 +16,7 @@ public class RegionChangedUndoActionWithComponent extends RegionChangedUndoActio
 
     @Override
     public void restore() {
-        if (region != null) {
+        if (getRegion() != null) {
             super.restore();
             if (ActiveRegionPanel.getCurrentActiveRegionPanel() != null) {
                 ActiveRegionPanel.getCurrentActiveRegionPanel().refreshComponents();

@@ -69,10 +69,10 @@ public class FontChooserPanel extends JPanel {
             styleCombo.addItem("=" + strVar);
         }
 
-        fontListCombo.setSelectedItem(parent.getRegion().fontName);
-        fontSizeCombo.setSelectedItem(parent.getRegion().fontSize);
-        fontColorCombo.setSelectedItem(parent.getRegion().fontColor);
-        styleCombo.setSelectedItem(parent.getRegion().fontStyle);
+        fontListCombo.setSelectedItem(parent.getRegion().getFontName());
+        fontSizeCombo.setSelectedItem(parent.getRegion().getFontSize());
+        fontColorCombo.setSelectedItem(parent.getRegion().getFontColor());
+        styleCombo.setSelectedItem(parent.getRegion().getFontStyle());
 
         fontSizeCombo.addActionListener(new ActionListener() {
 
@@ -164,10 +164,10 @@ public class FontChooserPanel extends JPanel {
             String strColor = fontColorCombo.getSelectedItem().toString();
             String strStyle = styleCombo.getSelectedItem().toString();
 
-            parent.getRegion().fontName = name;
-            parent.getRegion().fontSize = strSize;
-            parent.getRegion().fontStyle = strStyle;
-            parent.getRegion().fontColor = strColor;
+            parent.getRegion().setFontName(name);
+            parent.getRegion().setFontSize(strSize);
+            parent.getRegion().setFontStyle(strStyle);
+            parent.getRegion().setFontColor(strColor);
 
             SketchletEditor.getInstance().repaint();
 

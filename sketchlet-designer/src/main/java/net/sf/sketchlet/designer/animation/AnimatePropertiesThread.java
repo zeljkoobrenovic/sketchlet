@@ -34,18 +34,18 @@ public class AnimatePropertiesThread implements Runnable {
     public void run() {
         long startTime = System.currentTimeMillis();
         for (ActiveRegion region : page.getRegions().getRegions()) {
-            region.speed_prevX1 = region.x1;
-            region.speed_prevY1 = region.y1;
-            region.speed_prevX2 = region.x2;
-            region.speed_prevY2 = region.y2;
+            region.setSpeedPrevX1(region.getX1Value());
+            region.setSpeedPrevY1(region.getY1Value());
+            region.setSpeedPrevX2(region.getX2Value());
+            region.setSpeedPrevY2(region.getY2Value());
 
-            region.speed_w = Math.abs(region.x2 - region.x1);
-            region.speed_h = Math.abs(region.y2 - region.y1);
+            region.setSpeedWidth(Math.abs(region.getX2Value() - region.getX1Value()));
+            region.setSpeedHeight(Math.abs(region.getY2Value() - region.getY1Value()));
 
-            region.speed_x = region.x1;
-            region.speed_y = region.y1;
+            region.setSpeedX(region.getX1Value());
+            region.setSpeedY(region.getY1Value());
 
-            region.speed_prevDirection = region.rotation;
+            region.setSpeedPrevDirection(region.getRotationValue());
         }
         while (!isStopped() && (SketchletEditor.getInstance() != null && (SketchletEditor.getInstance().getInternalPlaybackPanel() != null || PlaybackFrame.playbackFrame != null))) {
             try {
@@ -82,12 +82,12 @@ public class AnimatePropertiesThread implements Runnable {
     }
 
     public void animateRegionFrame(ActiveRegion region) {
-        String strPause = region.processText(region.strAnimationMs).trim();
+        String strPause = region.processText(region.getAnimationFrameRateMs()).trim();
 
         int i = 0;
 
         try {
-            i = (int) Double.parseDouble(region.processText(region.strImageIndex));
+            i = (int) Double.parseDouble(region.processText(region.getImageIndex()));
         } catch (Exception e) {
         }
 
@@ -95,10 +95,10 @@ public class AnimatePropertiesThread implements Runnable {
             if (!strPause.isEmpty()) {
                 long pause = (long) Double.parseDouble(strPause);
 
-                if (System.currentTimeMillis() - region.lastFrameTime > pause) {
-                    region.lastFrameTime = System.currentTimeMillis();
+                if (System.currentTimeMillis() - region.getLastFrameTime() > pause) {
+                    region.setLastFrameTime(System.currentTimeMillis());
                     //region.imageIndex.setSelectedItem("" + (i % region.getImageCount() + 1));
-                    region.strImageIndex = "" + (i % region.getImageCount() + 1);
+                    region.setImageIndex("" + (i % region.getImageCount() + 1));
 
                     SketchletEditor.getInstance().repaintInternalPlaybackPanel();
                     PlaybackFrame.repaintAllFrames();
@@ -109,34 +109,34 @@ public class AnimatePropertiesThread implements Runnable {
     }
 
     public void animateRegionDirection(ActiveRegion region) {
-        String strSpeed = region.processText((region.strSpeed)).trim();
-        String strDirection = region.processText((region.strSpeedDirection)).trim();
-        String strRotation = region.processText((region.strRotate)).trim();
+        String strSpeed = region.processText((region.getSpeed())).trim();
+        String strDirection = region.processText((region.getSpeedDirection())).trim();
+        String strRotation = region.processText((region.getRotation())).trim();
         if (!strSpeed.isEmpty()) {
             try {
-                if (Math.abs(region.speed_x - region.x1) > 3) {
-                    region.speed_x = region.x1;
+                if (Math.abs(region.getSpeedX() - region.getX1Value()) > 3) {
+                    region.setSpeedX(region.getX1Value());
                 }
-                if (Math.abs(region.speed_y - region.y1) > 3) {
-                    region.speed_y = region.y1;
+                if (Math.abs(region.getSpeedY() - region.getY1Value()) > 3) {
+                    region.setSpeedY(region.getY1Value());
                 }
-                region.speed = Double.parseDouble(strSpeed);
+                region.setSpeedValue(Double.parseDouble(strSpeed));
 
                 //speed = region.limitsHandler.processLimits("speed", speed, 0.0, 0, true);
 
-                if (region.speed == 0.0) {
+                if (region.getSpeedValue() == 0.0) {
                     return;
                 }
 
-                double angle = region.rotation;
+                double angle = region.getRotationValue();
 
                 if (strDirection.equalsIgnoreCase("random") || strRotation.equalsIgnoreCase("random")) {
                     try {
-                        angle = region.speed_prevDirection + (Math.random() - 0.5) * Math.PI / 3.5;
-                        region.speed_prevDirection = angle;
+                        angle = region.getSpeedPrevDirection() + (Math.random() - 0.5) * Math.PI / 3.5;
+                        region.setSpeedPrevDirection(angle);
 
                         if (strRotation.equalsIgnoreCase("random")) {
-                            region.rotation = angle;
+                            region.setRotationValue(angle);
                         }
                     } catch (Exception ex) {
                     }
@@ -147,48 +147,48 @@ public class AnimatePropertiesThread implements Runnable {
                     } catch (Exception ex) {
                     }
                 }
-                String strHAlign = region.processText(region.horizontalAlignment);
-                String strVAlign = region.processText(region.verticalAlignment);
+                String strHAlign = region.processText(region.getHorizontalAlignment());
+                String strVAlign = region.processText(region.getVerticalAlignment());
 
-                for (int i = 0; i < region.speed / 10; i++) {
+                for (int i = 0; i < region.getSpeedValue() / 10; i++) {
 
-                    region.speed_x += Math.cos(angle - Math.PI / 2);
-                    region.speed_y += Math.sin(angle - Math.PI / 2);
+                    region.setSpeedX(region.getSpeedX() + Math.cos(angle - Math.PI / 2));
+                    region.setSpeedY(region.getSpeedY() + Math.sin(angle - Math.PI / 2));
 
-                    region.x1 = (int) region.speed_x;
-                    region.y1 = (int) region.speed_y;
+                    region.setX1Value((int) region.getSpeedX());
+                    region.setY1Value((int) region.getSpeedY());
 
-                    region.x1 = (int) region.getMotionController().processLimits("position x", region.x1, 0, region.speed_w, false);
+                    region.setX1Value((int) region.getMotionController().processLimits("position x", region.getX1Value(), 0, region.getSpeedWidth(), false));
                     if (strHAlign.equalsIgnoreCase("center")) {
-                        region.getMotionController().processLimits("position x", region.x1 + region.speed_w / 2, region.speed_w / 2, region.speed_w / 2, true);
+                        region.getMotionController().processLimits("position x", region.getX1Value() + region.getSpeedWidth() / 2, region.getSpeedWidth() / 2, region.getSpeedWidth() / 2, true);
                     } else if (strHAlign.equalsIgnoreCase("right")) {
-                        region.getMotionController().processLimits("position x", region.x1 + region.speed_w, region.speed_w, 0, true);
+                        region.getMotionController().processLimits("position x", region.getX1Value() + region.getSpeedWidth(), region.getSpeedWidth(), 0, true);
                     } else {
-                        region.getMotionController().processLimits("position x", region.x1, 0, region.speed_w, true);
+                        region.getMotionController().processLimits("position x", region.getX1Value(), 0, region.getSpeedWidth(), true);
                     }
-                    region.y1 = (int) region.getMotionController().processLimits("position y", region.y1, 0, region.speed_h, false);
+                    region.setY1Value((int) region.getMotionController().processLimits("position y", region.getY1Value(), 0, region.getSpeedHeight(), false));
                     if (strVAlign.equalsIgnoreCase("center")) {
-                        region.getMotionController().processLimits("position y", region.y1 + region.speed_h / 2, region.speed_h / 2, region.speed_h / 2, true);
+                        region.getMotionController().processLimits("position y", region.getY1Value() + region.getSpeedHeight() / 2, region.getSpeedHeight() / 2, region.getSpeedHeight() / 2, true);
                     } else if (strVAlign.equalsIgnoreCase("bottom")) {
-                        region.getMotionController().processLimits("position y", region.y1 + region.speed_h, region.speed_h, 0, true);
+                        region.getMotionController().processLimits("position y", region.getY1Value() + region.getSpeedHeight(), region.getSpeedHeight(), 0, true);
                     } else {
-                        region.getMotionController().processLimits("position y", region.y1, 0, region.speed_h, true);
+                        region.getMotionController().processLimits("position y", region.getY1Value(), 0, region.getSpeedHeight(), true);
                     }
 
-                    region.x2 = region.x1 + region.speed_w;
-                    region.y2 = region.y1 + region.speed_h;
+                    region.setX2Value(region.getX1Value() + region.getSpeedWidth());
+                    region.setY2Value(region.getY1Value() + region.getSpeedHeight());
 
                     if (!region.isWithinLimits(true) || region.getInteractionController().intersectsWithSolids(true)) {
-                        region.parent.getOverlapHelper().findNonOverlappingLocationPlayback(region);
+                        region.getParent().getOverlapHelper().findNonOverlappingLocationPlayback(region);
                         break;
                     } else {
-                        region.speed_prevX1 = region.x1;
-                        region.speed_prevY1 = region.y1;
-                        region.speed_prevX2 = region.x2;
-                        region.speed_prevY2 = region.y2;
+                        region.setSpeedPrevX1(region.getX1Value());
+                        region.setSpeedPrevY1(region.getY1Value());
+                        region.setSpeedPrevX2(region.getX2Value());
+                        region.setSpeedPrevY2(region.getY2Value());
                     }
                 }
-                region.getInteractionController().processInteractionEvents(true, region.parent.getPage().getActiveTimers(), region.parent.getPage().getActiveMacros());
+                region.getInteractionController().processInteractionEvents(true, region.getParent().getPage().getActiveTimers(), region.getParent().getPage().getActiveMacros());
                 region.getSketch().updateConnectors(region, true);
 
             } catch (NumberFormatException nfe) {
@@ -285,20 +285,20 @@ public class AnimatePropertiesThread implements Runnable {
     }
 
     public void animateProperties(ActiveRegion region, long time) {
-        for (int i = 0; i < region.propertiesAnimation.length; i++) {
-            if (region.propertiesAnimation[i][1] == null) {
+        for (int i = 0; i < region.getPropertiesAnimation().length; i++) {
+            if (region.getPropertiesAnimation()[i][1] == null) {
                 continue;
             }
-            String property = region.propertiesAnimation[i][0];
-            String type = region.processText(region.propertiesAnimation[i][1]);
-            String start = region.processText(region.propertiesAnimation[i][2]);
-            String end = region.processText(region.propertiesAnimation[i][3]);
-            String cycle = region.processText(region.propertiesAnimation[i][4]);
+            String property = region.getPropertiesAnimation()[i][0];
+            String type = region.processText(region.getPropertiesAnimation()[i][1]);
+            String start = region.processText(region.getPropertiesAnimation()[i][2]);
+            String end = region.processText(region.getPropertiesAnimation()[i][3]);
+            String cycle = region.processText(region.getPropertiesAnimation()[i][4]);
             if (type != null && !type.isEmpty() && !start.isEmpty() && !end.isEmpty() && !cycle.isEmpty()) {
-                double nStart = Double.parseDouble(region.processText(region.propertiesAnimation[i][2]));
-                double nEnd = Double.parseDouble(region.processText(region.propertiesAnimation[i][3]));
-                double nCycle = Double.parseDouble(region.processText(region.propertiesAnimation[i][4]));
-                String strCurve = region.processText(region.propertiesAnimation[i][5]);
+                double nStart = Double.parseDouble(region.processText(region.getPropertiesAnimation()[i][2]));
+                double nEnd = Double.parseDouble(region.processText(region.getPropertiesAnimation()[i][3]));
+                double nCycle = Double.parseDouble(region.processText(region.getPropertiesAnimation()[i][4]));
+                String strCurve = region.processText(region.getPropertiesAnimation()[i][5]);
 
                 long step = 2 * time / (int) (nCycle * 1000);
                 double relPos = (time % (int) (nCycle * 1000)) / (nCycle * 1000);
@@ -368,21 +368,21 @@ public class AnimatePropertiesThread implements Runnable {
     }
 
     public boolean shouldAnimate(ActiveRegion region) {
-        for (int i = 0; i < region.propertiesAnimation.length; i++) {
-            String type = region.propertiesAnimation[i][1];
-            String start = region.propertiesAnimation[i][2];
-            String end = region.propertiesAnimation[i][3];
-            String cycle = region.propertiesAnimation[i][4];
+        for (int i = 0; i < region.getPropertiesAnimation().length; i++) {
+            String type = region.getPropertiesAnimation()[i][1];
+            String start = region.getPropertiesAnimation()[i][2];
+            String end = region.getPropertiesAnimation()[i][3];
+            String cycle = region.getPropertiesAnimation()[i][4];
             if (type != null && !type.isEmpty() && !start.isEmpty() && !end.isEmpty() && !cycle.isEmpty()) {
                 return true;
             }
 
         }
-        if (!region.strSpeed.isEmpty()) {
+        if (!region.getSpeed().isEmpty()) {
             return true;
         }
 
-        if (region.getImageCount() > 1 && !region.strAnimationMs.isEmpty()) {
+        if (region.getImageCount() > 1 && !region.getAnimationFrameRateMs().isEmpty()) {
             return true;
         }
 

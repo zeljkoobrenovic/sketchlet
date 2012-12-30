@@ -54,11 +54,11 @@ public class SelectDropFile extends JDialog {
                                 if (region != null) {
                                     BufferedImage img = ImageIO.read(file);
                                     if (img != null) {
-                                        region.setDrawImage(0, img);
-                                        region.setDrawImageChanged(0, true);
+                                        region.setDrawnImage(0, img);
+                                        region.setDrawnImageChanged(0, true);
 
-                                        region.x2 = region.x1 + img.getWidth();
-                                        region.y2 = region.y1 + img.getHeight();
+                                        region.setX2Value(region.getX1Value() + img.getWidth());
+                                        region.setY2Value(region.getY1Value() + img.getHeight());
                                         region.saveImage();
                                     }
                                 } else {
@@ -69,7 +69,7 @@ public class SelectDropFile extends JDialog {
                                 log.error(e);
                             }
                         } else if (index == 1) {
-                            region.imageUrlField = file.getPath();
+                            region.setImageUrlField(file.getPath());
                         }
                     }
                 }

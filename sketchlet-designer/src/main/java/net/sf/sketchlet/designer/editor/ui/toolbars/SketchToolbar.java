@@ -62,7 +62,7 @@ public class SketchToolbar extends JToolBar {
     // public JTextField title = new JTextField(10);
     //JMenu menuRegion;
     public static boolean bVisualizeVariables = false;
-    public static boolean bVisualizeInfoSketch = false;
+    public static boolean visualizationInfoEnabled = false;
     public static boolean bVisualizeInfoRegions = false;
     public static boolean bVisualizeInfoVariables = false;
 
@@ -189,7 +189,6 @@ public class SketchToolbar extends JToolBar {
 
         help.setText("");
         help.setToolTipText(Language.translate("Help"));
-        //showActions.setMnemonic(KeyEvent.VK_P);
         help.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -203,7 +202,7 @@ public class SketchToolbar extends JToolBar {
         clipboard.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                if (SketchletEditor.getInstance().getMode() == SketchletEditorMode.ACTIONS && SketchletEditor.getInstance().copiedActions != null) {
+                if (SketchletEditor.getInstance().getMode() == SketchletEditorMode.EDITING_REGIONS && SketchletEditor.getInstance().copiedActions != null) {
                     SketchletEditor.getInstance().getEditorClipboardController().pasteSpecial();
                     ActivityLog.log("paste", "regions");
                 } else {
@@ -315,13 +314,13 @@ public class SketchToolbar extends JToolBar {
         visualizeInfoPage.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                bVisualizeInfoSketch = !bVisualizeInfoSketch;
+                visualizationInfoEnabled = !visualizationInfoEnabled;
                 RefreshTime.update();
                 if (SketchletEditor.getInstance().getInternalPlaybackPanel() != null) {
                     SketchletEditor.getInstance().getInternalPlaybackPanel().repaint();
                 }
 
-                visualizeInfoPage.setSelected(bVisualizeInfoSketch);
+                visualizeInfoPage.setSelected(visualizationInfoEnabled);
 
                 SketchletEditor.getInstance().repaint();
                 if (SketchletEditor.getInstance().getInternalPlaybackPanel() != null) {
@@ -618,7 +617,7 @@ public class SketchToolbar extends JToolBar {
 
             public void run() {
 
-                if (SketchletEditor.getInstance() == null || SketchletEditor.getInstance().getPages() == null) {
+                if (SketchletEditor.getInstance() == null || SketchletEditor.getInstance().getProject() == null) {
                     return;
                 }
                 if (SketchletEditor.getInstance().getMode() == SketchletEditorMode.SKETCHING) {

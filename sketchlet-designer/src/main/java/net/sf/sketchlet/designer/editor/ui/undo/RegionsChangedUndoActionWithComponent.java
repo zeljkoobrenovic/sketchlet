@@ -26,7 +26,7 @@ public class RegionsChangedUndoActionWithComponent extends UndoAction {
         }
         int i = 0;
         for (ActiveRegion a : actions) {
-            ActiveRegion oldA = regions.elementAt(i).restoreRegion;
+            ActiveRegion oldA = regions.elementAt(i).getRestoreRegion();
             String str1 = a.saveString();
             String str2 = oldA.saveString();
             if (!str1.equals(str2)) {

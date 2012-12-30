@@ -36,8 +36,8 @@ public class ActiveRegionMotionController {
     public double[] getLimits(String dimension, double offset1, double offset2) {
         int limitRow = -1;
 
-        for (int i = 0; i < region.limits.length; i++) {
-            String dim = (String) region.limits[i][0];
+        for (int i = 0; i < region.getMotionAndRotationLimits().length; i++) {
+            String dim = (String) region.getMotionAndRotationLimits()[i][0];
 
             if (dim.equalsIgnoreCase(dimension)) {
                 limitRow = i;
@@ -49,8 +49,8 @@ public class ActiveRegionMotionController {
             return null;
         }
 
-        String strRowMin = (String) region.limits[limitRow][1];
-        String strRowMax = (String) region.limits[limitRow][2];
+        String strRowMin = (String) region.getMotionAndRotationLimits()[limitRow][1];
+        String strRowMax = (String) region.getMotionAndRotationLimits()[limitRow][2];
 
         if (dimension.equals("position x")) {
             if (strRowMin.equals("")) {
@@ -121,8 +121,8 @@ public class ActiveRegionMotionController {
         }
 
         int limitRow = -1;
-        for (int i = 0; i < region.limits.length; i++) {
-            String dim = (String) region.limits[i][0];
+        for (int i = 0; i < region.getMotionAndRotationLimits().length; i++) {
+            String dim = (String) region.getMotionAndRotationLimits()[i][0];
 
             if (dim.equalsIgnoreCase(dimension)) {
                 limitRow = i;
@@ -130,11 +130,11 @@ public class ActiveRegionMotionController {
             }
         }
 
-        if (limitRow >= 0 && limitRow < region.limits.length) {
+        if (limitRow >= 0 && limitRow < region.getMotionAndRotationLimits().length) {
             double min = Double.NaN;
             double max = Double.NaN;
-            String strMin = region.processText((String) region.limits[limitRow][1]);
-            String strMax = region.processText((String) region.limits[limitRow][2]);
+            String strMin = region.processText((String) region.getMotionAndRotationLimits()[limitRow][1]);
+            String strMax = region.processText((String) region.getMotionAndRotationLimits()[limitRow][2]);
             String _strMin = strMin;
             String _strMax = strMax;
 
@@ -181,13 +181,13 @@ public class ActiveRegionMotionController {
             double result = processLimits(dimension, value, min, max, offset1, offset2, updateVar, ignoreVar);
 
             if (dimension.equals("position x")) {
-                if (!region.walkThroughEnabled && _strMin.isEmpty() && _strMax.isEmpty()) {
+                if (!region.isWalkThroughEnabled() && _strMin.isEmpty() && _strMax.isEmpty()) {
                     return original;
                 } else {
                     result = InteractionSpace.getSketchX(result);
                 }
             } else if (dimension.equals("position y")) {
-                if (!region.walkThroughEnabled && _strMin.isEmpty() && _strMax.isEmpty()) {
+                if (!region.isWalkThroughEnabled() && _strMin.isEmpty() && _strMax.isEmpty()) {
                     return original;
                 } else {
                     result = InteractionSpace.getSketchY(result);
@@ -207,9 +207,9 @@ public class ActiveRegionMotionController {
     public double processLimits(String dimension, double value, double min, double max, double offset1, double offset2, boolean updateVar, String ignoreVar) {
         double _value = value;
 
-        for (int i = 0; i < region.updateTransformations.length; i++) {
-            String dim = (String) region.updateTransformations[i][0];
-            String var = (String) region.updateTransformations[i][1];
+        for (int i = 0; i < region.getMotionAndRotationVariablesMapping().length; i++) {
+            String dim = (String) region.getMotionAndRotationVariablesMapping()[i][0];
+            String var = (String) region.getMotionAndRotationVariablesMapping()[i][1];
 
             if (!var.equals("") && dim.equalsIgnoreCase(dimension) && !var.equalsIgnoreCase(ignoreVar.trim())) {
                 _value = processLimits(i, _value, min, max, offset1, offset2, updateVar);
@@ -221,14 +221,14 @@ public class ActiveRegionMotionController {
     public void updateAssociatedVariables(String dimension, double value) {
         value = checkForLimits(dimension, value);
 
-        for (int i = 0; i < region.updateTransformations.length; i++) {
-            String strDim = region.processText((String) region.updateTransformations[i][0]);
+        for (int i = 0; i < region.getMotionAndRotationVariablesMapping().length; i++) {
+            String strDim = region.processText((String) region.getMotionAndRotationVariablesMapping()[i][0]);
 
             if (dimension.equalsIgnoreCase(strDim)) {
-                String strVariable = region.processText((String) region.updateTransformations[i][1]);
-                String strStart = region.processText((String) region.updateTransformations[i][2]);
-                String strEnd = region.processText((String) region.updateTransformations[i][3]);
-                String strFormat = region.processText((String) region.updateTransformations[i][4]);
+                String strVariable = region.processText((String) region.getMotionAndRotationVariablesMapping()[i][1]);
+                String strStart = region.processText((String) region.getMotionAndRotationVariablesMapping()[i][2]);
+                String strEnd = region.processText((String) region.getMotionAndRotationVariablesMapping()[i][3]);
+                String strFormat = region.processText((String) region.getMotionAndRotationVariablesMapping()[i][4]);
 
                 double limits[] = getLimits(dimension);
 
@@ -287,12 +287,12 @@ public class ActiveRegionMotionController {
     public double[] getLimits(String dimension) {
         double[] limits = new double[]{Double.NaN, Double.NaN};
 
-        for (int i = 0; i < region.limits.length; i++) {
-            String dim = (String) region.limits[i][0];
+        for (int i = 0; i < region.getMotionAndRotationLimits().length; i++) {
+            String dim = (String) region.getMotionAndRotationLimits()[i][0];
 
             if (dim.equalsIgnoreCase(dimension)) {
-                String min = region.processText((String) region.limits[i][1]);
-                String max = region.processText((String) region.limits[i][2]);
+                String min = region.processText((String) region.getMotionAndRotationLimits()[i][1]);
+                String max = region.processText((String) region.getMotionAndRotationLimits()[i][2]);
                 try {
                     limits[0] = Double.parseDouble(min);
                 } catch (Exception e) {
@@ -313,8 +313,8 @@ public class ActiveRegionMotionController {
 
     public double checkForLimits(String dimension, double value) {
         int limitRow = -1;
-        for (int i = 0; i < region.limits.length; i++) {
-            String dim = (String) region.limits[i][0];
+        for (int i = 0; i < region.getMotionAndRotationLimits().length; i++) {
+            String dim = (String) region.getMotionAndRotationLimits()[i][0];
 
             if (dim.equalsIgnoreCase(dimension)) {
                 limitRow = i;
@@ -322,11 +322,11 @@ public class ActiveRegionMotionController {
             }
         }
 
-        if (limitRow >= 0 && limitRow < region.limits.length) {
+        if (limitRow >= 0 && limitRow < region.getMotionAndRotationLimits().length) {
             double min;
             double max;
-            String strMin = region.processText((String) region.limits[limitRow][1]);
-            String strMax = region.processText((String) region.limits[limitRow][2]);
+            String strMin = region.processText((String) region.getMotionAndRotationLimits()[limitRow][1]);
+            String strMax = region.processText((String) region.getMotionAndRotationLimits()[limitRow][2]);
 
             if (strMin.isEmpty() && strMax.isEmpty()) {
                 return value;
@@ -335,25 +335,25 @@ public class ActiveRegionMotionController {
             double offset1 = 0.0;
             double offset2 = 0.0;
             if (dimension.equalsIgnoreCase("position x")) {
-                if (region.horizontalAlignment.equalsIgnoreCase("left")) {
+                if (region.getHorizontalAlignment().equalsIgnoreCase("left")) {
                     offset1 = 0.0;
-                    offset2 = region.getWidth();
-                } else if (region.horizontalAlignment.equalsIgnoreCase("center")) {
-                    offset1 = -region.getWidth() / 2;
-                    offset2 = region.getWidth() / 2;
-                } else if (region.horizontalAlignment.equalsIgnoreCase("right")) {
-                    offset1 = -region.getWidth();
+                    offset2 = region.getWidthValue();
+                } else if (region.getHorizontalAlignment().equalsIgnoreCase("center")) {
+                    offset1 = -region.getWidthValue() / 2;
+                    offset2 = region.getWidthValue() / 2;
+                } else if (region.getHorizontalAlignment().equalsIgnoreCase("right")) {
+                    offset1 = -region.getWidthValue();
                     offset2 = 0.0;
                 }
             } else if (dimension.equalsIgnoreCase("position y")) {
-                if (region.verticalAlignment.equalsIgnoreCase("top")) {
+                if (region.getVerticalAlignment().equalsIgnoreCase("top")) {
                     offset1 = 0.0;
-                    offset2 = region.getHeight();
-                } else if (region.verticalAlignment.equalsIgnoreCase("center")) {
-                    offset1 = -region.getHeight() / 2;
-                    offset2 = region.getHeight() / 2;
-                } else if (region.verticalAlignment.equalsIgnoreCase("bottom")) {
-                    offset1 = -region.getHeight();
+                    offset2 = region.getHeightValue();
+                } else if (region.getVerticalAlignment().equalsIgnoreCase("center")) {
+                    offset1 = -region.getHeightValue() / 2;
+                    offset2 = region.getHeightValue() / 2;
+                } else if (region.getVerticalAlignment().equalsIgnoreCase("bottom")) {
+                    offset1 = -region.getHeightValue();
                     offset2 = 0.0;
                 }
             }
@@ -383,7 +383,7 @@ public class ActiveRegionMotionController {
     }
 
     public double processLimits(int row, double value, double min, double max, double offset1, double offset2, boolean updateVar) {
-        String updateVariable = region.processText((String) region.updateTransformations[row][1]);
+        String updateVariable = region.processText((String) region.getMotionAndRotationVariablesMapping()[row][1]);
 
         if (updateVariable.equals("")) {
             return value;
@@ -392,9 +392,9 @@ public class ActiveRegionMotionController {
         double start;
         double end;
 
-        String strStart = region.processText((String) region.updateTransformations[row][2]);
-        String strEnd = region.processText((String) region.updateTransformations[row][3]);
-        String strFormat = region.processText((String) region.updateTransformations[row][4]);
+        String strStart = region.processText((String) region.getMotionAndRotationVariablesMapping()[row][2]);
+        String strEnd = region.processText((String) region.getMotionAndRotationVariablesMapping()[row][3]);
+        String strFormat = region.processText((String) region.getMotionAndRotationVariablesMapping()[row][4]);
 
         double _value = value;
 

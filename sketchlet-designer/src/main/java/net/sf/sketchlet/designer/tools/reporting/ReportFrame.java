@@ -9,7 +9,7 @@ import net.sf.sketchlet.designer.editor.ui.MessageFrame;
 import net.sf.sketchlet.designer.editor.ui.SketchletDesignerMainPanel;
 import net.sf.sketchlet.designer.editor.ui.toolbars.SketchToolbar;
 import net.sf.sketchlet.framework.model.Page;
-import net.sf.sketchlet.framework.model.Pages;
+import net.sf.sketchlet.framework.model.Project;
 import net.sf.sketchlet.framework.model.programming.macros.Macro;
 import net.sf.sketchlet.framework.model.programming.macros.Macros;
 import net.sf.sketchlet.script.ScriptPluginProxy;
@@ -221,10 +221,10 @@ public class ReportFrame extends JDialog {
     }
 
     public void prepareSketchesTable() {
-        data = new Object[SketchletEditor.getPages().getPages().size()][2];
+        data = new Object[SketchletEditor.getProject().getPages().size()][2];
 
-        for (int i = 0; i < SketchletEditor.getPages().getPages().size(); i++) {
-            Page s = SketchletEditor.getPages().getPages().elementAt(i);
+        for (int i = 0; i < SketchletEditor.getProject().getPages().size(); i++) {
+            Page s = SketchletEditor.getProject().getPages().elementAt(i);
             data[i][0] = new Boolean(true);
             data[i][1] = s.getTitle();
         }
@@ -283,7 +283,7 @@ public class ReportFrame extends JDialog {
             int returnVal = fc.showSaveDialog(this);
 
             if (returnVal == JFileChooser.APPROVE_OPTION) {
-                if (Pages.getMessageFrame() == null) {
+                if (Project.getMessageFrame() == null) {
                     MessageFrame.showMessage(SketchletEditor.editorFrame, "Generating report...", SketchletEditor.editorFrame);
                 }
                 file = fc.getSelectedFile();
@@ -345,7 +345,7 @@ public class ReportFrame extends JDialog {
 
                 SketchletDesignerMainPanel.openFileInWebBrowser(file);
 
-                if (Pages.getMessageFrame() != null) {
+                if (Project.getMessageFrame() != null) {
                     MessageFrame.closeMessage();
                 }
 
@@ -467,11 +467,11 @@ public class ReportFrame extends JDialog {
         Page _page = SketchletEditor.getInstance().getCurrentPage();
         int _nMode = SketchletEditor.getInstance().getSelectedModesTabIndex();
 
-        boolean bVisualizeInfoSketch = SketchToolbar.bVisualizeInfoSketch;
+        boolean bVisualizeInfoSketch = SketchToolbar.visualizationInfoEnabled;
         boolean bVisualizeInfoRegions = SketchToolbar.bVisualizeInfoRegions;
         boolean bVisualizeInfoVariables = SketchToolbar.bVisualizeInfoVariables;
         boolean bVisualizeVariables = SketchToolbar.bVisualizeVariables;
-        SketchToolbar.bVisualizeInfoSketch = false;
+        SketchToolbar.visualizationInfoEnabled = false;
         SketchToolbar.bVisualizeInfoRegions = showRegionsInfo.isSelected();
         SketchToolbar.bVisualizeInfoVariables = false;
         SketchToolbar.bVisualizeVariables = showVariables.isSelected();
@@ -497,7 +497,7 @@ public class ReportFrame extends JDialog {
                 String strImage = "sketch" + imgN + ".png";
                 File imgFile = new File(dirImages, strImage);
 
-                Page page = SketchletEditor.getPages().getPages().elementAt(i);
+                Page page = SketchletEditor.getProject().getPages().elementAt(i);
 
                 out.println("<br />");
                 out.println("<a  style='page-break-before:always' name='sketch_" + (i + 1) + "'></a><h3>" + page.getTitle() + "</h3>");
@@ -510,13 +510,13 @@ public class ReportFrame extends JDialog {
                 page.getOnExitMacro().getHTMLCode(out, "b");
             }
         }
-        SketchToolbar.bVisualizeInfoSketch = bVisualizeInfoSketch;
+        SketchToolbar.visualizationInfoEnabled = bVisualizeInfoSketch;
         SketchToolbar.bVisualizeInfoRegions = bVisualizeInfoRegions;
         SketchToolbar.bVisualizeInfoVariables = bVisualizeInfoVariables;
         SketchToolbar.bVisualizeVariables = bVisualizeVariables;
 
         SketchletEditor.getInstance().setSelectedModesTabIndex(_nMode);
-        SketchletEditor.getInstance().openSketchByIndex(SketchletEditor.getInstance().getPages().getPages().indexOf(_page));
+        SketchletEditor.getInstance().openSketchByIndex(SketchletEditor.getInstance().getProject().getPages().indexOf(_page));
     }
 
     public void getScriptsHTMLCode(PrintWriter out) {

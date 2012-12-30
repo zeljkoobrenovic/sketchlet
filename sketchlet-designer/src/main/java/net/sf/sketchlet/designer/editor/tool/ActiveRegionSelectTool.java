@@ -56,7 +56,7 @@ public class ActiveRegionSelectTool extends Tool {
             editor.setCursor(Cursor.getDefaultCursor());
         } else if (a != null) {
             a.getMouseController().mouseMoved(e, editor.getScale(), SketchletEditor.editorFrame, false);
-            a.inFocus = true;
+            a.setInFocus(true);
         } else {
             editor.setCursor();
         }
@@ -164,11 +164,11 @@ public class ActiveRegionSelectTool extends Tool {
                     speed = _s / speeds.length;
 
                     if (dx != 0 || dy != 0) {
-                        if (!region.regionGrouping.equals("")) {
-                            for (ActiveRegion as : region.parent.getRegions()) {
-                                if (as != region && as.regionGrouping.equals(region.regionGrouping)) {
-                                    as.getMotionController().processLimits("position x", as.x1, 0, 0, true);
-                                    as.getMotionController().processLimits("position y", as.y1, 0, 0, true);
+                        if (!region.getRegionGrouping().equals("")) {
+                            for (ActiveRegion as : region.getParent().getRegions()) {
+                                if (as != region && as.getRegionGrouping().equals(region.getRegionGrouping())) {
+                                    as.getMotionController().processLimits("position x", as.getX1Value(), 0, 0, true);
+                                    as.getMotionController().processLimits("position y", as.getY1Value(), 0, 0, true);
                                 }
                             }
                         }
@@ -250,9 +250,9 @@ public class ActiveRegionSelectTool extends Tool {
                     switch (e.getKeyCode()) {
                         case KeyEvent.VK_BACK_SPACE:
                             SketchletEditor.getInstance().saveRegionUndo();
-                            String strText = region.text;
+                            String strText = region.getText();
                             if (strText.length() > 0) {
-                                region.text = strText.substring(0, strText.length() - 1);
+                                region.setText(strText.substring(0, strText.length() - 1));
                             }
 
                             editor.repaintEverything();
@@ -260,14 +260,14 @@ public class ActiveRegionSelectTool extends Tool {
 
                         default:
                             String keyText = e.getKeyText(e.getKeyCode());
-                            if (!region.text.startsWith("=")) {
+                            if (!region.getText().startsWith("=")) {
                                 if (keyText.equalsIgnoreCase("ENTER")) {
                                     SketchletEditor.getInstance().saveRegionUndo();
-                                    region.text += "\n";
+                                    region.setText(region.getText() + "\n");
                                     editor.repaintEverything();
                                 } else if (!e.isControlDown() && !e.isAltGraphDown() && !e.isMetaDown() && !e.isAltDown() && !e.isActionKey() && e.getKeyChar() != KeyEvent.CHAR_UNDEFINED) {
                                     SketchletEditor.getInstance().saveRegionUndo();
-                                    region.text += "" + e.getKeyChar();
+                                    region.setText(region.getText() + "" + e.getKeyChar());
                                     editor.repaintEverything();
                                 }
                             }

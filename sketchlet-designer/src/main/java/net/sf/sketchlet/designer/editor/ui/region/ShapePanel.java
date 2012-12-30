@@ -106,10 +106,10 @@ public class ShapePanel extends JPanel {
         //Create the combo box.
         this.shapeList = new JComboBox(intArray);
         this.shapeArguments = new JTextField(21);
-        this.shapeArguments.setText(region.shapeArguments);
-        boolean bIsStar = region.shape.toLowerCase().startsWith("starpolygon");
-        boolean bIsPie = region.shape.toLowerCase().startsWith("pie");
-        boolean bRoundedRectangle = region.shape.toLowerCase().startsWith("rounded rectangle");
+        this.shapeArguments.setText(region.getShapeArguments());
+        boolean bIsStar = region.getShape().toLowerCase().startsWith("starpolygon");
+        boolean bIsPie = region.getShape().toLowerCase().startsWith("pie");
+        boolean bRoundedRectangle = region.getShape().toLowerCase().startsWith("rounded rectangle");
         this.shapeArguments.setEnabled(bIsStar || bIsPie || bRoundedRectangle);
         if (bIsStar) {
             this.shapeArgsLabel.setText(Language.translate("inner radius (0..1)"));
@@ -123,7 +123,7 @@ public class ShapePanel extends JPanel {
         this.shapeArguments.addKeyListener(new KeyAdapter() {
 
             public void keyTyped(KeyEvent e) {
-                region.shapeArguments = shapeArguments.getText();
+                region.setShapeArguments(shapeArguments.getText());
             }
 
             public void keyPressed(KeyEvent e) {
@@ -138,7 +138,7 @@ public class ShapePanel extends JPanel {
         int comboIndex = 0;
 
         for (int i = 0; i < shapeIDs.length; i++) {
-            if (shapeIDs[i].equalsIgnoreCase(region.shape)) {
+            if (shapeIDs[i].equalsIgnoreCase(region.getShape())) {
                 comboIndex = i;
                 break;
             }
@@ -152,20 +152,20 @@ public class ShapePanel extends JPanel {
                 if (index < 0) {
                     index = 0;
                 }
-                region.shape = shapeIDs[index];
-                if (region.shape.toLowerCase().startsWith("starpolygon")) {
+                region.setShape(shapeIDs[index]);
+                if (region.getShape().toLowerCase().startsWith("starpolygon")) {
                     shapeArguments.setEnabled(true);
                     shapeArgsLabel.setText(Language.translate("inner radius (0..1)"));
                     if (shapeArguments.getText().isEmpty()) {
                         shapeArguments.setText("0.5");
                     }
-                } else if (region.shape.toLowerCase().startsWith("pie")) {
+                } else if (region.getShape().toLowerCase().startsWith("pie")) {
                     shapeArguments.setEnabled(true);
                     shapeArgsLabel.setText(Language.translate("start angle, extent, internal radius (0..1)"));
                     if (shapeArguments.getText().isEmpty()) {
                         shapeArguments.setText("0,45,0.0");
                     }
-                } else if (region.shape.toLowerCase().startsWith("rounded rectangle")) {
+                } else if (region.getShape().toLowerCase().startsWith("rounded rectangle")) {
                     shapeArguments.setEnabled(true);
                     shapeArgsLabel.setText(Language.translate("rounded corner radius"));
                     if (shapeArguments.getText().isEmpty()) {
@@ -179,11 +179,11 @@ public class ShapePanel extends JPanel {
                 SketchletEditor.getInstance().repaint();
             }
         });
-        this.shapeArguments.setText(region.shapeArguments);
+        this.shapeArguments.setText(region.getShapeArguments());
         this.shapeArguments.addKeyListener(new KeyAdapter() {
 
             public void keyReleased(KeyEvent e) {
-                region.shapeArguments = shapeArguments.getText();
+                region.setShapeArguments(shapeArguments.getText());
                 RefreshTime.update();
                 SketchletEditor.getInstance().repaint();
             }
@@ -290,10 +290,10 @@ public class ShapePanel extends JPanel {
             fillColor.addItem("=" + strVar);
         }
 
-        lineColor.setSelectedItem(region.lineColor);
-        lineThickness.setSelectedItem(region.lineThickness);
-        lineStyle.setSelectedItem(region.lineStyle);
-        fillColor.setSelectedItem(region.strFillColor);
+        lineColor.setSelectedItem(region.getLineColor());
+        lineThickness.setSelectedItem(region.getLineThickness());
+        lineStyle.setSelectedItem(region.getLineStyle());
+        fillColor.setSelectedItem(region.getFillColor());
 
         setBorder(BorderFactory.createEmptyBorder(0, 20, 20, 20));
 
@@ -301,7 +301,7 @@ public class ShapePanel extends JPanel {
 
             public void actionPerformed(ActionEvent ae) {
                 if (lineColor.getSelectedItem() != null) {
-                    region.lineColor = (String) lineColor.getSelectedItem();
+                    region.setLineColor((String) lineColor.getSelectedItem());
                     SketchletEditor.getInstance().repaint();
                 }
             }
@@ -310,7 +310,7 @@ public class ShapePanel extends JPanel {
 
             public void actionPerformed(ActionEvent ae) {
                 if (lineThickness.getSelectedItem() != null) {
-                    region.lineThickness = (String) lineThickness.getSelectedItem();
+                    region.setLineThickness((String) lineThickness.getSelectedItem());
                     SketchletEditor.getInstance().repaint();
                 }
             }
@@ -319,7 +319,7 @@ public class ShapePanel extends JPanel {
 
             public void actionPerformed(ActionEvent ae) {
                 if (lineStyle.getSelectedItem() != null) {
-                    region.lineStyle = (String) lineStyle.getSelectedItem();
+                    region.setLineStyle((String) lineStyle.getSelectedItem());
                     SketchletEditor.getInstance().repaint();
                 }
             }
@@ -328,7 +328,7 @@ public class ShapePanel extends JPanel {
 
             public void actionPerformed(ActionEvent ae) {
                 if (fillColor.getSelectedItem() != null) {
-                    region.strFillColor = (String) fillColor.getSelectedItem();
+                    region.setFillColor((String) fillColor.getSelectedItem());
                     SketchletEditor.getInstance().repaint();
                 }
             }

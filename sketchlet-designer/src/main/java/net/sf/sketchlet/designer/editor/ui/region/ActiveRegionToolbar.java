@@ -53,7 +53,7 @@ public class ActiveRegionToolbar extends JToolBar {
                     popupMenu.add(mi);
                 }
 
-                popupMenu.show(activeRegionsShapes.getParent(), activeRegionsShapes.getX(), activeRegionsShapes.getY() + activeRegionsShapes.getHeight());
+                popupMenu.show(activeRegionsShapes.getParent(), activeRegionsShapes.getX(), activeRegionsShapes.getY() + activeRegionsShapes.getHeightValue());
             }
         });
 
@@ -96,7 +96,7 @@ public class ActiveRegionToolbar extends JToolBar {
                     }
                 }
 
-                popupMenu.show(activeRegionsLibrary.getParent(), activeRegionsLibrary.getX(), activeRegionsLibrary.getY() + activeRegionsLibrary.getHeight());
+                popupMenu.show(activeRegionsLibrary.getParent(), activeRegionsLibrary.getX(), activeRegionsLibrary.getY() + activeRegionsLibrary.getHeightValue());
             }
         });*/
 

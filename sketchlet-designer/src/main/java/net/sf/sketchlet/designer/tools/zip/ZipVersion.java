@@ -244,9 +244,9 @@ public class ZipVersion extends JFrame implements KeyListener, ZipProgressFeedba
     }
 
     public void selectStartSketch() {
-        String sketches[] = new String[SketchletEditor.getPages().getPages().size()];
+        String sketches[] = new String[SketchletEditor.getProject().getPages().size()];
         int i = 0;
-        for (Page sk : SketchletEditor.getPages().getPages()) {
+        for (Page sk : SketchletEditor.getProject().getPages()) {
             sketches[i++] = sk.getTitle();
         }
 

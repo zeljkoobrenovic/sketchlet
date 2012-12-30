@@ -40,7 +40,7 @@ public class WidgetEventsPanel extends AbstractEventsPanel {
 
             @Override
             public List<WidgetEventMacro> getEventMacroList() {
-                return region.widgetEventMacros;
+                return region.getWidgetEventMacros();
             }
         });
     }

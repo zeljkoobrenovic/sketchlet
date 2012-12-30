@@ -51,10 +51,10 @@ public class Ruler extends JComponent {
     }
 
     public void calculateLimits(ActiveRegion region) {
-        String strX1 = (String) region.limits[0][1];
-        String strX2 = (String) region.limits[0][2];
-        String strY1 = (String) region.limits[1][1];
-        String strY2 = (String) region.limits[1][2];
+        String strX1 = (String) region.getMotionAndRotationLimits()[0][1];
+        String strX2 = (String) region.getMotionAndRotationLimits()[0][2];
+        String strY1 = (String) region.getMotionAndRotationLimits()[1][1];
+        String strY2 = (String) region.getMotionAndRotationLimits()[1][2];
         int _x1 = 0;
         int _y1 = 0;
         BufferedImage img = SketchletEditor.getInstance().getCurrentPage().getImages()[0];
@@ -272,22 +272,22 @@ public class Ruler extends JComponent {
             case 1:
                 x = Math.min(x, (int) rect.getX());
                 x = Math.max(x, 0);
-                selectedRegion.limits[0][1] = "" + InteractionSpace.getPhysicalX(x);
+                selectedRegion.getMotionAndRotationLimits()[0][1] = "" + InteractionSpace.getPhysicalX(x);
                 break;
             case 2:
                 x = Math.max(x, (int) (rect.getX() + rect.getWidth()));
                 x = Math.min(x, w);
-                selectedRegion.limits[0][2] = "" + InteractionSpace.getPhysicalX(x);
+                selectedRegion.getMotionAndRotationLimits()[0][2] = "" + InteractionSpace.getPhysicalX(x);
                 break;
             case 3:
                 y = Math.min(y, (int) rect.getY());
                 y = Math.max(y, 0);
-                selectedRegion.limits[1][1] = "" + InteractionSpace.getPhysicalY(y);
+                selectedRegion.getMotionAndRotationLimits()[1][1] = "" + InteractionSpace.getPhysicalY(y);
                 break;
             case 4:
                 y = Math.max(y, (int) (rect.getY() + rect.getHeight()));
                 y = Math.min(y, h);
-                selectedRegion.limits[1][2] = "" + InteractionSpace.getPhysicalY(y);
+                selectedRegion.getMotionAndRotationLimits()[1][2] = "" + InteractionSpace.getPhysicalY(y);
                 break;
         }
 

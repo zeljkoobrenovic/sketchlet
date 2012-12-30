@@ -7,7 +7,7 @@ import net.sf.sketchlet.designer.editor.ui.region.AddActionRunnable;
 import net.sf.sketchlet.framework.model.events.EventMacroFactory;
 import net.sf.sketchlet.framework.model.events.keyboard.KeyEvents;
 import net.sf.sketchlet.framework.model.events.keyboard.KeyboardEventMacro;
-import net.sf.sketchlet.framework.model.events.keyboard.KeyboardProcessor;
+import net.sf.sketchlet.framework.model.events.keyboard.KeyboardEventsProcessor;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,11 +17,11 @@ import java.util.List;
  * @author zeljko
  */
 public class KeyboardEventsPanel extends AbstractEventsPanel {
-    private KeyboardProcessor keyboardProcessor;
+    private KeyboardEventsProcessor keyboardEventsProcessor;
 
-    public KeyboardEventsPanel(final KeyboardProcessor keyboardProcessor) {
+    public KeyboardEventsPanel(final KeyboardEventsProcessor keyboardEventsProcessor) {
         super();
-        this.keyboardProcessor = keyboardProcessor;
+        this.keyboardEventsProcessor = keyboardEventsProcessor;
         setEventMacroFactory(new EventMacroFactory<KeyboardEventMacro>() {
             @Override
             public KeyboardEventMacro getNewEventMacroInstance(String... args) {
@@ -35,7 +35,7 @@ public class KeyboardEventsPanel extends AbstractEventsPanel {
 
             @Override
             public List<KeyboardEventMacro> getEventMacroList() {
-                return keyboardProcessor.getKeyboardEventMacros();
+                return keyboardEventsProcessor.getKeyboardEventMacros();
             }
 
             @Override
@@ -95,7 +95,7 @@ public class KeyboardEventsPanel extends AbstractEventsPanel {
                 if (keyboardEventMacro.getMacro().panel != null) {
                     keyboardEventMacro.getMacro().panel.reload();
                 }
-                keyboardProcessor.getKeyboardEventMacros().add(keyboardEventMacro);
+                keyboardEventsProcessor.getKeyboardEventMacros().add(keyboardEventMacro);
                 refresh();
             }
         };

@@ -625,7 +625,7 @@ public class ModeToolbar extends JToolBar {
 
         if (SketchletEditor.getInstance().getInstance() != null && SketchletEditor.getInstance().getCurrentPage() != null && SketchletEditor.getInstance().getCurrentPage().getRegions() != null && SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null && SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().size() > 0) {
             ActiveRegion action = SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
-            if (action.shape.isEmpty() || action.shape.equalsIgnoreCase("none")) {
+            if (action.getShape().isEmpty() || action.getShape().equalsIgnoreCase("none")) {
                 colorsFill.setEnabled(false);
                 // colorsMenu.setEnabled(false);
                 //weights.setEnabled(false);
@@ -883,7 +883,7 @@ public class ModeToolbar extends JToolBar {
         select.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                SketchletEditor.getInstance().setEditorMode(SketchletEditorMode.ACTIONS);
+                SketchletEditor.getInstance().setEditorMode(SketchletEditorMode.EDITING_REGIONS);
                 SketchletEditor.getInstance().getHelpViewer().showAutoHelpByID("tool_active_region_select");
                 SketchletEditor.getInstance().setTool(SketchletEditor.getInstance().getActiveRegionSelectTool(), select);
             }
@@ -893,7 +893,7 @@ public class ModeToolbar extends JToolBar {
 
             public void actionPerformed(ActionEvent e) {
                 SketchletEditor.setInitProperties(null);
-                SketchletEditor.getInstance().setEditorMode(SketchletEditorMode.ACTIONS);
+                SketchletEditor.getInstance().setEditorMode(SketchletEditorMode.EDITING_REGIONS);
                 SketchletEditor.getInstance().getHelpViewer().showAutoHelpByID("tool_active_region_new");
                 SketchletEditor.getInstance().setTool(SketchletEditor.getInstance().getActiveRegionTool(), activeRegions);
             }
@@ -903,7 +903,7 @@ public class ModeToolbar extends JToolBar {
 
             public void actionPerformed(ActionEvent e) {
                 SketchletEditor.setInitProperties(null);
-                SketchletEditor.getInstance().setEditorMode(SketchletEditorMode.ACTIONS);
+                SketchletEditor.getInstance().setEditorMode(SketchletEditorMode.EDITING_REGIONS);
                 SketchletEditor.getInstance().getHelpViewer().showAutoHelpByID("tool_active_region_connector");
                 SketchletEditor.getInstance().setTool(SketchletEditor.getInstance().getActiveRegionConnectorTool(), connector);
             }
@@ -1027,15 +1027,15 @@ public class ModeToolbar extends JToolBar {
             }
         });
 
-        /*reset.setToolTipText("Reset the regions settings (position limits...)");
+        /*reset.setToolTipText("Reset the regions settings (position motionAndRotationLimits...)");
         reset.addActionListener(new ActionListener() {
         
         public void actionPerformed(ActionEvent e) {
         for (ActiveRegion a : SketchletEditor.editorPanel.currentSketch.actions.selectedActions) {
-        a.limits[0][1] = "";
-        a.limits[0][2] = "";
-        a.limits[1][1] = "";
-        a.limits[1][2] = "";
+        a.motionAndRotationLimits[0][1] = "";
+        a.motionAndRotationLimits[0][2] = "";
+        a.motionAndRotationLimits[1][1] = "";
+        a.motionAndRotationLimits[1][2] = "";
         a.rotation = 0.0;
         a.trajectory1.setText("");
         a.shearX = 0.0;
@@ -1048,8 +1048,8 @@ public class ModeToolbar extends JToolBar {
         a.p_y2 = 1.0;
         a.p_x3 = 0.0;
         a.p_y3 = 1.0;
-        a.center_rotation_x = 0.5;
-        a.center_rotation_y = 0.5;
+        a.centerOfRotationX = 0.5;
+        a.centerOfRotationY = 0.5;
         
         a.imageIndex.setSelectedItem("");
         a.animationMs.setSelectedItem("");
@@ -1107,7 +1107,7 @@ public class ModeToolbar extends JToolBar {
 
     public void addComponents(SketchletEditorMode mode) {
         this.removeAll();
-        if (mode == SketchletEditorMode.SKETCHING || mode == SketchletEditorMode.ACTIONS) {
+        if (mode == SketchletEditorMode.SKETCHING || mode == SketchletEditorMode.EDITING_REGIONS) {
             if (Profiles.isActive("active_regions_layer")) {
                 add(select);
                 add(activeRegions);
@@ -1167,7 +1167,7 @@ public class ModeToolbar extends JToolBar {
         } else {
             boolean bGroup = false;
             for (ActiveRegion as : SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions()) {
-                if (as.regionGrouping.equals("") || !as.regionGrouping.equals(SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().firstElement().regionGrouping)) {
+                if (as.getRegionGrouping().equals("") || !as.getRegionGrouping().equals(SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().firstElement().getRegionGrouping())) {
                     bGroup = true;
                     break;
                 }

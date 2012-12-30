@@ -85,7 +85,7 @@ public class RegionWidgetPropertiesRowEditor implements TableCellEditor {
             row = table.rowAtPoint(e.getPoint());
         }
         String property = table.getModel().getValueAt(row, 0).toString();
-        String values[] = WidgetPluginFactory.getValueList(new ActiveRegionContextImpl(region, new PageContextImpl(region.parent.getPage())), property);
+        String values[] = WidgetPluginFactory.getValueList(new ActiveRegionContextImpl(region, new PageContextImpl(region.getParent().getPage())), property);
         if (values == null || values.length == 0) {
             editor = defaultEditor;
             lastRow = -1;

@@ -26,7 +26,7 @@ public class SketchPanel extends JPanel {
         sketchesCombo.setEditable(false);
         sketchesCombo.addItem("");
 
-        for (Page s : SketchletEditor.getInstance().getPages().getPages()) {
+        for (Page s : SketchletEditor.getInstance().getProject().getPages()) {
             sketchesCombo.addItem(s.getTitle());
         }
 

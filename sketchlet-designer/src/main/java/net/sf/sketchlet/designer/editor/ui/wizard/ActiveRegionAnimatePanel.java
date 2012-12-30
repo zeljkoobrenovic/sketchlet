@@ -189,9 +189,9 @@ public class ActiveRegionAnimatePanel extends JPanel {
         int h = 0;
         int nAdd = 1;
         if (region != null) {
-            w = region.x2 - region.x1;
-            h = region.y2 - region.y1;
-            nAdd = region.additionalImageFile.size();
+            w = region.getX2Value() - region.getX1Value();
+            h = region.getY2Value() - region.getY1Value();
+            nAdd = region.getAdditionalImageFileNames().size();
         }
         transformations = new Object[][]{
                 {new JCheckBox("image frame"), new JTextField("1"), new JTextField("" + (1 + (nAdd == 0 ? 0 : nAdd + 0.999))), new JTextField(getVariableName("image frame"))},

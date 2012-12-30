@@ -32,7 +32,6 @@ public class VariablesPanel extends JPanel {
     public static JFrame frame;
     public static JFrame referenceFrame;
     public VariablesBlackboard variablesBlackboard;
-    // public VariablesBlackboard dataServerDerived;
     public Hashtable menuItems;
     public Hashtable toolbarButtons;
     public static VariablesPanel mainFrame;

@@ -65,7 +65,7 @@ public class RegionImageChangedUndoAction extends UndoAction {
                 Graphics2D g2 = bi.createGraphics();
                 g2.drawImage(img, 0, 0, null);
                 g2.dispose();
-                region.setDrawImage(frame, img);
+                region.setDrawnImage(frame, img);
                 //FreeHand.editorPanel.repaint();
                 //FreeHand.editorPanel.enableControls();
                 tempImageFile.delete();
@@ -81,6 +81,6 @@ public class RegionImageChangedUndoAction extends UndoAction {
     }
 
     public boolean shouldUndo() {
-        return region.getSketch().getRegions().getRegions().contains(region) && region.additionalDrawImages.size() >= frame;
+        return region.getSketch().getRegions().getRegions().contains(region) && region.getAdditionalDrawnImages().size() >= frame;
     }
 }

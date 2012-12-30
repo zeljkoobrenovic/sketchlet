@@ -11,7 +11,7 @@ import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.playback.displays.InteractionSpace;
 import net.sf.sketchlet.framework.model.ActiveRegion;
 import net.sf.sketchlet.framework.model.events.mouse.MouseEventMacro;
-import net.sf.sketchlet.framework.model.events.mouse.MouseProcessor;
+import net.sf.sketchlet.framework.model.events.mouse.MouseEventsProcessor;
 import net.sf.sketchlet.framework.model.programming.macros.Commands;
 import net.sf.sketchlet.framework.model.programming.timers.Timer;
 import net.sf.sketchlet.framework.model.programming.timers.Timers;
@@ -62,8 +62,8 @@ public class AnimationTimerDialog extends JDialog {
         startTimer.addItem("");
         startTimer.addItem("Page Entry");
 
-        for (int i = 0; i < MouseProcessor.MOUSE_EVENT_TYPES.length; i++) {
-            startTimer.addItem(MouseProcessor.MOUSE_EVENT_TYPES[i]);
+        for (int i = 0; i < MouseEventsProcessor.MOUSE_EVENT_TYPES.length; i++) {
+            startTimer.addItem(MouseEventsProcessor.MOUSE_EVENT_TYPES[i]);
         }
 
         for (int i = 0; i < transformations.length; i++) {
@@ -188,26 +188,26 @@ public class AnimationTimerDialog extends JDialog {
         for (int i = 0; i < transformations.length; i++) {
             JCheckBox checkBox = (JCheckBox) transformations[i][0];
             JTextField field = (JTextField) transformations[i][index];
-            int w = action.x2 - action.x1;
-            int h = action.y2 - action.y1;
+            int w = action.getX2Value() - action.getX1Value();
+            int h = action.getY2Value() - action.getY1Value();
 
             if (checkBox.isSelected()) {
                 if (i == 0) {
                 } else if (i == 1) {
-                    if (action.horizontalAlignment.equalsIgnoreCase("right")) {
-                        field.setText("" + InteractionSpace.getPhysicalX(action.x2));
-                    } else if (action.horizontalAlignment.equalsIgnoreCase("center")) {
-                        field.setText("" + InteractionSpace.getPhysicalX(action.x1 + (action.x2 - action.x1) / 2));
+                    if (action.getHorizontalAlignment().equalsIgnoreCase("right")) {
+                        field.setText("" + InteractionSpace.getPhysicalX(action.getX2Value()));
+                    } else if (action.getHorizontalAlignment().equalsIgnoreCase("center")) {
+                        field.setText("" + InteractionSpace.getPhysicalX(action.getX1Value() + (action.getX2Value() - action.getX1Value()) / 2));
                     } else {
-                        field.setText("" + InteractionSpace.getPhysicalX(action.x1));
+                        field.setText("" + InteractionSpace.getPhysicalX(action.getX1Value()));
                     }
                 } else if (i == 2) {
-                    if (action.verticalAlignment.equalsIgnoreCase("bottom")) {
-                        field.setText("" + InteractionSpace.getPhysicalY(action.y2));
-                    } else if (action.verticalAlignment.equalsIgnoreCase("center")) {
-                        field.setText("" + InteractionSpace.getPhysicalY(action.y1 + (action.y2 - action.y1) / 2));
+                    if (action.getVerticalAlignment().equalsIgnoreCase("bottom")) {
+                        field.setText("" + InteractionSpace.getPhysicalY(action.getY2Value()));
+                    } else if (action.getVerticalAlignment().equalsIgnoreCase("center")) {
+                        field.setText("" + InteractionSpace.getPhysicalY(action.getY1Value() + (action.getY2Value() - action.getY1Value()) / 2));
                     } else {
-                        field.setText("" + InteractionSpace.getPhysicalY(action.y1));
+                        field.setText("" + InteractionSpace.getPhysicalY(action.getY1Value()));
                     }
                 } else if (i == 3) {
                     field.setText("" + ((index == 1) ? "0.0" : "1.0"));
@@ -220,7 +220,7 @@ public class AnimationTimerDialog extends JDialog {
                 } else if (i == 7) {
                     field.setText("" + InteractionSpace.getPhysicalY(h));
                 } else if (i == 8) {
-                    field.setText("" + InteractionSpace.toPhysicalAngle(action.rotation));
+                    field.setText("" + InteractionSpace.toPhysicalAngle(action.getRotationValue()));
                 } else if (i == 9) {
                 } else if (i == 10) {
                 } else if (i == 11) {
@@ -238,9 +238,9 @@ public class AnimationTimerDialog extends JDialog {
     }
 
     public void prepareControls() {
-        int w = action.x2 - action.x1;
-        int h = action.y2 - action.y1;
-        int nAdd = action.additionalImageFile.size();
+        int w = action.getX2Value() - action.getX1Value();
+        int h = action.getY2Value() - action.getY1Value();
+        int nAdd = action.getAdditionalImageFileNames().size();
         Object[][] transformations = {
                 {new JCheckBox("image frame"), new JTextField("1"), new JTextField("" + (1 + (nAdd == 0 ? 0 : nAdd + 0.999))), new JTextField(getVariableName("image frame"))},
                 {new JCheckBox("position x"), new JTextField("0"), new JTextField("500"), new JTextField(getVariableName("position x"))},
@@ -324,7 +324,7 @@ public class AnimationTimerDialog extends JDialog {
                 t.getVariables()[index][1] = fieldStart.getText();
                 t.getVariables()[index][2] = fieldEnd.getText();
                 //region.imageIndex.setSelectedItem("=" + field.getText());
-                region.strImageIndex = "=" + field.getText();
+                region.setImageIndex("=" + field.getText());
                 index++;
             }
         }
@@ -356,16 +356,16 @@ public class AnimationTimerDialog extends JDialog {
         SketchletEditor.getInstance().getPageDetailsPanel().pOnExit.save();
 
         int macroStartIndex = 0;
-        for (int ai = 0; ai < region.parent.getPage().getOnEntryMacro().getActions().length; ai++) {
-            String strEvent = region.parent.getPage().getOnEntryMacro().getActions()[ai][0].toString();
+        for (int ai = 0; ai < region.getParent().getPage().getOnEntryMacro().getActions().length; ai++) {
+            String strEvent = region.getParent().getPage().getOnEntryMacro().getActions()[ai][0].toString();
             if (strEvent.trim().length() == 0) {
                 macroStartIndex = ai;
                 break;
             }
         }
         int macroStopIndex = 0;
-        for (int ai = 0; ai < region.parent.getPage().getOnExitMacro().getActions().length; ai++) {
-            String strEvent = region.parent.getPage().getOnExitMacro().getActions()[ai][0].toString();
+        for (int ai = 0; ai < region.getParent().getPage().getOnExitMacro().getActions().length; ai++) {
+            String strEvent = region.getParent().getPage().getOnExitMacro().getActions()[ai][0].toString();
             if (strEvent.trim().length() == 0) {
                 macroStopIndex = ai;
                 break;
@@ -385,13 +385,13 @@ public class AnimationTimerDialog extends JDialog {
                     t.getVariables()[index][1] = fieldStart.getText();
                     t.getVariables()[index][2] = fieldEnd.getText();
 
-                    region.parent.getPage().getOnEntryMacro().getActions()[macroStartIndex + index][0] = "Variable update";
-                    region.parent.getPage().getOnEntryMacro().getActions()[macroStartIndex + index][1] = field.getText();
-                    region.parent.getPage().getOnEntryMacro().getActions()[macroStartIndex + index][2] = fieldStart.getText();
+                    region.getParent().getPage().getOnEntryMacro().getActions()[macroStartIndex + index][0] = "Variable update";
+                    region.getParent().getPage().getOnEntryMacro().getActions()[macroStartIndex + index][1] = field.getText();
+                    region.getParent().getPage().getOnEntryMacro().getActions()[macroStartIndex + index][2] = fieldStart.getText();
 
-                    region.parent.getPage().getOnExitMacro().getActions()[macroStopIndex + index][0] = "Variable update";
-                    region.parent.getPage().getOnExitMacro().getActions()[macroStopIndex + index][1] = field.getText();
-                    region.parent.getPage().getOnExitMacro().getActions()[macroStopIndex + index][2] = fieldStart.getText();
+                    region.getParent().getPage().getOnExitMacro().getActions()[macroStopIndex + index][0] = "Variable update";
+                    region.getParent().getPage().getOnExitMacro().getActions()[macroStopIndex + index][1] = field.getText();
+                    region.getParent().getPage().getOnExitMacro().getActions()[macroStopIndex + index][2] = fieldStart.getText();
 
                     // VariablesBlackboard.variablesServer.updateVariable(field.getText(), fieldStart.getText());
                     Commands.updateVariableOrProperty(region, field.getText(), fieldStart.getText(), Commands.ACTION_VARIABLE_UPDATE);
@@ -411,19 +411,19 @@ public class AnimationTimerDialog extends JDialog {
         if (selStart == 0) {
             // Do nothing
         } else if (selStart == 1) {
-            for (int ai = 0; ai < action.parent.getPage().getOnEntryMacro().getActions().length; ai++) {
-                String strEvent = action.parent.getPage().getOnEntryMacro().getActions()[ai][0].toString();
+            for (int ai = 0; ai < action.getParent().getPage().getOnEntryMacro().getActions().length; ai++) {
+                String strEvent = action.getParent().getPage().getOnEntryMacro().getActions()[ai][0].toString();
 
                 if (strEvent.trim().length() == 0) {
-                    action.parent.getPage().getOnEntryMacro().getActions()[ai][0] = "Start Timer";
-                    action.parent.getPage().getOnEntryMacro().getActions()[ai][1] = t.getName();
+                    action.getParent().getPage().getOnEntryMacro().getActions()[ai][0] = "Start Timer";
+                    action.getParent().getPage().getOnEntryMacro().getActions()[ai][1] = t.getName();
 
                     break;
                 }
             }
         } else {
             String strMouse = (String) startTimer.getSelectedItem();
-            for (MouseEventMacro mouseEventMacro : action.mouseProcessor.getMouseEventMacros()) {
+            for (MouseEventMacro mouseEventMacro : action.getMouseEventsProcessor().getMouseEventMacros()) {
                 for (int ai = 0; ai < mouseEventMacro.getMacro().getActions().length; ai++) {
                     String strEvent = mouseEventMacro.getMacro().getActions()[ai][0].toString();
 

@@ -34,7 +34,7 @@ public class PopupMenus {
                             strArgs = arg;
                         }
                     }
-                    r.shapeArguments = strArgs;
+                    r.setShapeArguments(strArgs);
                 }
             }
             ActiveRegionsExtraPanel.reload(SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement());

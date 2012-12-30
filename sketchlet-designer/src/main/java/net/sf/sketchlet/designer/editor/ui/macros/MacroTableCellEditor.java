@@ -71,8 +71,8 @@ public class MacroTableCellEditor extends AbstractCellEditor implements TableCel
                 for (Timer t : Timers.getGlobalTimers().getTimers()) {
                     comboBoxParam1.addItem(t.getName());
                 }
-            } else if (strCommand.equalsIgnoreCase("go to page") && SketchletEditor.getInstance() != null && SketchletEditor.getInstance().getPages() != null) {
-                for (Page s : SketchletEditor.getInstance().getPages().getPages()) {
+            } else if (strCommand.equalsIgnoreCase("go to page") && SketchletEditor.getInstance() != null && SketchletEditor.getInstance().getProject() != null) {
+                for (Page s : SketchletEditor.getInstance().getProject().getPages()) {
                     comboBoxParam1.addItem(s.getTitle());
                 }
             } else if (strCommand.endsWith("macro") && Macros.globalMacros != null) {

@@ -58,8 +58,8 @@ public class DesktopPanel extends JPanel {
         loadThumbnails();
         try {
             selectedPageIndex = Integer.parseInt(GlobalProperties.get("last-sketch-index"));
-            if (selectedPageIndex < SketchletEditor.getPages().getPages().size()) {
-                selectedPage = SketchletEditor.getPages().getPages().elementAt(selectedPageIndex);
+            if (selectedPageIndex < SketchletEditor.getProject().getPages().size()) {
+                selectedPage = SketchletEditor.getProject().getPages().elementAt(selectedPageIndex);
             } else {
                 selectedPage = null;
             }
@@ -83,7 +83,7 @@ public class DesktopPanel extends JPanel {
     private static BufferedImage images[];
 
     public void loadThumbnails() {
-        if (SketchletEditor.getPages() == null) {
+        if (SketchletEditor.getProject() == null) {
             return;
         }
         if (images != null) {
@@ -94,9 +94,9 @@ public class DesktopPanel extends JPanel {
                 }
             }
         }
-        images = new BufferedImage[SketchletEditor.getPages().getPages().size()];
-        for (int i = 0; i < SketchletEditor.getPages().getPages().size(); i++) {
-            Page s = SketchletEditor.getPages().getPages().elementAt(i);
+        images = new BufferedImage[SketchletEditor.getProject().getPages().size()];
+        for (int i = 0; i < SketchletEditor.getProject().getPages().size(); i++) {
+            Page s = SketchletEditor.getProject().getPages().elementAt(i);
             if (s != null) {
                 try {
                     images[i] = Workspace.createCompatibleImage(iconWidth, iconWidth, images[i]);
@@ -120,11 +120,11 @@ public class DesktopPanel extends JPanel {
     public void paintComponent(Graphics g) {
         try {
             super.paintComponent(g);
-            if (SketchletEditor.getPages() == null) {
+            if (SketchletEditor.getProject() == null) {
                 return;
             }
 
-            if (images == null || images.length != SketchletEditor.getPages().getPages().size()) {
+            if (images == null || images.length != SketchletEditor.getProject().getPages().size()) {
                 this.loadThumbnails();
             }
 
@@ -142,10 +142,10 @@ public class DesktopPanel extends JPanel {
             if (type == MANUAL) {
                 g2.setStroke(new WobbleStroke(2, 2, 1));
                 g2.setColor(Color.GRAY);
-                for (int i = 0; i < SketchletEditor.getPages().getPages().size(); i++) {
-                    Page s = SketchletEditor.getPages().getPages().elementAt(i);
+                for (int i = 0; i < SketchletEditor.getProject().getPages().size(); i++) {
+                    Page s = SketchletEditor.getProject().getPages().elementAt(i);
                     for (int j = 0; j < i; j++) {
-                        Page s2 = SketchletEditor.getPages().getPages().elementAt(j);
+                        Page s2 = SketchletEditor.getProject().getPages().elementAt(j);
                         boolean connected1 = s.isConnectedTo(s2);
                         boolean connected2 = s2.isConnectedTo(s);
                         if (connected1 || connected2) {
@@ -159,8 +159,8 @@ public class DesktopPanel extends JPanel {
                 }
             }
 
-            for (int i = 0; i < SketchletEditor.getPages().getPages().size(); i++) {
-                Page s = SketchletEditor.getPages().getPages().elementAt(i);
+            for (int i = 0; i < SketchletEditor.getProject().getPages().size(); i++) {
+                Page s = SketchletEditor.getProject().getPages().elementAt(i);
                 if (s == null) {
                     continue;
                 }
@@ -222,8 +222,8 @@ public class DesktopPanel extends JPanel {
     }
 
     public Rectangle getSketchRect(Page page) {
-        for (int i = 0; i < SketchletEditor.getPages().getPages().size(); i++) {
-            Page s = SketchletEditor.getPages().getPages().elementAt(i);
+        for (int i = 0; i < SketchletEditor.getProject().getPages().size(); i++) {
+            Page s = SketchletEditor.getProject().getPages().elementAt(i);
             double x;
             double y;
 
@@ -269,8 +269,8 @@ public class DesktopPanel extends JPanel {
             selectedPageIndex = -1;
             int c = 20;
 
-            for (int i = SketchletEditor.getPages().getPages().size() - 1; i >= 0; i--) {
-                Page s = SketchletEditor.getPages().getPages().elementAt(i);
+            for (int i = SketchletEditor.getProject().getPages().size() - 1; i >= 0; i--) {
+                Page s = SketchletEditor.getProject().getPages().elementAt(i);
                 double x = s.getStateDiagramX();
                 double y = s.getStateDiagramY();
                 if (Double.isNaN(x) || x <= 0) {
@@ -330,7 +330,7 @@ public class DesktopPanel extends JPanel {
 
         @Override
         public void mousePressed(MouseEvent e) {
-            if (SketchletEditor.getPages() == null) {
+            if (SketchletEditor.getProject() == null) {
                 return;
             }
             int mx = e.getPoint().x;
@@ -339,8 +339,8 @@ public class DesktopPanel extends JPanel {
             selectedPageIndex = -1;
 
             panelWidth = component.getWidth();
-            for (int i = SketchletEditor.getPages().getPages().size() - 1; i >= 0; i--) {
-                Page s = SketchletEditor.getPages().getPages().elementAt(i);
+            for (int i = SketchletEditor.getProject().getPages().size() - 1; i >= 0; i--) {
+                Page s = SketchletEditor.getProject().getPages().elementAt(i);
                 int row_space = Math.max(1, panelWidth / (iconWidth + 15));
 
                 int row = i / row_space;
@@ -409,7 +409,7 @@ public class DesktopPanel extends JPanel {
                         }
                         selectedPage.setTitle(newName);
                         selectedPage.save(false);
-                        SketchletEditor.getPages().replaceReferencesSketches(oldName, newName);
+                        SketchletEditor.getProject().replaceReferencesSketches(oldName, newName);
 
                         repaint();
                     }
@@ -439,10 +439,10 @@ public class DesktopPanel extends JPanel {
                         return;
                     }
 
-                    int i = SketchletEditor.getPages().getPages().indexOf(s);
+                    int i = SketchletEditor.getProject().getPages().indexOf(s);
                     s.delete();
 
-                    SketchletEditor.getPages().getPages().remove(s);
+                    SketchletEditor.getProject().getPages().remove(s);
                 }
 
                 refresh();

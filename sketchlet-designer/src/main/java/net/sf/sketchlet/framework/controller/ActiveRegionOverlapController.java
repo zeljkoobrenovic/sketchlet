@@ -45,7 +45,7 @@ public class ActiveRegionOverlapController {
             return;
         }
 
-        for (RegionOverlapEventMacro regionOverlapEventMacro : region.regionOverlapEventMacros) {
+        for (RegionOverlapEventMacro regionOverlapEventMacro : region.getRegionOverlapEventMacros()) {
             String regionId = regionOverlapEventMacro.getRegionId();
             String event = regionOverlapEventMacro.getEventName();
             try {
@@ -54,16 +54,16 @@ public class ActiveRegionOverlapController {
                 if (regionId.equals("")) {
                     continue;
                 } else if (regionId.equalsIgnoreCase("Any Region")) {
-                    for (ActiveRegion a : region.parent.getRegions()) {
+                    for (ActiveRegion a : region.getParent().getRegions()) {
                         if (a != region) {
                             processIntersection(bPlayback, region, a, r1, event, regionOverlapEventMacro.getMacro(), activeTimers, activeMacros);
                         }
                     }
                 } else {
                     try {
-                        int index = region.parent.getActionIndex(regionId);
-                        if (index >= 0 && index < region.parent.getRegions().size()) {
-                            ActiveRegion a = region.parent.getRegions().elementAt(index);
+                        int index = region.getParent().getActionIndex(regionId);
+                        if (index >= 0 && index < region.getParent().getRegions().size()) {
+                            ActiveRegion a = region.getParent().getRegions().elementAt(index);
                             processIntersection(bPlayback, region, a, r1, event, regionOverlapEventMacro.getMacro(), activeTimers, activeMacros);
                         }
                     } catch (Exception e) {
@@ -139,10 +139,10 @@ public class ActiveRegionOverlapController {
     }
 
     public boolean intersectsWithSolids(boolean bPlayback) {
-        if (region.walkThroughEnabled) {
-            for (ActiveRegion activeRegion : region.parent.getRegions()) {
+        if (region.isWalkThroughEnabled()) {
+            for (ActiveRegion activeRegion : region.getParent().getRegions()) {
                 if (activeRegion != region) {
-                    if (activeRegion.walkThroughEnabled) {
+                    if (activeRegion.isWalkThroughEnabled()) {
                         Area r1 = region.getTransformedArea(bPlayback);
                         Area r2 = activeRegion.getTransformedArea(bPlayback);
 

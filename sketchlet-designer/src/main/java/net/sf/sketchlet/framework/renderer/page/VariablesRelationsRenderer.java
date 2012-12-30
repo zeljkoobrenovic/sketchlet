@@ -33,17 +33,17 @@ public class VariablesRelationsRenderer {
     public static Vector<String> getRegionInfo(ActiveRegion region, boolean bShowPosition) {
         Vector<String> regionInfo = new Vector<String>();
 
-        String strValue = "region " + (region.parent.getRegions().size() - region.parent.getRegions().indexOf(region));
+        String strValue = "region " + (region.getParent().getRegions().size() - region.getParent().getRegions().indexOf(region));
         regionInfo.add(strValue);
 
-        if (region.pinned) {
+        if (region.isPinned()) {
             regionInfo.add("PINNED");
         }
-        strValue = region.textField.trim();
+        strValue = region.getTextField().trim();
         if (StringUtils.isNotBlank(strValue)) {
             regionInfo.add("text: '" + strValue + "'");
         }
-        String lines[] = region.text.split("\n");
+        String lines[] = region.getText().split("\n");
         strValue = "";
         for (int i = 0; i < lines.length; i++) {
             strValue += lines[i] + " ";
@@ -53,53 +53,53 @@ public class VariablesRelationsRenderer {
             regionInfo.add("text: '" + strValue + "'");
         }
 
-        strValue = region.shape;
+        strValue = region.getShape();
         if (StringUtils.isNotBlank(strValue) && !strValue.equalsIgnoreCase("None")) {
             regionInfo.add("shape: " + strValue);
         }
-        strValue = region.lineColor;
+        strValue = region.getLineColor();
         if (StringUtils.isNotBlank(strValue)) {
             regionInfo.add("line color: " + strValue);
         }
-        strValue = region.lineThickness;
+        strValue = region.getLineThickness();
         if (StringUtils.isNotBlank(strValue)) {
             regionInfo.add("line thickness: " + strValue);
         }
-        strValue = region.lineStyle;
+        strValue = region.getLineStyle();
         if (StringUtils.isNotBlank(strValue)) {
             regionInfo.add("line style: " + strValue);
         }
-        strValue = region.strFillColor;
+        strValue = region.getFillColor();
         if (StringUtils.isNotBlank(strValue)) {
             regionInfo.add("fill color: " + strValue);
         }
-        strValue = region.captureScreenX;
+        strValue = region.getCaptureScreenX();
         if (StringUtils.isNotBlank(strValue)) {
             regionInfo.add("capture screen x (left): " + strValue);
         }
-        strValue = region.captureScreenY;
+        strValue = region.getCaptureScreenY();
         if (StringUtils.isNotBlank(strValue)) {
             regionInfo.add("capture screen x (top): " + strValue);
         }
-        strValue = region.captureScreenWidth;
+        strValue = region.getCaptureScreenWidth();
         if (StringUtils.isNotBlank(strValue)) {
             regionInfo.add("capture screen width: " + strValue);
         }
-        strValue = region.captureScreenHeight;
+        strValue = region.getCaptureScreenHeight();
         if (StringUtils.isNotBlank(strValue)) {
             regionInfo.add("capture screen height: " + strValue);
         }
-        strValue = region.horizontalAlignment;
+        strValue = region.getHorizontalAlignment();
         if (StringUtils.isNotBlank(strValue) && !strValue.equalsIgnoreCase("null") && !strValue.equalsIgnoreCase("left")) {
             regionInfo.add("horizontal alignment: " + strValue);
         }
-        strValue = region.verticalAlignment;
+        strValue = region.getVerticalAlignment();
         if (StringUtils.isNotBlank(strValue) && !strValue.equalsIgnoreCase("null") && !strValue.equalsIgnoreCase("top")) {
             regionInfo.add("vertical alignment: " + strValue);
         }
 
-        for (int i = 0; i < ActiveRegion.propertiesInfo.length; i++) {
-            String property = ActiveRegion.propertiesInfo[i][0];
+        for (int i = 0; i < ActiveRegion.getPropertiesInfo().length; i++) {
+            String property = ActiveRegion.getPropertiesInfo()[i][0];
             strValue = region.getProperty(property);
             String strDefault = region.getDefaultValue(property);
             if (StringUtils.isNotBlank(strValue) && !strValue.equalsIgnoreCase(strDefault)) {
@@ -107,27 +107,27 @@ public class VariablesRelationsRenderer {
             }
         }
 
-        for (int i = 0; i < region.updateTransformations.length; i++) {
-            strValue = (String) region.updateTransformations[i][1];
+        for (int i = 0; i < region.getMotionAndRotationVariablesMapping().length; i++) {
+            strValue = (String) region.getMotionAndRotationVariablesMapping()[i][1];
 
             if (StringUtils.isNotBlank(strValue)) {
-                regionInfo.add("connect dimension '" + region.updateTransformations[i][0].toString().toLowerCase() + "' to variable '" + strValue + "'");
+                regionInfo.add("connect dimension '" + region.getMotionAndRotationVariablesMapping()[i][0].toString().toLowerCase() + "' to variable '" + strValue + "'");
             }
         }
 
-        for (int i = 0; i < region.propertiesAnimation.length; i++) {
-            String strType = region.propertiesAnimation[i][1];
-            String strStart = region.propertiesAnimation[i][2];
-            String strEnd = region.propertiesAnimation[i][3];
-            String strDuration = region.propertiesAnimation[i][4];
-            String strCurve = region.propertiesAnimation[i][5];
+        for (int i = 0; i < region.getPropertiesAnimation().length; i++) {
+            String strType = region.getPropertiesAnimation()[i][1];
+            String strStart = region.getPropertiesAnimation()[i][2];
+            String strEnd = region.getPropertiesAnimation()[i][3];
+            String strDuration = region.getPropertiesAnimation()[i][4];
+            String strCurve = region.getPropertiesAnimation()[i][5];
 
             if (strType != null && !strType.isEmpty()) {
-                regionInfo.add("animate property '" + region.propertiesAnimation[i][0].toString().toLowerCase() + "'" + " from " + strStart + " to " + strEnd + " in " + strDuration + " seconds" + (strCurve.isEmpty() ? "" : " using curve '" + strCurve + "'"));
+                regionInfo.add("animate property '" + region.getPropertiesAnimation()[i][0].toString().toLowerCase() + "'" + " from " + strStart + " to " + strEnd + " in " + strDuration + " seconds" + (strCurve.isEmpty() ? "" : " using curve '" + strCurve + "'"));
             }
         }
 
-        for (EventMacro eventMacro : region.mouseProcessor.getMouseEventMacros()) {
+        for (EventMacro eventMacro : region.getMouseEventsProcessor().getMouseEventMacros()) {
             String strEvent = eventMacro.getEventName();
             if (StringUtils.isNotBlank(strEvent)) {
                 regionInfo.add("on " + strEvent.toLowerCase() + ": ");
@@ -142,7 +142,7 @@ public class VariablesRelationsRenderer {
             }
         }
 
-        for (KeyboardEventMacro eventMacro : region.keyboardProcessor.getKeyboardEventMacros()) {
+        for (KeyboardEventMacro eventMacro : region.getKeyboardEventsProcessor().getKeyboardEventMacros()) {
             String strEvent = (eventMacro.getModifiers() + " " + eventMacro.getKey() + " " + eventMacro.getEventName()).trim();
             if (StringUtils.isNotBlank(strEvent)) {
                 regionInfo.add("on " + strEvent.toLowerCase() + ": ");
@@ -157,8 +157,8 @@ public class VariablesRelationsRenderer {
             }
         }
 
-        for (EventMacro eventMacro : region.regionOverlapEventMacros) {
-            String strEvent = "region '" + (region.parent.getRegions().size() - region.parent.getActionIndex(eventMacro.getMacro().getParameters().get(RegionOverlapEventMacro.PARAMETER_REGION_ID))) + "' " + eventMacro.getEventName() + " this region";
+        for (EventMacro eventMacro : region.getRegionOverlapEventMacros()) {
+            String strEvent = "region '" + (region.getParent().getRegions().size() - region.getParent().getActionIndex(eventMacro.getMacro().getParameters().get(RegionOverlapEventMacro.PARAMETER_REGION_ID))) + "' " + eventMacro.getEventName() + " this region";
             if (StringUtils.isNotBlank(strEvent)) {
                 regionInfo.add("when " + strEvent.toLowerCase() + "  then  ");
                 for (int i = 0; i < eventMacro.getMacro().getActions().length; i++) {
@@ -172,15 +172,15 @@ public class VariablesRelationsRenderer {
             }
         }
 
-        strValue = region.embeddedSketch;
+        strValue = region.getEmbeddedSketch();
         if (StringUtils.isNotBlank(strValue)) {
             regionInfo.add("embedded sketch: " + strValue);
         }
-        strValue = region.embeddedSketchVarPrefix;
+        strValue = region.getEmbeddedSketchVarPrefix();
         if (StringUtils.isNotBlank(strValue)) {
             regionInfo.add("embedded sketch variable prefix: " + strValue);
         }
-        strValue = region.embeddedSketchVarPostfix;
+        strValue = region.getEmbeddedSketchVarPostfix();
         if (StringUtils.isNotBlank(strValue)) {
             regionInfo.add("embedded sketch variable postfix: " + strValue);
         }
@@ -191,13 +191,13 @@ public class VariablesRelationsRenderer {
     public static Hashtable<String, DrawVariableInfo> prepareVariables(ActiveRegions regions) {
         Hashtable<String, DrawVariableInfo> variables = new Hashtable<String, DrawVariableInfo>();
         for (ActiveRegion region : regions.getRegions()) {
-            String strValue = region.textField;
+            String strValue = region.getTextField();
             if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
                 String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                 processString(variables, region, strVar, "[in] text");
             }
 
-            String lines[] = region.text.split("\n");
+            String lines[] = region.getText().split("\n");
             for (int i = 0; i < lines.length; i++) {
                 strValue = lines[i];
                 if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
@@ -205,92 +205,92 @@ public class VariablesRelationsRenderer {
                     processString(variables, region, strVar, "[in] text");
                 }
             }
-            strValue = region.horizontalAlignment;
+            strValue = region.getHorizontalAlignment();
 
             if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
                 String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                 processString(variables, region, strVar, "[in] horizontal alignment");
             }
-            strValue = region.verticalAlignment;
+            strValue = region.getVerticalAlignment();
             if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
                 String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                 processString(variables, region, strVar, "[in] vertical alignment");
             }
-            strValue = region.shape;
+            strValue = region.getShape();
             if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
                 String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                 processString(variables, region, strVar, "[in] shape");
             }
-            strValue = region.lineColor;
+            strValue = region.getLineColor();
             if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
                 String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                 processString(variables, region, strVar, "[in] line color");
             }
-            strValue = region.lineThickness;
+            strValue = region.getLineThickness();
             if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
                 String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                 processString(variables, region, strVar, "[in] line thickness");
             }
-            strValue = region.lineStyle;
+            strValue = region.getLineStyle();
             if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
                 String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                 processString(variables, region, strVar, "[in] line style");
             }
-            strValue = region.strFillColor;
+            strValue = region.getFillColor();
             if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
                 String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                 processString(variables, region, strVar, "[in] fill color");
             }
-            strValue = region.captureScreenX;
+            strValue = region.getCaptureScreenX();
             if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
                 String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                 processString(variables, region, strVar, "[in] capture screen x (left)");
             }
-            strValue = region.captureScreenY;
+            strValue = region.getCaptureScreenY();
             if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
                 String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                 processString(variables, region, strVar, "[in] capture screen x (top)");
             }
-            strValue = region.captureScreenWidth;
+            strValue = region.getCaptureScreenWidth();
             if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
                 String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                 processString(variables, region, strVar, "[in] capture screen width");
             }
-            strValue = region.captureScreenHeight;
+            strValue = region.getCaptureScreenHeight();
             if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
                 String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                 processString(variables, region, strVar, "[in] capture screen height");
             }
 
-            strValue = region.embeddedSketch;
+            strValue = region.getEmbeddedSketch();
             if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
                 String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                 processString(variables, region, strVar, "[in] embedded sketch");
             }
-            strValue = region.embeddedSketchVarPrefix;
+            strValue = region.getEmbeddedSketchVarPrefix();
             if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
                 String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                 processString(variables, region, strVar, "[in] embedded sketch variable prefix");
             }
-            strValue = region.embeddedSketchVarPostfix;
+            strValue = region.getEmbeddedSketchVarPostfix();
             if (strValue != null && strValue.startsWith("=") && strValue.length() > 1) {
                 String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                 processString(variables, region, strVar, "[in] embedded sketch variable postfix");
             }
 
-            for (int i = 0; i < ActiveRegion.propertiesInfo.length; i++) {
-                String property = ActiveRegion.propertiesInfo[i][0];
+            for (int i = 0; i < ActiveRegion.getPropertiesInfo().length; i++) {
+                String property = ActiveRegion.getPropertiesInfo()[i][0];
                 strValue = region.getProperty(property);
                 if (strValue.startsWith("=") && strValue.length() > 1) {
                     String strVar = VariablesBlackboard.populateTemplate(strValue.substring(1));
                     processString(variables, region, strVar, "[in] " + property.toLowerCase());
                 }
             }
-            for (int i = 0; i < region.updateTransformations.length; i++) {
-                strValue = (String) region.updateTransformations[i][1];
+            for (int i = 0; i < region.getMotionAndRotationVariablesMapping().length; i++) {
+                strValue = (String) region.getMotionAndRotationVariablesMapping()[i][1];
 
                 if (strValue.length() > 0) {
-                    processString(variables, region, strValue, "[in][out] " + region.updateTransformations[i][0].toString().toLowerCase());
+                    processString(variables, region, strValue, "[in][out] " + region.getMotionAndRotationVariablesMapping()[i][0].toString().toLowerCase());
                 }
             }
             /*for (int i = 0; i < region.variablesMappingHandler.data.length; i++) {
@@ -300,7 +300,7 @@ public class VariablesRelationsRenderer {
                     processString(variables, region, strValue, "[in] " + region.variablesMappingHandler.data[i][0].toString().toLowerCase());
                 }
             }*/
-            for (EventMacro eventMacro : region.mouseProcessor.getMouseEventMacros()) {
+            for (EventMacro eventMacro : region.getMouseEventsProcessor().getMouseEventMacros()) {
                 for (int i = 0; i < eventMacro.getMacro().getActions().length; i++) {
                     String strEvent = eventMacro.getEventName();
                     String strAction = (String) eventMacro.getMacro().getActions()[i][0];
@@ -311,9 +311,9 @@ public class VariablesRelationsRenderer {
                     }
                 }
             }
-            for (EventMacro eventMacro : region.regionOverlapEventMacros) {
+            for (EventMacro eventMacro : region.getRegionOverlapEventMacros()) {
                 for (int i = 0; i < eventMacro.getMacro().getActions().length; i++) {
-                    String strEvent = "region " + (region.parent.getRegions().size() - region.parent.getActionIndex(eventMacro.getMacro().getParameters().get(RegionOverlapEventMacro.PARAMETER_REGION_ID))) + " " + eventMacro.getEventName();
+                    String strEvent = "region " + (region.getParent().getRegions().size() - region.getParent().getActionIndex(eventMacro.getMacro().getParameters().get(RegionOverlapEventMacro.PARAMETER_REGION_ID))) + " " + eventMacro.getEventName();
                     String strAction = (String) eventMacro.getMacro().getActions()[i][0];
                     strValue = (String) eventMacro.getMacro().getActions()[i][1];
                     String strContent = (String) eventMacro.getMacro().getActions()[i][2];
@@ -342,7 +342,7 @@ public class VariablesRelationsRenderer {
 
         for (ActiveRegion region : regions.getRegions()) {
             String strValue;
-            for (EventMacro eventMacro : region.mouseProcessor.getMouseEventMacros()) {
+            for (EventMacro eventMacro : region.getMouseEventsProcessor().getMouseEventMacros()) {
                 for (int i = 0; i < eventMacro.getMacro().getActions().length; i++) {
                     String strAction = (String) eventMacro.getMacro().getActions()[i][0];
                     strValue = (String) eventMacro.getMacro().getActions()[i][1];
@@ -351,7 +351,7 @@ public class VariablesRelationsRenderer {
                     }
                 }
             }
-            for (EventMacro eventMacro : region.regionOverlapEventMacros) {
+            for (EventMacro eventMacro : region.getRegionOverlapEventMacros()) {
                 for (int i = 0; i < eventMacro.getMacro().getActions().length; i++) {
                     String strAction = (String) eventMacro.getMacro().getActions()[i][0];
                     strValue = (String) eventMacro.getMacro().getActions()[i][1];
@@ -454,7 +454,7 @@ public class VariablesRelationsRenderer {
                     g2.setStroke(new BasicStroke(1));
                 }
                 String strText = vi.getRegions().get(reg);
-                Rectangle r2 = new Rectangle(reg.x1, reg.y1, reg.getWidth(), reg.getHeight());
+                Rectangle r2 = new Rectangle(reg.getX1Value(), reg.getY1Value(), reg.getWidthValue(), reg.getHeightValue());
 
                 GeneralPath path = getPath(r1, r2, strText.contains("[out]"), strText.contains("[in]"));
                 Rectangle _r = path.getBounds();

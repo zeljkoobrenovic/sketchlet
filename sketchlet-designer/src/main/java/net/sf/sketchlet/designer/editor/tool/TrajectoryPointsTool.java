@@ -202,8 +202,8 @@ public class TrajectoryPointsTool extends Tool {
             for (TrajectoryPoint tp : tps2) {
                 strTrajectory2 += tp.getX() + " " + tp.getY() + " " + tp.getTime() + "\n";
             }
-            reg.trajectory1 = strTrajectory1;
-            reg.trajectory2 = strTrajectory2;
+            reg.setTrajectory1(strTrajectory1);
+            reg.setTrajectory2(strTrajectory2);
             toolInterface.repaintImage();
         }
 

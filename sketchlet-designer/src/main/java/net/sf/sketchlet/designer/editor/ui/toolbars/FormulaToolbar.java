@@ -418,7 +418,7 @@ public class FormulaToolbar extends JPanel {
                 });
                 popup.add(menuItem);
                 }
-                popup.show(images, 0, images.getHeight());*/
+                popup.show(images, 0, images.getHeightValue());*/
             }
         });
         move.addActionListener(new ActionListener() {
@@ -947,7 +947,7 @@ public class FormulaToolbar extends JPanel {
                         strArgs = arg;
                     }
                 }
-                r.shapeArguments = strArgs;
+                r.setShapeArguments(strArgs);
             }
             ActiveRegionsExtraPanel.reload(SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement());
             SketchletEditor.getInstance().forceRepaint();

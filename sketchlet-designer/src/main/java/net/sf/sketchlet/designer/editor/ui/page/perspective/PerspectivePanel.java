@@ -191,16 +191,16 @@ class Perspective3D extends JPanel {
         int i = 0;
         for (ActiveRegion region : regions) {
             double depth = 0.0;
-            if (!region.strPerspectiveDepth.isEmpty()) {
+            if (!region.getPerspectiveDepth().isEmpty()) {
                 try {
-                    depth = Double.parseDouble(region.strPerspectiveDepth);
+                    depth = Double.parseDouble(region.getPerspectiveDepth());
                 } catch (Exception e) {
                 }
             }
 
-            int x = (int) (region.x1 * w / (double) sw);
+            int x = (int) (region.getX1Value() * w / (double) sw);
             int y = (int) (h - (h - 2 * mh - rh) * depth) - mh - rh;
-            int _w = (int) (region.getWidth() * w / (double) sw);
+            int _w = (int) (region.getWidthValue() * w / (double) sw);
 
             g2.setColor(new Color(100, 100, 100, 100));
             g2.drawLine(x, h - mh, x + _w / 2, mh);
@@ -234,16 +234,16 @@ class Perspective3D extends JPanel {
         int i = 0;
         for (ActiveRegion region : regions) {
             double depth = 0.0;
-            if (!region.strPerspectiveDepth.isEmpty()) {
+            if (!region.getPerspectiveDepth().isEmpty()) {
                 try {
-                    depth = Double.parseDouble(region.strPerspectiveDepth);
+                    depth = Double.parseDouble(region.getPerspectiveDepth());
                 } catch (Exception e) {
                 }
             }
 
-            int x = (int) (region.x1 * w / (double) sw);
+            int x = (int) (region.getX1Value() * w / (double) sw);
             int y = (int) (h - (h - 2 * mh - rh) * depth) - mh - rh;
-            int _w = (int) (region.getWidth() * w / (double) sw);
+            int _w = (int) (region.getWidthValue() * w / (double) sw);
 
             if (new Rectangle(x, y - 3, _w, rh + 6).contains(mx, my)) {
                 return region;
@@ -271,7 +271,7 @@ class Perspective3D extends JPanel {
                 if (i != j) {
                     ActiveRegion r1 = regions[i];
                     ActiveRegion r2 = regions[j];
-                    if (r1.x1 > r2.x1) {
+                    if (r1.getX1Value() > r2.getX1Value()) {
                         regions[i] = r2;
                         regions[j] = r1;
                     }
@@ -283,9 +283,9 @@ class Perspective3D extends JPanel {
         for (i = 0; i < regions.length; i++) {
             final ActiveRegion region = regions[i];
             int init = 0;
-            if (!region.strPerspectiveDepth.isEmpty()) {
+            if (!region.getPerspectiveDepth().isEmpty()) {
                 try {
-                    init = (int) Double.parseDouble(region.strPerspectiveDepth) * 100;
+                    init = (int) Double.parseDouble(region.getPerspectiveDepth()) * 100;
                 } catch (Exception e) {
                 }
             }
@@ -295,7 +295,7 @@ class Perspective3D extends JPanel {
 
                 public void stateChanged(ChangeEvent e) {
                     double depth = slider.getValue() / 100.0;
-                    region.strPerspectiveDepth = "" + depth;
+                    region.setPerspectiveDepth("" + depth);
                     SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().setSelectedRegions(new Vector<ActiveRegion>());
                     SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().add(region);
                     parent.enableControls();
@@ -351,7 +351,7 @@ class Perspective3D extends JPanel {
                 double depth = Math.max(0.0, ((double) y - mh) / (h - 2 * mh));
                 depth = Math.min(1.0, depth);
                 depth = 1 - depth;
-                selectedRegion.strPerspectiveDepth = "" + depth;
+                selectedRegion.setPerspectiveDepth("" + depth);
                 SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().setSelectedRegions(new Vector<ActiveRegion>());
                 SketchletEditor.getInstance().getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().add(selectedRegion);
                 parent.enableControls();

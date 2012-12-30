@@ -31,14 +31,14 @@ public class AuxiliaryDrawingLayer extends DrawingLayer {
         if (region == null) {
             return;
         }
-        if (mode == SketchletEditorMode.ACTIONS) {
-            String strX1 = (String) region.limits[0][1];
-            String strX2 = (String) region.limits[0][2];
-            String strY1 = (String) region.limits[1][1];
-            String strY2 = (String) region.limits[1][2];
+        if (mode == SketchletEditorMode.EDITING_REGIONS) {
+            String strX1 = (String) region.getMotionAndRotationLimits()[0][1];
+            String strX2 = (String) region.getMotionAndRotationLimits()[0][2];
+            String strY1 = (String) region.getMotionAndRotationLimits()[1][1];
+            String strY2 = (String) region.getMotionAndRotationLimits()[1][2];
             g2.setColor(new Color(255, 0, 0, 70));
             float dash1[] = {10.0f};
-            float thick = region.parent.getMouseHelper().getSelectedRegions() != null && region.parent.getMouseHelper().getSelectedRegions().contains(region) ? 3.0f : 1.0f;
+            float thick = region.getParent().getMouseHelper().getSelectedRegions() != null && region.getParent().getMouseHelper().getSelectedRegions().contains(region) ? 3.0f : 1.0f;
             BasicStroke dashed = new BasicStroke(thick,
                     BasicStroke.CAP_BUTT,
                     BasicStroke.JOIN_MITER,
@@ -98,21 +98,21 @@ public class AuxiliaryDrawingLayer extends DrawingLayer {
         try {
             int x, y;
 
-            int w = region.x2 - region.x1;
-            int h = region.y2 - region.y1;
+            int w = region.getX2Value() - region.getX1Value();
+            int h = region.getY2Value() - region.getY1Value();
 
-            x = region.x1 + (int) (w * region.center_rotation_x);
-            y = region.y1 + (int) (h * region.center_rotation_y);
+            x = region.getX1Value() + (int) (w * region.getCenterOfRotationX());
+            y = region.getY1Value() + (int) (h * region.getCenterOfRotationY());
 
-            String strPen = region.processText((region.strPen).trim());
+            String strPen = region.processText((region.getPenWidth()).trim());
             if (strPen.equals("")) {
                 return;
             }
 
             float thickness = (float) Double.parseDouble(strPen);
             if (thickness > 0) {
-                if (region.pen_x > 0 && region.pen_y > 0) {
-                    Color lineColor = Colors.getColor(region.lineColor);
+                if (region.getPenX() > 0 && region.getPenY() > 0) {
+                    Color lineColor = Colors.getColor(region.getLineColor());
                     if (lineColor == null) {
                         lineColor = Color.BLACK;
                     }
@@ -124,7 +124,7 @@ public class AuxiliaryDrawingLayer extends DrawingLayer {
                             g2.setPaint(lineColor);
                             BasicStroke stroke = new BasicStroke(thickness, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER);
                             g2.setStroke(stroke);
-                            g2.draw(new Line2D.Double(new Point(region.pen_x, region.pen_y), new Point(x, y)));
+                            g2.draw(new Line2D.Double(new Point(region.getPenX(), region.getPenY()), new Point(x, y)));
                             g2.dispose();
                             PlaybackFrame.playbackFrame[i].playbackPanel.repaint();
                         }
@@ -134,15 +134,15 @@ public class AuxiliaryDrawingLayer extends DrawingLayer {
                         g2.setPaint(lineColor);
                         BasicStroke stroke = new BasicStroke(thickness, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER);
                         g2.setStroke(stroke);
-                        g2.draw(new Line2D.Double(new Point(region.pen_x, region.pen_y), new Point(x, y)));
+                        g2.draw(new Line2D.Double(new Point(region.getPenX(), region.getPenY()), new Point(x, y)));
                         g2.dispose();
                         SketchletEditor.getInstance().getInternalPlaybackPanel().repaint();
                     }
                 }
 
             }
-            region.pen_x = x;
-            region.pen_y = y;
+            region.setPenX(x);
+            region.setPenY(y);
         } catch (Exception e) {
         }
     }
@@ -155,12 +155,12 @@ public class AuxiliaryDrawingLayer extends DrawingLayer {
         g2.setColor(new Color(255, 255, 0, 100));
         int w, h;
 
-        w = region.x2 - region.x1;
-        h = region.y2 - region.y1;
+        w = region.getX2Value() - region.getX1Value();
+        h = region.getY2Value() - region.getY1Value();
 
-        g2.fillRect(region.x1, region.y1, w, h);
+        g2.fillRect(region.getX1Value(), region.getY1Value(), w, h);
         g2.setColor(new Color(255, 255, 0, 255));
         g2.setStroke(new BasicStroke(2));
-        g2.drawRect(region.x1, region.y1, w, h);
+        g2.drawRect(region.getX1Value(), region.getY1Value(), w, h);
     }
 }

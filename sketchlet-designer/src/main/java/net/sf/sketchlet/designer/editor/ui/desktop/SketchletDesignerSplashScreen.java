@@ -7,9 +7,10 @@ import java.awt.*;
 
 public class SketchletDesignerSplashScreen extends JFrame implements Runnable {
 
+    private static final String SKETCHLET_VERSION = "1.1";
     //Thread t = new Thread(this);
-    Image image;
-    String message = "";
+    private Image image;
+    private String message = "";
 
     public SketchletDesignerSplashScreen() {
         this.setTitle("Sketchlet");
@@ -52,7 +53,7 @@ public class SketchletDesignerSplashScreen extends JFrame implements Runnable {
         Font font = g2.getFont().deriveFont(11).deriveFont(Font.ITALIC);
         g2.setFont(font);
         g2.setColor(Color.DARK_GRAY);
-        g2.drawString("1.0", 431, 70);
+        g2.drawString(SKETCHLET_VERSION, 431, 70);
 
         if (!message.isEmpty()) {
             font = g2.getFont().deriveFont(10).deriveFont(Font.PLAIN);

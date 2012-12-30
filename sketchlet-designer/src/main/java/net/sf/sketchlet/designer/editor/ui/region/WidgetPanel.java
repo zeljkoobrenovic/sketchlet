@@ -7,11 +7,12 @@ import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.context.ActiveRegionContextImpl;
 import net.sf.sketchlet.designer.context.PageContextImpl;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
+import net.sf.sketchlet.designer.editor.ui.SyntaxEditorWrapper;
 import net.sf.sketchlet.designer.editor.ui.UIUtils;
 import net.sf.sketchlet.designer.editor.ui.desktop.Notepad;
 import net.sf.sketchlet.designer.editor.ui.profiles.Profiles;
-import net.sf.sketchlet.loaders.pluginloader.WidgetPluginFactory;
 import net.sf.sketchlet.framework.model.ActiveRegion;
+import net.sf.sketchlet.loaders.pluginloader.WidgetPluginFactory;
 import net.sf.sketchlet.plugin.ScriptPluginAutoCompletion;
 import net.sf.sketchlet.plugin.WidgetPlugin;
 import net.sf.sketchlet.util.RefreshTime;
@@ -39,7 +40,7 @@ import java.util.Map;
  */
 public class WidgetPanel extends JPanel {
     private KeyUpdateThread widgetItemsUpdateThread;
-    private RSyntaxTextArea widgetItems = Notepad.getInstance(RSyntaxTextArea.SYNTAX_STYLE_NONE);
+    private SyntaxEditorWrapper widgetItems = Notepad.getInstance(RSyntaxTextArea.SYNTAX_STYLE_NONE);
     private JTabbedPane tabsWidget = new JTabbedPane();
     private WidgetEventsPanel widgetActionsPanel;
     private JTable tableWidgetProperties;
@@ -63,21 +64,21 @@ public class WidgetPanel extends JPanel {
     }
 
     public void refreshComponents() {
-        UIUtils.refreshComboBox(this.widget, region.widget);
-        this.widgetItems.setText(region.widgetItems);
-        widgetItems.setCaretPosition(0);
+        UIUtils.refreshComboBox(this.widget, region.getWidget());
+        this.widgetItems.getSyntaxTextArea().setText(region.getWidgetItems());
+        widgetItems.getSyntaxTextArea().setCaretPosition(0);
         UIUtils.refreshTable(tableWidgetProperties);
         widgetActionsPanel.refresh();
     }
 
     private void init() {
         widgetActionsPanel = new WidgetEventsPanel(this.region);
-        this.widgetItems.setText(region.widgetItems);
-        this.widgetItems.setCaretPosition(0);
+        this.widgetItems.getSyntaxTextArea().setText(region.getWidgetItems());
+        this.widgetItems.getSyntaxTextArea().setCaretPosition(0);
 
         installPluginAutoCompletion();
 
-        this.widgetItems.addKeyListener(new KeyAdapter() {
+        this.widgetItems.getSyntaxTextArea().addKeyListener(new KeyAdapter() {
 
             public void keyReleased(KeyEvent e) {
                 if (widgetNotepad != null) {
@@ -90,11 +91,8 @@ public class WidgetPanel extends JPanel {
                 widgetItemsUpdateThread = new KeyUpdateThread(new Runnable() {
 
                     public void run() {
-                        if (!region.widgetItems.equals(widgetItems.getText())) {
-                            region.widgetItems = widgetItems.getText();
-                            installPluginAutoCompletion();
-                            RefreshTime.update();
-                            SketchletEditor.getInstance().repaint();
+                        if (!region.getWidgetItems().equals(widgetItems.getSyntaxTextArea().getText())) {
+                            refreshAfterTextChange();
                         }
                         widgetItemsUpdateThread = null;
                     }
@@ -119,7 +117,7 @@ public class WidgetPanel extends JPanel {
                 if (region == null) {
                     return 0;
                 }
-                String defaultProperties[][] = WidgetPluginFactory.getDefaultProperties(new ActiveRegionContextImpl(region, new PageContextImpl(region.parent.getPage())));
+                String defaultProperties[][] = WidgetPluginFactory.getDefaultProperties(new ActiveRegionContextImpl(region, new PageContextImpl(region.getParent().getPage())));
                 return defaultProperties.length;
             }
 
@@ -128,7 +126,7 @@ public class WidgetPanel extends JPanel {
             }
 
             public Object getValueAt(int row, int col) {
-                String defaultProperties[][] = WidgetPluginFactory.getDefaultProperties(new ActiveRegionContextImpl(region, new PageContextImpl(region.parent.getPage())));
+                String defaultProperties[][] = WidgetPluginFactory.getDefaultProperties(new ActiveRegionContextImpl(region, new PageContextImpl(region.getParent().getPage())));
                 if (row >= 0 && row < defaultProperties.length) {
                     switch (col) {
                         case 0:
@@ -164,32 +162,32 @@ public class WidgetPanel extends JPanel {
         tableWidgetProperties.setModel(model);
         tableWidgetProperties.getColumnModel().getColumn(1).setCellEditor(new RegionWidgetPropertiesRowEditor(tableWidgetProperties, region));
 
-        widget.setSelectedItem(region.widget);
+        widget.setSelectedItem(region.getWidget());
         widget.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                region.widgetProperties = null;
-                if (widget.getSelectedItem() != null && !region.widget.equals(widget.getSelectedItem().toString())) {
-                    region.widgetEventMacros.clear();
+                region.setWidgetProperties(null);
+                if (widget.getSelectedItem() != null && !region.getWidget().equals(widget.getSelectedItem().toString())) {
+                    region.getWidgetEventMacros().clear();
                     SketchletEditor.getInstance().saveRegionUndo();
-                    region.widget = (String) widget.getSelectedItem();
-                    region.widgetPropertiesString = WidgetPluginFactory.getDefaultPropertiesValue(new ActiveRegionContextImpl(region, new PageContextImpl(region.parent.getPage())));
-                    region.widgetProperties = null;
-                    if (region.widget.isEmpty()) {
-                        widgetItems.setText("");
-                        widgetItems.setEnabled(false);
+                    region.setWidget((String) widget.getSelectedItem());
+                    region.setWidgetPropertiesString(WidgetPluginFactory.getDefaultPropertiesValue(new ActiveRegionContextImpl(region, new PageContextImpl(region.getParent().getPage()))));
+                    region.setWidgetProperties(null);
+                    if (region.getWidget().isEmpty()) {
+                        widgetItems.getSyntaxTextArea().setText("");
+                        widgetItems.getSyntaxTextArea().setEnabled(false);
                         btnWidgetHelp.setEnabled(false);
-                        region.widgetItems = "";
+                        region.setWidgetItems("");
                         btnImportItems.setEnabled(false);
                     } else {
-                        ActiveRegionContextImpl regionContext = new ActiveRegionContextImpl(region, new PageContextImpl(region.parent.getPage()));
-                        region.widgetPropertiesString = WidgetPluginFactory.getDefaultPropertiesValue(regionContext);
+                        ActiveRegionContextImpl regionContext = new ActiveRegionContextImpl(region, new PageContextImpl(region.getParent().getPage()));
+                        region.setWidgetPropertiesString(WidgetPluginFactory.getDefaultPropertiesValue(regionContext));
                         String strDefaultItems = WidgetPluginFactory.getDefaultItemsText(regionContext);
-                        widgetItems.setText(strDefaultItems);
-                        widgetItems.setCaretPosition(0);
-                        region.widgetItems = strDefaultItems;
+                        widgetItems.getSyntaxTextArea().setText(strDefaultItems);
+                        widgetItems.getSyntaxTextArea().setCaretPosition(0);
+                        region.setWidgetItems(strDefaultItems);
                         boolean bEnabled = WidgetPluginFactory.hasTextItems(regionContext);
-                        widgetItems.setEnabled(bEnabled);
+                        widgetItems.getSyntaxTextArea().setEnabled(bEnabled);
                         btnWidgetHelp.setEnabled(WidgetPluginFactory.hasLinks(regionContext));
                         btnImportItems.setEnabled(bEnabled);
                     }
@@ -213,7 +211,12 @@ public class WidgetPanel extends JPanel {
 
             JSplitPane panelWidget;
             JPanel textItemsPanel = new JPanel(new BorderLayout());
-            textItemsPanel.add(Notepad.getEditorPanel(widgetItems, false));
+            textItemsPanel.add(Notepad.getEditorPanel(widgetItems.getSyntaxTextArea(), new Runnable() {
+                @Override
+                public void run() {
+                    refreshAfterTextChange();
+                }
+            }, false));
             btnImportItems.setToolTipText(Language.translate("Import text items from a file"));
             btnImportItems.addActionListener(new ActionListener() {
 
@@ -225,8 +228,8 @@ public class WidgetPanel extends JPanel {
                     int returnVal = ActiveRegionPanel.getFileChooser().showOpenDialog(SketchletEditor.editorFrame);
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
                         File file = ActiveRegionPanel.getFileChooser().getSelectedFile();
-                        widgetItems.setText(FileUtils.getFileText(file.getPath()));
-                        widgetItems.setCaretPosition(0);
+                        widgetItems.getSyntaxTextArea().setText(FileUtils.getFileText(file.getPath()));
+                        widgetItems.getSyntaxTextArea().setCaretPosition(0);
                     }
                     RefreshTime.update();
                     SketchletEditor.getInstance().repaint();
@@ -247,16 +250,16 @@ public class WidgetPanel extends JPanel {
                         widgetNotepad.getTopLevelAncestor().setVisible(false);
                         widgetNotepad = null;
                     }
-                    widgetNotepad = Notepad.openNotepadFromString(widgetItems.getText(), Language.translate("Widget Text/Items"), "text/java");
+                    widgetNotepad = Notepad.openNotepadFromString(widgetItems.getSyntaxTextArea().getText(), Language.translate("Widget Text/Items"), "text/java");
                     widgetNotepad.onSave = new Runnable() {
 
                         public void run() {
                             String strText = widgetNotepad.editor.getText();
-                            if (!strText.equals(region.widgetItems)) {
+                            if (!strText.equals(region.getWidgetItems())) {
                                 SketchletEditor.getInstance().saveRegionUndo();
-                                widgetItems.setText(strText);
-                                widgetItems.setCaretPosition(0);
-                                region.widgetItems = strText;
+                                widgetItems.getSyntaxTextArea().setText(strText);
+                                widgetItems.getSyntaxTextArea().setCaretPosition(0);
+                                region.setWidgetItems(strText);
                                 RefreshTime.update();
                                 SketchletEditor.getInstance().repaint();
                             }
@@ -268,7 +271,7 @@ public class WidgetPanel extends JPanel {
             btnWidgetHelp.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent ae) {
-                    String links[][] = WidgetPluginFactory.getLinks(new ActiveRegionContextImpl(region, new PageContextImpl(region.parent.getPage())));
+                    String links[][] = WidgetPluginFactory.getLinks(new ActiveRegionContextImpl(region, new PageContextImpl(region.getParent().getPage())));
                     if (links != null) {
                         for (String s[] : links) {
                             if (s.length > 1) {
@@ -286,9 +289,9 @@ public class WidgetPanel extends JPanel {
             panelWidget = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, controlsWrapper, textItemsPanel);
             panelWidget.setOneTouchExpandable(true);
             panelWidget.setDividerLocation(350);
-            boolean bEnabled = WidgetPluginFactory.hasTextItems(new ActiveRegionContextImpl(region, new PageContextImpl(region.parent.getPage())));
-            widgetItems.setEnabled(bEnabled);
-            btnWidgetHelp.setEnabled(WidgetPluginFactory.hasLinks(new ActiveRegionContextImpl(region, new PageContextImpl(region.parent.getPage()))));
+            boolean bEnabled = WidgetPluginFactory.hasTextItems(new ActiveRegionContextImpl(region, new PageContextImpl(region.getParent().getPage())));
+            widgetItems.getSyntaxTextArea().setEnabled(bEnabled);
+            btnWidgetHelp.setEnabled(WidgetPluginFactory.hasLinks(new ActiveRegionContextImpl(region, new PageContextImpl(region.getParent().getPage()))));
             btnImportItems.setEnabled(true);
             btnEditItems.setEnabled(bEnabled);
 
@@ -300,6 +303,13 @@ public class WidgetPanel extends JPanel {
         }
 
         add(tabsWidget);
+    }
+
+    private void refreshAfterTextChange() {
+        region.setWidgetItems(widgetItems.getSyntaxTextArea().getText());
+        installPluginAutoCompletion();
+        RefreshTime.update();
+        SketchletEditor.getInstance().repaint();
     }
 
     private static void populateControlsCombo(JComboBox comboBox) {
@@ -327,7 +337,7 @@ public class WidgetPanel extends JPanel {
         final WidgetPlugin widgetInstance = region.getRenderer().getWidgetImageLayer().getWidgetPlugin();
         if (widgetInstance != null && widgetInstance instanceof ScriptPluginAutoCompletion) {
             Map<String, java.util.List<String>> map = ((ScriptPluginAutoCompletion) widgetInstance).getAutoCompletionPairs();
-            installPluginAutoCompletion(widgetItems, map);
+            installPluginAutoCompletion(widgetItems.getSyntaxTextArea(), map);
         }
     }
 

@@ -11,8 +11,8 @@ import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.SketchletEditorMode;
 import net.sf.sketchlet.designer.editor.tool.notes.NoteDialog;
 import net.sf.sketchlet.framework.model.events.EventMacro;
-import net.sf.sketchlet.framework.model.events.keyboard.KeyboardProcessor;
-import net.sf.sketchlet.framework.model.events.mouse.MouseProcessor;
+import net.sf.sketchlet.framework.model.events.keyboard.KeyboardEventsProcessor;
+import net.sf.sketchlet.framework.model.events.mouse.MouseEventsProcessor;
 import net.sf.sketchlet.framework.model.events.variable.VariableUpdateEventMacro;
 import net.sf.sketchlet.framework.model.imagecache.ImageCache;
 import net.sf.sketchlet.designer.editor.ui.page.VariableUpdatePageHandler;
@@ -227,8 +227,8 @@ public class Page implements PropertiesInterface {
     private Vector<String> updatingProperties = new Vector<String>();
     private boolean deleted = false;
 
-    private MouseProcessor mouseProcessor = new MouseProcessor();
-    private KeyboardProcessor keyboardProcessor = new KeyboardProcessor();
+    private MouseEventsProcessor mouseEventsProcessor = new MouseEventsProcessor();
+    private KeyboardEventsProcessor keyboardEventsProcessor = new KeyboardEventsProcessor();
 
     private static boolean bSaveToHistory = false;
     private String strCache = "";
@@ -247,18 +247,6 @@ public class Page implements PropertiesInterface {
         return allProperties;
     }
 
-    public static void setAllProperties(String[][] allProperties) {
-        Page.allProperties = allProperties;
-    }
-
-    public static boolean isbSaveToHistory() {
-        return bSaveToHistory;
-    }
-
-    public static void setbSaveToHistory(boolean bSaveToHistory) {
-        Page.bSaveToHistory = bSaveToHistory;
-    }
-
     public Page copyForUndo() {
         Page us = new Page(this.getVarPrefix(), this.getVarPostfix());
         us.setTitle(this.getTitle());
@@ -273,8 +261,8 @@ public class Page implements PropertiesInterface {
         copyArray(this.getOnEntryMacro().getActions(), us.getOnEntryMacro().getActions());
         copyArray(this.getOnExitMacro().getActions(), us.getOnExitMacro().getActions());
 
-        for (EventMacro eventMacro : getKeyboardProcessor().getKeyboardEventMacros()) {
-            us.getKeyboardProcessor().getKeyboardEventMacros().add(new KeyboardEventMacro(eventMacro));
+        for (EventMacro eventMacro : getKeyboardEventsProcessor().getKeyboardEventMacros()) {
+            us.getKeyboardEventsProcessor().getKeyboardEventMacros().add(new KeyboardEventMacro(eventMacro));
         }
         for (EventMacro eventMacro : getVariableUpdateEventMacros()) {
             us.getVariableUpdateEventMacros().add(new VariableUpdateEventMacro(eventMacro));
@@ -300,8 +288,8 @@ public class Page implements PropertiesInterface {
         copyArray(s.getPropertiesAnimation(), this.getPropertiesAnimation());
         copyArray(s.getSpreadsheetData(), this.getSpreadsheetData());
         copyArray(s.getPrevSpreadsheetData(), this.getPrevSpreadsheetData());
-        for (EventMacro eventMacro : getKeyboardProcessor().getKeyboardEventMacros()) {
-            s.getKeyboardProcessor().getKeyboardEventMacros().add(new KeyboardEventMacro(eventMacro));
+        for (EventMacro eventMacro : getKeyboardEventsProcessor().getKeyboardEventMacros()) {
+            s.getKeyboardEventsProcessor().getKeyboardEventMacros().add(new KeyboardEventMacro(eventMacro));
         }
 
         for (EventMacro eventMacro : getVariableUpdateEventMacros()) {
@@ -442,8 +430,8 @@ public class Page implements PropertiesInterface {
         this.setTitle("" + s.getTitle());
         this.setTextAnnotation("" + s.getTextAnnotation());
         this.setTextAnnotation(s.getTextAnnotation());
-        for (EventMacro eventMacro : s.getKeyboardProcessor().getKeyboardEventMacros()) {
-            this.getKeyboardProcessor().getKeyboardEventMacros().add(new KeyboardEventMacro(eventMacro));
+        for (EventMacro eventMacro : s.getKeyboardEventsProcessor().getKeyboardEventMacros()) {
+            this.getKeyboardEventsProcessor().getKeyboardEventMacros().add(new KeyboardEventMacro(eventMacro));
         }
         for (EventMacro eventMacro : s.getVariableUpdateEventMacros()) {
             this.getVariableUpdateEventMacros().add(new VariableUpdateEventMacro(eventMacro));
@@ -485,9 +473,9 @@ public class Page implements PropertiesInterface {
         setOnExitMacro(null);
         setOnEntryMacroThread(null);
         setOnExitMacroThread(null);
-        if (getKeyboardProcessor() != null) {
-            getKeyboardProcessor().dispose();
-            setKeyboardProcessor(null);
+        if (getKeyboardEventsProcessor() != null) {
+            getKeyboardEventsProcessor().dispose();
+            setKeyboardEventsProcessor(null);
         }
         if (getVariableUpdateEventMacros() != null) {
             for (EventMacro eventMacro : getVariableUpdateEventMacros()) {
@@ -798,7 +786,7 @@ public class Page implements PropertiesInterface {
 
             for (ActiveRegion region : this.getRegions().getRegions()) {
                 for (int i = 0; i < region.getImageCount(); i++) {
-                    ImageCache.remove(new File(region.getDrawImagePath(i)));
+                    ImageCache.remove(new File(region.getDrawnImagePath(i)));
                 }
 
                 region.dispose();
@@ -1029,17 +1017,17 @@ public class Page implements PropertiesInterface {
             if (isNotEmpty(getOnExitMacro().getActions())) {
                 this.getOnExitMacro().save(outSketch, "on-exit");
             }
-            if (getKeyboardProcessor().getKeyboardEventMacros().size() > 0) {
+            if (getKeyboardEventsProcessor().getKeyboardEventMacros().size() > 0) {
                 outSketch.println("<keyboard-event-actions>");
-                for (KeyboardEventMacro keyboardEventMacro : getKeyboardProcessor().getKeyboardEventMacros()) {
+                for (KeyboardEventMacro keyboardEventMacro : getKeyboardEventsProcessor().getKeyboardEventMacros()) {
                     keyboardEventMacro.getMacro().setName(keyboardEventMacro.getEventName());
                     keyboardEventMacro.getMacro().saveSimple(outSketch, "keyboard-event-action", "    ");
                 }
                 outSketch.println("</keyboard-event-actions>");
             }
-            if (getMouseProcessor().getMouseEventMacros().size() > 0) {
+            if (getMouseEventsProcessor().getMouseEventMacros().size() > 0) {
                 outSketch.println("<mouse-event-actions>");
-                for (MouseEventMacro mouseEventMacro : getMouseProcessor().getMouseEventMacros()) {
+                for (MouseEventMacro mouseEventMacro : getMouseEventsProcessor().getMouseEventMacros()) {
                     mouseEventMacro.getMacro().setName(mouseEventMacro.getEventName());
                     mouseEventMacro.getMacro().saveSimple(outSketch, "mouse-event-action", "    ");
                 }
@@ -1089,7 +1077,7 @@ public class Page implements PropertiesInterface {
 
     public boolean isConnectedTo(Page s) {
         for (ActiveRegion region : getRegions().getRegions()) {
-            for (MouseEventMacro mouseEventMacro : region.mouseProcessor.getMouseEventMacros()) {
+            for (MouseEventMacro mouseEventMacro : region.getMouseEventsProcessor().getMouseEventMacros()) {
                 for (int i = 0; i < mouseEventMacro.getMacro().getActions().length; i++) {
                     String action = (String) mouseEventMacro.getMacro().getActions()[i][0];
                     String param = (String) mouseEventMacro.getMacro().getActions()[i][1];
@@ -1102,7 +1090,7 @@ public class Page implements PropertiesInterface {
             }
         }
         for (ActiveRegion a : getRegions().getRegions()) {
-            for (RegionOverlapEventMacro regionOverlapEventMacro : a.regionOverlapEventMacros) {
+            for (RegionOverlapEventMacro regionOverlapEventMacro : a.getRegionOverlapEventMacros()) {
                 for (int i = 0; i < regionOverlapEventMacro.getMacro().getActions().length; i++) {
                     String action = (String) regionOverlapEventMacro.getMacro().getActions()[i][0];
                     String param = (String) regionOverlapEventMacro.getMacro().getActions()[i][1];
@@ -1122,7 +1110,7 @@ public class Page implements PropertiesInterface {
         if (isMacroConnected(getOnExitMacro(), s)) {
             return true;
         }
-        for (KeyboardEventMacro keyboardEventMacro : getKeyboardProcessor().getKeyboardEventMacros()) {
+        for (KeyboardEventMacro keyboardEventMacro : getKeyboardEventsProcessor().getKeyboardEventMacros()) {
             if (isMacroConnected(keyboardEventMacro.getMacro(), s)) {
                 return true;
             }
@@ -1148,7 +1136,7 @@ public class Page implements PropertiesInterface {
     public Set<String> getConnections(Page s) {
         Set<String> connections = new HashSet<String>();
         for (ActiveRegion region : getRegions().getRegions()) {
-            for (MouseEventMacro mouseEventMacro : region.mouseProcessor.getMouseEventMacros()) {
+            for (MouseEventMacro mouseEventMacro : region.getMouseEventsProcessor().getMouseEventMacros()) {
                 for (int i = 0; i < mouseEventMacro.getMacro().getActions().length; i++) {
                     String event = "on region '" + region.getName() + "' " + (String) mouseEventMacro.getEventName() + "";
                     String action = (String) mouseEventMacro.getMacro().getActions()[i][0];
@@ -1161,7 +1149,7 @@ public class Page implements PropertiesInterface {
                 }
             }
 
-            for (RegionOverlapEventMacro regionOverlapEventMacro : region.regionOverlapEventMacros) {
+            for (RegionOverlapEventMacro regionOverlapEventMacro : region.getRegionOverlapEventMacros()) {
                 for (int i = 0; i < regionOverlapEventMacro.getMacro().getActions().length; i++) {
                     String event = "overlap event";
                     String action = (String) regionOverlapEventMacro.getMacro().getActions()[i][0];
@@ -1195,7 +1183,7 @@ public class Page implements PropertiesInterface {
             }
         }
 
-        for (KeyboardEventMacro keyboardEventMacro : getKeyboardProcessor().getKeyboardEventMacros()) {
+        for (KeyboardEventMacro keyboardEventMacro : getKeyboardEventsProcessor().getKeyboardEventMacros()) {
             String key = keyboardEventMacro.getKey();
             Object actions[][] = keyboardEventMacro.getMacro().getActions();
             for (int i = 0; i < actions.length; i++) {
@@ -1334,7 +1322,7 @@ public class Page implements PropertiesInterface {
                 this.setAnimatePropertiesThread(new AnimatePropertiesThread(this));
             }
         } else {
-            getRegions().getVariablesHelper().refreshFromVariables();
+            getRegions().getVariablesHelper().refreshRegionDimensionsFromVariables();
         }
         if (getStateDiagramGraph() != null && getStateDiagramCell() != null) {
             getStateDiagramGraph().setSelectionCell(getStateDiagramCell());
@@ -1784,20 +1772,20 @@ public class Page implements PropertiesInterface {
         this.selectedConnector = selectedConnector;
     }
 
-    public MouseProcessor getMouseProcessor() {
-        return mouseProcessor;
+    public MouseEventsProcessor getMouseEventsProcessor() {
+        return mouseEventsProcessor;
     }
 
-    public void setMouseProcessor(MouseProcessor mouseProcessor) {
-        this.mouseProcessor = mouseProcessor;
+    public void setMouseEventsProcessor(MouseEventsProcessor mouseEventsProcessor) {
+        this.mouseEventsProcessor = mouseEventsProcessor;
     }
 
-    public KeyboardProcessor getKeyboardProcessor() {
-        return keyboardProcessor;
+    public KeyboardEventsProcessor getKeyboardEventsProcessor() {
+        return keyboardEventsProcessor;
     }
 
-    public void setKeyboardProcessor(KeyboardProcessor keyboardProcessor) {
-        this.keyboardProcessor = keyboardProcessor;
+    public void setKeyboardEventsProcessor(KeyboardEventsProcessor keyboardEventsProcessor) {
+        this.keyboardEventsProcessor = keyboardEventsProcessor;
     }
 
     public boolean isRegionsLayer() {

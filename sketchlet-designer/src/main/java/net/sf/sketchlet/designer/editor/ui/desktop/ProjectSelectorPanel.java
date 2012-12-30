@@ -350,7 +350,7 @@ public class ProjectSelectorPanel extends JPanel implements TreeSelectionListene
 
     public void closeEverything() {
         SketchletEditor.close(false);
-        SketchletEditor.setPages(null);
+        SketchletEditor.setProject(null);
         SketchletContextUtils.setProjectFolder(null);
         Workspace.getMainPanel().enableMenuItems();
         Workspace.getMainPanel().enableToolbarItems();

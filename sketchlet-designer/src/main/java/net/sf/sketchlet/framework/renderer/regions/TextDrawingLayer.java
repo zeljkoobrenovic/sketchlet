@@ -67,15 +67,15 @@ public class TextDrawingLayer extends DrawingLayer {
         bShouldDraw = bShouldDraw || isTextChanged(textLines) || isRegionChanged() || isFontChanged();
 
         prevTextLines = textLines;
-        regionWidth = Math.abs(region.x2 - region.x1);
-        regionHeight = Math.abs(region.y2 - region.y1);
-        strHAlign = region.processText(region.horizontalAlignment);
-        strVAlign = region.processText(region.verticalAlignment);
-        strTextParams = region.textTrimmed + ";" + region.charactersPerLine + ";" + region.maxNumLines;
-        String fontName = region.processText(region.fontName);
-        String fontStyle = region.processText(region.fontStyle);
-        String fontSize = region.processText(region.fontSize);
-        String fontColor = region.processText(region.fontColor);
+        regionWidth = Math.abs(region.getX2Value() - region.getX1Value());
+        regionHeight = Math.abs(region.getY2Value() - region.getY1Value());
+        strHAlign = region.processText(region.getHorizontalAlignment());
+        strVAlign = region.processText(region.getVerticalAlignment());
+        strTextParams = region.isTextTrimmed() + ";" + region.getCharactersPerLine() + ";" + region.getMaxNumLines();
+        String fontName = region.processText(region.getFontName());
+        String fontStyle = region.processText(region.getFontStyle());
+        String fontSize = region.processText(region.getFontSize());
+        String fontColor = region.processText(region.getFontColor());
         strFont = fontName + ";" + fontStyle + ";" + fontSize + ";" + fontColor;
 
         bShouldDraw = bShouldDraw || regionHeight <= 0 || regionWidth <= 0;
@@ -84,10 +84,10 @@ public class TextDrawingLayer extends DrawingLayer {
     }
 
     public boolean isFontChanged() {
-        String fontName = region.processText(region.fontName);
-        String fontStyle = region.processText(region.fontStyle);
-        String fontSize = region.processText(region.fontSize);
-        String fontColor = region.processText(region.fontColor);
+        String fontName = region.processText(region.getFontName());
+        String fontStyle = region.processText(region.getFontStyle());
+        String fontSize = region.processText(region.getFontSize());
+        String fontColor = region.processText(region.getFontColor());
         return !strFont.equals(fontName + ";" + fontStyle + ";" + fontSize + ";" + fontColor);
     }
 
@@ -96,7 +96,7 @@ public class TextDrawingLayer extends DrawingLayer {
             return true;
         }
 
-        if (!strTextParams.equals(region.textTrimmed + ";" + region.charactersPerLine + ";" + region.maxNumLines)) {
+        if (!strTextParams.equals(region.isTextTrimmed() + ";" + region.getCharactersPerLine() + ";" + region.getMaxNumLines())) {
             return true;
         }
 
@@ -113,9 +113,9 @@ public class TextDrawingLayer extends DrawingLayer {
     }
 
     public boolean isRegionChanged() {
-        String strHAlign = region.processText(region.horizontalAlignment);
-        String strVAlign = region.processText(region.verticalAlignment);
-        if (region.x2 - region.x1 != regionWidth || region.y2 - region.y1 != regionHeight || !this.strHAlign.equals(strHAlign) || !this.strVAlign.equals(strVAlign)) {
+        String strHAlign = region.processText(region.getHorizontalAlignment());
+        String strVAlign = region.processText(region.getVerticalAlignment());
+        if (region.getX2Value() - region.getX1Value() != regionWidth || region.getY2Value() - region.getY1Value() != regionHeight || !this.strHAlign.equals(strHAlign) || !this.strVAlign.equals(strVAlign)) {
             return true;
         }
 
@@ -127,9 +127,9 @@ public class TextDrawingLayer extends DrawingLayer {
         if (region == null) {
             return;
         }
-        String strText = region.textField;
+        String strText = region.getTextField();
 
-        if (region.text.trim().length() == 0 && strText.isEmpty() /*&& strTextFile.isEmpty()*/) {
+        if (region.getText().trim().length() == 0 && strText.isEmpty() /*&& strTextFile.isEmpty()*/) {
             return;
         }
 
@@ -138,18 +138,18 @@ public class TextDrawingLayer extends DrawingLayer {
         strText = region.processText(strText).trim();
 
         if (strText.length() > 0) {
-            if (region.textTrimmed) {
+            if (region.isTextTrimmed()) {
                 strText = strText.trim();
             }
             textLines.add(strText);
         }
 
-        if (region.text.trim().length() > 0) {
-            String strTextArea = region.processText(region.text);
+        if (region.getText().trim().length() > 0) {
+            String strTextArea = region.processText(region.getText());
             String strings[] = strTextArea.split("\n");
             for (int i = 0; i < strings.length; i++) {
                 String strLineOfText = region.processText(strings[i]);
-                if (region.textTrimmed) {
+                if (region.isTextTrimmed()) {
                     strLineOfText = strLineOfText.trim();
                 }
                 textLines.add(strLineOfText);
@@ -161,7 +161,7 @@ public class TextDrawingLayer extends DrawingLayer {
                 drawTextLines(component, textLines, strText, bPlayback);
             }
             if (this.cachedImage != null) {
-                g2.drawImage(cachedImage, region.x1, region.y1, null);
+                g2.drawImage(cachedImage, region.getX1Value(), region.getY1Value(), null);
             }
         }
     }
@@ -180,27 +180,27 @@ public class TextDrawingLayer extends DrawingLayer {
             g2.setColor(new Color(0, 0, 0, 0));
             g2.fillRect(0, 0, regionWidth, regionHeight);*/
 
-            Color textColor = Colors.getColor(region.processText(region.fontColor));
+            Color textColor = Colors.getColor(region.processText(region.getFontColor()));
             if (textColor == null) {
                 g2.setColor(Color.BLACK);
             } else {
                 g2.setColor(textColor);
             }
 
-            if (region.textWrapped && !region.charactersPerLine.equals("")) {
+            if (region.isTextWrapped() && !region.getCharactersPerLine().equals("")) {
                 textLines = wrapLines(textLines);
             }
 
             if (textLines.size() > 0) {
-                String fontName = region.processText(region.fontName);
-                String fontStyle = region.processText(region.fontStyle);
+                String fontName = region.processText(region.getFontName());
+                String fontStyle = region.processText(region.getFontStyle());
 
                 Font oldFont = g2.getFont();
 
                 int fontSize = 0;
-                if (region.fontSize.length() != 0) {
+                if (region.getFontSize().length() != 0) {
                     try {
-                        fontSize = Math.min(Integer.parseInt(region.processText(region.fontSize)), 100);
+                        fontSize = Math.min(Integer.parseInt(region.processText(region.getFontSize())), 100);
                     } catch (Exception e) {
                     }
                 }
@@ -238,7 +238,7 @@ public class TextDrawingLayer extends DrawingLayer {
                 if (strVAlign.equals("top") || strVAlign.isEmpty()) {
                     yText = 0 + metrics.getAscent(); // - metrics.getDescent();
                 } else if (strVAlign.equals("center")) {
-                    // yText = y1 + (y2 - y1) / 2 + metrics.getAscent() / 2 - metrics.getDescent() / 2 - metrics.getHeight() * (textLines.size() - 1) / 2;
+                    // yText = y1 + (y2 - y1) / 2 + metrics.getAscent() / 2 - metrics.getDescent() / 2 - metrics.getHeightValue() * (textLines.size() - 1) / 2;
                     yText = 0 + metrics.getAscent() + ((regionHeight) - metrics.getHeight() * (textLines.size())) / 2;
                 } else {
                     yText = regionHeight - metrics.getHeight() * (textLines.size()) + metrics.getAscent();
@@ -253,7 +253,7 @@ public class TextDrawingLayer extends DrawingLayer {
                 }
 
                 /*} else {
-                // yText = y2 - metrics.getDescent() - metrics.getHeight() * (textLines.size() - 1);
+                // yText = y2 - metrics.getDescent() - metrics.getHeightValue() * (textLines.size() - 1);
                 while ((textHeight > regionHeight) && fontSize > 1) {
                 metrics = font.getLineMetrics(strText, frc);
                 fontSize--;
@@ -261,9 +261,9 @@ public class TextDrawingLayer extends DrawingLayer {
                 font = getFont(fontName, fontStyle, (float) fontSize);
                 
                 textWidth = (float) font.getStringBounds(strText, frc).getMaxX();
-                textHeight = metrics.getHeight() * textLines.size();
+                textHeight = metrics.getHeightValue() * textLines.size();
                 }
-                yText = regionHeight - metrics.getHeight() * textLines.size() + metrics.getAscent();
+                yText = regionHeight - metrics.getHeightValue() * textLines.size() + metrics.getAscent();
                 if (strHAlign.equals("left") || strHAlign.isEmpty()) {
                 xText = 0;
                 } else if (strHAlign.equals("center")) {
@@ -307,10 +307,10 @@ public class TextDrawingLayer extends DrawingLayer {
     public Vector<String> wrapLines(Vector<String> textLines) {
         Vector<String> wrapedLines = textLines;
         try {
-            int charPerLine = Integer.parseInt(region.charactersPerLine);
+            int charPerLine = Integer.parseInt(region.getCharactersPerLine());
             int maxLines = 0;
-            if (!region.maxNumLines.trim().equals("")) {
-                maxLines = Integer.parseInt(region.maxNumLines);
+            if (!region.getMaxNumLines().trim().equals("")) {
+                maxLines = Integer.parseInt(region.getMaxNumLines());
             }
 
             wrapedLines = new Vector<String>();

@@ -6,10 +6,10 @@ import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.playback.displays.InteractionSpace;
 import net.sf.sketchlet.designer.playback.displays.ScreenMapping;
+import net.sf.sketchlet.framework.model.Project;
 import net.sf.sketchlet.framework.model.imagecache.ImageCache;
 import net.sf.sketchlet.designer.editor.ui.pagetransition.StateDiagram;
 import net.sf.sketchlet.framework.model.Page;
-import net.sf.sketchlet.framework.model.Pages;
 import net.sf.sketchlet.framework.model.programming.macros.Commands;
 import net.sf.sketchlet.framework.model.programming.screenscripts.ScreenScripts;
 import net.sf.sketchlet.util.RefreshTime;
@@ -40,10 +40,10 @@ public class PlaybackFrame extends JFrame {
     JButton more = new JButton("more...", Workspace.createImageIcon("resources/preferences-system.png", ""));
     int displayIndex;
 
-    private PlaybackFrame(final int displayIndex, ScreenMapping display, Pages pages) {
+    private PlaybackFrame(final int displayIndex, ScreenMapping display, Project project) {
         this.displayIndex = displayIndex;
         this.display = display;
-        playbackPanel = new PlaybackPanel(display, pages, this);
+        playbackPanel = new PlaybackPanel(display, project, this);
 
         final JButton more = new JButton(Workspace.createImageIcon("resources/preferences-system.png", ""));
         more.setToolTipText("More commands");
@@ -126,7 +126,7 @@ public class PlaybackFrame extends JFrame {
         statesButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                StateDiagram.showDiagram(SketchletEditor.getInstance().getPages());
+                StateDiagram.showDiagram(SketchletEditor.getInstance().getProject());
             }
         });
         settingsButton.addActionListener(new ActionListener() {
@@ -154,7 +154,7 @@ public class PlaybackFrame extends JFrame {
                 JPopupMenu popupMenu = new JPopupMenu();
 
                 int i = 0;
-                for (final Page s : playbackPanel.getPages().getPages()) {
+                for (final Page s : playbackPanel.getProject().getPages()) {
                     JMenuItem sketchMenuItem = new JMenuItem((i + 1) + ". " + s.getTitle());
                     sketchMenuItem.addActionListener(new ActionListener() {
 
@@ -250,7 +250,7 @@ public class PlaybackFrame extends JFrame {
                     SketchletEditor.getInstance().getCurrentPage().activate(false);
                 }
 
-                SketchletEditor.getInstance().getCurrentPage().getRegions().getVariablesHelper().refreshFromVariables();
+                SketchletEditor.getInstance().getCurrentPage().getRegions().getVariablesHelper().refreshRegionDimensionsFromVariables();
                 SketchletEditor.getInstance().repaint();
                 SketchletEditor.editorFrame.setState(JFrame.NORMAL);
                 //FreeHand.editorFrame.toFront();
@@ -295,7 +295,7 @@ public class PlaybackFrame extends JFrame {
         // System.gc();
     }
 
-    public static void play(Pages pages, Page startingPage) {
+    public static void play(Project project, Page startingPage) {
         ScreenScripts.closeScreenScripts();
         ScreenScripts.createScreenScripts(true);
         if (playbackFrame == null) {
@@ -317,7 +317,7 @@ public class PlaybackFrame extends JFrame {
             playbackFrame = new PlaybackFrame[activeDisplays.size()];
 
             for (int i = 0; i < activeDisplays.size(); i++) {
-                playbackFrame[i] = new PlaybackFrame(i, activeDisplays.elementAt(i), pages);
+                playbackFrame[i] = new PlaybackFrame(i, activeDisplays.elementAt(i), project);
                 playbackFrame[i].setIconImage(Workspace.createImageIcon("resources/start.gif", "").getImage());
                 playbackFrame[i].setFrameSizeAndPosition();
                 playbackFrame[i].setVisible(true);
@@ -325,13 +325,13 @@ public class PlaybackFrame extends JFrame {
 
             showSketch(startingPage);
         } else {
-            PlaybackPanel.setPages(pages);
+            PlaybackPanel.setProject(project);
             for (int i = 0; i < playbackFrame.length; i++) {
                 playbackFrame[i].playbackPanel.showSketch(startingPage);
             }
         }
 
-        SketchletEditor.getInstance().getCurrentPage().getRegions().getVariablesHelper().refreshVariables();
+        SketchletEditor.getInstance().getCurrentPage().getRegions().getVariablesHelper().refreshVariablesFromRegionDimensions();
         for (int i = 0; i < playbackFrame.length; i++) {
             playbackFrame[i].setTitle(startingPage.getTitle());
             // playbackFrame[i].toFront();

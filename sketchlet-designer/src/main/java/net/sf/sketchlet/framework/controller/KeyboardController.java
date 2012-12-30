@@ -31,20 +31,20 @@ public class KeyboardController {
         boolean keyProcessed = false;
         if (context.getCurrentPage() != null) {
             if (context.getSelectedRegion() != null) {
-                keyProcessed = context.getSelectedRegion().keyboardProcessor.processKey(e, "pressed");
+                keyProcessed = context.getSelectedRegion().getKeyboardEventsProcessor().processKey(e, "pressed");
             }
             if (!keyProcessed) {
-                keyProcessed = context.getCurrentPage().getKeyboardProcessor().processKey(e, "pressed");
+                keyProcessed = context.getCurrentPage().getKeyboardEventsProcessor().processKey(e, "pressed");
                 if (!keyProcessed && context.getMasterPage() != null) {
-                    keyProcessed = context.getMasterPage().getKeyboardProcessor().processKey(e, "pressed");
+                    keyProcessed = context.getMasterPage().getKeyboardEventsProcessor().processKey(e, "pressed");
                 }
             }
         }
         if (!keyProcessed) {
             if (context.getCurrentPage() != null) {
-                keyProcessed = context.getCurrentPage().getKeyboardProcessor().processKey(e, "");
+                keyProcessed = context.getCurrentPage().getKeyboardEventsProcessor().processKey(e, "");
                 if (!keyProcessed && context.getMasterPage() != null) {
-                    keyProcessed = context.getMasterPage().getKeyboardProcessor().processKey(e, "");
+                    keyProcessed = context.getMasterPage().getKeyboardEventsProcessor().processKey(e, "");
                 }
             }
         }
@@ -53,7 +53,7 @@ public class KeyboardController {
             switch (e.getKeyCode()) {
                 case KeyEvent.VK_LEFT:
                     if (WidgetPlugin.getActiveWidget() == null) {
-                        index = context.getPages().getPages().indexOf(context.getCurrentPage());
+                        index = context.getProject().getPages().indexOf(context.getCurrentPage());
                         if (index > 0) {
                             Commands.execute(context.getCurrentPage(), "Go to page", "previous", "", context.getCurrentPage().getActiveTimers(), context.getCurrentPage().getActiveMacros(), "", "", context.getFrame());
                         }
@@ -61,8 +61,8 @@ public class KeyboardController {
                     break;
                 case KeyEvent.VK_RIGHT:
                     if (WidgetPlugin.getActiveWidget() == null) {
-                        index = context.getPages().getPages().indexOf(context.getCurrentPage());
-                        if (index < context.getPages().getPages().size() - 1) {
+                        index = context.getProject().getPages().indexOf(context.getCurrentPage());
+                        if (index < context.getProject().getPages().size() - 1) {
                             Commands.execute(context.getCurrentPage(), "Go to page", "next", "", context.getCurrentPage().getActiveTimers(), context.getCurrentPage().getActiveMacros(), "", "", context.getFrame());
                         }
                     }
@@ -117,12 +117,12 @@ public class KeyboardController {
         boolean keyProcessed = false;
         if (context.getCurrentPage() != null) {
             if (context.getSelectedRegion() != null) {
-                keyProcessed = context.getSelectedRegion().keyboardProcessor.processKey(e, "pressed");
+                keyProcessed = context.getSelectedRegion().getKeyboardEventsProcessor().processKey(e, "pressed");
             }
             if (!keyProcessed) {
-                keyProcessed = context.getCurrentPage().getKeyboardProcessor().processKey(e, "released");
+                keyProcessed = context.getCurrentPage().getKeyboardEventsProcessor().processKey(e, "released");
                 if (!keyProcessed && context.getMasterPage() != null) {
-                    keyProcessed = context.getMasterPage().getKeyboardProcessor().processKey(e, "released");
+                    keyProcessed = context.getMasterPage().getKeyboardEventsProcessor().processKey(e, "released");
                 }
             }
         }

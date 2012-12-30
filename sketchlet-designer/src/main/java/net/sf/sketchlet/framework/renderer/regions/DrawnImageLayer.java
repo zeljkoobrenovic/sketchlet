@@ -22,8 +22,8 @@ public class DrawnImageLayer extends DrawingLayer {
 
     public void setIndex(int i) {
         this.index = i;
-        if (index > region.additionalDrawImages.size()) {
-            index = region.additionalImageFile.size();
+        if (index > region.getAdditionalDrawnImages().size()) {
+            index = region.getAdditionalImageFileNames().size();
         }
         if (index < 0) {
             index = 0;
@@ -31,12 +31,16 @@ public class DrawnImageLayer extends DrawingLayer {
     }
 
     public void init() {
-        if (!region.getDrawImageFileName(0).isEmpty() && region.getDrawImage(0) == null) {
+        ActiveRegion region = this.region;
+        if (region == null) {
+            return;
+        }
+        if (!region.getDrawnImageFileName(0).isEmpty() && region.getDrawnImage(0) == null) {
             region.initImage(0);
         }
-        for (int aai = 0; aai < region.additionalDrawImages.size(); aai++) {
-            String strAdditionalImage = region.additionalImageFile.elementAt(aai);
-            BufferedImage additionalImage = region.additionalDrawImages.elementAt(aai);
+        for (int aai = 0; aai < region.getAdditionalDrawnImages().size(); aai++) {
+            String strAdditionalImage = region.getAdditionalImageFileNames().get(aai);
+            BufferedImage additionalImage = region.getAdditionalDrawnImages().get(aai);
 
             if (!strAdditionalImage.equals("") && additionalImage == null) {
                 region.initImage(aai + 1);
@@ -50,29 +54,29 @@ public class DrawnImageLayer extends DrawingLayer {
             return;
         }
         init();
-        if (region.getDrawImage(index) != null && region.getDrawImage(index).getWidth() > 1) {
-            if (region.fitToBoxEnabled) {
-                region.getRenderer().drawImageWin(g2, region.getDrawImage(index), region.x1, region.y1, region.x2 - region.x1, region.y2 - region.y1);
+        if (region.getDrawnImage(index) != null && region.getDrawnImage(index).getWidth() > 1) {
+            if (region.isFitToBoxEnabled()) {
+                region.getRenderer().drawImageWin(g2, region.getDrawnImage(index), region.getX1Value(), region.getY1Value(), region.getX2Value() - region.getX1Value(), region.getY2Value() - region.getY1Value());
             } else {
                 int xImage;
                 int yImage;
-                if (region.horizontalAlignment.equals("left") || region.horizontalAlignment.isEmpty()) {
-                    xImage = region.x1;
-                } else if (region.horizontalAlignment.equals("center")) {
-                    xImage = region.x1 + (region.x2 - region.x1) / 2 - region.getDrawImage(index).getWidth() / 2;
+                if (region.getHorizontalAlignment().equals("left") || region.getHorizontalAlignment().isEmpty()) {
+                    xImage = region.getX1Value();
+                } else if (region.getHorizontalAlignment().equals("center")) {
+                    xImage = region.getX1Value() + (region.getX2Value() - region.getX1Value()) / 2 - region.getDrawnImage(index).getWidth() / 2;
                 } else {
-                    xImage = region.x2 - region.getDrawImage(index).getWidth();
+                    xImage = region.getX2Value() - region.getDrawnImage(index).getWidth();
                 }
 
-                if (region.verticalAlignment.equals("top") || region.verticalAlignment.isEmpty()) {
-                    yImage = region.y1;
-                } else if (region.verticalAlignment.equals("center")) {
-                    yImage = region.y1 + (region.y2 - region.y1) / 2 - region.getDrawImage(index).getHeight() / 2;
+                if (region.getVerticalAlignment().equals("top") || region.getVerticalAlignment().isEmpty()) {
+                    yImage = region.getY1Value();
+                } else if (region.getVerticalAlignment().equals("center")) {
+                    yImage = region.getY1Value() + (region.getY2Value() - region.getY1Value()) / 2 - region.getDrawnImage(index).getHeight() / 2;
                 } else {
-                    yImage = region.y2 - region.getDrawImage(index).getHeight();
+                    yImage = region.getY2Value() - region.getDrawnImage(index).getHeight();
                 }
 
-                region.getRenderer().drawImageWin(g2, region.getDrawImage(index), xImage, yImage, region.getDrawImage(index).getWidth(), region.getDrawImage(index).getHeight());
+                region.getRenderer().drawImageWin(g2, region.getDrawnImage(index), xImage, yImage, region.getDrawnImage(index).getWidth(), region.getDrawnImage(index).getHeight());
             }
         }
     }

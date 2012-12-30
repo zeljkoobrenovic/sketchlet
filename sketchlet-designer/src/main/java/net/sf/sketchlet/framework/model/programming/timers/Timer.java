@@ -75,7 +75,7 @@ public class Timer extends TimerProgrammingUnit {
                     this.setDefaultCurve("");
                 }
                 if (!this.getName().equals(oldName)) {
-                    SketchletEditor.getInstance().getPages().replaceReferences("Start Timer", oldName, this.getName());
+                    SketchletEditor.getInstance().getProject().replaceReferences("Start Timer", oldName, this.getName());
                 }
                 this.setStrDurationInSec(this.getPanel().fieldDuration.getText());
                 this.setStrPauseBefore(this.getPanel().fieldWait.getText());

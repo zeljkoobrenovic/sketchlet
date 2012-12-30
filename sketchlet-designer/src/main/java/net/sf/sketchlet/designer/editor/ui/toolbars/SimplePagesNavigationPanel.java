@@ -131,7 +131,7 @@ public class SimplePagesNavigationPanel extends JPanel {
                 final JPopupMenu popupMenu = new JPopupMenu();
 
                 int i = 0;
-                for (Page s : SketchletEditor.getInstance().getPages().getPages()) {
+                for (Page s : SketchletEditor.getInstance().getProject().getPages()) {
                     final int index = i;
                     JMenuItem sketchMenuItem = new JMenuItem((i + 1) + ". " + s.getTitle());
                     sketchMenuItem.addActionListener(new ActionListener() {
@@ -177,7 +177,7 @@ public class SimplePagesNavigationPanel extends JPanel {
                 final JPopupMenu popupMenu = new JPopupMenu();
 
                 int i = 0;
-                for (Page s : SketchletEditor.getInstance().getPages().getPages()) {
+                for (Page s : SketchletEditor.getInstance().getProject().getPages()) {
                     final int index = i;
                     JMenuItem sketchMenuItem = new JMenuItem((i + 1) + ". " + s.getTitle());
                     sketchMenuItem.addActionListener(new ActionListener() {

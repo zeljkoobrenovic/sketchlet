@@ -5,12 +5,11 @@ import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.designer.editor.SketchletEditorMode;
-import net.sf.sketchlet.designer.editor.ui.profiles.Profiles;
-import net.sf.sketchlet.designer.playback.displays.InteractionSpace;
 import net.sf.sketchlet.framework.blackboard.evaluator.Evaluator;
 import net.sf.sketchlet.framework.controller.ActiveRegionMouseController;
 import net.sf.sketchlet.framework.controller.InteractionContext;
 import net.sf.sketchlet.framework.model.ActiveRegion;
+import net.sf.sketchlet.framework.renderer.DropAreasRenderer;
 import net.sf.sketchlet.framework.renderer.page.VariablesRelationsRenderer;
 import org.apache.log4j.Logger;
 
@@ -28,11 +27,6 @@ import java.util.Vector;
 public class ActiveRegionRenderer {
     private static final Logger log = Logger.getLogger(ActiveRegionRenderer.class);
 
-    public static final Image MOUSE_ICON = Workspace.createImageIcon("resources/mouse.png").getImage();
-    public static final Image REGIONS_ICON = Workspace.createImageIcon("resources/overlap.png").getImage();
-    public static final Image MOVE_ROTATE_ICON = Workspace.createImageIcon("resources/move_rotate.png").getImage();
-    public static final Image PROPERTIES_ICON = Workspace.createImageIcon("resources/details_transparent.png").getImage();
-
     public static final int CORNER_SIZE = 8;
 
     private ShapeLayer shapeImageLayer;
@@ -43,6 +37,8 @@ public class ActiveRegionRenderer {
     private ImageDrawingLayer imageDrawingLayer;
     private AuxiliaryDrawingLayer auxiliaryDrawingLayer;
     private Perspective perspective;
+    private DropAreasRenderer dropAreasRenderer;
+    private final ActiveRegionRendererDataPreparation activeRegionRendererDataPreparation;
 
     private ActiveRegion region;
     private BufferedImage buffer;
@@ -68,9 +64,10 @@ public class ActiveRegionRenderer {
         setTrajectoryDrawingLayer(new TrajectoryDrawingLayer(region));
         setImageDrawingLayer(new ImageDrawingLayer(region));
         setAuxiliaryDrawingLayer(new AuxiliaryDrawingLayer(region));
+        activeRegionRendererDataPreparation = new ActiveRegionRendererDataPreparation(this);
     }
 
-    public void activate(boolean bPlayback) {
+    public void activate(boolean inPlaybackMode) {
     }
 
     public void deactivate(boolean bPlayback) {
@@ -115,6 +112,11 @@ public class ActiveRegionRenderer {
             getAuxiliaryDrawingLayer().dispose();
         }
 
+        if (dropAreasRenderer != null) {
+            dropAreasRenderer.dispose();
+            dropAreasRenderer = null;
+        }
+
         setPerspective(null);
         setShapeImageLayer(null);
         setWidgetImageLayer(null);
@@ -128,8 +130,8 @@ public class ActiveRegionRenderer {
     public float getLayerTransparency() {
         float t = 1.0f;
         try {
-            if (region.parent != null) {
-                String strTransparency = region.getSketch().getPropertyValue("transparency layer " + (region.layer + 1));
+            if (region.getParent() != null) {
+                String strTransparency = region.getSketch().getPropertyValue("transparency layer " + (region.getLayer() + 1));
                 if (strTransparency != null && !strTransparency.isEmpty()) {
                     strTransparency = Evaluator.processText(strTransparency, "", "");
                     t = (float) Double.parseDouble(strTransparency);
@@ -142,10 +144,10 @@ public class ActiveRegionRenderer {
     }
 
     public void draw(Graphics2D g) {
-        draw(g, null, SketchletEditorMode.ACTIONS, false, false, 1.0f);
+        draw(g, null, SketchletEditorMode.EDITING_REGIONS, false, false, 1.0f);
     }
 
-    public synchronized void draw(Graphics2D g2, Component component, SketchletEditorMode mode, boolean bPlayback, boolean bHighlightRegions, float transparency) {
+    public synchronized void draw(Graphics2D g2, Component component, SketchletEditorMode mode, boolean inPlaybackMode, boolean bHighlightRegions, float transparency) {
         try {
             double scale = SketchletEditor.getInstance() != null ? SketchletEditor.getInstance().getScale() : 1.0;
             float fontSize = (float) (11 / scale);
@@ -156,42 +158,42 @@ public class ActiveRegionRenderer {
             Font font = g2.getFont().deriveFont(fontSize);
             g2.setFont(font);
             AffineTransform oldTransform = g2.getTransform();
-            prepare(bPlayback);
+            activeRegionRendererDataPreparation.prepare(inPlaybackMode, true);
 
             transparency *= getLayerTransparency();
 
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, transparency));
 
-            if (bPlayback) {
-                if (region.parent != null) {
-                    g2.translate(region.parent.getOffsetX(), region.parent.getOffsetY());
+            if (inPlaybackMode) {
+                if (region.getParent() != null) {
+                    g2.translate(region.getParent().getOffsetX(), region.getParent().getOffsetY());
                 }
             }
-            g2.shear(region.shearX, region.shearY);
-            if (region.rotation != 0.0) {
-                g2.rotate(region.rotation,
-                        region.getX1() + (region.x2 - region.getX1()) * region.center_rotation_x,
-                        region.y1 + (region.y2 - region.y1) * region.center_rotation_y);
+            g2.shear(region.getShearXValue(), region.getShearYValue());
+            if (region.getRotationValue() != 0.0) {
+                g2.rotate(region.getRotationValue(),
+                        region.getX1Value() + (region.getX2Value() - region.getX1Value()) * region.getCenterOfRotationX(),
+                        region.getY1Value() + (region.getY2Value() - region.getY1Value()) * region.getCenterOfRotationY());
             }
 
-            if (bPlayback) {
-                if (region.parent != null) {
-                    g2.translate(-region.parent.getOffsetX(), -region.parent.getOffsetY());
+            if (inPlaybackMode) {
+                if (region.getParent() != null) {
+                    g2.translate(-region.getParent().getOffsetX(), -region.getParent().getOffsetY());
                 }
             }
 
-            drawActive(g2, component, bPlayback, transparency);
+            drawActive(g2, component, inPlaybackMode, transparency);
 
             if (SketchletEditor.getInstance() != null && SketchletEditor.getInstance().getSketchToolbar() != null) {
                 if (SketchletEditor.getInstance().getSketchToolbar().bVisualizeInfoRegions) {
-                    this.drawInfo(g2, bPlayback, transparency);
+                    this.drawInfo(g2, inPlaybackMode, transparency);
                 }
             }
-            if (bPlayback && region == InteractionContext.getSelectedRegion()) {
+            if (inPlaybackMode && region == InteractionContext.getSelectedRegion()) {
                 Stroke stroke = g2.getStroke();
                 g2.setStroke(new BasicStroke(1));
                 g2.setColor(Color.ORANGE);
-                g2.drawRect(region.x1, region.y1, region.getWidth(), region.getHeight());
+                g2.drawRect(region.getX1Value(), region.getY1Value(), region.getWidthValue(), region.getHeightValue());
                 g2.setStroke(stroke);
             }
 
@@ -199,52 +201,33 @@ public class ActiveRegionRenderer {
                 return;
             }
 
-            if (!bPlayback) {
-                int w = Math.abs(region.x2 - region.getX1());
-                int h = Math.abs(region.y2 - region.y1);
-                int _x1 = Math.min(region.getX1(), region.x2);
-                int _x2 = Math.max(region.getX1(), region.x2);
-                int _y1 = Math.min(region.y1, region.y2);
-                int _y2 = Math.max(region.y1, region.y2);
+            if (!inPlaybackMode) {
+                int w = Math.abs(region.getX2Value() - region.getX1Value());
+                int h = Math.abs(region.getY2Value() - region.getY1Value());
+                int _x1 = Math.min(region.getX1Value(), region.getX2Value());
+                int _x2 = Math.max(region.getX1Value(), region.getX2Value());
+                int _y1 = Math.min(region.getY1Value(), region.getY2Value());
+                int _y2 = Math.max(region.getY1Value(), region.getY2Value());
 
                 g2.setStroke(new BasicStroke(1));
 
                 boolean selected = false;
 
-
                 if (SketchletEditor.getInstance() == null) {
                     return;
                 }
-                Point p = region.getInversePoint(false, (int) (FileDrop.getMouseX() / SketchletEditor.getInstance().getScale()), (int) (FileDrop.getMouseY() / SketchletEditor.getInstance().getScale()));
                 boolean dragging = region.getMouseController().inRect((int) (FileDrop.getMouseX() / SketchletEditor.getInstance().getScale()), (int) (FileDrop.getMouseY() / SketchletEditor.getInstance().getScale()), false);
 
-                Rectangle r_properties = region.getPropertiesIconRectangle();
-                Rectangle r_mouse = region.getMouseIconRectangle();
-                Rectangle r_motion = region.getMappingIconRectangle();
-                Rectangle r_overlap = region.getInRegionsIconRectangle();
-
-                double sc = Math.min(1.0, SketchletEditor.getInstance().getScale());
-                int iconSize = (int) (24 / sc);
-                int iconOffset = (int) (4 / sc);
-                int rectMargin = (int) (2 / sc);
-
-                if ((mode == SketchletEditorMode.ACTIONS && (FileDrop.isDragging())) || dragging) {
-                    if (this.PROPERTIES_ICON != null) {
-                        g2.drawImage(PROPERTIES_ICON, r_properties.x + iconOffset + 1, r_properties.y + iconOffset + 1, iconSize, iconSize, null);
-                    }
-                    if (MOVE_ROTATE_ICON != null && Profiles.isActive("active_region_move")) {
-                        g2.drawImage(MOVE_ROTATE_ICON, r_motion.x + iconOffset + 1, r_motion.y + iconOffset + 1, iconSize, iconSize, null);
-                    }
-                    if (MOUSE_ICON != null && Profiles.isActive("active_region_mouse")) {
-                        g2.drawImage(MOUSE_ICON, r_mouse.x + iconOffset + 1, r_mouse.y + iconOffset + 1, iconSize, iconSize, null);
-                    }
-                    if (REGIONS_ICON != null && Profiles.isActive("active_region_overlap")) {
-                        g2.drawImage(REGIONS_ICON, r_overlap.x + iconOffset + 1, r_overlap.y + iconOffset + 1, iconSize, iconSize, null);
+                if (FileDrop.isDragging() || dragging) {
+                    DropAreasRenderer dropAreasRenderer = getDropAreasRenderer();
+                    if (dropAreasRenderer != null) {
+                        dropAreasRenderer.getDropAreas().setOffset(_x1 + w - dropAreasRenderer.getDropAreas().getWidth(), _y1);
+                        dropAreasRenderer.draw(g2, scale);
                     }
                 }
 
-                if (mode == SketchletEditorMode.ACTIONS || dragging) {
-                    selected = region.parent.getMouseHelper().getSelectedRegions() != null && region.parent.getMouseHelper().getSelectedRegions().contains(region);
+                if (mode == SketchletEditorMode.EDITING_REGIONS || dragging) {
+                    selected = region.getParent().getMouseHelper().getSelectedRegions() != null && region.getParent().getMouseHelper().getSelectedRegions().contains(region);
                     if (dragging) {
                         g2.setColor(new Color(120, 120, 120, 100));
                         g2.setStroke(new BasicStroke(1));
@@ -257,44 +240,14 @@ public class ActiveRegionRenderer {
                 } else {
                     g2.setColor(new Color(120, 120, 120, 20));
                 }
-                if (selected || (!bPlayback && region.inFocus)) {
+                if (selected || (!inPlaybackMode && region.isInFocus())) {
                     g2.fillRect(_x1, _y1, w, h);
                 }
                 if (dragging) {
                     g2.setStroke(new BasicStroke(1));
                     g2.setColor(new Color(255, 255, 255));
-                    if (region.isInMappingIconArea(p.x, p.y) && FileDrop.getCurrentString().startsWith("=")) {
-                        g2.fillRoundRect(r_motion.x + rectMargin, r_motion.y + rectMargin, r_motion.width - rectMargin, r_motion.height - rectMargin, rectMargin * 6, rectMargin * 6);
-                        g2.drawImage(MOVE_ROTATE_ICON, r_motion.x + iconOffset + 1, r_motion.y + iconOffset + 1, iconSize, iconSize, null);
-                        g2.setColor(new Color(100, 100, 100));
-                        g2.drawRoundRect(r_motion.x + 2, r_motion.y + rectMargin, r_motion.width - rectMargin, r_motion.height - rectMargin, rectMargin * 6, rectMargin * 6);
-                        g2.drawString("motion and rotation", r_motion.x + rectMargin, r_motion.y - 6);
-                        g2.setColor(new Color(255, 255, 255));
-                    } else if (region.isInMouseIconArea(p.x, p.y)) {
-                        g2.fillRoundRect(r_mouse.x + rectMargin, r_mouse.y + rectMargin, r_mouse.width - rectMargin, r_mouse.height - rectMargin, rectMargin * 6, rectMargin * 6);
-                        g2.drawImage(MOUSE_ICON, r_mouse.x + iconOffset + 1, r_mouse.y + iconOffset + 1, iconSize, iconSize, null);
-                        g2.setColor(new Color(100, 100, 100));
-                        g2.drawRoundRect(r_mouse.x + 2, r_mouse.y + rectMargin, r_mouse.width - rectMargin, r_mouse.height - rectMargin, rectMargin * 6, rectMargin * 6);
-                        g2.drawString("mouse events (click, press, release, double ckick...)", r_mouse.x + rectMargin, r_mouse.y - 6);
-                        g2.setColor(new Color(255, 255, 255));
-                    } else if (region.isInRegionsIconArea(p.x, p.y)) {
-                        g2.fillRoundRect(r_overlap.x + rectMargin, r_overlap.y + rectMargin, r_overlap.width - rectMargin, r_overlap.height - rectMargin, rectMargin * 6, rectMargin * 6);
-                        g2.drawImage(REGIONS_ICON, r_overlap.x + iconOffset + 1, r_overlap.y + iconOffset + 1, iconSize, iconSize, null);
-                        g2.setColor(new Color(100, 100, 100));
-                        g2.drawRoundRect(r_overlap.x + 2, r_overlap.y + rectMargin, r_overlap.width - rectMargin, r_overlap.height - rectMargin, rectMargin * 6, rectMargin * 6);
-                        g2.drawString("regions overlap events", r_overlap.x + rectMargin, r_overlap.y - 6);
-                        g2.setColor(new Color(255, 255, 255));
-                    } else if (FileDrop.getCurrentString().startsWith("=")) {
-                        g2.fillRoundRect(r_properties.x + rectMargin, r_properties.y + rectMargin, r_properties.width - rectMargin, r_properties.height - rectMargin, rectMargin * 6, rectMargin * 6);
-                        g2.drawImage(PROPERTIES_ICON, r_properties.x + iconOffset + 1, r_properties.y + iconOffset + 1, iconSize, iconSize, null);
-                        g2.setColor(new Color(100, 100, 100));
-                        g2.drawRoundRect(r_properties.x + 2, r_properties.y + rectMargin, r_properties.width - rectMargin, r_properties.height - rectMargin, rectMargin * 6, rectMargin * 6);
-                        g2.drawString("region parameters", r_properties.x + rectMargin, r_properties.y - 6);
-                        g2.setColor(new Color(255, 255, 255));
-                    }
                 }
-
-                if (mode == SketchletEditorMode.ACTIONS) {
+                if (mode == SketchletEditorMode.EDITING_REGIONS) {
                     g2.setColor(Color.LIGHT_GRAY);
                     g2.drawRect(_x1, _y1, w, h);
                     Stroke stroke = g2.getStroke();
@@ -303,11 +256,11 @@ public class ActiveRegionRenderer {
                     int _cornerSize = (int) (CORNER_SIZE / SketchletEditor.getInstance().getScale());
 
                     if (selected) {
-                        if (SketchletEditor.getInstance().isDragging() && !this.region.getMouseController().isbRotating()) {
+                        if (SketchletEditor.getInstance().isDragging() && !this.region.getMouseController().isRotating()) {
                             g2.setColor(new Color(255, 255, 255, 100));
-                            g2.fillRect(region.getX1(), region.getY1() - 12, region.getWidth(), 12);
+                            g2.fillRect(region.getX1Value(), region.getY1Value() - 12, region.getWidthValue(), 12);
                             g2.setColor(Color.BLACK);
-                            g2.drawString(Language.translate("Left") + ": " + region.getX1() + " " + Language.translate("Top") + ": " + region.getY1() + " " + Language.translate("Width") + ": " + region.getWidth() + " " + Language.translate("Height") + ": " + region.getHeight(), _x1, _y1 - 3);
+                            g2.drawString(Language.translate("Left") + ": " + region.getX1Value() + " " + Language.translate("Top") + ": " + region.getY1Value() + " " + Language.translate("Width") + ": " + region.getWidthValue() + " " + Language.translate("Height") + ": " + region.getHeightValue(), _x1, _y1 - 3);
                         }
 
                         g2.drawLine(_x1 + (_x2 - _x1) / 2, _y1, _x1 + (_x2 - _x1) / 2, _y1 - 35);
@@ -321,115 +274,26 @@ public class ActiveRegionRenderer {
 
                         g2.setStroke(new BasicStroke(1));
 
-                        if (!region.trajectory1.isEmpty()) {
-                            g2.setColor(Color.WHITE);
-                            g2.fillOval(_x1 - _cornerSize / 2 - 1 + (int) (w * region.trajectory2_x), _y1 - _cornerSize / 2 - 1 + (int) (h * region.trajectory2_y), _cornerSize + 2, _cornerSize + 2);
-                            g2.setColor(new Color(0, 0, 255, 100));
-                            g2.fillOval(_x1 - _cornerSize / 2 + (int) (w * region.trajectory2_x), _y1 - _cornerSize / 2 + (int) (h * region.trajectory2_y), _cornerSize, _cornerSize);
+                        drawTrajectoryElements(g2, _x1, _y1, w, h, _cornerSize);
+
+                        if (this.region.getMouseController().isRotating() && SketchletEditor.getInstance().isDragging()) {
+                            drawRotatingElements(g2, _x1, _y1, w, h);
                         }
 
-                        if (!SketchletEditor.getInstance().isInShiftMode()) {
-                            g2.setColor(Color.WHITE);
-                            g2.fillOval(_x1 - _cornerSize / 2 + (int) (w * region.center_rotation_x), _y1 - _cornerSize / 2 + (int) (h * region.center_rotation_y), _cornerSize, _cornerSize);
-                            g2.setColor(Color.GRAY);
-                            g2.drawOval(_x1 - _cornerSize / 2 - 1 + (int) (w * region.center_rotation_x), _y1 - _cornerSize / 2 - 1 + (int) (h * region.center_rotation_y), _cornerSize + 2, _cornerSize + 2);
-                        }
-                        if (!SketchletEditor.getInstance().isInShiftMode() && region.getMouseController().getSelectedCorner() == ActiveRegionMouseController.CENTER_ROTATION) {
-                            int __x = _x1 - _cornerSize / 2 - 1 + (int) (w * region.getMouseController().getCenterRotationX());
-                            int __y = _y1 - _cornerSize / 2 - 1 + (int) (h * region.getMouseController().getCenterRotationY());
-                            g2.drawOval(__x, __y, _cornerSize + 2, _cornerSize + 2);
-                            g2.drawString("rotation center", __x, __y + 20);
-                        } else if (SketchletEditor.getInstance().isInCtrlMode() && SketchletEditor.getInstance().isInShiftMode()) {
-                            if (region.getMouseController().getSelectedCorner() == ActiveRegionMouseController.TRAJECTORY2_POINT) {
-                                int __x = _x1 - _cornerSize / 2 - 1 + (int) (w * region.getMouseController().getCenterRotationX());
-                                int __y = _y1 - _cornerSize / 2 - 1 + (int) (h * region.getMouseController().getCenterRotationY());
-                                g2.drawOval(__x, __y, _cornerSize + 2, _cornerSize + 2);
-                                __x = _x1 - _cornerSize / 2 - 1 + (int) (w * region.getMouseController().getTrajectory2X());
-                                __y = _y1 - _cornerSize / 2 - 1 + (int) (h * region.getMouseController().getTrajectory2Y());
-                                g2.setColor(Color.WHITE);
-                                g2.drawOval(__x, __y, _cornerSize + 2, _cornerSize + 2);
-                                g2.setColor(Color.GRAY);
-                                g2.drawString("trajectory point 2", __x, __y + 20);
-                                g2.setColor(Color.WHITE);
-                                int __x1 = _x1 + (int) (w * region.center_rotation_x);
-                                int __y1 = _y1 + (int) (h * region.center_rotation_y);
-                                int __x2 = _x1 + (int) (w * region.getMouseController().getTrajectory2X());
-                                int __y2 = _y1 + (int) (h * region.getMouseController().getTrajectory2Y());
-                                g2.drawLine(__x1, __y1, __x2, __y2);
-                            }
-                        }
-
-                        if (this.region.getMouseController().isbRotating() && SketchletEditor.getInstance().isDragging()) {
-                            double circelSize = 60 / SketchletEditor.getInstance().getScale();
-                            g2.drawOval((int) (_x1 - circelSize / 2 - 1 + w * region.center_rotation_x), (int) (_y1 - circelSize / 2 - 1 + h * region.center_rotation_y), (int) (circelSize + 2), (int) (circelSize + 2));
-                            g2.setColor(Color.GRAY);
-                            for (int r = 0; r < 360; r += 15) {
-                                double angle = Math.toRadians(r) - region.rotation;
-                                double r_x1 = _x1 + w * region.center_rotation_x + circelSize / 2 * Math.cos(angle);
-                                double r_y1 = _y1 + h * region.center_rotation_y + circelSize / 2 * Math.sin(angle);
-                                double r_x2 = _x1 + w * region.center_rotation_x + (circelSize / 2 - 5) * Math.cos(angle);
-                                double r_y2 = _y1 + h * region.center_rotation_y + (circelSize / 2 - 5) * Math.sin(angle);
-
-                                g2.drawLine((int) r_x1, (int) r_y1, (int) r_x2, (int) r_y2);
-                            }
-                            g2.setColor(Color.RED);
-                            double angle = -Math.PI / 2;
-                            double r_x1 = _x1 + w * region.center_rotation_x + circelSize / 2 * Math.cos(angle);
-                            double r_y1 = _y1 + h * region.center_rotation_y + circelSize / 2 * Math.sin(angle);
-                            double r_x2 = _x1 + w * region.center_rotation_x + (circelSize / 2 - 10) * Math.cos(angle);
-                            double r_y2 = _y1 + h * region.center_rotation_y + (circelSize / 2 - 10) * Math.sin(angle);
-                            g2.drawLine((int) r_x1, (int) r_y1, (int) r_x2, (int) r_y2);
-
-                            g2.setColor(Color.GRAY);
-                            g2.drawString("  " + ((int) Math.toDegrees(region.rotation)), (int) r_x1 - 10, (int) r_y1 - 5);
-                        }
-                        g2.setColor(Color.YELLOW);
-                        g2.fillOval(_x1 - _cornerSize / 2 + (int) (w * region.p_x0), _y1 - _cornerSize / 2 + (int) (h * region.p_y0), _cornerSize, _cornerSize);
-                        g2.fillOval(_x1 - _cornerSize / 2 + (int) (w * region.p_x1), _y1 - _cornerSize / 2 + (int) (h * region.p_y1), _cornerSize, _cornerSize);
-                        g2.fillOval(_x1 - _cornerSize / 2 + (int) (w * region.p_x2), _y1 - _cornerSize / 2 + (int) (h * region.p_y2), _cornerSize, _cornerSize);
-                        g2.fillOval(_x1 - _cornerSize / 2 + (int) (w * region.p_x3), _y1 - _cornerSize / 2 + (int) (h * region.p_y3), _cornerSize, _cornerSize);
-                        g2.drawLine(_x1 + (int) (w * region.p_x0), _y1 + (int) (h * region.p_y0),
-                                _x1 + (int) (w * region.p_x1), _y1 + (int) (h * region.p_y1));
-                        g2.drawLine(_x1 + (int) (w * region.p_x1), _y1 + (int) (h * region.p_y1),
-                                _x1 + (int) (w * region.p_x2), _y1 + (int) (h * region.p_y2));
-                        g2.drawLine(_x1 + (int) (w * region.p_x2), _y1 + (int) (h * region.p_y2),
-                                _x1 + (int) (w * region.p_x3), _y1 + (int) (h * region.p_y3));
-                        g2.drawLine(_x1 + (int) (w * region.p_x3), _y1 + (int) (h * region.p_y3),
-                                _x1 + (int) (w * region.p_x0), _y1 + (int) (h * region.p_y0));
-
-                        g2.setColor(new Color(170, 170, 170, 200));
-                        g2.drawRect(_x1, _y1, w, h);
-
-                        g2.setColor(new Color(170, 170, 170, 200));
-                        g2.fillOval(_x1 - _cornerSize / 2, _y1 - _cornerSize / 2, _cornerSize, _cornerSize);
-                        g2.fillOval(_x1 - _cornerSize / 2, _y2 - _cornerSize / 2, _cornerSize, _cornerSize);
-                        g2.fillOval(_x2 - _cornerSize / 2, _y1 - _cornerSize / 2, _cornerSize, _cornerSize);
-                        g2.fillOval(_x2 - _cornerSize / 2, _y2 - _cornerSize / 2, _cornerSize, _cornerSize);
-                        g2.fillOval(_x1 + (_x2 - _x1) / 2 - _cornerSize / 2, _y1 - 35 - _cornerSize / 2, _cornerSize, _cornerSize);
-                        g2.setStroke(new BasicStroke(1));
-                        g2.setColor(new Color(170, 170, 170, 200));
-                        g2.drawOval(_x1 - _cornerSize / 2, _y1 - _cornerSize / 2, _cornerSize, _cornerSize);
-                        g2.drawOval(_x1 - _cornerSize / 2, _y2 - _cornerSize / 2, _cornerSize, _cornerSize);
-                        g2.drawOval(_x2 - _cornerSize / 2, _y1 - _cornerSize / 2, _cornerSize, _cornerSize);
-                        g2.drawOval(_x2 - _cornerSize / 2, _y2 - _cornerSize / 2, _cornerSize, _cornerSize);
-                        g2.drawOval(_x1 + (_x2 - _x1) / 2 - _cornerSize / 2, _y1 - 35 - _cornerSize / 2, _cornerSize, _cornerSize);
-                        g2.setStroke(new BasicStroke(1));
-                        g2.setColor(new Color(170, 170, 170, 200));
-                        g2.fillRect(_x1 + w / 2 - _cornerSize / 2, _y1 - _cornerSize / 2, _cornerSize, _cornerSize);
-                        g2.fillRect(_x1 + w / 2 - _cornerSize / 2, _y2 - _cornerSize / 2, _cornerSize, _cornerSize);
-                        g2.fillRect(_x1 - _cornerSize / 2, _y1 + h / 2 - _cornerSize / 2, _cornerSize, _cornerSize);
-                        g2.fillRect(_x2 - _cornerSize / 2, _y1 + h / 2 - _cornerSize / 2, _cornerSize, _cornerSize);
+                        drawSelectionElement(g2, _x1, _y1, _x2, _y2, w, h, _cornerSize);
                     }
                     g2.setColor(Color.BLACK);
                     g2.drawString(region.getNumber(), _x1 + w / 2 - 2, _y1 + h / 2 + 5);
-                    g2.drawString(region.name, _x1 + w / 2 - 2, _y1 + h / 2 + 17);
+                    if (!region.getName().equalsIgnoreCase(region.getName())) {
+                        g2.drawString(region.getName(), _x1 + w / 2 - 2, _y1 + h / 2 + 17);
+                    }
                 }
             }
 
             g2.setTransform(oldTransform);
 
-            if (!bPlayback) {
-                this.getTrajectoryDrawingLayer().draw(g2, component, bPlayback);
+            if (!inPlaybackMode) {
+                this.getTrajectoryDrawingLayer().draw(g2, component, inPlaybackMode);
                 getAuxiliaryDrawingLayer().drawLimits(g2, component, mode);
             } else if (bHighlightRegions) {
                 getAuxiliaryDrawingLayer().drawHighlight(g2);
@@ -440,292 +304,106 @@ public class ActiveRegionRenderer {
         }
     }
 
-    public synchronized void prepare(boolean bPlayback) {
-        prepare(bPlayback, true);
+    private void drawRotatingElements(Graphics2D g2, int _x1, int _y1, int w, int h) {
+        double circleSize = 60 / SketchletEditor.getInstance().getScale();
+        g2.drawOval((int) (_x1 - circleSize / 2 - 1 + w * region.getCenterOfRotationX()), (int) (_y1 - circleSize / 2 - 1 + h * region.getCenterOfRotationY()), (int) (circleSize + 2), (int) (circleSize + 2));
+        g2.setColor(Color.GRAY);
+        for (int r = 0; r < 360; r += 15) {
+            double angle = Math.toRadians(r) - region.getRotationValue();
+            double r_x1 = _x1 + w * region.getCenterOfRotationX() + circleSize / 2 * Math.cos(angle);
+            double r_y1 = _y1 + h * region.getCenterOfRotationY() + circleSize / 2 * Math.sin(angle);
+            double r_x2 = _x1 + w * region.getCenterOfRotationX() + (circleSize / 2 - 5) * Math.cos(angle);
+            double r_y2 = _y1 + h * region.getCenterOfRotationY() + (circleSize / 2 - 5) * Math.sin(angle);
+
+            g2.drawLine((int) r_x1, (int) r_y1, (int) r_x2, (int) r_y2);
+        }
+        g2.setColor(Color.RED);
+        double angle = -Math.PI / 2;
+        double r_x1 = _x1 + w * region.getCenterOfRotationX() + circleSize / 2 * Math.cos(angle);
+        double r_y1 = _y1 + h * region.getCenterOfRotationY() + circleSize / 2 * Math.sin(angle);
+        double r_x2 = _x1 + w * region.getCenterOfRotationX() + (circleSize / 2 - 10) * Math.cos(angle);
+        double r_y2 = _y1 + h * region.getCenterOfRotationY() + (circleSize / 2 - 10) * Math.sin(angle);
+        g2.drawLine((int) r_x1, (int) r_y1, (int) r_x2, (int) r_y2);
+
+        g2.setColor(Color.GRAY);
+        g2.drawString("  " + ((int) Math.toDegrees(region.getRotationValue())), (int) r_x1 - 10, (int) r_y1 - 5);
     }
 
-    public synchronized void prepare(boolean bPlayback, boolean bProcessLimits) {
-        if (region == null) {
-            return;
+    private void drawSelectionElement(Graphics2D g2, int _x1, int _y1, int _x2, int _y2, int w, int h, int _cornerSize) {
+        g2.setColor(Color.YELLOW);
+        g2.fillOval(_x1 - _cornerSize / 2 + (int) (w * region.getP_x0()), _y1 - _cornerSize / 2 + (int) (h * region.getP_y0()), _cornerSize, _cornerSize);
+        g2.fillOval(_x1 - _cornerSize / 2 + (int) (w * region.getP_x1()), _y1 - _cornerSize / 2 + (int) (h * region.getP_y1()), _cornerSize, _cornerSize);
+        g2.fillOval(_x1 - _cornerSize / 2 + (int) (w * region.getP_x2()), _y1 - _cornerSize / 2 + (int) (h * region.getP_y2()), _cornerSize, _cornerSize);
+        g2.fillOval(_x1 - _cornerSize / 2 + (int) (w * region.getP_x3()), _y1 - _cornerSize / 2 + (int) (h * region.getP_y3()), _cornerSize, _cornerSize);
+        g2.drawLine(_x1 + (int) (w * region.getP_x0()), _y1 + (int) (h * region.getP_y0()), _x1 + (int) (w * region.getP_x1()), _y1 + (int) (h * region.getP_y1()));
+        g2.drawLine(_x1 + (int) (w * region.getP_x1()), _y1 + (int) (h * region.getP_y1()), _x1 + (int) (w * region.getP_x2()), _y1 + (int) (h * region.getP_y2()));
+        g2.drawLine(_x1 + (int) (w * region.getP_x2()), _y1 + (int) (h * region.getP_y2()), _x1 + (int) (w * region.getP_x3()), _y1 + (int) (h * region.getP_y3()));
+        g2.drawLine(_x1 + (int) (w * region.getP_x3()), _y1 + (int) (h * region.getP_y3()), _x1 + (int) (w * region.getP_x0()), _y1 + (int) (h * region.getP_y0()));
+        g2.setColor(new Color(170, 170, 170, 200));
+        g2.drawRect(_x1, _y1, w, h);
+        g2.setColor(new Color(170, 170, 170, 200));
+        g2.fillOval(_x1 - _cornerSize / 2, _y1 - _cornerSize / 2, _cornerSize, _cornerSize);
+        g2.fillOval(_x1 - _cornerSize / 2, _y2 - _cornerSize / 2, _cornerSize, _cornerSize);
+        g2.fillOval(_x2 - _cornerSize / 2, _y1 - _cornerSize / 2, _cornerSize, _cornerSize);
+        g2.fillOval(_x2 - _cornerSize / 2, _y2 - _cornerSize / 2, _cornerSize, _cornerSize);
+        g2.fillOval(_x1 + (_x2 - _x1) / 2 - _cornerSize / 2, _y1 - 35 - _cornerSize / 2, _cornerSize, _cornerSize);
+        g2.setStroke(new BasicStroke(1));
+        g2.setColor(new Color(170, 170, 170, 200));
+        g2.drawOval(_x1 - _cornerSize / 2, _y1 - _cornerSize / 2, _cornerSize, _cornerSize);
+        g2.drawOval(_x1 - _cornerSize / 2, _y2 - _cornerSize / 2, _cornerSize, _cornerSize);
+        g2.drawOval(_x2 - _cornerSize / 2, _y1 - _cornerSize / 2, _cornerSize, _cornerSize);
+        g2.drawOval(_x2 - _cornerSize / 2, _y2 - _cornerSize / 2, _cornerSize, _cornerSize);
+        g2.drawOval(_x1 + (_x2 - _x1) / 2 - _cornerSize / 2, _y1 - 35 - _cornerSize / 2, _cornerSize, _cornerSize);
+        g2.setStroke(new BasicStroke(1));
+        g2.setColor(new Color(170, 170, 170, 200));
+        g2.fillRect(_x1 + w / 2 - _cornerSize / 2, _y1 - _cornerSize / 2, _cornerSize, _cornerSize);
+        g2.fillRect(_x1 + w / 2 - _cornerSize / 2, _y2 - _cornerSize / 2, _cornerSize, _cornerSize);
+        g2.fillRect(_x1 - _cornerSize / 2, _y1 + h / 2 - _cornerSize / 2, _cornerSize, _cornerSize);
+        g2.fillRect(_x2 - _cornerSize / 2, _y1 + h / 2 - _cornerSize / 2, _cornerSize, _cornerSize);
+    }
+
+    private void drawTrajectoryElements(Graphics2D g2, int _x1, int _y1, int w, int h, int _cornerSize) {
+        if (!region.getTrajectory1().isEmpty()) {
+            g2.setColor(Color.WHITE);
+            g2.fillOval(_x1 - _cornerSize / 2 - 1 + (int) (w * region.getTrajectory2X()), _y1 - _cornerSize / 2 - 1 + (int) (h * region.getTrajectory2Y()), _cornerSize + 2, _cornerSize + 2);
+            g2.setColor(new Color(0, 0, 255, 100));
+            g2.fillOval(_x1 - _cornerSize / 2 + (int) (w * region.getTrajectory2X()), _y1 - _cornerSize / 2 + (int) (h * region.getTrajectory2Y()), _cornerSize, _cornerSize);
         }
-        try {
-            region.horizontalAlignment = region.processText(region.horizontalAlignment);
-            region.verticalAlignment = region.processText(region.verticalAlignment);
 
-            String strX = region.processText(region.strX).trim();
-            String strY = region.processText(region.strY).trim();
-            String strX1 = region.processText(region.strX1).trim();
-            String strY1 = region.processText(region.strY1).trim();
-            String strX2 = region.processText(region.strX2).trim();
-            String strY2 = region.processText(region.strY2).trim();
-            String strRelX1 = region.processText(region.strRelX).trim();
-            String strRelY1 = region.processText(region.strRelY).trim();
-            String strTrajectoryPosition = region.processText(region.strTrajectoryPosition).trim();
-            String strWidth = region.processText(region.strWidth).trim();
-            String strHeight = region.processText(region.strHeight).trim();
-            String strRotate = region.processText(region.strRotate).trim();
-            String strShearX = region.processText(region.strShearX).trim();
-            String strShearY = region.processText(region.strShearY).trim();
-
-            int prevX1 = region.x1;
-            int prevY1 = region.y1;
-            int prevX2 = region.x2;
-            int prevY2 = region.y2;
-
-            double prevRotation = region.rotation;
-            double prevShearX = region.shearX;
-            double prevShearY = region.shearY;
-
-            int w = region.x2 - region.x1;
-            int h = region.y2 - region.y1;
-
-            if (!strX.isEmpty()) {
-                try {
-                    int x = (int) InteractionSpace.getSketchX(Double.parseDouble(strX));
-
-                    if (region.horizontalAlignment.equalsIgnoreCase("center")) {
-                        x -= w / 2;
-                    } else if (region.horizontalAlignment.equalsIgnoreCase("right")) {
-                        x -= w;
-                    } else {
-                    }
-
-                    region.x1 = x;
-                    region.x2 = region.x1 + w;
-
-                    if (bProcessLimits) {
-                        region.processLimitsX();
-                    }
-                } catch (Throwable e) {
-                }
-            } else if (!strRelX1.isEmpty()) {
-                try {
-                    double limitsX[] = region.getMotionController().getLimits("position x", 0, w);
-                    int x = (int) InteractionSpace.getSketchX(limitsX[0] + (limitsX[1] - limitsX[0]) * Math.min(1.0, Double.parseDouble(strRelX1)));
-                    if (region.horizontalAlignment.equalsIgnoreCase("center")) {
-                        x -= w / 2;
-                    } else if (region.horizontalAlignment.equalsIgnoreCase("right")) {
-                        x -= w;
-                    } else {
-                    }
-
-                    region.x2 += x - region.x1;
-                    region.x1 = x;
-                    if (bProcessLimits) {
-                        region.processLimitsX();
-                    }
-                } catch (Throwable e) {
-                }
-            } else if (!strX1.isEmpty() || !strX2.isEmpty()) {
-                if (!strX1.isEmpty()) {
-                    try {
-                        int x = (int) InteractionSpace.getSketchX(Double.parseDouble(strX1));
-                        region.x1 = x;
-                    } catch (Throwable e) {
-                    }
-                }
-                if (!strX2.isEmpty()) {
-                    try {
-                        int x = (int) InteractionSpace.getSketchX(Double.parseDouble(strX2));
-                        region.x2 = x;
-                    } catch (Throwable e) {
-                    }
-                }
-                if (bProcessLimits) {
-                    region.processLimitsX();
-                }
-            }
-            if (!strY.isEmpty()) {
-                try {
-                    int y = (int) InteractionSpace.getSketchY(Double.parseDouble(strY));
-                    if (region.verticalAlignment.equalsIgnoreCase("center")) {
-                        y -= h / 2;
-                    } else if (region.verticalAlignment.equalsIgnoreCase("bottom")) {
-                        y -= h;
-                    } else {
-                    }
-
-                    region.y1 = y;
-                    region.y2 = region.y1 + h;
-                    if (bProcessLimits) {
-                        region.processLimitsY();
-                    }
-                } catch (Throwable e) {
-                }
-            } else if (!strRelY1.isEmpty()) {
-                try {
-                    double limitsY[] = region.getMotionController().getLimits("position y", 0, h);
-                    int y = (int) InteractionSpace.getSketchY(limitsY[0] + (limitsY[1] - limitsY[0]) * Math.min(1.0, Double.parseDouble(strRelY1)));
-                    if (region.verticalAlignment.equalsIgnoreCase("center")) {
-                        y -= h / 2;
-                    } else if (region.verticalAlignment.equalsIgnoreCase("bottom")) {
-                        y -= h;
-                    } else {
-                    }
-
-                    region.y2 += y - region.y1;
-                    region.y1 = y;
-                    if (bProcessLimits) {
-                        region.processLimitsY();
-                    }
-                } catch (Throwable e) {
-                }
-            } else if (!strY1.isEmpty() || !strY2.isEmpty()) {
-                if (!strY1.isEmpty()) {
-                    try {
-                        int y = (int) InteractionSpace.getSketchX(Double.parseDouble(strY1));
-                        region.y1 = y;
-                    } catch (Throwable e) {
-                    }
-                }
-                if (!strY2.isEmpty()) {
-                    try {
-                        int y = (int) InteractionSpace.getSketchX(Double.parseDouble(strY2));
-                        region.y2 = y;
-                    } catch (Throwable e) {
-                    }
-                }
-                if (bProcessLimits) {
-                    region.processLimitsY();
-                }
-            }
-            if (!strWidth.isEmpty()) {
-                try {
-                    int oldW = region.x2 - region.x1;
-                    int centerX = region.x1 + oldW / 2;
-                    int newW = (int) InteractionSpace.getSketchWidth(Double.parseDouble(strWidth));
-                    if (region.horizontalAlignment.equalsIgnoreCase("center")) {
-                        region.x1 = centerX - newW / 2;
-                        region.x2 = centerX + newW / 2;
-                    } else if (region.horizontalAlignment.equalsIgnoreCase("right")) {
-                        region.x1 = region.x2 - newW;
-                    } else {
-                        region.x2 = region.x1 + newW;
-                    }
-                    w = newW;
-                } catch (Throwable e) {
-                    //log.error(e);
-                }
-            }
-            if (!strHeight.isEmpty()) {
-                try {
-                    int oldH = region.y2 - region.y1;
-                    int centerY = region.y1 + oldH / 2;
-                    int newH = (int) InteractionSpace.getSketchHeight(Double.parseDouble(strHeight));
-                    if (region.verticalAlignment.equalsIgnoreCase("center")) {
-                        region.y1 = centerY - newH / 2;
-                        region.y2 = centerY + newH / 2;
-                    } else if (region.verticalAlignment.equalsIgnoreCase("bottom")) {
-                        region.y1 = region.y2 - newH;
-                    } else {
-                        region.y2 = region.y1 + newH;
-                    }
-                    h = newH;
-                } catch (Throwable e) {
-                    //log.error(e);
-                }
-            }
-
-            if (!region.inTrajectoryMode && !region.inTrajectoryMode2 && !region.trajectory1.trim().isEmpty()) {
-                if (!strTrajectoryPosition.isEmpty() && region.stickToTrajectoryEnabled) {
-                    try {
-                        double pos = Double.parseDouble(strTrajectoryPosition);
-                        if (!Double.isNaN(pos)) {
-                            Point p = getTrajectoryDrawingLayer().getTrajectoryPoint(pos);
-                            if (p != null) {
-                                region.x1 = (int) (p.x - w * region.center_rotation_x);
-                                region.y1 = (int) (p.y - h * region.center_rotation_y);
-                                region.x2 = region.x1 + w;
-                                region.y2 = region.y1 + h;
-                                if (bProcessLimits) {
-                                    region.processLimitsX();
-                                    region.processLimitsY();
-                                    region.processLimitsTrajectory(p);
-                                }
-                                if (region.changingOrientationOnTrajectoryEnabled) {
-                                    region.rotation = getTrajectoryDrawingLayer().trajectoryOrientationFromPoint;
-                                }
-                            }
-                        }
-                    } catch (Throwable e) {
-                        //log.error(e);
-                    }
-                }
-            }
-
-            if (!strRotate.isEmpty()) {
-                try {
-                    double rotDeg = Double.parseDouble(strRotate);
-                    rotDeg = InteractionSpace.wrapPhysicalAngle(rotDeg);
-
-                    region.rotation = InteractionSpace.toRadians(rotDeg);
-                } catch (Throwable e) {
-                }
-            }
-
-            if (!strShearX.isEmpty()) {
-                try {
-                    region.shearX = Double.parseDouble(strShearX);
-                } catch (Throwable e) {
-                }
-            } else {
-                region.shearX = 0.0;
-            }
-
-            if (!strShearY.isEmpty()) {
-                try {
-                    region.shearY = Double.parseDouble(strShearY);
-                } catch (Throwable e) {
-                }
-            } else {
-                region.shearY = 0.0;
-            }
-
-            if (region.parent != null) {
-                region.getInteractionController().processInteractionEvents(bPlayback, region.parent.getPage().getActiveTimers(), region.parent.getPage().getActiveMacros());
-                region.getSketch().updateConnectors(region, bPlayback);
-            }
-
-            if (region != null && region.getInteractionController() != null) {
-                if (!region.isWithinLimits(bPlayback) || region.getInteractionController().intersectsWithSolids(bPlayback)) {
-                    region.parent.getOverlapHelper().findNonOverlappingLocation(region);
-                    region.rotation = prevRotation;
-                    region.shearX = prevShearX;
-                    region.shearY = prevShearY;
-                } else {
-                    if (!region.regionGrouping.isEmpty()) {
-                        for (ActiveRegion as : region.parent.getRegions()) {
-                            if (as != region && as.regionGrouping.equals(region.regionGrouping)) {
-                                if (bPlayback) {
-                                    as.x1 += region.x1 - prevX1;
-                                    as.y1 += region.y1 - prevY1;
-                                    as.x2 += region.x2 - prevX2;
-                                    as.y2 += region.y2 - prevY2;
-                                    if (bProcessLimits) {
-                                        as.getMotionController().processLimits("position x", as.x1, 0, 0, true);
-                                        as.getMotionController().processLimits("position y", as.y1, 0, 0, true);
-                                    }
-                                } else {
-                                    if (region.x1 - prevX1 != 0 || region.y1 - prevY1 != 0) {
-                                        as.x1 += region.x1 - prevX1;
-                                        as.y1 += region.y1 - prevY1;
-                                        as.x2 += region.x2 - prevX2;
-                                        as.y2 += region.y2 - prevY2;
-                                        if (bProcessLimits) {
-                                            as.getMotionController().processLimits("position x", as.x1, 0, 0, true);
-                                            as.getMotionController().processLimits("position y", as.y1, 0, 0, true);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Throwable e) {
-            log.error(e);
-            e.printStackTrace();
+        if (!SketchletEditor.getInstance().isInShiftMode()) {
+            g2.setColor(Color.WHITE);
+            g2.fillOval(_x1 - _cornerSize / 2 + (int) (w * region.getCenterOfRotationX()), _y1 - _cornerSize / 2 + (int) (h * region.getCenterOfRotationY()), _cornerSize, _cornerSize);
+            g2.setColor(Color.GRAY);
+            g2.drawOval(_x1 - _cornerSize / 2 - 1 + (int) (w * region.getCenterOfRotationX()), _y1 - _cornerSize / 2 - 1 + (int) (h * region.getCenterOfRotationY()), _cornerSize + 2, _cornerSize + 2);
         }
+        if (!SketchletEditor.getInstance().isInShiftMode() && region.getMouseController().getSelectedCorner() == ActiveRegionMouseController.CENTER_ROTATION) {
+            int __x = _x1 - _cornerSize / 2 - 1 + (int) (w * region.getMouseController().getCenterRotationX());
+            int __y = _y1 - _cornerSize / 2 - 1 + (int) (h * region.getMouseController().getCenterRotationY());
+            g2.drawOval(__x, __y, _cornerSize + 2, _cornerSize + 2);
+            g2.drawString("rotation center", __x, __y + 20);
+        } else if (SketchletEditor.getInstance().isInCtrlMode() && SketchletEditor.getInstance().isInShiftMode()) {
+            if (region.getMouseController().getSelectedCorner() == ActiveRegionMouseController.TRAJECTORY2_POINT) {
+                int __x = _x1 - _cornerSize / 2 - 1 + (int) (w * region.getMouseController().getCenterRotationX());
+                int __y = _y1 - _cornerSize / 2 - 1 + (int) (h * region.getMouseController().getCenterRotationY());
+                g2.drawOval(__x, __y, _cornerSize + 2, _cornerSize + 2);
+                __x = _x1 - _cornerSize / 2 - 1 + (int) (w * region.getMouseController().getTrajectory2X());
+                __y = _y1 - _cornerSize / 2 - 1 + (int) (h * region.getMouseController().getTrajectory2Y());
+                g2.setColor(Color.WHITE);
+                g2.drawOval(__x, __y, _cornerSize + 2, _cornerSize + 2);
+                g2.setColor(Color.GRAY);
+                g2.drawString("trajectory point 2", __x, __y + 20);
+                g2.setColor(Color.WHITE);
+                int __x1 = _x1 + (int) (w * region.getCenterOfRotationX());
+                int __y1 = _y1 + (int) (h * region.getCenterOfRotationY());
+                int __x2 = _x1 + (int) (w * region.getMouseController().getTrajectory2X());
+                int __y2 = _y1 + (int) (h * region.getMouseController().getTrajectory2Y());
+                g2.drawLine(__x1, __y1, __x2, __y2);
+            }
+        }
+    }
+
+    public synchronized void prepare(boolean inPlaybackMode, boolean processLimitsEnabled) {
+        activeRegionRendererDataPreparation.prepare(inPlaybackMode, processLimitsEnabled);
     }
 
     public boolean shouldRedraw(boolean bPlayback) {
@@ -734,41 +412,41 @@ public class ActiveRegionRenderer {
         }
 
         for (int i = 0; i < region.getImageCount(); i++) {
-            if (region.isDrawImageChanged(i)) {
+            if (region.isDrawnImageChanged(i)) {
                 return true;
             }
         }
 
-        if (region.screenCapturingEnabled) {
+        if (region.isScreenCapturingEnabled()) {
             return true;
         }
 
-        if (bPlayback && !region.strPen.isEmpty()) {
+        if (bPlayback && !region.getPenWidth().isEmpty()) {
             return true;
         }
 
-        if (!region.widget.isEmpty()) {
+        if (!region.getWidget().isEmpty()) {
             return true;
         }
 
-        if (oldW != region.getWidth() || oldH != region.getHeight()) {
-            oldW = region.getWidth();
-            oldH = region.getHeight();
+        if (oldW != region.getWidthValue() || oldH != region.getHeightValue()) {
+            oldW = region.getWidthValue();
+            oldH = region.getHeightValue();
             return true;
         }
 
-        if (old_p_x0 != region.p_x0 || old_p_y0 != region.p_y0
-                || old_p_x1 != region.p_x1 || old_p_y1 != region.p_y1
-                || old_p_x2 != region.p_x2 || old_p_y2 != region.p_y2
-                || old_p_x3 != region.p_x3 || old_p_y3 != region.p_y3) {
-            old_p_x0 = region.p_x0;
-            old_p_y0 = region.p_y0;
-            old_p_x1 = region.p_x1;
-            old_p_y1 = region.p_y1;
-            old_p_x2 = region.p_x2;
-            old_p_y2 = region.p_y2;
-            old_p_x3 = region.p_x3;
-            old_p_y3 = region.p_y3;
+        if (old_p_x0 != region.getP_x0() || old_p_y0 != region.getP_y0()
+                || old_p_x1 != region.getP_x1() || old_p_y1 != region.getP_y1()
+                || old_p_x2 != region.getP_x2() || old_p_y2 != region.getP_y2()
+                || old_p_x3 != region.getP_x3() || old_p_y3 != region.getP_y3()) {
+            old_p_x0 = region.getP_x0();
+            old_p_y0 = region.getP_y0();
+            old_p_x1 = region.getP_x1();
+            old_p_y1 = region.getP_y1();
+            old_p_x2 = region.getP_x2();
+            old_p_y2 = region.getP_y2();
+            old_p_x3 = region.getP_x3();
+            old_p_y3 = region.getP_y3();
             return true;
         }
 
@@ -777,30 +455,30 @@ public class ActiveRegionRenderer {
         }
 
         String strImageProperties[] = {
-                region.transparency,
-                region.strImageIndex,
-                region.imageUrlField,
-                region.text,
-                region.textField,
-                region.shape,
-                region.lineColor,
-                region.strFillColor,
-                region.lineThickness,
-                region.lineStyle,
-                region.embeddedSketch,
-                region.horizontalAlignment,
-                region.verticalAlignment,
-                region.strPerspectiveDepth,
-                region.strRotation3DHorizontal,
-                region.strRotation3DVertical,
-                region.shapeArguments,
-                region.strShearX,
-                region.strShearY,
-                region.windowX,
-                region.windowY,
-                region.windowWidth,
-                region.windowHeight,
-                region.strZoom
+                region.getTransparency(),
+                region.getImageIndex(),
+                region.getImageUrlField(),
+                region.getText(),
+                region.getTextField(),
+                region.getShape(),
+                region.getLineColor(),
+                region.getFillColor(),
+                region.getLineThickness(),
+                region.getLineStyle(),
+                region.getEmbeddedSketch(),
+                region.getHorizontalAlignment(),
+                region.getVerticalAlignment(),
+                region.getPerspectiveDepth(),
+                region.getRotation3DHorizontal(),
+                region.getRotation3DVertical(),
+                region.getShapeArguments(),
+                region.getShearX(),
+                region.getShearY(),
+                region.getWindowX(),
+                region.getWindowY(),
+                region.getWindowWidth(),
+                region.getWindowHeight(),
+                region.getZoom()
         };
         String strCache = "" + bPlayback + ";";
         for (int i = 0; i < strImageProperties.length; i++) {
@@ -825,18 +503,18 @@ public class ActiveRegionRenderer {
                 region.animate();
             }
 
-            if (region.x2 == region.x1 || region.y2 == region.y1) {
+            if (region.getX2Value() == region.getX1Value() || region.getY2Value() == region.getY1Value()) {
                 return;
             }
 
             if (shouldRedraw(bPlayback)) {
-                int w = Math.abs(region.x2 - region.x1);
-                int h = Math.abs(region.y2 - region.y1);
-                if (Math.abs(region.x2 - region.x1) > 10000 || Math.abs(region.y2 - region.y1) > 10000) {
-                    region.x1 = 100;
-                    region.y1 = 100;
-                    region.x2 = 200;
-                    region.y2 = 200;
+                int w = Math.abs(region.getX2Value() - region.getX1Value());
+                int h = Math.abs(region.getY2Value() - region.getY1Value());
+                if (Math.abs(region.getX2Value() - region.getX1Value()) > 10000 || Math.abs(region.getY2Value() - region.getY1Value()) > 10000) {
+                    region.setX1Value(100);
+                    region.setY1Value(100);
+                    region.setX2Value(200);
+                    region.setY2Value(200);
 
                     buffer = Workspace.createCompatibleImage(100, 100);
                 } else {
@@ -845,7 +523,7 @@ public class ActiveRegionRenderer {
 
                 Graphics2D g2 = buffer.createGraphics();
 
-                g2.translate(-region.x1, -region.y1);
+                g2.translate(-region.getX1Value(), -region.getY1Value());
 
                 Area clipShape = region.getArea(bPlayback);
                 g2.setColor(new Color(0, 0, 0));
@@ -859,7 +537,7 @@ public class ActiveRegionRenderer {
                     getAuxiliaryDrawingLayer().drawPen();
                 }
 
-                String strTransparency = region.transparency;
+                String strTransparency = region.getTransparency();
 
                 if (!strTransparency.isEmpty()) {
                     strTransparency = region.processText(strTransparency);
@@ -877,14 +555,16 @@ public class ActiveRegionRenderer {
                 DrawnImageLayer drawnImageLayer = getDrawnImageLayer();
                 drawnImageLayer.init();
                 WidgetLayer widgetImageLayer = getWidgetImageLayer();
-                widgetImageLayer.draw(g2, component, bPlayback);
-                if (widgetImageLayer != null && widgetImageLayer.getWidgetPlugin() == null && getImageDrawingLayer() != null && drawnImageLayer != null) {
-                    getImageDrawingLayer().draw(g2, component, bPlayback);
-                    for (int di = 0; di < indexes.length; di++) {
-                        drawnImageLayer.setIndex(indexes[di]);
-                        drawnImageLayer.draw(g2, component, bPlayback);
+                if (widgetImageLayer != null) {
+                    widgetImageLayer.draw(g2, component, bPlayback);
+                    if (widgetImageLayer != null && widgetImageLayer.getWidgetPlugin() == null && getImageDrawingLayer() != null && drawnImageLayer != null) {
+                        getImageDrawingLayer().draw(g2, component, bPlayback);
+                        for (int di = 0; di < indexes.length; di++) {
+                            drawnImageLayer.setIndex(indexes[di]);
+                            drawnImageLayer.draw(g2, component, bPlayback);
+                        }
+                        getTextImageLayer().draw(g2, component, bPlayback);
                     }
-                    getTextImageLayer().draw(g2, component, bPlayback);
                 }
                 shapeImageLayer.draw(g2, component, bPlayback, false, true);
                 g2.setComposite(oldComposite);
@@ -901,11 +581,11 @@ public class ActiveRegionRenderer {
     }
 
     public void drawImageWin(Graphics2D g2, BufferedImage image, int dx, int dy, int dw, int dh) {
-        String strZoom = region.processText((region.strZoom).trim()).trim();
-        String strWindowX = region.processText((region.windowX).trim()).trim();
-        String strWindowY = region.processText((region.windowY).trim()).trim();
-        String strWindowWidth = region.processText((region.windowWidth).trim()).trim();
-        String strWindowHeight = region.processText((region.windowHeight).trim()).trim();
+        String strZoom = region.processText((region.getZoom()).trim()).trim();
+        String strWindowX = region.processText((region.getWindowX()).trim()).trim();
+        String strWindowY = region.processText((region.getWindowY()).trim()).trim();
+        String strWindowWidth = region.processText((region.getWindowWidth()).trim()).trim();
+        String strWindowHeight = region.processText((region.getWindowHeight()).trim()).trim();
 
         int sx = 0;
         int sy = 0;
@@ -920,8 +600,8 @@ public class ActiveRegionRenderer {
                     double __w = sw / dz;
                     double __h = sh / dz;
 
-                    sx = (int) ((sw - __w) * region.center_rotation_x);
-                    sy = (int) ((sh - __h) * region.center_rotation_y);
+                    sx = (int) ((sw - __w) * region.getCenterOfRotationX());
+                    sy = (int) ((sh - __h) * region.getCenterOfRotationY());
 
                     sw = (int) (__w);
                     sh = (int) (__h);
@@ -969,7 +649,7 @@ public class ActiveRegionRenderer {
     }
 
     public void drawActive(Graphics2D g2, Component component, boolean bPlayback, float transparency) {
-        String strIndex = region.processText(region.strImageIndex);
+        String strIndex = region.processText(region.getImageIndex());
 
         if (strIndex == null) {
             strIndex = "";
@@ -1001,11 +681,11 @@ public class ActiveRegionRenderer {
         if (region == null) {
             return;
         }
-        boolean selected = bPlayback ? false : SketchletEditor.getInstance().getMode() == SketchletEditorMode.ACTIONS && region.parent.getMouseHelper().getSelectedRegions() != null && region.parent.getMouseHelper().getSelectedRegions().contains(region);
+        boolean selected = bPlayback ? false : SketchletEditor.getInstance().getMode() == SketchletEditorMode.EDITING_REGIONS && region.getParent().getMouseHelper().getSelectedRegions() != null && region.getParent().getMouseHelper().getSelectedRegions().contains(region);
         Vector<String> info = VariablesRelationsRenderer.getRegionInfo(region, selected);
 
-        int x = region.getX1();
-        int y = region.getY1();
+        int x = region.getX1Value();
+        int y = region.getY1Value();
 
         FontRenderContext frc = g2.getFontRenderContext();
         Font font = g2.getFont();
@@ -1025,7 +705,7 @@ public class ActiveRegionRenderer {
             y += yStep;
         }
 
-        y = bPlayback ? region.y1 : region.getY1();
+        y = bPlayback ? region.getY1Value() : region.getY1Value();
         y += yStep;
         for (String strInfo : info) {
             if (strInfo.startsWith("on ") || strInfo.startsWith("when ") || strInfo.startsWith("connect ") || strInfo.startsWith("animate ")) {
@@ -1109,5 +789,17 @@ public class ActiveRegionRenderer {
 
     public void setPerspective(Perspective perspective) {
         this.perspective = perspective;
+    }
+
+    public DropAreasRenderer getDropAreasRenderer() {
+        if (dropAreasRenderer == null && region.getMouseController() != null) {
+            dropAreasRenderer = new DropAreasRenderer(region.getMouseController().getDropAreas());
+        }
+
+        return dropAreasRenderer;
+    }
+
+    public ActiveRegion getRegion() {
+        return region;
     }
 }

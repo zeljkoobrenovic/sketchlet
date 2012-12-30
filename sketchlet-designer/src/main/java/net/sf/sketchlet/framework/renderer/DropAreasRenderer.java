@@ -1,6 +1,7 @@
 package net.sf.sketchlet.framework.renderer;
 
 import net.sf.sketchlet.common.file.FileDrop;
+import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.dnd.DropArea;
 import net.sf.sketchlet.designer.editor.dnd.DropAreas;
 
@@ -12,8 +13,20 @@ import java.awt.*;
 public class DropAreasRenderer {
     private DropAreas dropAreas;
 
+    public static final Image ENTRY_ICON = Workspace.createImageIcon("resources/entry.gif").getImage();
+    public static final Image EXIT_ICON = Workspace.createImageIcon("resources/exit.gif").getImage();
+    public static final Image VARIABLE_ICON_IN = Workspace.createImageIcon("resources/variable_in.jpg").getImage();
+    public static final Image KEYBOARD_ICON = Workspace.createImageIcon("resources/keyboard.png").getImage();
+    public static final Image MOUSE_ICON = Workspace.createImageIcon("resources/mouse.png").getImage();
+    public static final Image PROPERTIES_ICON = Workspace.createImageIcon("resources/details_transparent.png").getImage();
+    public static final Image REGION_OVERLAP_ICON = Workspace.createImageIcon("resources/overlap.png").getImage();
+    public static final Image MOVE_ROTATE_ICON = Workspace.createImageIcon("resources/move_rotate.png").getImage();
+
     public DropAreasRenderer(DropAreas dropAreas) {
         this.dropAreas = dropAreas;
+    }
+
+    public void dispose() {
     }
 
     public void draw(Graphics2D g2, double scale) {
@@ -39,7 +52,7 @@ public class DropAreasRenderer {
                     if (dropAreas.getOrientation() == DropAreas.Orientation.VERTICAL) {
                         g2.drawString(dropArea.getText(), (int) ((dropAreas.getOffsetX() + _x + w + 10) / scale), (int) ((dropAreas.getOffsetY() + _y + 8) / scale));
                     } else {
-                        g2.drawString(dropArea.getText(), (int) ((dropAreas.getOffsetX() + _x - 15) / scale), (int) ((dropAreas.getOffsetY() + _y + h) / scale));
+                        g2.drawString(dropArea.getText(), (int) ((dropAreas.getOffsetX() + _x) / scale), (int) ((dropAreas.getOffsetY() + _y - 8) / scale));
                     }
                 }
 
@@ -50,5 +63,9 @@ public class DropAreasRenderer {
                 }
             }
         }
+    }
+
+    public DropAreas getDropAreas() {
+        return dropAreas;
     }
 }

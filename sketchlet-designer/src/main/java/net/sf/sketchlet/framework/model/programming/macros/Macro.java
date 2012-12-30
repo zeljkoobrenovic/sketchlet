@@ -316,9 +316,9 @@ public class Macro extends MacroProgrammingUnit {
             String oldName = this.getName();
             this.setName(this.panel.macroName.getText());
             if (!this.getName().equals(oldName)) {
-                SketchletEditor.getInstance().getPages().replaceReferences("Call Macro", oldName, this.getName());
-                SketchletEditor.getInstance().getPages().replaceReferences("Start Action", oldName, this.getName());
-                SketchletEditor.getInstance().getPages().replaceReferences("Stop Action", oldName, this.getName());
+                SketchletEditor.getInstance().getProject().replaceReferences("Call Macro", oldName, this.getName());
+                SketchletEditor.getInstance().getProject().replaceReferences("Start Action", oldName, this.getName());
+                SketchletEditor.getInstance().getProject().replaceReferences("Stop Action", oldName, this.getName());
             }
             try {
                 this.setRepeat(Integer.parseInt(this.panel.repeatField.getEditor().getItem().toString()));
@@ -449,9 +449,9 @@ public class Macro extends MacroProgrammingUnit {
             for (Timer t : Timers.getGlobalTimers().getTimers()) {
                 comboBoxParam1.addItem(t.getName());
             }
-        } else if (strCommand.equalsIgnoreCase("Go to page") && SketchletEditor.getInstance() != null && SketchletEditor.getInstance().getPages() != null) {
+        } else if (strCommand.equalsIgnoreCase("Go to page") && SketchletEditor.getInstance() != null && SketchletEditor.getInstance().getProject() != null) {
             Page currentPage = SketchletEditor.getInstance().getCurrentPage();
-            for (Page s : SketchletEditor.getInstance().getPages().getPages()) {
+            for (Page s : SketchletEditor.getInstance().getProject().getPages()) {
                 if (!currentPage.getTitle().equalsIgnoreCase(s.getTitle())) {
                     comboBoxParam1.addItem(s.getTitle());
                 }

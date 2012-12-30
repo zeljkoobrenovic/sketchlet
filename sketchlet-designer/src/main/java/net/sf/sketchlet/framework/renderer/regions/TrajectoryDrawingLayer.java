@@ -36,19 +36,19 @@ public class TrajectoryDrawingLayer extends DrawingLayer {
         if (region == null) {
             return;
         }
-        if (region.trajectory1.isEmpty()) {
+        if (region.getTrajectory1().isEmpty()) {
             return;
         }
         SketchletEditorMode mode = SketchletEditor.getInstance().getMode();
-        String strTrajectory1 = region.processText(region.trajectory1);
-        String strTrajectory2 = region.processText(region.trajectory2);
+        String strTrajectory1 = region.processText(region.getTrajectory1());
+        String strTrajectory2 = region.processText(region.getTrajectory2());
         String points[] = strTrajectory1.split("\n");
         String points2[] = strTrajectory2.split("\n");
 
         Polygon p = getPolygon(points);
         Polygon p2 = getPolygon(points2);
         if (p.npoints > 0) {
-            if (!region.inTrajectoryMode) {
+            if (!region.isInTrajectoryMode()) {
                 g2.setColor(new Color(127, 127, 127, 70));
                 g2.setStroke(new BasicStroke(1));
                 if (_p != null) {
@@ -65,11 +65,11 @@ public class TrajectoryDrawingLayer extends DrawingLayer {
         }
         if (p.npoints > 0) {
             float dash1[] = {10.0f};
-            float thick = region.parent.getMouseHelper().getSelectedRegions() != null && region.parent.getMouseHelper().getSelectedRegions().contains(region) ? 3.0f : 1.0f;
+            float thick = region.getParent().getMouseHelper().getSelectedRegions() != null && region.getParent().getMouseHelper().getSelectedRegions().contains(region) ? 3.0f : 1.0f;
             BasicStroke dashed = new BasicStroke(thick, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash1, 0.0f);
             g2.setStroke(dashed);
 
-            if (mode == SketchletEditorMode.ACTIONS) {
+            if (mode == SketchletEditorMode.EDITING_REGIONS) {
                 g2.setColor(new Color(255, 0, 0, 70));
                 g2.drawPolyline(p.xpoints, p.ypoints, p.npoints);
                 g2.setColor(new Color(0, 0, 255, 70));
@@ -172,18 +172,18 @@ public class TrajectoryDrawingLayer extends DrawingLayer {
     public Point getTrajectoryPoint2(double position) {
         Point p1 = getTrajectoryPoint(position);
 
-        int w = region.x2 - region.x1;
-        int h = region.y2 - region.y1;
-        double p1_x = region.x1 + w * region.center_rotation_x;
-        double p1_y = region.y1 + h * region.center_rotation_y;
-        double p2_x = region.x1 + w * region.trajectory2_x;
-        double p2_y = region.y1 + h * region.trajectory2_y;
+        int w = region.getX2Value() - region.getX1Value();
+        int h = region.getY2Value() - region.getY1Value();
+        double p1_x = region.getX1Value() + w * region.getCenterOfRotationX();
+        double p1_y = region.getY1Value() + h * region.getCenterOfRotationY();
+        double p2_x = region.getX1Value() + w * region.getTrajectory2X();
+        double p2_y = region.getY1Value() + h * region.getTrajectory2Y();
         double dx = p1_x - p2_x;
         double dy = p1_y - p2_y;
         double distance = Math.sqrt(dx * dx + dy * dy);
 
-        double x = p1.x - distance * Math.cos(region.rotation);
-        double y = p1.y - distance * Math.sin(region.rotation);
+        double x = p1.x - distance * Math.cos(region.getRotationValue());
+        double y = p1.y - distance * Math.sin(region.getRotationValue());
 
         return new Point((int) x, (int) y);
     }
@@ -192,7 +192,7 @@ public class TrajectoryDrawingLayer extends DrawingLayer {
         if (region.getMouseController().getSelectedCorner() == ActiveRegionMouseController.TRAJECTORY2_POINT) {
             return;
         }
-        if (region.center_rotation_x == region.trajectory2_x && region.center_rotation_y == region.trajectory2_y) {
+        if (region.getCenterOfRotationX() == region.getTrajectory2X() && region.getCenterOfRotationY() == region.getTrajectory2Y()) {
             getTrajectoryOrientation(prevTp, tp);
         } else {
             if (tps2.size() > 1) {
@@ -212,12 +212,12 @@ public class TrajectoryDrawingLayer extends DrawingLayer {
                 break;
             }
         }
-        int w = region.x2 - region.x1;
-        int h = region.y2 - region.y1;
-        double p1_x = region.x1 + w * region.center_rotation_x;
-        double p1_y = region.y1 + h * region.center_rotation_y;
-        double p2_x = region.x1 + w * region.trajectory2_x;
-        double p2_y = region.y1 + h * region.trajectory2_y;
+        int w = region.getX2Value() - region.getX1Value();
+        int h = region.getY2Value() - region.getY1Value();
+        double p1_x = region.getX1Value() + w * region.getCenterOfRotationX();
+        double p1_y = region.getY1Value() + h * region.getCenterOfRotationY();
+        double p2_x = region.getX1Value() + w * region.getTrajectory2X();
+        double p2_y = region.getY1Value() + h * region.getTrajectory2Y();
         double dx = p1_x - p2_x;
         double dy = p1_y - p2_y;
         double distance = Math.sqrt(dx * dx + dy * dy);
@@ -270,12 +270,12 @@ public class TrajectoryDrawingLayer extends DrawingLayer {
             __p = new Point(_tp.getX(), _tp.getY());
         }
 
-        int w = region.x2 - region.x1;
-        int h = region.y2 - region.y1;
-        double p1_x = region.x1 + w * region.center_rotation_x;
-        double p1_y = region.y1 + h * region.center_rotation_y;
-        double p2_x = region.x1 + w * region.trajectory2_x;
-        double p2_y = region.y1 + h * region.trajectory2_y;
+        int w = region.getX2Value() - region.getX1Value();
+        int h = region.getY2Value() - region.getY1Value();
+        double p1_x = region.getX1Value() + w * region.getCenterOfRotationX();
+        double p1_y = region.getY1Value() + h * region.getCenterOfRotationY();
+        double p2_x = region.getX1Value() + w * region.getTrajectory2X();
+        double p2_y = region.getY1Value() + h * region.getTrajectory2Y();
         double dx = p1_x - p2_x;
         double dy = p1_y - p2_y;
         double distance = Math.sqrt(dx * dx + dy * dy);
@@ -297,12 +297,12 @@ public class TrajectoryDrawingLayer extends DrawingLayer {
     public double trajectoryOrientationFromPoint = 0.0;
 
     public double getTrajectoryOrientation(TrajectoryPoint tp1, TrajectoryPoint tp2) {
-        int w = region.x2 - region.x1;
-        int h = region.y2 - region.y1;
-        double p1_x = region.x1 + w * region.center_rotation_x;
-        double p1_y = region.y1 + h * region.center_rotation_y;
-        double p2_x = region.x1 + w * region.trajectory2_x;
-        double p2_y = region.y1 + h * region.trajectory2_y;
+        int w = region.getX2Value() - region.getX1Value();
+        int h = region.getY2Value() - region.getY1Value();
+        double p1_x = region.getX1Value() + w * region.getCenterOfRotationX();
+        double p1_y = region.getY1Value() + h * region.getCenterOfRotationY();
+        double p2_x = region.getX1Value() + w * region.getTrajectory2X();
+        double p2_y = region.getY1Value() + h * region.getTrajectory2Y();
         double dx = p1_x - p2_x;
         double dy = p1_y - p2_y;
         double da = Math.atan2(p2_y - p1_y, p2_x - p1_x) + Math.PI;
@@ -411,7 +411,7 @@ public class TrajectoryDrawingLayer extends DrawingLayer {
 
     public Point getClosestTrajectoryPoint(Point point) {
         Point p = point;
-        String strTrajectory1 = region.processText(region.trajectory1);
+        String strTrajectory1 = region.processText(region.getTrajectory1());
         String points[] = strTrajectory1.split("\n");
 
         double distance = 2000.0;
@@ -491,12 +491,12 @@ public class TrajectoryDrawingLayer extends DrawingLayer {
         }
         double pointDistance = 0.0;
         prevTP = tps.size() > 0 ? tps.firstElement() : null;
-        int w = region.x2 - region.x1;
-        int h = region.y2 - region.y1;
-        double p1_x = region.x1 + w * region.center_rotation_x;
-        double p1_y = region.y1 + h * region.center_rotation_y;
-        double p2_x = region.x1 + w * region.trajectory2_x;
-        double p2_y = region.y1 + h * region.trajectory2_y;
+        int w = region.getX2Value() - region.getX1Value();
+        int h = region.getY2Value() - region.getY1Value();
+        double p1_x = region.getX1Value() + w * region.getCenterOfRotationX();
+        double p1_y = region.getY1Value() + h * region.getCenterOfRotationY();
+        double p2_x = region.getX1Value() + w * region.getTrajectory2X();
+        double p2_y = region.getY1Value() + h * region.getTrajectory2Y();
         double dx = p1_x - p2_x;
         double dy = p1_y - p2_y;
         double distance = Math.sqrt(dx * dx + dy * dy);

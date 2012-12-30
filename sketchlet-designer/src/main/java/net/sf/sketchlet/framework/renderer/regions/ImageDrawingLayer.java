@@ -28,73 +28,73 @@ public class ImageDrawingLayer extends DrawingLayer {
         if (region == null) {
             return;
         }
-        String strImage = region.imageUrlField;
+        String strImage = region.getImageUrlField();
         if (strImage == null) {
             strImage = "";
         } else {
             strImage = strImage.trim();
         }
-        if (!strImage.isEmpty() || region.screenCapturingEnabled) {
-            if (region.screenCapturingEnabled) {
+        if (!strImage.isEmpty() || region.isScreenCapturingEnabled()) {
+            if (region.isScreenCapturingEnabled()) {
                 int areaX = 0;
                 int areaY = 0;
                 int areaWidth = 800;
                 int areaHeight = 600;
 
                 try {
-                    areaX = (int) Double.parseDouble(region.processText(region.captureScreenX));
-                    areaY = (int) Double.parseDouble(region.processText(region.captureScreenY));
-                    areaWidth = (int) Double.parseDouble(region.processText(region.captureScreenWidth));
-                    areaHeight = (int) Double.parseDouble(region.processText(region.captureScreenHeight));
+                    areaX = (int) Double.parseDouble(region.processText(region.getCaptureScreenX()));
+                    areaY = (int) Double.parseDouble(region.processText(region.getCaptureScreenY()));
+                    areaWidth = (int) Double.parseDouble(region.processText(region.getCaptureScreenWidth()));
+                    areaHeight = (int) Double.parseDouble(region.processText(region.getCaptureScreenHeight()));
                 } catch (Exception e) {
                 }
 
                 RefreshScreenCaptureThread.start();
 
                 Rectangle rectScreenSize = new Rectangle(areaX, areaY, areaWidth, areaHeight);
-                region.image = AWTRobotUtil.getRobot().createScreenCapture(rectScreenSize);
+                region.setImage(AWTRobotUtil.getRobot().createScreenCapture(rectScreenSize));
             } else {
                 strImage = region.processText(strImage);
-                if (region.image == null || !strImage.equals(region.strPrevImage)) {
+                if (region.getImage() == null || !strImage.equals(region.getPreviousImage())) {
                     try {
                         if (strImage.contains("file:") || strImage.contains("http:") || strImage.contains("ftp:")) {   //file:, http:,...
-                            region.image = ImageIO.read(new URL(strImage));
+                            region.setImage(ImageIO.read(new URL(strImage)));
                         } else {
-                            region.image = ImageIO.read(new File(strImage));
+                            region.setImage(ImageIO.read(new File(strImage)));
                         }
 
                     } catch (Exception e) {
-                        region.image = Workspace.createCompatibleImage(10, 10);
+                        region.setImage(Workspace.createCompatibleImage(10, 10));
                     }
                 }
             }
-            if (region.image != null) {
-                if (region.fitToBoxEnabled) {
-                    region.getRenderer().drawImageWin(g2, region.image, region.x1, region.y1, region.x2 - region.x1, region.y2 - region.y1);
+            if (region.getImage() != null) {
+                if (region.isFitToBoxEnabled()) {
+                    region.getRenderer().drawImageWin(g2, region.getImage(), region.getX1Value(), region.getY1Value(), region.getX2Value() - region.getX1Value(), region.getY2Value() - region.getY1Value());
                 } else {
                     int xImage;
                     int yImage;
-                    if (region.horizontalAlignment.equals("left") || region.horizontalAlignment.isEmpty()) {
-                        xImage = region.x1;
-                    } else if (region.horizontalAlignment.equals("center")) {
-                        xImage = region.x1 + (region.x2 - region.x1) / 2 - region.image.getWidth() / 2;
+                    if (region.getHorizontalAlignment().equals("left") || region.getHorizontalAlignment().isEmpty()) {
+                        xImage = region.getX1Value();
+                    } else if (region.getHorizontalAlignment().equals("center")) {
+                        xImage = region.getX1Value() + (region.getX2Value() - region.getX1Value()) / 2 - region.getImage().getWidth() / 2;
                     } else {
-                        xImage = region.x2 - region.image.getWidth();
+                        xImage = region.getX2Value() - region.getImage().getWidth();
                     }
 
-                    if (region.verticalAlignment.equals("top") || region.verticalAlignment.isEmpty()) {
-                        yImage = region.y1;
-                    } else if (region.verticalAlignment.equals("center")) {
-                        yImage = region.y1 + (region.y2 - region.y1) / 2 - region.image.getHeight() / 2;
+                    if (region.getVerticalAlignment().equals("top") || region.getVerticalAlignment().isEmpty()) {
+                        yImage = region.getY1Value();
+                    } else if (region.getVerticalAlignment().equals("center")) {
+                        yImage = region.getY1Value() + (region.getY2Value() - region.getY1Value()) / 2 - region.getImage().getHeight() / 2;
                     } else {
-                        yImage = region.y2 - region.image.getHeight();
+                        yImage = region.getY2Value() - region.getImage().getHeight();
                     }
 
-                    region.getRenderer().drawImageWin(g2, region.image, xImage, yImage, region.image.getWidth(), region.image.getHeight());
+                    region.getRenderer().drawImageWin(g2, region.getImage(), xImage, yImage, region.getImage().getWidth(), region.getImage().getHeight());
                 }
             }
         }
 
-        region.strPrevImage = strImage;
+        region.setPreviousImage(strImage);
     }
 }

@@ -42,24 +42,24 @@ public class BatchRenderer {
         region.setProperty("width", "1500");
         region.setProperty("height", "500");
 
-        region.widget = "PlantUML";
-        region.widgetItems = "Class A";
-        region.widgetProperties = new Properties();
-        region.widgetProperties.put("resize region", "true");
+        region.setWidget("PlantUML");
+        region.setWidgetItems("Class A");
+        region.setWidgetProperties(new Properties());
+        region.getWidgetProperties().put("resize region", "true");
 
         region.initPlayback();
         region.activate(true);
 
-        int w = region.getWidth();
-        int h = region.getHeight();
+        int w = region.getWidthValue();
+        int h = region.getHeightValue();
         BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = image.createGraphics();
 
         ActiveRegionRenderer renderer = new ActiveRegionRenderer(region);
         renderer.draw(g);
 
-        int widthAfterRendering = region.getWidth();
-        int heightAfterRendering = region.getHeight();
+        int widthAfterRendering = region.getWidthValue();
+        int heightAfterRendering = region.getHeightValue();
 
         if (w != widthAfterRendering || h != heightAfterRendering) {
             BufferedImage imageAfterRendering = new BufferedImage(widthAfterRendering, heightAfterRendering, BufferedImage.TYPE_INT_ARGB);

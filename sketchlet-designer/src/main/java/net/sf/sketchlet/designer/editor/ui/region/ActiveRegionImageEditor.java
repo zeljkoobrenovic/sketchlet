@@ -128,15 +128,15 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
 
             public void actionPerformed(ActionEvent e) {
                 if (getIndex() > 0) {
-                    BufferedImage img1 = region.getDrawImage(getIndex());
+                    BufferedImage img1 = region.getDrawnImage(getIndex());
 
                     for (int i = getIndex(); i >= 1; i--) {
-                        region.setDrawImage(i, region.getDrawImage(i - 1));
-                        region.setDrawImageChanged(i, true);
+                        region.setDrawnImage(i, region.getDrawnImage(i - 1));
+                        region.setDrawnImageChanged(i, true);
                     }
 
-                    region.setDrawImage(0, img1);
-                    region.setDrawImageChanged(0, true);
+                    region.setDrawnImage(0, img1);
+                    region.setDrawnImageChanged(0, true);
                     getDrawingPanels().setSelectedIndex(0);
                 }
             }
@@ -145,13 +145,13 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
 
             public void actionPerformed(ActionEvent e) {
                 if (getIndex() > 0) {
-                    BufferedImage img1 = region.getDrawImage(getIndex());
-                    BufferedImage img2 = region.getDrawImage(getIndex() - 1);
+                    BufferedImage img1 = region.getDrawnImage(getIndex());
+                    BufferedImage img2 = region.getDrawnImage(getIndex() - 1);
 
-                    region.setDrawImage(getIndex() - 1, img1);
-                    region.setDrawImageChanged(getIndex() - 1, true);
-                    region.setDrawImage(getIndex(), img2);
-                    region.setDrawImageChanged(getIndex(), true);
+                    region.setDrawnImage(getIndex() - 1, img1);
+                    region.setDrawnImageChanged(getIndex() - 1, true);
+                    region.setDrawnImage(getIndex(), img2);
+                    region.setDrawnImageChanged(getIndex(), true);
                     getDrawingPanels().setSelectedIndex(getIndex() - 1);
                 }
             }
@@ -160,13 +160,13 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
 
             public void actionPerformed(ActionEvent e) {
                 if (getIndex() < region.getImageCount() - 1) {
-                    BufferedImage img1 = region.getDrawImage(getIndex());
-                    BufferedImage img2 = region.getDrawImage(getIndex() + 1);
+                    BufferedImage img1 = region.getDrawnImage(getIndex());
+                    BufferedImage img2 = region.getDrawnImage(getIndex() + 1);
 
-                    region.setDrawImage(getIndex() + 1, img1);
-                    region.setDrawImageChanged(getIndex() + 1, true);
-                    region.setDrawImage(getIndex(), img2);
-                    region.setDrawImageChanged(getIndex(), true);
+                    region.setDrawnImage(getIndex() + 1, img1);
+                    region.setDrawnImageChanged(getIndex() + 1, true);
+                    region.setDrawnImage(getIndex(), img2);
+                    region.setDrawnImageChanged(getIndex(), true);
                     getDrawingPanels().setSelectedIndex(getIndex() + 1);
                 }
             }
@@ -175,16 +175,16 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
 
             public void actionPerformed(ActionEvent e) {
                 if (getIndex() < region.getImageCount() - 1) {
-                    BufferedImage img1 = region.getDrawImage(getIndex());
+                    BufferedImage img1 = region.getDrawnImage(getIndex());
 
                     for (int i = getIndex(); i < region.getImageCount() - 1; i++) {
-                        region.setDrawImage(i, region.getDrawImage(i + 1));
-                        region.setDrawImageChanged(i, true);
+                        region.setDrawnImage(i, region.getDrawnImage(i + 1));
+                        region.setDrawnImageChanged(i, true);
                     }
 
 
-                    region.setDrawImage(region.getImageCount() - 1, img1);
-                    region.setDrawImageChanged(region.getImageCount() - 1, true);
+                    region.setDrawnImage(region.getImageCount() - 1, img1);
+                    region.setDrawnImageChanged(region.getImageCount() - 1, true);
                     getDrawingPanels().setSelectedIndex(region.getImageCount() - 1);
                 }
             }
@@ -291,13 +291,13 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
     }
 
     public void enableControls() {
-        this.deleteImage.setEnabled(getRegion().additionalDrawImages.size() > 0);
+        this.deleteImage.setEnabled(getRegion().getAdditionalDrawnImages().size() > 0);
 
-        if (getRegion().additionalDrawImages.size() > 0) {
+        if (getRegion().getAdditionalDrawnImages().size() > 0) {
             moveLeft.setEnabled(getIndex() > 0);
             moveFirst.setEnabled(getIndex() > 0);
-            moveRight.setEnabled(getIndex() < getRegion().additionalDrawImages.size());
-            moveLast.setEnabled(getIndex() < getRegion().additionalDrawImages.size());
+            moveRight.setEnabled(getIndex() < getRegion().getAdditionalDrawnImages().size());
+            moveLast.setEnabled(getIndex() < getRegion().getAdditionalDrawnImages().size());
         } else {
             moveLeft.setEnabled(false);
             moveRight.setEnabled(false);
@@ -309,7 +309,7 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
     public synchronized void deleteImage() {
         if (getDrawingPanels().getTabCount() > 1) {
             int selectedTabIndex = getDrawingPanels().getSelectedIndex();
-            getRegion().deleteDrawImage(selectedTabIndex);
+            getRegion().deleteDrawnImage(selectedTabIndex);
 
             getParentActiveRegionPanel().loadDrawingTabs();
 
@@ -328,17 +328,17 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
     }
 
     public Dimension getDrawImageDimension() {
-        int w = getRegion().getDrawImage(getIndex()).getWidth();
-        int h = getRegion().getDrawImage(getIndex()).getHeight();
+        int w = getRegion().getDrawnImage(getIndex()).getWidth();
+        int h = getRegion().getDrawnImage(getIndex()).getHeight();
 
         if (w == 1 && h == 1) {
             if (getIndex() > 0) {
-                w = getRegion().getDrawImage(0).getWidth();
-                h = getRegion().getDrawImage(0).getHeight();
+                w = getRegion().getDrawnImage(0).getWidth();
+                h = getRegion().getDrawnImage(0).getHeight();
             }
             if (w == 1 && h == 1) {
-                w = getRegion().getWidth();
-                h = getRegion().getHeight();
+                w = getRegion().getWidthValue();
+                h = getRegion().getHeightValue();
             }
         }
 
@@ -355,11 +355,11 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
 
         int indexPrev = getIndex() - 1;
 
-        if (getRegion().getDrawImage(getIndex()) == null) {
+        if (getRegion().getDrawnImage(getIndex()) == null) {
             getRegion().initImage(getIndex());
         }
 
-        if (getRegion().getDrawImage(getIndex()) == null) {
+        if (getRegion().getDrawnImage(getIndex()) == null) {
             return;
         }
 
@@ -370,18 +370,18 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
         g2.setPaint(new TexturePaint(transparentPattern, new Rectangle(16, 16)));
         g2.fillRect(0, 0, w, h);
         g2.setPaint(Workspace.getSketchBackground());
-        if (this.drawPrev.isSelected() && indexPrev >= 0 && getRegion().getDrawImage(indexPrev) != null) {
+        if (this.drawPrev.isSelected() && indexPrev >= 0 && getRegion().getDrawnImage(indexPrev) != null) {
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
-            g.drawImage(getRegion().getDrawImage(indexPrev), 0, 0, null);
+            g.drawImage(getRegion().getDrawnImage(indexPrev), 0, 0, null);
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
         }
         if (this.drawSketch.isSelected()) {
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
-            BufferedImage img = SketchletEditor.getInstance().getImage().getSubimage(getRegion().getX1(), getRegion().getY1(), getRegion().getWidth(), getRegion().getHeight());
+            BufferedImage img = SketchletEditor.getInstance().getImage().getSubimage(getRegion().getX1Value(), getRegion().getY1Value(), getRegion().getWidthValue(), getRegion().getHeightValue());
             g.drawImage(img, 0, 0, w, h, null);
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
         }
-        if (this.drawShape.isSelected() && !getRegion().shape.isEmpty()) {
+        if (this.drawShape.isSelected() && !getRegion().getShape().isEmpty()) {
             AffineTransform affine = g2.getTransform();
             g2.setColor(new Color(0, 0, 0, 100));
             Area a = getRegion().getArea(false);
@@ -394,7 +394,7 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
 
             Stroke oldStroke = g2.getStroke();
             g2.setStroke(dashed);
-            if (getRegion().fitToBoxEnabled) {
+            if (getRegion().isFitToBoxEnabled()) {
                 g2.scale(w / a.getBounds().getWidth(), h / a.getBounds().getHeight());
             }
             g2.translate(-a.getBounds().x, -a.getBounds().y);
@@ -405,18 +405,18 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
         if (this.drawShape.isSelected()) {
             AffineTransform affine = g2.getTransform();
             int p1x, p1y, p2x, p2y;
-            if (getRegion().fitToBoxEnabled) {
-                p1x = (int) (getRegion().center_rotation_x * w);
-                p1y = (int) (getRegion().center_rotation_y * h);
-                p2x = (int) (getRegion().trajectory2_x * w);
-                p2y = (int) (getRegion().trajectory2_y * h);
+            if (getRegion().isFitToBoxEnabled()) {
+                p1x = (int) (getRegion().getCenterOfRotationX() * w);
+                p1y = (int) (getRegion().getCenterOfRotationY() * h);
+                p2x = (int) (getRegion().getTrajectory2X() * w);
+                p2y = (int) (getRegion().getTrajectory2Y() * h);
             } else {
-                int _w = getRegion().getWidth();
-                int _h = getRegion().getWidth();
-                p1x = (int) (getRegion().center_rotation_x * _w);
-                p1y = (int) (getRegion().center_rotation_y * _h);
-                p2x = (int) (getRegion().trajectory2_x * _w);
-                p2y = (int) (getRegion().trajectory2_y * _h);
+                int _w = getRegion().getWidthValue();
+                int _h = getRegion().getWidthValue();
+                p1x = (int) (getRegion().getCenterOfRotationX() * _w);
+                p1y = (int) (getRegion().getCenterOfRotationY() * _h);
+                p2x = (int) (getRegion().getTrajectory2X() * _w);
+                p2y = (int) (getRegion().getTrajectory2Y() * _h);
             }
             g2.setColor(new Color(200, 0, 0, 100));
             g2.fillOval(p1x - 3, p1y - 3, 7, 7);
@@ -425,8 +425,8 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
             g2.setTransform(affine);
         }
 
-        if (getRegion().getDrawImage(getIndex()).getWidth() > 1) {
-            g.drawImage(getRegion().getDrawImage(getIndex()), 0, 0, this);
+        if (getRegion().getDrawnImage(getIndex()).getWidth() > 1) {
+            g.drawImage(getRegion().getDrawnImage(getIndex()), 0, 0, this);
         }
 
         g2.setColor(Color.BLACK);
@@ -439,9 +439,9 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
 
     public void draw(Point start, Point end) {
         setImageUpdated(true);
-        getRegion().setDrawImageChanged(getIndex(), true);
+        getRegion().setDrawnImageChanged(getIndex(), true);
 
-        Graphics2D g2 = getRegion().getDrawImage(getIndex()).createGraphics();
+        Graphics2D g2 = getRegion().getDrawnImage(getIndex()).createGraphics();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         if (bErase) {
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.CLEAR));
@@ -458,8 +458,8 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
     public void save() {
         if (isImageUpdated()) {
             try {
-                File file = new File(getRegion().getDrawImagePath(getIndex()));
-                ImageCache.write(getRegion().getDrawImage(getIndex()), file);
+                File file = new File(getRegion().getDrawnImagePath(getIndex()));
+                ImageCache.write(getRegion().getDrawnImage(getIndex()), file);
                 SketchletEditor.getInstance().repaint();
             } catch (IOException e) {
                 log.error(e);
@@ -470,7 +470,7 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
     public void editor() {
         this.setImageUpdated(true);
         save();
-        SketchletContextUtils.editImages("\"" + getRegion().getDrawImagePath(getIndex()) + "\"", this, getIndex());
+        SketchletContextUtils.editImages("\"" + getRegion().getDrawnImagePath(getIndex()) + "\"", this, getIndex());
     }
 
     public void keyReleased(KeyEvent e) {
@@ -548,12 +548,12 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
     }
 
     public void copy() {
-        BufferedImageClipboardObject tr = new BufferedImageClipboardObject(this.getRegion().getDrawImage(getIndex()), DataFlavor.imageFlavor);
+        BufferedImageClipboardObject tr = new BufferedImageClipboardObject(this.getRegion().getDrawnImage(getIndex()), DataFlavor.imageFlavor);
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(tr, null);
     }
 
     public void saveUndo() {
-        BufferedImage img = getRegion().getDrawImage(getIndex());
+        BufferedImage img = getRegion().getDrawnImage(getIndex());
         SketchletEditor.getInstance().saveRegionImageUndo(img, getRegion(), getIndex());
     }
 
@@ -873,7 +873,7 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
                 popupMenu.add(saveImage);
                 popupMenu.add(saveAnimatedGif);
 
-                saveAnimatedGif.setEnabled(getRegion().additionalImageFile.size() > 0);
+                saveAnimatedGif.setEnabled(getRegion().getAdditionalImageFileNames().size() > 0);
 
                 popupMenu.show(more.getParent(), more.getX(), more.getY() + more.getHeight());
             }
@@ -917,10 +917,10 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
             getCurrentTool().deactivate();
         }
         this.saveUndo();
-        BufferedImage img = getRegion().getDrawImage(getIndex());
+        BufferedImage img = getRegion().getDrawnImage(getIndex());
         BufferedImage img2 = ImageOperations.rotateClockwise(img);
-        getRegion().setDrawImage(getIndex(), img2);
-        getRegion().setDrawImageChanged(getIndex(), true);
+        getRegion().setDrawnImage(getIndex(), img2);
+        getRegion().setDrawnImageChanged(getIndex(), true);
         revalidate();
         repaint();
         if (getCurrentTool() != null) {
@@ -934,10 +934,10 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
             getCurrentTool().deactivate();
         }
         this.saveUndo();
-        BufferedImage img = getRegion().getDrawImage(getIndex());
+        BufferedImage img = getRegion().getDrawnImage(getIndex());
         BufferedImage img2 = ImageOperations.rotateAntiClockwise(img);
-        getRegion().setDrawImage(getIndex(), img2);
-        getRegion().setDrawImageChanged(getIndex(), true);
+        getRegion().setDrawnImage(getIndex(), img2);
+        getRegion().setDrawnImageChanged(getIndex(), true);
         revalidate();
         repaint();
         if (getCurrentTool() != null) {
@@ -951,10 +951,10 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
             getCurrentTool().deactivate();
         }
         this.saveUndo();
-        BufferedImage img = getRegion().getDrawImage(getIndex());
+        BufferedImage img = getRegion().getDrawnImage(getIndex());
         BufferedImage img2 = ImageOperations.flipHorizontal(img);
-        getRegion().setDrawImage(getIndex(), img2);
-        getRegion().setDrawImageChanged(getIndex(), true);
+        getRegion().setDrawnImage(getIndex(), img2);
+        getRegion().setDrawnImageChanged(getIndex(), true);
         revalidate();
         repaint();
         if (getCurrentTool() != null) {
@@ -968,10 +968,10 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
             getCurrentTool().deactivate();
         }
         this.saveUndo();
-        BufferedImage img = getRegion().getDrawImage(getIndex());
+        BufferedImage img = getRegion().getDrawnImage(getIndex());
         BufferedImage img2 = ImageOperations.flipVertical(img);
-        getRegion().setDrawImage(getIndex(), img2);
-        getRegion().setDrawImageChanged(getIndex(), true);
+        getRegion().setDrawnImage(getIndex(), img2);
+        getRegion().setDrawnImageChanged(getIndex(), true);
         revalidate();
         repaint();
         if (getCurrentTool() != null) {
@@ -1007,8 +1007,8 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
             anim.setDelay(delay);
             anim.setRepeat(0);
             anim.setTransparent(Color.PINK);
-            for (int i = 0; i <= getRegion().additionalImageFile.size(); i++) {
-                BufferedImage img = getRegion().getDrawImage(i);
+            for (int i = 0; i <= getRegion().getAdditionalImageFileNames().size(); i++) {
+                BufferedImage img = getRegion().getDrawnImage(i);
 
                 BufferedImage newImage = Workspace.createCompatibleImage(img.getWidth(), img.getHeight());
                 Graphics2D g2 = newImage.createGraphics();
@@ -1029,8 +1029,8 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
     }
 
     public void resizeImage() {
-        int w = getRegion().getWidth();
-        int h = getRegion().getHeight();
+        int w = getRegion().getWidthValue();
+        int h = getRegion().getHeightValue();
 
         new ResizeDialog(SketchletEditor.editorFrame, Language.translate("Resize Image"), this, w, h);
     }
@@ -1045,11 +1045,11 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
     }
 
     public void resizeRegion() {
-        int w = getRegion().getDrawImage(getIndex()).getWidth();
-        int h = getRegion().getDrawImage(getIndex()).getHeight();
+        int w = getRegion().getDrawnImage(getIndex()).getWidth();
+        int h = getRegion().getDrawnImage(getIndex()).getHeight();
 
-        getRegion().x2 = getRegion().x1 + w;
-        getRegion().y2 = getRegion().y1 + h;
+        getRegion().setX2Value(getRegion().getX1Value() + w);
+        getRegion().setY2Value(getRegion().getY1Value() + h);
 
         SketchletEditor.getInstance().repaint();
     }
@@ -1057,9 +1057,9 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
     public void createNewImage() {
         getCurrentTool().deactivate();
 
-        getRegion().additionalImageFile.add("");
-        getRegion().additionalDrawImages.add(null);
-        getRegion().additionalImageChanged.add(new Boolean(false));
+        getRegion().getAdditionalImageFileNames().add("");
+        getRegion().getAdditionalDrawnImages().add(null);
+        getRegion().getAdditionalDrawnImagesChanged().add(new Boolean(false));
 
         getDrawingPanels().add("" + (getDrawingPanels().getTabCount() + 1), new JPanel());
         getDrawingPanels().setSelectedIndex(getDrawingPanels().getTabCount() - 1);
@@ -1080,7 +1080,7 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
     public void pasteImage() {
         saveUndo();
         fromClipboard(getIndex());
-        getRegion().setDrawImageChanged(getIndex(), true);
+        getRegion().setDrawnImageChanged(getIndex(), true);
         getRegion().saveImage();
         revalidate();
         this.createGraphics();
@@ -1097,14 +1097,14 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
         if (transferable.isDataFlavorSupported(new DataFlavor("image/x-java-image; class=java.awt.Image", "Image"))) {
             try {
                 img = (RenderedImage) transferable.getTransferData(new DataFlavor("image/x-java-image; class=java.awt.Image", "Image"));
-                int w = Math.max(getRegion().getDrawImage(index).getWidth(), img.getWidth());
-                int h = Math.max(getRegion().getDrawImage(index).getHeight(), img.getHeight());
-                BufferedImage oldImage = getRegion().getDrawImage(index);
+                int w = Math.max(getRegion().getDrawnImage(index).getWidth(), img.getWidth());
+                int h = Math.max(getRegion().getDrawnImage(index).getHeight(), img.getHeight());
+                BufferedImage oldImage = getRegion().getDrawnImage(index);
                 BufferedImage pImg = Workspace.createCompatibleImage(img.getWidth(), img.getHeight());
 
-                getRegion().setDrawImage(index, Workspace.createCompatibleImage(w, h));
+                getRegion().setDrawnImage(index, Workspace.createCompatibleImage(w, h));
 
-                Graphics2D g2 = getRegion().getDrawImage(index).createGraphics();
+                Graphics2D g2 = getRegion().getDrawnImage(index).createGraphics();
                 g2.drawImage(oldImage, 0, 0, null);
                 g2.dispose();
                 g2 = pImg.createGraphics();
@@ -1113,7 +1113,7 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
                 this.setTool(this.getSelectTool(), null);
                 this.getSelectTool().setClip(pImg, 0, 0);
 
-                getRegion().setDrawImageChanged(index, true);
+                getRegion().setDrawnImageChanged(index, true);
                 getRegion().saveImage();
 
                 g2.dispose();
@@ -1128,10 +1128,10 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
     }
 
     public Dimension getPreferredSize() {
-        if (this.getRegion().getDrawImage(getIndex()) == null) {
+        if (this.getRegion().getDrawnImage(getIndex()) == null) {
             return new Dimension((int) (220 * getScale()), (int) (220 * getScale()));
         } else {
-            return new Dimension((int) (getRegion().getDrawImage(getIndex()).getWidth() * getScale()), (int) (getRegion().getDrawImage(getIndex()).getHeight() * getScale()));
+            return new Dimension((int) (getRegion().getDrawnImage(getIndex()).getWidth() * getScale()), (int) (getRegion().getDrawnImage(getIndex()).getHeight() * getScale()));
         }
     }
 
@@ -1176,18 +1176,18 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
     }
 
     public void makeTransparent(int color) {
-        if (getRegion().getDrawImage(getIndex()) != null) {
-            for (int i = 0; i < getRegion().getDrawImage(getIndex()).getWidth(); i++) {
-                for (int j = 0; j < getRegion().getDrawImage(getIndex()).getHeight(); j++) {
-                    if (getRegion().getDrawImage(getIndex()).getRGB(i, j) == color) {
-                        getRegion().getDrawImage(getIndex()).setRGB(i, j, new Color(0, 0, 0, 0).getRGB());
+        if (getRegion().getDrawnImage(getIndex()) != null) {
+            for (int i = 0; i < getRegion().getDrawnImage(getIndex()).getWidth(); i++) {
+                for (int j = 0; j < getRegion().getDrawnImage(getIndex()).getHeight(); j++) {
+                    if (getRegion().getDrawnImage(getIndex()).getRGB(i, j) == color) {
+                        getRegion().getDrawnImage(getIndex()).setRGB(i, j, new Color(0, 0, 0, 0).getRGB());
                     }
                 }
             }
 
             this.repaint();
 
-            this.getRegion().setDrawImageChanged(getIndex(), true);
+            this.getRegion().setDrawnImageChanged(getIndex(), true);
             this.getRegion().saveImage();
         }
     }
@@ -1229,13 +1229,13 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
             try {
                 saveUndo();
                 BufferedImage newImage = Workspace.createCompatibleImageCopy(ImageIO.read(file));
-                this.getRegion().setDrawImage(getIndex(), newImage);
+                this.getRegion().setDrawnImage(getIndex(), newImage);
 
                 this.getRegion().setSize(newImage.getWidth(), newImage.getHeight());
 
                 this.revalidateAll();
                 this.repaint();
-                this.getRegion().setDrawImageChanged(getIndex(), true);
+                this.getRegion().setDrawnImageChanged(getIndex(), true);
                 getRegion().saveImage();
 
             } catch (Throwable e) {
@@ -1259,8 +1259,8 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
                     this.createNewImage();
                 }
                 BufferedImage newImage = Workspace.createCompatibleImageCopy(img);
-                this.getRegion().setDrawImage(getIndex(), newImage);
-                this.getRegion().setDrawImageChanged(getIndex(), true);
+                this.getRegion().setDrawnImage(getIndex(), newImage);
+                this.getRegion().setDrawnImageChanged(getIndex(), true);
                 this.getRegion().setSize(img.getWidth(), img.getHeight());
             }
             getRegion().saveImage();
@@ -1309,8 +1309,8 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
                 if (i > 0) {
                     this.createNewImage();
                 }
-                this.getRegion().setDrawImage(getIndex(), img);
-                this.getRegion().setDrawImageChanged(getIndex(), true);
+                this.getRegion().setDrawnImage(getIndex(), img);
+                this.getRegion().setDrawnImageChanged(getIndex(), true);
                 this.getRegion().setSize(img.getWidth(), img.getHeight());
             }
             getRegion().saveImage();
@@ -1333,7 +1333,7 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
 
     public void previewImage(File imageFile) {
         try {
-            this.getRegion().setDrawImage(getIndex(), ImageIO.read(imageFile));
+            this.getRegion().setDrawnImage(getIndex(), ImageIO.read(imageFile));
             this.repaint();
         } catch (Throwable e) {
             log.error(e);
@@ -1341,7 +1341,7 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
     }
 
     public BufferedImage getImage() {
-        return getRegion().getDrawImage(getIndex());
+        return getRegion().getDrawnImage(getIndex());
     }
 
     public void saveImageUndo() {
@@ -1349,13 +1349,13 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
     }
 
     public void setImageUpdated(boolean bUpdated) {
-        getRegion().setDrawImageChanged(getIndex(), bUpdated);
+        getRegion().setDrawnImageChanged(getIndex(), bUpdated);
     }
 
     public void setImage(BufferedImage img) {
         saveUndo();
-        getRegion().setDrawImage(getIndex(), img);
-        getRegion().setDrawImageChanged(getIndex(), true);
+        getRegion().setDrawnImage(getIndex(), img);
+        getRegion().setDrawnImageChanged(getIndex(), true);
         getRegion().saveImage();
         this.createGraphics();
         revalidate();
@@ -1380,8 +1380,8 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
         if (graphics2D != null) {
             graphics2D.dispose();
         }
-        if (getRegion() != null && getRegion().getDrawImage(getIndex()) != null) {
-            graphics2D = getRegion().getDrawImage(getIndex()).createGraphics();
+        if (getRegion() != null && getRegion().getDrawnImage(getIndex()) != null) {
+            graphics2D = getRegion().getDrawnImage(getIndex()).createGraphics();
             return graphics2D;
         } else {
             return null;
@@ -1420,11 +1420,11 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
     }
 
     public int getImageWidth() {
-        return getRegion().getDrawImage(getIndex()).getWidth();
+        return getRegion().getDrawnImage(getIndex()).getWidth();
     }
 
     public int getImageHeight() {
-        return getRegion().getDrawImage(getIndex()).getHeight();
+        return getRegion().getDrawnImage(getIndex()).getHeight();
     }
 
     public BufferedImage extractImage(int x1, int y1, int w, int sh) {
@@ -1470,12 +1470,12 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
         try {
             BufferedImage img = Workspace.createCompatibleImage(w, h);
             Graphics2D g2 = img.createGraphics();
-            g2.drawImage(getRegion().getDrawImage(getIndex()), 0, 0, w, h, null);
+            g2.drawImage(getRegion().getDrawnImage(getIndex()), 0, 0, w, h, null);
             g2.dispose();
 
-            getRegion().setDrawImage(getIndex(), img);
+            getRegion().setDrawnImage(getIndex(), img);
 
-            getRegion().setDrawImageChanged(getIndex(), true);
+            getRegion().setDrawnImageChanged(getIndex(), true);
             getRegion().saveImage();
             revalidateAll();
             repaintAll();
@@ -1488,12 +1488,12 @@ public class ActiveRegionImageEditor extends JPanel implements KeyListener, Refr
         try {
             BufferedImage img = Workspace.createCompatibleImage(w, h);
             Graphics2D g2 = img.createGraphics();
-            g2.drawImage(getRegion().getDrawImage(getIndex()), 0, 0, null);
+            g2.drawImage(getRegion().getDrawnImage(getIndex()), 0, 0, null);
             g2.dispose();
 
-            getRegion().setDrawImage(getIndex(), img);
+            getRegion().setDrawnImage(getIndex(), img);
 
-            getRegion().setDrawImageChanged(getIndex(), true);
+            getRegion().setDrawnImageChanged(getIndex(), true);
             getRegion().saveImage();
             revalidateAll();
             repaintAll();
@@ -1727,10 +1727,10 @@ class DrawingListenerSimple extends MouseInputAdapter {
     }
 
     public void mousePressed(MouseEvent e) {
-        BufferedImage img = editor.getRegion().getDrawImage(editor.getIndex());
+        BufferedImage img = editor.getRegion().getDrawnImage(editor.getIndex());
         if (img == null) {
             editor.getRegion().initImage(editor.getIndex());
-            img = editor.getRegion().getDrawImage(editor.getIndex());
+            img = editor.getRegion().getDrawnImage(editor.getIndex());
         }
 
         if (img == null) {
@@ -1743,7 +1743,7 @@ class DrawingListenerSimple extends MouseInputAdapter {
             Dimension d = editor.getDrawImageDimension();
             w = d.width;
             h = d.height;
-            editor.getRegion().setDrawImage(editor.getIndex(), Workspace.createCompatibleImage(w, h, img));
+            editor.getRegion().setDrawnImage(editor.getIndex(), Workspace.createCompatibleImage(w, h, img));
         }
 
         if (editor.isSelectTransparentColor()) {

@@ -30,12 +30,12 @@ public class CheckButtonTabComponent extends JPanel {
         final JToggleButton pin = new JToggleButton(Workspace.createImageIcon("resources/pin_small.png"));
 
         //tab button
-        final JCheckBox button = new JCheckBox("", region.visible);
+        final JCheckBox button = new JCheckBox("", region.isVisible());
         button.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         button.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
-                region.visible = button.isSelected();
+                region.setVisible(button.isSelected());
                 SketchletEditor.getInstance().repaint();
                 if (SketchletEditor.getInstance().getInternalPlaybackPanel() != null) {
                     SketchletEditor.getInstance().getInternalPlaybackPanel().repaint();
@@ -80,8 +80,8 @@ public class CheckButtonTabComponent extends JPanel {
         add(btnClose);
 
 
-        pin.setSelected(region.pinned);
-        if (region.pinned) {
+        pin.setSelected(region.isPinned());
+        if (region.isPinned()) {
             pin.setIcon(Workspace.createImageIcon("resources/pin_small_down.png"));
         } else {
             pin.setIcon(Workspace.createImageIcon("resources/pin_small.png"));
@@ -94,7 +94,7 @@ public class CheckButtonTabComponent extends JPanel {
                 } else {
                     pin.setIcon(Workspace.createImageIcon("resources/pin_small.png"));
                 }
-                region.pinned = pin.isSelected();
+                region.setPinned(pin.isSelected());
             }
         });
 

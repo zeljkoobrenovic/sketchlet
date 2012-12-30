@@ -81,7 +81,7 @@ public class Connector {
     public String toXML(String prefix) {
         StringBuffer str = new StringBuffer("");
 
-        str.append(prefix + "<connector region1='" + getRegion1().getDrawImageFileName() + "' region2 ='" + getRegion2().getDrawImageFileName() + "'>\n");
+        str.append(prefix + "<connector region1='" + getRegion1().getDrawnImageFileName() + "' region2 ='" + getRegion2().getDrawnImageFileName() + "'>\n");
         if (!this.getCaption().isEmpty()) {
             str.append(prefix + "    <connector-caption>" + XMLUtils.prepareForXML(this.getCaption()) + "</connector-caption>\n");
         }

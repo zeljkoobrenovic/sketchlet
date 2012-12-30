@@ -87,39 +87,39 @@ public class SelectDropAction extends JDialog {
                     int index = combo.getSelectedIndex();
                     if (index >= 0) {
                         if (index == 0) {
-                            region.text = strText;
+                            region.setText(strText);
                         } else if (index == 1) {
-                            region.imageUrlField = strText;
+                            region.setImageUrlField(strText);
                         } else if (index == 2) {
-                            region.strImageIndex = strText;
+                            region.setImageIndex(strText);
                         } else if (index < _n) {
                             String strItem = (String) combo.getSelectedItem();
                             region.setProperty(strItem, strText);
                         } else {
                             String strItem = (String) combo.getSelectedItem();
                             if (strItem.equalsIgnoreCase("Line Style")) {
-                                region.lineStyle = strText;
+                                region.setLineStyle(strText);
                             }
                             if (strItem.equalsIgnoreCase("Line Thickness")) {
-                                region.lineThickness = strText;
+                                region.setLineThickness(strText);
                             }
                             if (strItem.equalsIgnoreCase("Line Color")) {
-                                region.lineColor = strText;
+                                region.setLineColor(strText);
                             }
                             if (strItem.equalsIgnoreCase("Fill Color")) {
-                                region.strFillColor = strText;
+                                region.setFillColor(strText);
                             }
                             if (strItem.equalsIgnoreCase("Font Name")) {
-                                region.fontName = strText;
+                                region.setFontName(strText);
                             }
                             if (strItem.equalsIgnoreCase("Font Style")) {
-                                region.fontStyle = strText;
+                                region.setFontStyle(strText);
                             }
                             if (strItem.equalsIgnoreCase("Font Size")) {
-                                region.fontSize = strText;
+                                region.setFontSize(strText);
                             }
                             if (strItem.equalsIgnoreCase("Text Color")) {
-                                region.fontColor = strText;
+                                region.setFontColor(strText);
                             }
 
                         }

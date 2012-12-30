@@ -72,7 +72,7 @@ public class Evaluator {
 
     public static String processRegionReferences(ActiveRegion region, String strText) {
         SketchletContext context = SketchletContext.getInstance();
-        return processRegionReferences(region, region.parent, strText, context != null ? context.isInPlaybackMode() : true);
+        return processRegionReferences(region, region.getParent(), strText, context != null ? context.isInPlaybackMode() : true);
     }
 
     public static String processRegionReferences(ActiveRegions regions, String strText) {

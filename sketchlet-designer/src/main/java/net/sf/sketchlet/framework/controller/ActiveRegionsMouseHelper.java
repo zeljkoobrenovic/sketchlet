@@ -46,10 +46,10 @@ public class ActiveRegionsMouseHelper {
             if (getSelectedRegions() == null) {
                 setSelectedRegions(new Vector<ActiveRegion>());
             }
-            String strGroup = region.regionGrouping.trim();
+            String strGroup = region.getRegionGrouping().trim();
             if (!strGroup.equals("")) {
                 for (ActiveRegion reg : getPage().getRegions().getRegions()) {
-                    if (reg.regionGrouping.equals(strGroup) && reg != region && !getSelectedRegions().contains(reg)) {
+                    if (reg.getRegionGrouping().equals(strGroup) && reg != region && !getSelectedRegions().contains(reg)) {
                         getSelectedRegions().add(reg);
                     }
                 }
@@ -88,7 +88,7 @@ public class ActiveRegionsMouseHelper {
                 if ((modifiers & InputEvent.BUTTON1_MASK) == InputEvent.BUTTON1_MASK) {
                     setNewRegion(true);
                     reg = new ActiveRegion(this.getPage().getRegions(), x, y, x + 50, y + 20);
-                    reg.layer = SketchletEditor.getInstance().getLayer();
+                    reg.setLayer(SketchletEditor.getInstance().getLayer());
                     if (SketchletEditor.getInitProperties() != null) {
                         for (int i = 0; i < SketchletEditor.getInitProperties().length; i++) {
                             String strProp = SketchletEditor.getInitProperties()[i][0];
@@ -162,7 +162,7 @@ public class ActiveRegionsMouseHelper {
     public void mouseReleased(int x, int y, int modifiers, long when, double scale, MouseEvent e, JFrame frame, boolean bPlayback) {
         setWithoutEffect(false);
         if (getSelectedRegions() != null && getSelectedRegions().size() > 0) {
-            if (getSelectedRegions().lastElement().getWidth() > 0 || (getMousePressedPoint() != null && !(Math.abs(getMousePressedPoint().x - x) <= 0 && Math.abs(getMousePressedPoint().y - y) <= 0))) {
+            if (getSelectedRegions().lastElement().getWidthValue() > 0 || (getMousePressedPoint() != null && !(Math.abs(getMousePressedPoint().x - x) <= 0 && Math.abs(getMousePressedPoint().y - y) <= 0))) {
                 if (isNewRegion()) {
                     ActiveRegionsFrame.reload(getSelectedRegions().lastElement());
                 }
@@ -202,7 +202,7 @@ public class ActiveRegionsMouseHelper {
 
     public void defocusAllRegions() {
         for (ActiveRegion ar : getPage().getRegions().getRegions()) {
-            ar.inFocus = false;
+            ar.setInFocus(false);
         }
         SketchletContext.getInstance().repaint();
     }

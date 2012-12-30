@@ -2,6 +2,7 @@ package net.sf.sketchlet.designer.editor.ui.localvars;
 
 import net.sf.sketchlet.common.dnd.StringTransferHandler;
 import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
 
 public class LocalVariableTransferHandler extends StringTransferHandler {
     public LocalVariableTransferHandler() {
@@ -22,5 +23,8 @@ public class LocalVariableTransferHandler extends StringTransferHandler {
     }
 
     protected void cleanup(JComponent c, boolean remove) {
+        JTable table = (JTable) c;
+        AbstractTableModel model = (AbstractTableModel) table.getModel();
+        model.fireTableDataChanged();
     }
 }

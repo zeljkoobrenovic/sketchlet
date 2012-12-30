@@ -46,7 +46,7 @@ public class ActiveRegionContextImpl extends ActiveRegionContext {
 
     @Override
     public String getWidgetType() {
-        return region.widget;
+        return region.getWidget();
     }
 
     @Override
@@ -61,10 +61,10 @@ public class ActiveRegionContextImpl extends ActiveRegionContext {
 
     @Override
     public BufferedImage getImage(int index) {
-        File file = new File(this.region.getDrawImagePath(index));
+        File file = new File(this.region.getDrawnImagePath(index));
         if (file.exists()) {
-            if (region.getDrawImage(index) != null) {
-                return region.getDrawImage(index);
+            if (region.getDrawnImage(index) != null) {
+                return region.getDrawnImage(index);
             }
             try {
                 return ImageCache.read(file);
@@ -77,67 +77,67 @@ public class ActiveRegionContextImpl extends ActiveRegionContext {
 
     @Override
     public int getX1() {
-        return region.getX1();
+        return region.getX1Value();
     }
 
     @Override
     public int getY1() {
-        return region.getY1();
+        return region.getY1Value();
     }
 
     @Override
     public int getX2() {
-        return region.getX2();
+        return region.getX2Value();
     }
 
     @Override
     public int getY2() {
-        return region.getY2();
+        return region.getY2Value();
     }
 
     @Override
     public int getWidth() {
-        return region.getWidth();
+        return region.getWidthValue();
     }
 
     @Override
     public int getHeight() {
-        return region.getHeight();
+        return region.getHeightValue();
     }
 
     @Override
     public String getWidgetItemText() {
-        return region.processText(region.widgetItems);
+        return region.processText(region.getWidgetItems());
     }
 
     @Override
     public Stroke getStroke() {
-        return region.getStroke();
+        return region.getStrokeValue();
     }
 
     @Override
     public Color getLineColor() {
-        return region.getLineColor();
+        return region.getLineColorValue();
     }
 
     @Override
     public Color getFillColor() {
-        return region.getBackgroundColor();
+        return region.getBackgroundColorValue();
     }
 
     @Override
     public int getLineThickness() {
-        return region.getLineThickness();
+        return region.getLineThicknessValue();
     }
 
     @Override
     public Color getTextColor() {
-        return region.getFontColor();
+        return region.getFontColorValue();
     }
 
     @Override
     public Font getFont(float size) {
-        return region.getFont(size);
+        return region.getFontValue(size);
     }
 
     @Override
@@ -172,7 +172,7 @@ public class ActiveRegionContextImpl extends ActiveRegionContext {
 
     @Override
     public String getFirstMousePageLink() {
-        for (MouseEventMacro mouseEventMacro : region.mouseProcessor.getMouseEventMacros()) {
+        for (MouseEventMacro mouseEventMacro : region.getMouseEventsProcessor().getMouseEventMacros()) {
             for (int i = 0; i < mouseEventMacro.getMacro().getActions().length; i++) {
                 String action = mouseEventMacro.getMacro().getActions()[i][1].toString();
                 String param1 = mouseEventMacro.getMacro().getActions()[i][2].toString();
@@ -187,17 +187,17 @@ public class ActiveRegionContextImpl extends ActiveRegionContext {
 
     @Override
     public boolean fitToBox() {
-        return region.fitToBoxEnabled;
+        return region.isFitToBoxEnabled();
     }
 
     @Override
     public boolean isAdjusting() {
-        return region.bAdjusting;
+        return region.isAdjusting();
     }
 
     @Override
     public void processEvent(String actionId, String... params) {
-        for (WidgetEventMacro widgetEventMacro : region.widgetEventMacros) {
+        for (WidgetEventMacro widgetEventMacro : region.getWidgetEventMacros()) {
             if (widgetEventMacro.getEventName().equalsIgnoreCase(actionId)) {
                 Page page;
                 if (PlaybackFrame.playbackFrame != null || (SketchletEditor.getInstance() != null && SketchletEditor.getInstance().getInternalPlaybackPanel() != null)) {

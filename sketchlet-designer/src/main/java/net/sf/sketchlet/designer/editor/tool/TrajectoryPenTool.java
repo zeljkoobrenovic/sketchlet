@@ -69,10 +69,10 @@ public class TrajectoryPenTool extends Tool {
         ActiveRegion reg = this.getRegion();
         if (reg != null) {
             if (trajectory == 1) {
-                reg.trajectory1 += x + " " + y + " " + (System.currentTimeMillis() - startTime) + "\n";
+                reg.setTrajectory1(reg.getTrajectory1() + x + " " + y + " " + (System.currentTimeMillis() - startTime) + "\n");
                 tps = reg.createTrajectoryVector();
             } else {
-                reg.trajectory2 += x + " " + y + " " + (System.currentTimeMillis() - startTime) + "\n";
+                reg.setTrajectory2(reg.getTrajectory2() + x + " " + y + " " + (System.currentTimeMillis() - startTime) + "\n");
                 tps = reg.createTrajectory2Vector();
             }
             toolInterface.repaintImage();

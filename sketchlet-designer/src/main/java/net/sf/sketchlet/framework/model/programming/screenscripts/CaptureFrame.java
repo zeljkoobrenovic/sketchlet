@@ -246,7 +246,7 @@ public class CaptureFrame extends JFrame {
                 ScreenScripts.getScreenScriptsPanel().getScreenScripts().elementAt(ScreenScripts.getScreenScriptsPanel().getCurrentRow()).setFile(scriptFile);
                 ScreenScripts.getScreenScriptsPanel().loadScreenScripts(scriptFile);
                 scriptFile = new File(scriptFile.getParent(), name.getText() + ".txt");
-                SketchletEditor.getPages().replaceReferencesMacros(oldName, newName);
+                SketchletEditor.getProject().replaceReferencesMacros(oldName, newName);
                 // System.gc();
             }
 

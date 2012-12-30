@@ -123,9 +123,9 @@ public class SketchletEditorUtils {
                 int posX = -1;
                 int posY = -1;
 
-                for (int i = 0; i < region.updateTransformations.length; i++) {
-                    String strDim = (String) region.updateTransformations[i][0];
-                    String strValue = (String) region.updateTransformations[i][1];
+                for (int i = 0; i < region.getMotionAndRotationVariablesMapping().length; i++) {
+                    String strDim = (String) region.getMotionAndRotationVariablesMapping()[i][0];
+                    String strValue = (String) region.getMotionAndRotationVariablesMapping()[i][1];
 
                     if (strDim.equalsIgnoreCase("position x")) {
                         posX = i;
@@ -139,9 +139,9 @@ public class SketchletEditorUtils {
                         }
                     }
                 }
-                for (int i = 0; i < region.updateTransformations.length; i++) {
-                    String strDim = (String) region.updateTransformations[i][0];
-                    String strValue = (String) region.updateTransformations[i][1];
+                for (int i = 0; i < region.getMotionAndRotationVariablesMapping().length; i++) {
+                    String strDim = (String) region.getMotionAndRotationVariablesMapping()[i][0];
+                    String strValue = (String) region.getMotionAndRotationVariablesMapping()[i][1];
 
                     if (strDim.equalsIgnoreCase("position y")) {
                         posY = i;
@@ -159,19 +159,19 @@ public class SketchletEditorUtils {
                 if (posX == -1) {
                     posX = 0;
                 }
-                region.updateTransformations[posX][0] = "position x";
-                region.updateTransformations[posX][1] = strXVar;
+                region.getMotionAndRotationVariablesMapping()[posX][0] = "position x";
+                region.getMotionAndRotationVariablesMapping()[posX][1] = strXVar;
 
                 if (posY == -1) {
                     posY = 1;
                 }
-                region.updateTransformations[posY][0] = "position y";
-                region.updateTransformations[posY][1] = strYVar;
+                region.getMotionAndRotationVariablesMapping()[posY][0] = "position y";
+                region.getMotionAndRotationVariablesMapping()[posY][1] = strYVar;
 
-                region.windowX = "=" + strXVar;
-                region.windowY = "=" + strYVar;
-                region.windowWidth = "" + region.getWidth();
-                region.windowHeight = "" + region.getHeight();
+                region.setWindowX("=" + strXVar);
+                region.setWindowY("=" + strYVar);
+                region.setWindowWidth("" + region.getWidthValue());
+                region.setWindowHeight("" + region.getHeightValue());
                 SketchletEditor.getInstance().forceRepaint();
             }
         }

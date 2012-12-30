@@ -406,13 +406,13 @@ public class SketchletContextImpl extends SketchletContext {
 
     @Override
     public int getPageCount() {
-        return SketchletEditor.getPages().getPages().size();
+        return SketchletEditor.getProject().getPages().size();
     }
 
     @Override
     public Vector<PageContext> getPages() {
         Vector<PageContext> regionsContext = new Vector<PageContext>();
-        for (Page s : SketchletEditor.getPages().getPages()) {
+        for (Page s : SketchletEditor.getProject().getPages()) {
             regionsContext.add(new PageContextImpl(s));
         }
 

@@ -8,29 +8,45 @@ import net.sf.sketchlet.framework.model.ActiveRegion;
  */
 public class RegionChangedUndoAction extends UndoAction {
 
-    ActiveRegion region = null;
-    ActiveRegion restoreRegion = null;
+    private ActiveRegion region = null;
+    private ActiveRegion restoreRegion = null;
 
     public RegionChangedUndoAction(ActiveRegion region) {
-        this.region = region;
+        this.setRegion(region);
         if (region != null) {
-            this.restoreRegion = new ActiveRegion(region, false);
-            this.restoreRegion.image = null;
-            this.restoreRegion.additionalDrawImages.removeAllElements();
-            this.restoreRegion.setRenderer(null);
+            this.setRestoreRegion(new ActiveRegion(region, false));
+            this.getRestoreRegion().setImage(null);
+            this.getRestoreRegion().getAdditionalDrawnImages().clear();
+            this.getRestoreRegion().setRenderer(null);
         }
     }
 
     public void restore() {
-        if (region != null) {
-            if (SketchletEditor.getInstance().getCurrentPage() != this.region.getSketch()) {
-                SketchletEditor.getInstance().openSketchAndWait(this.region.getSketch());
+        if (getRegion() != null) {
+            if (SketchletEditor.getInstance().getCurrentPage() != this.getRegion().getSketch()) {
+                SketchletEditor.getInstance().openSketchAndWait(this.getRegion().getSketch());
             }
-            this.region.setPropertiesFromRegion(this.restoreRegion);
+            this.getRegion().setPropertiesFromRegion(this.getRestoreRegion());
         }
     }
 
     public boolean shouldUndo() {
-        return region.getSketch().getRegions().getRegions().contains(region);
+        return getRegion().getSketch().getRegions().getRegions().contains(getRegion());
+    }
+
+    public ActiveRegion getRegion() {
+        return region;
+    }
+
+    public void setRegion(ActiveRegion region) {
+        this.region = region;
+    }
+
+    public ActiveRegion getRestoreRegion() {
+        return restoreRegion;
+    }
+
+    public void setRestoreRegion(ActiveRegion restoreRegion) {
+        this.restoreRegion = restoreRegion;
     }
 }

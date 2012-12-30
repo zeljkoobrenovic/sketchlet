@@ -1,10 +1,12 @@
 package net.sf.sketchlet.designer.editor.ui;
 
-import net.sf.sketchlet.framework.model.Pages;
+import net.sf.sketchlet.framework.model.Project;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @author zobrenovic
@@ -12,33 +14,32 @@ import java.awt.*;
 public class MessageFrame extends JDialog implements Runnable {
     private static final Logger log = Logger.getLogger(MessageFrame.class);
 
-    boolean stopped = false;
-    public JTextField message = new JTextField(20);
-    JProgressBar progressBar = new JProgressBar();
-    boolean finished = false;
-    JFrame frame;
-    Cursor originalCursor;
-    Thread t = new Thread(this);
+    private JTextField message = new JTextField(20);
+    private JFrame frame;
+
+    private Component relativeComp;
 
     private MessageFrame(JFrame frame, String strMessage, Component relativeComp, final long timeout) {
         this(frame, strMessage, relativeComp);
-        new Thread(new Runnable() {
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        executorService.execute(this);
+        executorService.execute(new Runnable() {
 
             public void run() {
                 try {
                     Thread.sleep(timeout);
-                    Pages.getMessageFrame().close();
+                    Project.getMessageFrame().close();
                 } catch (Exception e) {
                 }
             }
-        }).start();
+        });
     }
 
     public static void showMessage(JFrame frame, String strMessage, Component relativeComp) {
         MessageFrame.closeMessage();
         if (frame != null && frame.getState() != JFrame.ICONIFIED) {
             try {
-                Pages.setMessageFrame(new MessageFrame(frame, strMessage, relativeComp));
+                Project.setMessageFrame(new MessageFrame(frame, strMessage, relativeComp));
             } catch (Throwable e) {
                 log.error("Exception in message frame.", e);
                 closeMessage();
@@ -50,7 +51,7 @@ public class MessageFrame extends JDialog implements Runnable {
         MessageFrame.closeMessage();
         if (frame.getState() != JFrame.ICONIFIED) {
             try {
-                Pages.setMessageFrame(new MessageFrame(frame, strMessage, relativeComp, timeout));
+                Project.setMessageFrame(new MessageFrame(frame, strMessage, relativeComp, timeout));
             } catch (Throwable e) {
                 log.error("Exception in message frame.", e);
                 closeMessage();
@@ -58,14 +59,11 @@ public class MessageFrame extends JDialog implements Runnable {
         }
     }
 
-    Component relativeComp;
-
     private MessageFrame(JFrame frame, String strMessage, Component relativeComp) {
         super(frame, false);
         this.relativeComp = relativeComp;
         this.frame = frame;
         this.setUndecorated(true);
-        // this.setAlwaysOnTop(true);
         message.setEditable(false);
         message.setText(strMessage);
         JPanel panel = new JPanel();
@@ -73,15 +71,10 @@ public class MessageFrame extends JDialog implements Runnable {
         panel.add(message);
         this.getContentPane().add(panel);
         panel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 6));
-        panel.add(progressBar, BorderLayout.SOUTH);
-        progressBar.setIndeterminate(true);
-        // progressBar.setPreferredSize(new Dimension(100, 8));
         if (frame != null) {
-            originalCursor = frame.getCursor();
             frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         }
-        // SwingUtilities.invokeLater(this);//t.start;();
 
         run();
     }
@@ -97,31 +90,22 @@ public class MessageFrame extends JDialog implements Runnable {
     }
 
     public static void closeMessage() {
-        if (Pages.getMessageFrame() != null) {
-            Pages.getMessageFrame().close();
+        if (Project.getMessageFrame() != null) {
+            Project.getMessageFrame().close();
         }
     }
 
     public static boolean isOpen() {
-        return Pages.getMessageFrame() != null;
+        return Project.getMessageFrame() != null;
     }
 
     public void close() {
-        if (Pages.getMessageFrame() != null) {
-            stopped = true;
+        if (Project.getMessageFrame() != null) {
             setVisible(false);
-            Pages.setMessageFrame(null);
+            Project.setMessageFrame(null);
         }
         if (frame != null) {
             frame.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
-    }
-
-    public void setMessage(String strMessage) {
-        message.setText(strMessage);
-    }
-
-    public static void main(String args[]) {
-        new MessageFrame(null, "test", null);
     }
 }

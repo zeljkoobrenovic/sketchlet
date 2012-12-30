@@ -38,47 +38,47 @@ public class GeneralSettingsPanel extends JPanel {
 
     private void init() {
         if (Profiles.isActive("active_region_general")) {
-            this.name.setText(region.trajectory1);
+            this.name.setText(region.getTrajectory1());
             this.name.addKeyListener(new KeyAdapter() {
 
                 public void keyReleased(KeyEvent e) {
-                    if (!region.name.equals(name.getText())) {
+                    if (!region.getName().equals(name.getText())) {
                         SketchletEditor.getInstance().saveRegionUndo();
-                        region.name = name.getText();
+                        region.setName(name.getText());
                         RefreshTime.update();
                         SketchletEditor.getInstance().repaint();
                     }
                 }
             });
-            this.type.setText(region.type);
+            this.type.setText(region.getType());
             this.type.addKeyListener(new KeyAdapter() {
 
                 public void keyReleased(KeyEvent e) {
-                    if (!region.type.equals(type.getText())) {
+                    if (!region.getType().equals(type.getText())) {
                         SketchletEditor.getInstance().saveRegionUndo();
-                        region.type = type.getText();
+                        region.setType(type.getText());
                         RefreshTime.update();
                         SketchletEditor.getInstance().repaint();
                     }
                 }
             });
-            fitToBox.setSelected(region.fitToBoxEnabled);
+            fitToBox.setSelected(region.isFitToBoxEnabled());
             fitToBox.addItemListener(new ItemListener() {
 
                 public void itemStateChanged(ItemEvent e) {
                     SketchletEditor.getInstance().saveRegionUndo();
-                    region.fitToBoxEnabled = fitToBox.isSelected();
+                    region.setFitToBoxEnabled(fitToBox.isSelected());
                 }
             });
             UIUtils.removeActionListeners(this.active);
-            this.active.setSelectedItem(region.active);
+            this.active.setSelectedItem(region.getActive());
             this.active.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent ae) {
                     if (active.getSelectedItem() != null) {
-                        if (!region.active.equals(active.getSelectedItem().toString())) {
+                        if (!region.getActive().equals(active.getSelectedItem().toString())) {
                             SketchletEditor.getInstance().saveRegionUndo();
-                            region.active = (String) active.getSelectedItem();
+                            region.setActive((String) active.getSelectedItem());
                             RefreshTime.update();
                             SketchletEditor.getInstance().repaint();
                         }
@@ -86,38 +86,38 @@ public class GeneralSettingsPanel extends JPanel {
                 }
             });
             UIUtils.removeActionListeners(type);
-            type.setText(region.type);
+            type.setText(region.getType());
             type.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent ae) {
-                    if (!region.type.equals(type.getText())) {
+                    if (!region.getType().equals(type.getText())) {
                         SketchletEditor.getInstance().saveRegionUndo();
-                        region.type = type.getText();
+                        region.setType(type.getText());
                         RefreshTime.update();
                         SketchletEditor.getInstance().repaint();
                     }
                 }
             });
             UIUtils.populateVariablesCombo(this.active, true, new String[]{"true", "false"});
-            this.horizontalAlign.setSelectedItem(region.horizontalAlignment);
+            this.horizontalAlign.setSelectedItem(region.getHorizontalAlignment());
             this.horizontalAlign.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent ae) {
-                    if (horizontalAlign.getSelectedItem() != null && !region.horizontalAlignment.equals(horizontalAlign.getSelectedItem().toString())) {
+                    if (horizontalAlign.getSelectedItem() != null && !region.getHorizontalAlignment().equals(horizontalAlign.getSelectedItem().toString())) {
                         SketchletEditor.getInstance().saveRegionUndo();
-                        region.horizontalAlignment = (String) horizontalAlign.getSelectedItem();
+                        region.setHorizontalAlignment((String) horizontalAlign.getSelectedItem());
                         RefreshTime.update();
                         SketchletEditor.getInstance().repaint();
                     }
                 }
             });
-            this.verticalAlign.setSelectedItem(region.verticalAlignment);
+            this.verticalAlign.setSelectedItem(region.getVerticalAlignment());
             this.verticalAlign.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent ae) {
-                    if (verticalAlign.getSelectedItem() != null && !region.verticalAlignment.equals(verticalAlign.getSelectedItem().toString())) {
+                    if (verticalAlign.getSelectedItem() != null && !region.getVerticalAlignment().equals(verticalAlign.getSelectedItem().toString())) {
                         SketchletEditor.getInstance().saveRegionUndo();
-                        region.verticalAlignment = (String) verticalAlign.getSelectedItem();
+                        region.setVerticalAlignment((String) verticalAlign.getSelectedItem());
                         RefreshTime.update();
                         SketchletEditor.getInstance().repaint();
                     }
@@ -145,7 +145,7 @@ public class GeneralSettingsPanel extends JPanel {
             });
             general1.add(btnType);
             general2.add(new JLabel(Language.translate("Layer: ")));
-            layerCombo.setSelectedIndex(region.layer);
+            layerCombo.setSelectedIndex(region.getLayer());
             layerCombo.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent e) {
@@ -153,7 +153,7 @@ public class GeneralSettingsPanel extends JPanel {
                     if (index < 0 || index > 9) {
                         index = 0;
                     }
-                    region.layer = index;
+                    region.setLayer(index);
                     RefreshTime.update();
                     SketchletEditor.getInstance().repaint();
                 }
@@ -178,12 +178,12 @@ public class GeneralSettingsPanel extends JPanel {
     }
 
     public void refreshComponents() {
-        UIUtils.refreshComboBox(this.active, region.active);
-        UIUtils.refreshComboBox(this.horizontalAlign, region.horizontalAlignment);
-        UIUtils.refreshComboBox(this.verticalAlign, region.verticalAlignment);
-        this.name.setText(region.trajectory1);
-        this.type.setText(region.type);
-        UIUtils.refreshCheckBox(fitToBox, region.fitToBoxEnabled);
+        UIUtils.refreshComboBox(this.active, region.getActive());
+        UIUtils.refreshComboBox(this.horizontalAlign, region.getHorizontalAlignment());
+        UIUtils.refreshComboBox(this.verticalAlign, region.getVerticalAlignment());
+        this.name.setText(region.getTrajectory1());
+        this.type.setText(region.getType());
+        UIUtils.refreshCheckBox(fitToBox, region.isFitToBoxEnabled());
     }
 
     public void populateComboBoxes() {

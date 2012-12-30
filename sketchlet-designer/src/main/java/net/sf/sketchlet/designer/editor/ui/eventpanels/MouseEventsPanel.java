@@ -6,7 +6,7 @@ import net.sf.sketchlet.designer.editor.ui.region.AbstractEventsPanel;
 import net.sf.sketchlet.designer.editor.ui.region.AddActionRunnable;
 import net.sf.sketchlet.framework.model.events.EventMacroFactory;
 import net.sf.sketchlet.framework.model.events.mouse.MouseEventMacro;
-import net.sf.sketchlet.framework.model.events.mouse.MouseProcessor;
+import net.sf.sketchlet.framework.model.events.mouse.MouseEventsProcessor;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,9 +16,9 @@ import java.util.List;
  * @author zeljko
  */
 public class MouseEventsPanel extends AbstractEventsPanel {
-    private MouseProcessor mouseProcessor;
+    private MouseEventsProcessor mouseEventsProcessor;
 
-    public MouseEventsPanel(final MouseProcessor mouseProcessor) {
+    public MouseEventsPanel(final MouseEventsProcessor mouseEventsProcessor) {
         setEventMacroFactory(new EventMacroFactory<MouseEventMacro>() {
             @Override
             public MouseEventMacro getNewEventMacroInstance(String... args) {
@@ -32,10 +32,10 @@ public class MouseEventsPanel extends AbstractEventsPanel {
 
             @Override
             public List<MouseEventMacro> getEventMacroList() {
-                return mouseProcessor.getMouseEventMacros();
+                return mouseEventsProcessor.getMouseEventMacros();
             }
         });
-        this.mouseProcessor = mouseProcessor;
+        this.mouseEventsProcessor = mouseEventsProcessor;
     }
 
     private MouseEventMacro mouseEventsMacro;
@@ -43,8 +43,8 @@ public class MouseEventsPanel extends AbstractEventsPanel {
     public MouseEventMacro addNewActionToMouseEventMacro() {
         final JComboBox events = new JComboBox();
         events.setEditable(false);
-        for (String event : MouseProcessor.MOUSE_EVENT_TYPES) {
-            if (mouseProcessor.getMouseEventMacro(event) == null) {
+        for (String event : MouseEventsProcessor.MOUSE_EVENT_TYPES) {
+            if (mouseEventsProcessor.getMouseEventMacro(event) == null) {
                 events.addItem(event);
             }
         }
@@ -54,7 +54,7 @@ public class MouseEventsPanel extends AbstractEventsPanel {
                 public void run() {
                     String event = (String) events.getSelectedItem();
                     if (event != null) {
-                        mouseEventsMacro = mouseProcessor.getMouseEventMacro(event);
+                        mouseEventsMacro = mouseEventsProcessor.getMouseEventMacro(event);
 
                         if (mouseEventsMacro == null) {
                             mouseEventsMacro = new MouseEventMacro(event);
@@ -74,7 +74,7 @@ public class MouseEventsPanel extends AbstractEventsPanel {
     public void addNewEventMacro(final String action, final String param1, final String param2) {
         final JComboBox events = new JComboBox();
         events.setEditable(false);
-        for (String event : MouseProcessor.MOUSE_EVENT_TYPES) {
+        for (String event : MouseEventsProcessor.MOUSE_EVENT_TYPES) {
             events.addItem(event);
         }
         AddActionRunnable onOk = new AddActionRunnable() {
@@ -82,11 +82,11 @@ public class MouseEventsPanel extends AbstractEventsPanel {
             public void addAction(String action, String param1, String param2) {
                 String event = (String) events.getSelectedItem();
                 if (event != null) {
-                    MouseEventMacro mouseEventsMacro = mouseProcessor.getMouseEventMacro(event);
+                    MouseEventMacro mouseEventsMacro = mouseEventsProcessor.getMouseEventMacro(event);
 
                     if (mouseEventsMacro == null) {
                         mouseEventsMacro = new MouseEventMacro(event);
-                        mouseProcessor.getMouseEventMacros().add(mouseEventsMacro);
+                        mouseEventsProcessor.getMouseEventMacros().add(mouseEventsMacro);
                     }
                     mouseEventsMacro.getMacro().addLine(action, param1, param2);
                     if (mouseEventsMacro.getMacro().panel != null) {

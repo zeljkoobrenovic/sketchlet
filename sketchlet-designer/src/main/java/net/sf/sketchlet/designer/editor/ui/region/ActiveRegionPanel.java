@@ -1,11 +1,11 @@
 package net.sf.sketchlet.designer.editor.ui.region;
 
-import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.common.context.SketchletContextUtils;
 import net.sf.sketchlet.common.file.FileDrop;
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
+import net.sf.sketchlet.designer.editor.ui.SyntaxEditorWrapper;
 import net.sf.sketchlet.designer.editor.ui.UIUtils;
 import net.sf.sketchlet.designer.editor.ui.desktop.Notepad;
 import net.sf.sketchlet.designer.editor.ui.eventpanels.KeyboardEventsPanel;
@@ -13,9 +13,10 @@ import net.sf.sketchlet.designer.editor.ui.eventpanels.MouseEventsPanel;
 import net.sf.sketchlet.designer.editor.ui.macros.ImageAreaSelect;
 import net.sf.sketchlet.designer.editor.ui.profiles.Profiles;
 import net.sf.sketchlet.designer.editor.ui.properties.PropertiesSetPanel;
-import net.sf.sketchlet.framework.model.log.ActivityLog;
+import net.sf.sketchlet.framework.blackboard.VariablesBlackboard;
 import net.sf.sketchlet.framework.model.ActiveRegion;
-import net.sf.sketchlet.framework.model.Pages;
+import net.sf.sketchlet.framework.model.Project;
+import net.sf.sketchlet.framework.model.log.ActivityLog;
 import net.sf.sketchlet.framework.model.programming.screenscripts.AWTRobotUtil;
 import net.sf.sketchlet.framework.model.programming.screenscripts.TextTransfer;
 import net.sf.sketchlet.framework.model.programming.timers.curves.Curves;
@@ -48,7 +49,7 @@ public class ActiveRegionPanel extends JPanel {
     private String[] columnLimits = {Language.translate("Dimension"), Language.translate("Min"), Language.translate("Max")};
     private ShapePanel shapePanel;
     private PropertiesSetPanel setPanel;
-    private  AbstractTableModel modelAnimation;
+    private AbstractTableModel modelAnimation;
     private AbstractTableModel modelUpdateTransformations;
     private JTable tableAnimation;
     private JScrollPane scrollAnimation;
@@ -58,7 +59,7 @@ public class ActiveRegionPanel extends JPanel {
     private JTable tableUpdateTransformations;
     private JScrollPane scrollUpdateTransformations;
     private ActiveRegion region;
-    private Pages pages;
+    private Project project;
     private JTabbedPane tabs = new JTabbedPane();
     private JTabbedPane tabsImage = new JTabbedPane();
     private JTabbedPane tabsTransform = new JTabbedPane();
@@ -71,7 +72,7 @@ public class ActiveRegionPanel extends JPanel {
     private JButton upwards = new JButton(Workspace.createImageIcon("resources/go-up.png"));
     private JButton delete = new JButton(Workspace.createImageIcon("resources/user-trash.png"));
     private JTextField statusBar = new JTextField(25);
-    private static JFileChooser fileChoser;
+    private static JFileChooser fileChooser;
     private int eventRow = -1;
     private int mappingRow = -1;
     private static JComboBox regionComboBox = new JComboBox();
@@ -102,7 +103,7 @@ public class ActiveRegionPanel extends JPanel {
     private JComboBox captureScreenY = new JComboBox();
     private JComboBox captureScreenWidth = new JComboBox();
     private JComboBox captureScreenHeight = new JComboBox();
-    private RSyntaxTextArea textArea = Notepad.getInstance(RSyntaxTextArea.SYNTAX_STYLE_NONE);
+    private SyntaxEditorWrapper textArea = Notepad.getInstance(RSyntaxTextArea.SYNTAX_STYLE_NONE);
     private JTextArea trajectory1 = new JTextArea();
     private JTextArea trajectory2 = new JTextArea();
     private JTextField charactersPerLine = new JTextField(5);
@@ -127,16 +128,16 @@ public class ActiveRegionPanel extends JPanel {
     }
 
     public static JFileChooser getFileChooser() {
-        if (ActiveRegionPanel.fileChoser == null) {
-            ActiveRegionPanel.fileChoser = new JFileChooser();
-            ActiveRegionPanel.fileChoser.setCurrentDirectory(new File(SketchletContextUtils.getSketchletDesignerTemplateFilesDir()));
+        if (ActiveRegionPanel.fileChooser == null) {
+            ActiveRegionPanel.fileChooser = new JFileChooser();
+            ActiveRegionPanel.fileChooser.setCurrentDirectory(new File(SketchletContextUtils.getSketchletDesignerTemplateFilesDir()));
         }
-        return ActiveRegionPanel.fileChoser;
+        return ActiveRegionPanel.fileChooser;
     }
 
-    public ActiveRegionPanel(Pages pages, ActiveRegion _action, int tabIndex) {
+    public ActiveRegionPanel(Project project, ActiveRegion _action, int tabIndex) {
         setCurrentActiveRegionPanel(this);
-        this.pages = pages;
+        this.project = project;
         this.setRegion(_action);
         this.populateComboBoxes();
         modelUpdateTransformations = new AbstractTableModel() {
@@ -146,7 +147,7 @@ public class ActiveRegionPanel extends JPanel {
             }
 
             public int getRowCount() {
-                return getRegion().updateTransformations.length;
+                return getRegion().getMotionAndRotationVariablesMapping().length;
             }
 
             public int getColumnCount() {
@@ -154,7 +155,7 @@ public class ActiveRegionPanel extends JPanel {
             }
 
             public Object getValueAt(int row, int col) {
-                return getRegion().updateTransformations[row][col];
+                return getRegion().getMotionAndRotationVariablesMapping()[row][col];
             }
 
             public boolean isCellEditable(int row, int col) {
@@ -165,9 +166,9 @@ public class ActiveRegionPanel extends JPanel {
                 if (!getValueAt(row, col).toString().equals(value.toString())) {
                     SketchletEditor.getInstance().saveRegionUndo();
                 }
-                getRegion().updateTransformations[row][col] = value;
+                getRegion().getMotionAndRotationVariablesMapping()[row][col] = value;
                 fireTableCellUpdated(row, col);
-                ActivityLog.log("setRegionContinuousMouseEvent", row + " " + col + " " + getRegion().updateTransformations[row][0] + " " + " " + getRegion().updateTransformations[row][1] + " " + " " + getRegion().updateTransformations[row][2]);
+                ActivityLog.log("setRegionContinuousMouseEvent", row + " " + col + " " + getRegion().getMotionAndRotationVariablesMapping()[row][0] + " " + " " + getRegion().getMotionAndRotationVariablesMapping()[row][1] + " " + " " + getRegion().getMotionAndRotationVariablesMapping()[row][2]);
             }
 
             public Class getColumnClass(int c) {
@@ -182,7 +183,7 @@ public class ActiveRegionPanel extends JPanel {
             }
 
             public int getRowCount() {
-                return getRegion().propertiesAnimation.length;
+                return getRegion().getPropertiesAnimation().length;
             }
 
             public int getColumnCount() {
@@ -190,36 +191,36 @@ public class ActiveRegionPanel extends JPanel {
             }
 
             public Object getValueAt(int row, int col) {
-                return getRegion().propertiesAnimation[row][col] == null ? "" : getRegion().propertiesAnimation[row][col];
+                return getRegion().getPropertiesAnimation()[row][col] == null ? "" : getRegion().getPropertiesAnimation()[row][col];
             }
 
             public boolean isCellEditable(int row, int col) {
-                return col > 0 && getRegion().propertiesAnimation[row][1] != null;
+                return col > 0 && getRegion().getPropertiesAnimation()[row][1] != null;
             }
 
             public void setValueAt(Object value, int row, int col) {
                 if (!getValueAt(row, col).toString().equals(value.toString())) {
                     SketchletEditor.getInstance().saveRegionUndo();
                 }
-                getRegion().propertiesAnimation[row][col] = value.toString();
+                getRegion().getPropertiesAnimation()[row][col] = value.toString();
                 if (col == 1) {
                     if (value == null || value.toString().isEmpty()) {
-                        getRegion().propertiesAnimation[row][2] = "";
-                        getRegion().propertiesAnimation[row][3] = "";
-                        getRegion().propertiesAnimation[row][4] = "";
+                        getRegion().getPropertiesAnimation()[row][2] = "";
+                        getRegion().getPropertiesAnimation()[row][3] = "";
+                        getRegion().getPropertiesAnimation()[row][4] = "";
                     } else {
-                        String strProperty = getRegion().propertiesAnimation[row][0];
+                        String strProperty = getRegion().getPropertiesAnimation()[row][0];
                         String start = getRegion().getMinValue(strProperty);
                         String end = getRegion().getMaxValue(strProperty);
 
-                        if (getRegion().propertiesAnimation[row][2].isEmpty() && start != null) {
-                            getRegion().propertiesAnimation[row][2] = start;
+                        if (getRegion().getPropertiesAnimation()[row][2].isEmpty() && start != null) {
+                            getRegion().getPropertiesAnimation()[row][2] = start;
                         }
-                        if (getRegion().propertiesAnimation[row][3].isEmpty() && end != null) {
-                            getRegion().propertiesAnimation[row][3] = end;
+                        if (getRegion().getPropertiesAnimation()[row][3].isEmpty() && end != null) {
+                            getRegion().getPropertiesAnimation()[row][3] = end;
                         }
-                        if (getRegion().propertiesAnimation[row][4].isEmpty()) {
-                            getRegion().propertiesAnimation[row][4] = "1.0";
+                        if (getRegion().getPropertiesAnimation()[row][4].isEmpty()) {
+                            getRegion().getPropertiesAnimation()[row][4] = "1.0";
                         }
                     }
 
@@ -233,7 +234,7 @@ public class ActiveRegionPanel extends JPanel {
             }
         };
         tableAnimation = new JTable(modelAnimation);
-        tableAnimation.setDefaultRenderer(String.class, new PropertiesTableRenderer(getRegion().propertiesAnimation));
+        tableAnimation.setDefaultRenderer(String.class, new PropertiesTableRenderer(getRegion().getPropertiesAnimation()));
 
         TableColumn col = tableAnimation.getColumnModel().getColumn(1);
         JComboBox animationType = new JComboBox();
@@ -270,7 +271,7 @@ public class ActiveRegionPanel extends JPanel {
             public void keyPressed(KeyEvent ke) {
                 if ((ke.getModifiers() & Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()) != 0) {
                     if (ke.getKeyCode() == ke.VK_V) {
-                        int n = pasteInTable(getTableUpdateTransformations(), modelUpdateTransformations, getRegion().updateTransformations);
+                        int n = pasteInTable(getTableUpdateTransformations(), modelUpdateTransformations, getRegion().getMotionAndRotationVariablesMapping());
                         ActivityLog.log("pasteInTable", "regionContinousEvents " + n);
                     }
                 }
@@ -285,7 +286,7 @@ public class ActiveRegionPanel extends JPanel {
             }
 
             public int getRowCount() {
-                return getRegion().limits.length;
+                return getRegion().getMotionAndRotationLimits().length;
             }
 
             public int getColumnCount() {
@@ -294,7 +295,7 @@ public class ActiveRegionPanel extends JPanel {
 
             public Object getValueAt(int row, int col) {
                 if (row >= 0) {
-                    return getRegion().limits[row][col];
+                    return getRegion().getMotionAndRotationLimits()[row][col];
                 } else {
                     return "";
                 }
@@ -308,9 +309,9 @@ public class ActiveRegionPanel extends JPanel {
                 if (!getValueAt(row, col).toString().equals(value.toString())) {
                     SketchletEditor.getInstance().saveRegionUndo();
                 }
-                getRegion().limits[row][col] = value;
+                getRegion().getMotionAndRotationLimits()[row][col] = value;
                 fireTableCellUpdated(row, col);
-                ActivityLog.log("setRegionLimits", row + " " + col + " " + getRegion().limits[row][0] + " " + " " + getRegion().limits[row][1] + " " + " " + getRegion().limits[row][2]);
+                ActivityLog.log("setRegionLimits", row + " " + col + " " + getRegion().getMotionAndRotationLimits()[row][0] + " " + " " + getRegion().getMotionAndRotationLimits()[row][1] + " " + " " + getRegion().getMotionAndRotationLimits()[row][2]);
             }
 
             public Class getColumnClass(int c) {
@@ -454,64 +455,66 @@ public class ActiveRegionPanel extends JPanel {
         fileTextPanel.add(new JLabel(Language.translate("Text file")));
         showTextPanel.add(singleLineTextPanel, BorderLayout.NORTH);
 
-        showTextPanel.add(Notepad.getEditorPanel(textArea, false), BorderLayout.CENTER);
+        showTextPanel.add(Notepad.getEditorPanel(textArea.getSyntaxTextArea(), new Runnable() {
+            @Override
+            public void run() {
+                refreshAfterTextUpdated();
+            }
+        }, false), BorderLayout.CENTER);
 
-        this.textArea.setText(getRegion().text);
-        this.textArea.addKeyListener(new KeyAdapter() {
+        this.textArea.getSyntaxTextArea().setText(getRegion().getText());
+        this.textArea.getSyntaxTextArea().addKeyListener(new KeyAdapter() {
 
             public void keyReleased(KeyEvent e) {
-                if (!getRegion().text.equals(textArea.getText())) {
-                    SketchletEditor.getInstance().saveRegionUndo();
-                    getRegion().text = textArea.getText();
-                    RefreshTime.update();
-                    SketchletEditor.getInstance().repaint();
+                if (!getRegion().getText().equals(textArea.getSyntaxTextArea().getText())) {
+                    refreshAfterTextUpdated();
                 }
             }
         });
-        this.trajectory1.setText(getRegion().trajectory1);
+        this.trajectory1.setText(getRegion().getTrajectory1());
         this.trajectory1.addKeyListener(new KeyAdapter() {
 
             public void keyReleased(KeyEvent e) {
-                if (!getRegion().trajectory1.equals(trajectory1.getText())) {
+                if (!getRegion().getTrajectory1().equals(trajectory1.getText())) {
                     SketchletEditor.getInstance().saveRegionUndo();
-                    getRegion().trajectory1 = trajectory1.getText();
+                    getRegion().setTrajectory1(trajectory1.getText());
                     RefreshTime.update();
                     SketchletEditor.getInstance().repaint();
                 }
             }
         });
-        this.trajectory2.setText(getRegion().trajectory1);
+        this.trajectory2.setText(getRegion().getTrajectory1());
         this.trajectory2.addKeyListener(new KeyAdapter() {
 
             public void keyReleased(KeyEvent e) {
-                if (!getRegion().trajectory2.equals(trajectory2.getText())) {
+                if (!getRegion().getTrajectory2().equals(trajectory2.getText())) {
                     SketchletEditor.getInstance().saveRegionUndo();
-                    getRegion().trajectory2 = trajectory2.getText();
+                    getRegion().setTrajectory2(trajectory2.getText());
                     RefreshTime.update();
                     SketchletEditor.getInstance().repaint();
                 }
             }
         });
 
-        this.charactersPerLine.setText(getRegion().charactersPerLine);
+        this.charactersPerLine.setText(getRegion().getCharactersPerLine());
         this.charactersPerLine.addKeyListener(new KeyAdapter() {
 
             public void keyReleased(KeyEvent e) {
-                if (!getRegion().charactersPerLine.equals(charactersPerLine.getText())) {
+                if (!getRegion().getCharactersPerLine().equals(charactersPerLine.getText())) {
                     SketchletEditor.getInstance().saveRegionUndo();
-                    getRegion().charactersPerLine = charactersPerLine.getText();
+                    getRegion().setCharactersPerLine(charactersPerLine.getText());
                     RefreshTime.update();
                     SketchletEditor.getInstance().repaint();
                 }
             }
         });
-        this.maxNumLines.setText(getRegion().maxNumLines);
+        this.maxNumLines.setText(getRegion().getMaxNumLines());
         this.maxNumLines.addKeyListener(new KeyAdapter() {
 
             public void keyReleased(KeyEvent e) {
-                if (!getRegion().maxNumLines.equals(maxNumLines.getText())) {
+                if (!getRegion().getMaxNumLines().equals(maxNumLines.getText())) {
                     SketchletEditor.getInstance().saveRegionUndo();
-                    getRegion().maxNumLines = maxNumLines.getText();
+                    getRegion().setMaxNumLines(maxNumLines.getText());
                     RefreshTime.update();
                     SketchletEditor.getInstance().repaint();
                 }
@@ -540,10 +543,10 @@ public class ActiveRegionPanel extends JPanel {
         selectFile.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                int returnVal = fileChoser.showOpenDialog(urlPanel);
+                int returnVal = fileChooser.showOpenDialog(urlPanel);
 
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    getImageUrlField().setSelectedItem(fileChoser.getSelectedFile().getPath());
+                    getImageUrlField().setSelectedItem(fileChooser.getSelectedFile().getPath());
                     RefreshTime.update();
                     SketchletEditor.getInstance().repaint();
                 }
@@ -593,10 +596,10 @@ public class ActiveRegionPanel extends JPanel {
                 int w = 100;
                 int h = 100;
                 try {
-                    x = Integer.parseInt(getRegion().captureScreenX);
-                    y = Integer.parseInt(getRegion().captureScreenY);
-                    w = Integer.parseInt(getRegion().captureScreenWidth);
-                    h = Integer.parseInt(getRegion().captureScreenHeight);
+                    x = Integer.parseInt(getRegion().getCaptureScreenX());
+                    y = Integer.parseInt(getRegion().getCaptureScreenY());
+                    w = Integer.parseInt(getRegion().getCaptureScreenWidth());
+                    h = Integer.parseInt(getRegion().getCaptureScreenHeight());
                 } catch (Throwable eNum) {
                 }
                 ImageAreaSelect.createAndShowGUI(ActiveRegionsFrame.reagionsAndActions, captureedImage, x, y, w, h, false);
@@ -615,96 +618,96 @@ public class ActiveRegionPanel extends JPanel {
             }
         });
 
-        canMove.setSelected(getRegion().movable);
-        canRotate.setSelected(getRegion().rotatable);
-        canResize.setSelected(getRegion().resizable);
-        wrapText.setSelected(getRegion().textWrapped);
-        trimText.setSelected(getRegion().textTrimmed);
-        walkThrough.setSelected(getRegion().walkThroughEnabled);
-        stickToTrajectory.setSelected(getRegion().stickToTrajectoryEnabled);
-        orientationTrajectory.setSelected(getRegion().changingOrientationOnTrajectoryEnabled);
-        captureScreen.setSelected(getRegion().screenCapturingEnabled);
-        captureScreenMouseMap.setSelected(getRegion().screenCapturingMouseMappingEnabled);
+        canMove.setSelected(getRegion().isMovable());
+        canRotate.setSelected(getRegion().isRotatable());
+        canResize.setSelected(getRegion().isResizable());
+        wrapText.setSelected(getRegion().isTextWrapped());
+        trimText.setSelected(getRegion().isTextTrimmed());
+        walkThrough.setSelected(getRegion().isWalkThroughEnabled());
+        stickToTrajectory.setSelected(getRegion().isStickToTrajectoryEnabled());
+        orientationTrajectory.setSelected(getRegion().isChangingOrientationOnTrajectoryEnabled());
+        captureScreen.setSelected(getRegion().isScreenCapturingEnabled());
+        captureScreenMouseMap.setSelected(getRegion().isScreenCapturingMouseMappingEnabled());
 
         canMove.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
-                getRegion().movable = canMove.isSelected();
+                getRegion().setMovable(canMove.isSelected());
             }
         });
         canRotate.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
                 SketchletEditor.getInstance().saveRegionUndo();
-                getRegion().rotatable = canRotate.isSelected();
+                getRegion().setRotatable(canRotate.isSelected());
             }
         });
         canResize.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
                 SketchletEditor.getInstance().saveRegionUndo();
-                getRegion().resizable = canResize.isSelected();
+                getRegion().setResizable(canResize.isSelected());
             }
         });
         wrapText.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
                 SketchletEditor.getInstance().saveRegionUndo();
-                getRegion().textWrapped = wrapText.isSelected();
+                getRegion().setTextWrapped(wrapText.isSelected());
             }
         });
         trimText.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
                 SketchletEditor.getInstance().saveRegionUndo();
-                getRegion().textTrimmed = trimText.isSelected();
+                getRegion().setTextTrimmed(trimText.isSelected());
             }
         });
         walkThrough.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
                 SketchletEditor.getInstance().saveRegionUndo();
-                getRegion().walkThroughEnabled = walkThrough.isSelected();
+                getRegion().setWalkThroughEnabled(walkThrough.isSelected());
             }
         });
         stickToTrajectory.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
                 SketchletEditor.getInstance().saveRegionUndo();
-                getRegion().stickToTrajectoryEnabled = stickToTrajectory.isSelected();
+                getRegion().setStickToTrajectoryEnabled(stickToTrajectory.isSelected());
             }
         });
         orientationTrajectory.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
                 SketchletEditor.getInstance().saveRegionUndo();
-                getRegion().changingOrientationOnTrajectoryEnabled = orientationTrajectory.isSelected();
+                getRegion().setChangingOrientationOnTrajectoryEnabled(orientationTrajectory.isSelected());
             }
         });
         captureScreen.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
                 SketchletEditor.getInstance().saveRegionUndo();
-                getRegion().screenCapturingEnabled = captureScreen.isSelected();
+                getRegion().setScreenCapturingEnabled(captureScreen.isSelected());
             }
         });
         captureScreenMouseMap.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
                 SketchletEditor.getInstance().saveRegionUndo();
-                getRegion().screenCapturingMouseMappingEnabled = captureScreenMouseMap.isSelected();
+                getRegion().setScreenCapturingMouseMappingEnabled(captureScreenMouseMap.isSelected());
             }
         });
 
 
-        this.getImageUrlField().setSelectedItem(getRegion().imageUrlField);
+        this.getImageUrlField().setSelectedItem(getRegion().getImageUrlField());
         this.getImageUrlField().addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
                 if (getImageUrlField().getSelectedItem() != null) {
-                    if (!getRegion().imageUrlField.equals(getImageUrlField().getSelectedItem().toString())) {
+                    if (!getRegion().getImageUrlField().equals(getImageUrlField().getSelectedItem().toString())) {
                         SketchletEditor.getInstance().saveRegionUndo();
-                        getRegion().imageUrlField = (String) getImageUrlField().getSelectedItem();
+                        getRegion().setImageUrlField((String) getImageUrlField().getSelectedItem());
                         RefreshTime.update();
                         SketchletEditor.getInstance().repaint();
                     }
@@ -720,78 +723,78 @@ public class ActiveRegionPanel extends JPanel {
         UIUtils.populateVariablesCombo(this.getCaptureScreenHeight(), true);
 
         UIUtils.removeActionListeners(this.getImageIndex());
-        this.getImageIndex().setSelectedItem(getRegion().strImageIndex);
+        this.getImageIndex().setSelectedItem(getRegion().getImageIndex());
         this.getImageIndex().addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                if (getImageIndex().getSelectedItem() != null && !getRegion().strImageIndex.equals(getImageIndex().getSelectedItem().toString())) {
+                if (getImageIndex().getSelectedItem() != null && !getRegion().getImageIndex().equals(getImageIndex().getSelectedItem().toString())) {
                     SketchletEditor.getInstance().saveRegionUndo();
-                    getRegion().strImageIndex = (String) getImageIndex().getSelectedItem();
+                    getRegion().setImageIndex((String) getImageIndex().getSelectedItem());
                     RefreshTime.update();
                     SketchletEditor.getInstance().repaint();
                 }
             }
         });
         UIUtils.removeActionListeners(this.getAnimationMs());
-        this.getAnimationMs().setSelectedItem(getRegion().strAnimationMs);
+        this.getAnimationMs().setSelectedItem(getRegion().getAnimationFrameRateMs());
         this.getAnimationMs().addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                if (getAnimationMs().getSelectedItem() != null && !getRegion().strAnimationMs.equals(getAnimationMs().getSelectedItem().toString())) {
+                if (getAnimationMs().getSelectedItem() != null && !getRegion().getAnimationFrameRateMs().equals(getAnimationMs().getSelectedItem().toString())) {
                     SketchletEditor.getInstance().saveRegionUndo();
-                    getRegion().strAnimationMs = (String) getAnimationMs().getSelectedItem();
+                    getRegion().setAnimationFrameRateMs((String) getAnimationMs().getSelectedItem());
                     RefreshTime.update();
                     SketchletEditor.getInstance().repaint();
                 }
             }
         });
 
-        getCaptureScreenX().setSelectedItem(getRegion().captureScreenX);
+        getCaptureScreenX().setSelectedItem(getRegion().getCaptureScreenX());
         this.getCaptureScreenX().addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                if (getCaptureScreenX().getSelectedItem() != null && !getRegion().captureScreenX.equals(getCaptureScreenX().getSelectedItem().toString())) {
+                if (getCaptureScreenX().getSelectedItem() != null && !getRegion().getCaptureScreenX().equals(getCaptureScreenX().getSelectedItem().toString())) {
                     SketchletEditor.getInstance().saveRegionUndo();
-                    getRegion().captureScreenX = (String) getCaptureScreenX().getSelectedItem();
+                    getRegion().setCaptureScreenX((String) getCaptureScreenX().getSelectedItem());
                     RefreshTime.update();
                     SketchletEditor.getInstance().repaint();
                 }
             }
         });
 
-        getCaptureScreenY().setSelectedItem(getRegion().captureScreenY);
+        getCaptureScreenY().setSelectedItem(getRegion().getCaptureScreenY());
         this.getCaptureScreenY().addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                if (getCaptureScreenY().getSelectedItem() != null && !getRegion().captureScreenY.equals(getCaptureScreenY().getSelectedItem().toString())) {
+                if (getCaptureScreenY().getSelectedItem() != null && !getRegion().getCaptureScreenY().equals(getCaptureScreenY().getSelectedItem().toString())) {
                     SketchletEditor.getInstance().saveRegionUndo();
-                    getRegion().captureScreenY = (String) getCaptureScreenY().getSelectedItem();
+                    getRegion().setCaptureScreenY((String) getCaptureScreenY().getSelectedItem());
                     RefreshTime.update();
                     SketchletEditor.getInstance().repaint();
                 }
             }
         });
 
-        getCaptureScreenWidth().setSelectedItem(getRegion().captureScreenWidth);
+        getCaptureScreenWidth().setSelectedItem(getRegion().getCaptureScreenWidth());
         this.getCaptureScreenWidth().addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                if (getCaptureScreenWidth().getSelectedItem() != null && !getRegion().captureScreenWidth.equals(getCaptureScreenWidth().getSelectedItem().toString())) {
+                if (getCaptureScreenWidth().getSelectedItem() != null && !getRegion().getCaptureScreenWidth().equals(getCaptureScreenWidth().getSelectedItem().toString())) {
                     SketchletEditor.getInstance().saveRegionUndo();
-                    getRegion().captureScreenWidth = (String) getCaptureScreenWidth().getSelectedItem();
+                    getRegion().setCaptureScreenWidth((String) getCaptureScreenWidth().getSelectedItem());
                     RefreshTime.update();
                     SketchletEditor.getInstance().repaint();
                 }
             }
         });
 
-        getCaptureScreenHeight().setSelectedItem(getRegion().captureScreenHeight);
+        getCaptureScreenHeight().setSelectedItem(getRegion().getCaptureScreenHeight());
         this.getCaptureScreenHeight().addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                if (getCaptureScreenHeight().getSelectedItem() != null && !getRegion().captureScreenHeight.equals(getCaptureScreenHeight().getSelectedItem().toString())) {
+                if (getCaptureScreenHeight().getSelectedItem() != null && !getRegion().getCaptureScreenHeight().equals(getCaptureScreenHeight().getSelectedItem().toString())) {
                     SketchletEditor.getInstance().saveRegionUndo();
-                    getRegion().captureScreenHeight = (String) getCaptureScreenHeight().getSelectedItem();
+                    getRegion().setCaptureScreenHeight((String) getCaptureScreenHeight().getSelectedItem());
                     RefreshTime.update();
                     SketchletEditor.getInstance().repaint();
                 }
@@ -816,10 +819,10 @@ public class ActiveRegionPanel extends JPanel {
         btnScreenWidthToRegion.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                if (getRegion().captureScreenWidth != null && !getRegion().captureScreenWidth.isEmpty()) {
+                if (getRegion().getCaptureScreenWidth() != null && !getRegion().getCaptureScreenWidth().isEmpty()) {
                     try {
                         SketchletEditor.getInstance().saveRegionUndo();
-                        getRegion().setWidth((int) Double.parseDouble(getRegion().captureScreenWidth));
+                        getRegion().setWidth((int) Double.parseDouble(getRegion().getCaptureScreenWidth()));
                         RefreshTime.update();
                         SketchletEditor.getInstance().repaint();
                     } catch (Throwable e) {
@@ -830,10 +833,10 @@ public class ActiveRegionPanel extends JPanel {
         btnScreenHeightToRegion.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                if (getRegion().captureScreenHeight != null && !getRegion().captureScreenHeight.isEmpty()) {
+                if (getRegion().getCaptureScreenHeight() != null && !getRegion().getCaptureScreenHeight().isEmpty()) {
                     try {
                         SketchletEditor.getInstance().saveRegionUndo();
-                        getRegion().setHeight((int) Double.parseDouble(getRegion().captureScreenHeight));
+                        getRegion().setHeight((int) Double.parseDouble(getRegion().getCaptureScreenHeight()));
                         RefreshTime.update();
                         SketchletEditor.getInstance().repaint();
                     } catch (Throwable e) {
@@ -844,7 +847,7 @@ public class ActiveRegionPanel extends JPanel {
         btnRegionToScreenWidth.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                getCaptureScreenWidth().setSelectedItem("" + getRegion().getWidth());
+                getCaptureScreenWidth().setSelectedItem("" + getRegion().getWidthValue());
                 RefreshTime.update();
                 SketchletEditor.getInstance().repaint();
             }
@@ -852,7 +855,7 @@ public class ActiveRegionPanel extends JPanel {
         btnRegionToScreenHeight.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                getCaptureScreenHeight().setSelectedItem("" + getRegion().getHeight());
+                getCaptureScreenHeight().setSelectedItem("" + getRegion().getHeightValue());
                 RefreshTime.update();
                 SketchletEditor.getInstance().repaint();
             }
@@ -896,7 +899,7 @@ public class ActiveRegionPanel extends JPanel {
         deleteMapping.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                UIUtils.deleteTableRows(getTableUpdateTransformations(), modelUpdateTransformations, getRegion().updateTransformations);
+                UIUtils.deleteTableRows(getTableUpdateTransformations(), modelUpdateTransformations, getRegion().getMotionAndRotationVariablesMapping());
             }
         });
 
@@ -913,11 +916,11 @@ public class ActiveRegionPanel extends JPanel {
             public void actionPerformed(ActionEvent ae) {
                 if (mappingRow > 0) {
                     SketchletEditor.getInstance().saveRegionUndo();
-                    Object[] rowData1 = getRegion().updateTransformations[mappingRow];
-                    Object[] rowData2 = getRegion().updateTransformations[mappingRow - 1];
+                    Object[] rowData1 = getRegion().getMotionAndRotationVariablesMapping()[mappingRow];
+                    Object[] rowData2 = getRegion().getMotionAndRotationVariablesMapping()[mappingRow - 1];
 
-                    getRegion().updateTransformations[mappingRow] = rowData2;
-                    getRegion().updateTransformations[mappingRow - 1] = rowData1;
+                    getRegion().getMotionAndRotationVariablesMapping()[mappingRow] = rowData2;
+                    getRegion().getMotionAndRotationVariablesMapping()[mappingRow - 1] = rowData1;
 
                     int r = mappingRow - 1;
 
@@ -930,13 +933,13 @@ public class ActiveRegionPanel extends JPanel {
         moveDownMapping.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                if (mappingRow < getRegion().updateTransformations.length - 1) {
+                if (mappingRow < getRegion().getMotionAndRotationVariablesMapping().length - 1) {
                     SketchletEditor.getInstance().saveRegionUndo();
-                    Object[] rowData1 = getRegion().updateTransformations[mappingRow];
-                    Object[] rowData2 = getRegion().updateTransformations[mappingRow + 1];
+                    Object[] rowData1 = getRegion().getMotionAndRotationVariablesMapping()[mappingRow];
+                    Object[] rowData2 = getRegion().getMotionAndRotationVariablesMapping()[mappingRow + 1];
 
-                    getRegion().updateTransformations[mappingRow] = rowData2;
-                    getRegion().updateTransformations[mappingRow + 1] = rowData1;
+                    getRegion().getMotionAndRotationVariablesMapping()[mappingRow] = rowData2;
+                    getRegion().getMotionAndRotationVariablesMapping()[mappingRow + 1] = rowData1;
 
                     int r = mappingRow + 1;
 
@@ -950,19 +953,19 @@ public class ActiveRegionPanel extends JPanel {
 
             public void actionPerformed(ActionEvent ae) {
                 int row = mappingRow;
-                if (row < getRegion().updateTransformations.length - 1) {
+                if (row < getRegion().getMotionAndRotationVariablesMapping().length - 1) {
                     SketchletEditor.getInstance().saveRegionUndo();
 
-                    for (int i = getRegion().updateTransformations.length - 2; i >= row + 1; i--) {
-                        getRegion().updateTransformations[i + 1] = getRegion().updateTransformations[i];
+                    for (int i = getRegion().getMotionAndRotationVariablesMapping().length - 2; i >= row + 1; i--) {
+                        getRegion().getMotionAndRotationVariablesMapping()[i + 1] = getRegion().getMotionAndRotationVariablesMapping()[i];
                     }
 
-                    getRegion().updateTransformations[row + 1] = new Object[]{
-                            "" + getRegion().updateTransformations[row][0],
-                            "" + getRegion().updateTransformations[row][1],
-                            "" + getRegion().updateTransformations[row][2],
-                            "" + getRegion().updateTransformations[row][3],
-                            "" + getRegion().updateTransformations[row][4]
+                    getRegion().getMotionAndRotationVariablesMapping()[row + 1] = new Object[]{
+                            "" + getRegion().getMotionAndRotationVariablesMapping()[row][0],
+                            "" + getRegion().getMotionAndRotationVariablesMapping()[row][1],
+                            "" + getRegion().getMotionAndRotationVariablesMapping()[row][2],
+                            "" + getRegion().getMotionAndRotationVariablesMapping()[row][3],
+                            "" + getRegion().getMotionAndRotationVariablesMapping()[row][4]
                     };
 
                     int r = row + 1;
@@ -1081,12 +1084,12 @@ public class ActiveRegionPanel extends JPanel {
 
             public void actionPerformed(ActionEvent ae) {
                 int row = tableAnimation.getSelectedRow();
-                if (row >= 0 && getRegion().propertiesAnimation[row][1] != null) {
-                    getRegion().propertiesAnimation[row][1] = "";
-                    getRegion().propertiesAnimation[row][2] = "";
-                    getRegion().propertiesAnimation[row][3] = "";
-                    getRegion().propertiesAnimation[row][4] = "";
-                    getRegion().propertiesAnimation[row][5] = "";
+                if (row >= 0 && getRegion().getPropertiesAnimation()[row][1] != null) {
+                    getRegion().getPropertiesAnimation()[row][1] = "";
+                    getRegion().getPropertiesAnimation()[row][2] = "";
+                    getRegion().getPropertiesAnimation()[row][3] = "";
+                    getRegion().getPropertiesAnimation()[row][4] = "";
+                    getRegion().getPropertiesAnimation()[row][5] = "";
                     modelAnimation.fireTableDataChanged();
                 }
             }
@@ -1097,8 +1100,8 @@ public class ActiveRegionPanel extends JPanel {
 
             public void actionPerformed(ActionEvent ae) {
                 int row = tableAnimation.getSelectedRow();
-                if (row >= 0 && getRegion().propertiesAnimation[row][1] != null) {
-                    getRegion().propertiesAnimation[row][2] = getRegion().getProperty(getRegion().propertiesAnimation[row][0]);
+                if (row >= 0 && getRegion().getPropertiesAnimation()[row][1] != null) {
+                    getRegion().getPropertiesAnimation()[row][2] = getRegion().getProperty(getRegion().getPropertiesAnimation()[row][0]);
                     modelAnimation.fireTableRowsUpdated(row, row);
                 }
             }
@@ -1109,8 +1112,8 @@ public class ActiveRegionPanel extends JPanel {
 
             public void actionPerformed(ActionEvent ae) {
                 int row = tableAnimation.getSelectedRow();
-                if (row >= 0 && getRegion().propertiesAnimation[row][1] != null) {
-                    getRegion().propertiesAnimation[row][3] = getRegion().getProperty(getRegion().propertiesAnimation[row][0]);
+                if (row >= 0 && getRegion().getPropertiesAnimation()[row][1] != null) {
+                    getRegion().getPropertiesAnimation()[row][3] = getRegion().getProperty(getRegion().getPropertiesAnimation()[row][0]);
                     modelAnimation.fireTableRowsUpdated(row, row);
                 }
             }
@@ -1148,7 +1151,7 @@ public class ActiveRegionPanel extends JPanel {
 
             public void valueChanged(ListSelectionEvent event) {
                 int row = tableAnimation.getSelectedRow();
-                boolean bEnable = row >= 0 && getRegion().propertiesAnimation[row][1] != null;
+                boolean bEnable = row >= 0 && getRegion().getPropertiesAnimation()[row][1] != null;
                 btnClear.setEnabled(bEnable);
                 btnStart.setEnabled(bEnable);
                 btnEnd.setEnabled(bEnable);
@@ -1160,7 +1163,7 @@ public class ActiveRegionPanel extends JPanel {
                 String end = null;
                 String init;
                 if (bEnable) {
-                    String strProperty = getRegion().propertiesAnimation[row][0];
+                    String strProperty = getRegion().getPropertiesAnimation()[row][0];
                     start = getRegion().getMinValue(strProperty);
                     end = getRegion().getMaxValue(strProperty);
                     init = getRegion().getProperty(strProperty);
@@ -1240,7 +1243,7 @@ public class ActiveRegionPanel extends JPanel {
                             _end = Double.parseDouble(end);
                             int fps = (int) slider.getValue();
 
-                            getRegion().setProperty(getRegion().propertiesAnimation[row][0], "" + (Math.min(_start, _end) + Math.abs(_start - _end) * fps / (slider.getMaximum() - slider.getMinimum())));
+                            getRegion().setProperty(getRegion().getPropertiesAnimation()[row][0], "" + (Math.min(_start, _end) + Math.abs(_start - _end) * fps / (slider.getMaximum() - slider.getMinimum())));
                             SketchletEditor.getInstance().repaint();
                         }
                     }
@@ -1317,12 +1320,12 @@ public class ActiveRegionPanel extends JPanel {
             setIndexEvents(getTabs().getTabCount() - 1);
         }
         if (Profiles.isActive("active_region_mouse")) {
-            setMouseEventPanel(new MouseEventsPanel(this.getRegion().mouseProcessor));
+            setMouseEventPanel(new MouseEventsPanel(this.getRegion().getMouseEventsProcessor()));
             getTabsRegionEvents().add(getMouseEventPanel(), Language.translate("Mouse Events "));
             setIndexMouseEvents(getTabsRegionEvents().getTabCount() - 1);
         }
         if (Profiles.isActive("active_region_keyboard")) {
-            setKeyboardEventsPanel(new KeyboardEventsPanel(this.getRegion().keyboardProcessor));
+            setKeyboardEventsPanel(new KeyboardEventsPanel(this.getRegion().getKeyboardEventsProcessor()));
             getTabsRegionEvents().add(getKeyboardEventsPanel(), Language.translate("Keyboard Events "));
             setIndexKeyboardEvents(getTabsRegionEvents().getTabCount() - 1);
         }
@@ -1388,6 +1391,13 @@ public class ActiveRegionPanel extends JPanel {
         if (widgetPanel != null) {
             widgetPanel.reloadWidgetEvents();
         }
+    }
+
+    private void refreshAfterTextUpdated() {
+        SketchletEditor.getInstance().saveRegionUndo();
+        getRegion().setText(textArea.getSyntaxTextArea().getText());
+        RefreshTime.update();
+        SketchletEditor.getInstance().repaint();
     }
 
     public static int getIndexGraphics() {
@@ -1487,7 +1497,7 @@ public class ActiveRegionPanel extends JPanel {
                     ActiveRegionsFrame.showRegionsAndActions();
                     ActiveRegionPanel ap = ActiveRegionsFrame.refresh(getRegion(), ActiveRegionPanel.getIndexEvents(), ActiveRegionPanel.getIndexMotion());
                     int row = ap.getFreeMappingRow();
-                    getRegion().updateTransformations[row][1] = strText.substring(1);
+                    getRegion().getMotionAndRotationVariablesMapping()[row][1] = strText.substring(1);
                     ap.editUpdateTransformationsEvent(row);
                 }
                 DataRowFrame.emptyOnCancel = false;
@@ -1602,7 +1612,7 @@ public class ActiveRegionPanel extends JPanel {
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         getImageEditor().getDrawingPanels().addTab("1", scrollPane);
 
-        for (String strAdditionalFile : getRegion().additionalImageFile) {
+        for (String strAdditionalFile : getRegion().getAdditionalImageFileNames()) {
             int index = getImageEditor().getDrawingPanels().getTabCount();
             getImageEditor().getDrawingPanels().add("" + (index + 1), new JPanel());
         }
@@ -1614,8 +1624,8 @@ public class ActiveRegionPanel extends JPanel {
         this.deleteMapping.setEnabled(mappingRow >= 0);
         editMapping.setEnabled(mappingRow >= 0);
         this.moveUpMapping.setEnabled(mappingRow > 0);
-        this.moveDownMapping.setEnabled(mappingRow >= 0 && mappingRow < getRegion().updateTransformations.length - 1);
-        this.duplicateMapping.setEnabled(mappingRow >= 0 && eventRow < getRegion().updateTransformations.length - 1);
+        this.moveDownMapping.setEnabled(mappingRow >= 0 && mappingRow < getRegion().getMotionAndRotationVariablesMapping().length - 1);
+        this.duplicateMapping.setEnabled(mappingRow >= 0 && eventRow < getRegion().getMotionAndRotationVariablesMapping().length - 1);
 
         if (getMouseEventPanel() != null) {
             getMouseEventPanel().enableControls();
@@ -1627,11 +1637,11 @@ public class ActiveRegionPanel extends JPanel {
     }
 
     public void refresh() {
-        int index = getRegion().parent.getRegions().indexOf(getRegion());
+        int index = getRegion().getParent().getRegions().indexOf(getRegion());
         upwards.setEnabled(index > 0);
-        backwards.setEnabled(index < getRegion().parent.getRegions().size() - 1);
+        backwards.setEnabled(index < getRegion().getParent().getRegions().size() - 1);
 
-        statusBar.setText("position (left,up) : " + getRegion().x1 + "," + getRegion().y1 + "    size : " + (getRegion().x2 - getRegion().x1) + "," + (getRegion().y2 - getRegion().y1));
+        statusBar.setText("position (left,up) : " + getRegion().getX1Value() + "," + getRegion().getY1Value() + "    size : " + (getRegion().getX2Value() - getRegion().getX1Value()) + "," + (getRegion().getY2Value() - getRegion().getY1Value()));
 
         RefreshTime.update();
         SketchletEditor.getInstance().repaint();
@@ -1705,19 +1715,19 @@ public class ActiveRegionPanel extends JPanel {
     }
 
     public void refreshComponents() {
-        UIUtils.refreshComboBox(this.getImageUrlField(), getRegion().imageUrlField);
-        UIUtils.refreshComboBox(this.getImageIndex(), getRegion().strImageIndex);
-        UIUtils.refreshComboBox(this.getAnimationMs(), getRegion().strAnimationMs);
-        UIUtils.refreshComboBox(this.getCaptureScreenX(), getRegion().captureScreenX);
-        UIUtils.refreshComboBox(this.getCaptureScreenY(), getRegion().captureScreenY);
-        UIUtils.refreshComboBox(this.getCaptureScreenWidth(), getRegion().captureScreenWidth);
-        UIUtils.refreshComboBox(this.getCaptureScreenHeight(), getRegion().captureScreenHeight);
-        UIUtils.refreshComboBox(this.shapePanel.fillColor, getRegion().strFillColor);
-        UIUtils.refreshComboBox(this.shapePanel.lineColor, getRegion().lineColor);
-        UIUtils.refreshComboBox(this.shapePanel.lineStyle, getRegion().lineStyle);
-        UIUtils.refreshComboBox(this.shapePanel.lineThickness, getRegion().lineThickness);
-        UIUtils.refreshComboBox(this.shapePanel.shapeList, getRegion().shape);
-        this.shapePanel.shapeArguments.setText(getRegion().shapeArguments);
+        UIUtils.refreshComboBox(this.getImageUrlField(), getRegion().getImageUrlField());
+        UIUtils.refreshComboBox(this.getImageIndex(), getRegion().getImageIndex());
+        UIUtils.refreshComboBox(this.getAnimationMs(), getRegion().getAnimationFrameRateMs());
+        UIUtils.refreshComboBox(this.getCaptureScreenX(), getRegion().getCaptureScreenX());
+        UIUtils.refreshComboBox(this.getCaptureScreenY(), getRegion().getCaptureScreenY());
+        UIUtils.refreshComboBox(this.getCaptureScreenWidth(), getRegion().getCaptureScreenWidth());
+        UIUtils.refreshComboBox(this.getCaptureScreenHeight(), getRegion().getCaptureScreenHeight());
+        UIUtils.refreshComboBox(this.shapePanel.fillColor, getRegion().getFillColor());
+        UIUtils.refreshComboBox(this.shapePanel.lineColor, getRegion().getLineColor());
+        UIUtils.refreshComboBox(this.shapePanel.lineStyle, getRegion().getLineStyle());
+        UIUtils.refreshComboBox(this.shapePanel.lineThickness, getRegion().getLineThickness());
+        UIUtils.refreshComboBox(this.shapePanel.shapeList, getRegion().getShape());
+        this.shapePanel.shapeArguments.setText(getRegion().getShapeArguments());
 
         if (this.widgetPanel != null) {
             this.widgetPanel.refreshComponents();
@@ -1732,23 +1742,23 @@ public class ActiveRegionPanel extends JPanel {
             generalSettingsPanel.refreshComponents();
         }
 
-        this.textArea.setText(getRegion().text);
-        this.trajectory1.setText(getRegion().trajectory1);
-        this.trajectory2.setText(getRegion().trajectory1);
+        this.textArea.getSyntaxTextArea().setText(getRegion().getText());
+        this.trajectory1.setText(getRegion().getTrajectory1());
+        this.trajectory2.setText(getRegion().getTrajectory1());
 
-        this.charactersPerLine.setText(getRegion().charactersPerLine);
-        this.maxNumLines.setText(getRegion().maxNumLines);
+        this.charactersPerLine.setText(getRegion().getCharactersPerLine());
+        this.maxNumLines.setText(getRegion().getMaxNumLines());
 
-        UIUtils.refreshCheckBox(canMove, getRegion().movable);
-        UIUtils.refreshCheckBox(canRotate, getRegion().rotatable);
-        UIUtils.refreshCheckBox(canResize, getRegion().resizable);
-        UIUtils.refreshCheckBox(wrapText, getRegion().textWrapped);
-        UIUtils.refreshCheckBox(trimText, getRegion().textTrimmed);
-        UIUtils.refreshCheckBox(walkThrough, getRegion().walkThroughEnabled);
-        UIUtils.refreshCheckBox(stickToTrajectory, getRegion().stickToTrajectoryEnabled);
-        UIUtils.refreshCheckBox(orientationTrajectory, getRegion().changingOrientationOnTrajectoryEnabled);
-        UIUtils.refreshCheckBox(captureScreen, getRegion().screenCapturingEnabled);
-        UIUtils.refreshCheckBox(captureScreenMouseMap, getRegion().screenCapturingMouseMappingEnabled);
+        UIUtils.refreshCheckBox(canMove, getRegion().isMovable());
+        UIUtils.refreshCheckBox(canRotate, getRegion().isRotatable());
+        UIUtils.refreshCheckBox(canResize, getRegion().isResizable());
+        UIUtils.refreshCheckBox(wrapText, getRegion().isTextWrapped());
+        UIUtils.refreshCheckBox(trimText, getRegion().isTextTrimmed());
+        UIUtils.refreshCheckBox(walkThrough, getRegion().isWalkThroughEnabled());
+        UIUtils.refreshCheckBox(stickToTrajectory, getRegion().isStickToTrajectoryEnabled());
+        UIUtils.refreshCheckBox(orientationTrajectory, getRegion().isChangingOrientationOnTrajectoryEnabled());
+        UIUtils.refreshCheckBox(captureScreen, getRegion().isScreenCapturingEnabled());
+        UIUtils.refreshCheckBox(captureScreenMouseMap, getRegion().isScreenCapturingMouseMappingEnabled());
 
         UIUtils.refreshTable(setPanel.table);
         UIUtils.refreshTable(tableAnimation);

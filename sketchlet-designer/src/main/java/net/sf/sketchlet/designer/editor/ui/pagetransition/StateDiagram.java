@@ -5,7 +5,7 @@ import net.sf.sketchlet.common.file.FileUtils;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
 import net.sf.sketchlet.framework.model.Page;
-import net.sf.sketchlet.framework.model.Pages;
+import net.sf.sketchlet.framework.model.Project;
 import org.apache.log4j.Logger;
 import org.jgraph.JGraph;
 import org.jgraph.event.GraphLayoutCacheEvent;
@@ -64,13 +64,13 @@ public class StateDiagram {
         diagramFrame = null;
     }
 
-    public static void showDiagram(final Pages pages) {
+    public static void showDiagram(final Project project) {
         JFrame oldFrame = diagramFrame;
 
-        final BufferedImage image = getDotImage(pages);
+        final BufferedImage image = getDotImage(project);
 
         if (image == null) {
-            createGraph(pages);
+            createGraph(project);
         }
 
         SketchletEditor.editorFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -93,7 +93,7 @@ public class StateDiagram {
         refresh.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                showDiagram(pages);
+                showDiagram(project);
             }
         });
 
@@ -162,7 +162,7 @@ public class StateDiagram {
     static Hashtable<Page, Page> touchedSketches;
     static JGraph graph = null;
 
-    public static String getDot(Pages pages) {
+    public static String getDot(Project project) {
         String strDot = "digraph \"unix\" {\n";
         strDot += "graph [\n";
         strDot += "    splines=true,\n";
@@ -179,15 +179,15 @@ public class StateDiagram {
         strDot += "    fontsize = 8,\n";
         strDot += "    fontname = \"Helvetica-Outlined\" ];\n";
 
-        for (Page s : pages.getPages()) {
+        for (Page s : project.getPages()) {
             strDot += "\"" + s.getTitle() + "\";\n";
         }
 
-        for (int i = 0; i < pages.getPages().size(); i++) {
-            Page s1 = pages.getPages().elementAt(i);
+        for (int i = 0; i < project.getPages().size(); i++) {
+            Page s1 = project.getPages().elementAt(i);
 
             for (int j = 0; j < i; j++) {
-                Page s2 = pages.getPages().elementAt(j);
+                Page s2 = project.getPages().elementAt(j);
                 Set<String> connection1To2 = s1.getConnections(s2);
                 Set<String> connection2To1 = s2.getConnections(s1);
                 for (String conn : connection1To2) {
@@ -202,7 +202,7 @@ public class StateDiagram {
         return strDot;
     }
 
-    public static JGraph createGraph(Pages pages) {
+    public static JGraph createGraph(Project project) {
         touchedSketches = new Hashtable<Page, Page>();
         GraphModel model = new DefaultGraphModel();
         model.addGraphModelListener(new GraphModelListener() {
@@ -229,22 +229,22 @@ public class StateDiagram {
         graph.setJumpToDefaultPort(true);
 
         // Insert all three cells in one call, so we need an array to store them
-        DefaultGraphCell[] cells = new DefaultGraphCell[pages.getPages().size()];
+        DefaultGraphCell[] cells = new DefaultGraphCell[project.getPages().size()];
 
         final Hashtable hash = new Hashtable();
 
         int c = 20;
 
-        for (int i = 0; i < pages.getPages().size(); i++) {
-            Page s = pages.getPages().elementAt(i);
+        for (int i = 0; i < project.getPages().size(); i++) {
+            Page s = project.getPages().elementAt(i);
             double x = s.getStateDiagramX();
             double y = s.getStateDiagramY();
         }
 
-        Object[][] sketchInfo = Pages.getSketchInfoFromDir(50, 600);
+        Object[][] sketchInfo = Project.getSketchInfoFromDir(50, 600);
 
-        for (int i = 0; i < pages.getPages().size(); i++) {
-            Page s = pages.getPages().elementAt(i);
+        for (int i = 0; i < project.getPages().size(); i++) {
+            Page s = project.getPages().elementAt(i);
             double x = s.getStateDiagramX();
             double y = s.getStateDiagramY();
 
@@ -275,8 +275,8 @@ public class StateDiagram {
             hash.put(s.getTitle(), s);
 
             for (int j = 0; j < i; j++) {
-                boolean connected1 = s.isConnectedTo(pages.getPages().elementAt(j));
-                boolean connected2 = pages.getPages().elementAt(j).isConnectedTo(s);
+                boolean connected1 = s.isConnectedTo(project.getPages().elementAt(j));
+                boolean connected2 = project.getPages().elementAt(j).isConnectedTo(s);
                 if (connected1 || connected2) {
                     DefaultEdge edge = new DefaultEdge();
                     // Fetch the ports from the new vertices, and connect them with the edge
@@ -350,8 +350,8 @@ public class StateDiagram {
         return graph;
     }
 
-    public static BufferedImage getDotImage(Pages pages) {
-        String strDot = getDot(pages);
+    public static BufferedImage getDotImage(Project project) {
+        String strDot = getDot(project);
         File dotFile = null;
         File imgFile = null;
         try {

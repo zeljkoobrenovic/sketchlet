@@ -4,7 +4,7 @@ import net.sf.sketchlet.context.SketchletContext;
 import net.sf.sketchlet.designer.editor.ui.desktop.SystemVariablesDialog;
 import net.sf.sketchlet.designer.playback.ui.InteractionRecorder;
 import net.sf.sketchlet.framework.model.ActiveRegion;
-import net.sf.sketchlet.framework.model.events.mouse.MouseProcessor;
+import net.sf.sketchlet.framework.model.events.mouse.MouseEventsProcessor;
 import net.sf.sketchlet.plugin.WidgetPlugin;
 import net.sf.sketchlet.util.RefreshTime;
 
@@ -26,11 +26,11 @@ public class MouseController {
     private static int mouseScreenY = 0;
 
     public void mouseEntered(InteractionContext context, MouseEvent e) {
-        context.getCurrentPage().getMouseProcessor().processAction(e, context.getFrame(), MouseProcessor.MOUSE_ENTRY);
+        context.getCurrentPage().getMouseEventsProcessor().processAction(e, context.getFrame(), MouseEventsProcessor.MOUSE_ENTRY);
     }
 
     public void mouseExited(InteractionContext context, MouseEvent e) {
-        context.getCurrentPage().getMouseProcessor().processAction(e, context.getFrame(), MouseProcessor.MOUSE_EXIT);
+        context.getCurrentPage().getMouseEventsProcessor().processAction(e, context.getFrame(), MouseEventsProcessor.MOUSE_EXIT);
     }
 
     public void mousePressed(InteractionContext context, MouseEvent e) {
@@ -62,18 +62,18 @@ public class MouseController {
             context.setSelectedRegion(context.getMasterPage().getRegions().getMouseHelper().selectRegion(x, y, true));
         }
 
-        MouseProcessor mouseProcessor;
+        MouseEventsProcessor mouseEventsProcessor;
         if (context.getSelectedRegion() != null) {
             context.getSelectedRegion().getMouseController().mousePressed(x, y, e.getModifiers(), e.getWhen(), e, context.getFrame(), true);
             context.repaint();
-            mouseProcessor = context.getSelectedRegion().mouseProcessor;
+            mouseEventsProcessor = context.getSelectedRegion().getMouseEventsProcessor();
         } else {
             WidgetPlugin.setActiveWidget(null);
-            mouseProcessor = context.getCurrentPage().getMouseProcessor();
+            mouseEventsProcessor = context.getCurrentPage().getMouseEventsProcessor();
         }
 
-        if (mouseProcessor != null) {
-            mouseProcessor.processAction(e, context.getFrame(), new int[]{MouseProcessor.MOUSE_LEFT_BUTTON_PRESS, MouseProcessor.MOUSE_MIDDLE_BUTTON_PRESS, MouseProcessor.MOUSE_RIGHT_BUTTON_PRESS});
+        if (mouseEventsProcessor != null) {
+            mouseEventsProcessor.processAction(e, context.getFrame(), new int[]{MouseEventsProcessor.MOUSE_LEFT_BUTTON_PRESS, MouseEventsProcessor.MOUSE_MIDDLE_BUTTON_PRESS, MouseEventsProcessor.MOUSE_RIGHT_BUTTON_PRESS});
             InteractionRecorder.addEvent("Mouse press", context.getSelectedRegion() != null ? "region " + context.getSelectedRegion().getNumber() : "page", "button " + e.getButton());
         }
         SketchletContext.getInstance().repaint();
@@ -94,17 +94,17 @@ public class MouseController {
             }
         }
         SystemVariablesDialog.processMouseEvent(x, y, "mouse released");
-        MouseProcessor mouseProcessor;
+        MouseEventsProcessor mouseEventsProcessor;
         if (context.getSelectedRegion() != null) {
             context.getSelectedRegion().getMouseController().mouseReleased(x, y, e.getModifiers(), e.getWhen(), e, context.getFrame(), true);
             context.repaint();
-            mouseProcessor = context.getSelectedRegion().mouseProcessor;
+            mouseEventsProcessor = context.getSelectedRegion().getMouseEventsProcessor();
         } else {
-            mouseProcessor = context.getCurrentPage().getMouseProcessor();
+            mouseEventsProcessor = context.getCurrentPage().getMouseEventsProcessor();
         }
 
-        if (mouseProcessor != null) {
-            mouseProcessor.processAction(e, context.getFrame(), new int[]{MouseProcessor.MOUSE_LEFT_BUTTON_RELEASE, MouseProcessor.MOUSE_MIDDLE_BUTTON_RELEASE, MouseProcessor.MOUSE_RIGHT_BUTTON_RELEASE});
+        if (mouseEventsProcessor != null) {
+            mouseEventsProcessor.processAction(e, context.getFrame(), new int[]{MouseEventsProcessor.MOUSE_LEFT_BUTTON_RELEASE, MouseEventsProcessor.MOUSE_MIDDLE_BUTTON_RELEASE, MouseEventsProcessor.MOUSE_RIGHT_BUTTON_RELEASE});
             InteractionRecorder.addEvent("Mouse release", context.getSelectedRegion() != null ? "region " + context.getSelectedRegion().getNumber() : "page", "button " + e.getButton());
         }
         RefreshTime.update();
@@ -127,7 +127,7 @@ public class MouseController {
 
         SystemVariablesDialog.processMouseEvent(x, y, "mouse dragged");
         if (context.getSelectedRegion() != null) {
-            if ((context.getSelectedRegion().movable || context.getSelectedRegion().rotatable) && e.getWhen() != prevTimestamp) {
+            if ((context.getSelectedRegion().isMovable() || context.getSelectedRegion().isRotatable()) && e.getWhen() != prevTimestamp) {
                 int dx = x - prevX;
                 int dy = y - prevY;
                 prevX = x;
@@ -160,8 +160,8 @@ public class MouseController {
         }
         setMouseScreenX(e.getXOnScreen());
         setMouseScreenY(e.getYOnScreen());
-        int x = (int) (e.getPoint().x);
-        int y = (int) (e.getPoint().y);
+        int x = e.getPoint().x;
+        int y = e.getPoint().y;
         if (context.getAffineTransform() != null) {
             try {
                 Point2D ip = new Point();
@@ -200,8 +200,10 @@ public class MouseController {
         }
 
         if (context.getFrame() != null) {
-            if (region != null && region.isMouseActive()) {
+            if (region != null && region.hasMouseDiscreteEvents()) {
                 context.getFrame().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            } else if (region != null && region.isMouseDraggable()) {
+                context.getFrame().setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
             } else {
                 context.getFrame().setCursor(Cursor.getDefaultCursor());
             }
@@ -209,11 +211,11 @@ public class MouseController {
 
         if (region != context.getMouseOverRegion()) {
             if (context.getMouseOverRegion() != null) {
-                context.getMouseOverRegion().mouseProcessor.processAction(e, context.getFrame(), MouseProcessor.MOUSE_EXIT);
+                context.getMouseOverRegion().getMouseEventsProcessor().processAction(e, context.getFrame(), MouseEventsProcessor.MOUSE_EXIT);
             }
             context.setMouseOverRegion(region);
             if (region != null) {
-                region.mouseProcessor.processAction(e, context.getFrame(), MouseProcessor.MOUSE_ENTRY);
+                region.getMouseEventsProcessor().processAction(e, context.getFrame(), MouseEventsProcessor.MOUSE_ENTRY);
             }
         }
 
@@ -253,17 +255,17 @@ public class MouseController {
         context.setSelectedRegion(context.getCurrentPage().getRegions().getMouseHelper().selectRegion(x, y, true));
 
         if (context.getSelectedRegion() == null) {
-            context.getCurrentPage().getMouseProcessor().processAction(e, context.getFrame(), MouseProcessor.MOUSE_WHEEL_UP);
+            context.getCurrentPage().getMouseEventsProcessor().processAction(e, context.getFrame(), MouseEventsProcessor.MOUSE_WHEEL_UP);
             return;
         }
         int notches = e.getWheelRotation();
         if (notches < 0) {
             for (int i = 0; i < Math.abs(notches); i++) {
-                context.getSelectedRegion().mouseProcessor.processAction(e, context.getFrame(), MouseProcessor.MOUSE_WHEEL_UP);
+                context.getSelectedRegion().getMouseEventsProcessor().processAction(e, context.getFrame(), MouseEventsProcessor.MOUSE_WHEEL_UP);
             }
         } else {
             for (int i = 0; i < notches; i++) {
-                context.getSelectedRegion().mouseProcessor.processAction(e, context.getFrame(), MouseProcessor.MOUSE_WHEEL_DOWN);
+                context.getSelectedRegion().getMouseEventsProcessor().processAction(e, context.getFrame(), MouseEventsProcessor.MOUSE_WHEEL_DOWN);
             }
         }
     }
@@ -299,18 +301,18 @@ public class MouseController {
             context.setSelectedRegion(context.getMasterPage().getRegions().getMouseHelper().selectRegion(x, y, true));
         }
 
-        MouseProcessor mouseProcessor;
+        MouseEventsProcessor mouseEventsProcessor;
         if (context.getSelectedRegion() != null) {
-            mouseProcessor = context.getSelectedRegion().mouseProcessor;
+            mouseEventsProcessor = context.getSelectedRegion().getMouseEventsProcessor();
         } else {
-            mouseProcessor = context.getCurrentPage().getMouseProcessor();
+            mouseEventsProcessor = context.getCurrentPage().getMouseEventsProcessor();
         }
 
-        if (mouseProcessor != null) {
-            mouseProcessor.processAction(button, context.getFrame(), new int[]{MouseProcessor.MOUSE_LEFT_BUTTON_CLICK, MouseProcessor.MOUSE_MIDDLE_BUTTON_CLICK, MouseProcessor.MOUSE_RIGHT_BUTTON_CLICK});
+        if (mouseEventsProcessor != null) {
+            mouseEventsProcessor.processAction(button, context.getFrame(), new int[]{MouseEventsProcessor.MOUSE_LEFT_BUTTON_CLICK, MouseEventsProcessor.MOUSE_MIDDLE_BUTTON_CLICK, MouseEventsProcessor.MOUSE_RIGHT_BUTTON_CLICK});
 
             if (clickCount == 2) {
-                mouseProcessor.processAction(context.getFrame(), MouseProcessor.MOUSE_DOUBLE_CLICK);
+                mouseEventsProcessor.processAction(context.getFrame(), MouseEventsProcessor.MOUSE_DOUBLE_CLICK);
             }
 
             if (clickCount == 1) {

@@ -171,23 +171,29 @@ public class HelpViewer extends JPanel {
         }
         if (command.equalsIgnoreCase("goto variables-panel")) {
             SketchletEditor.getInstance().getTabsBrowser().setSelectedIndex(0);
+            SketchletEditor.getInstance().getTabsNavigator().setSelectedIndex(0);
         } else if (command.equalsIgnoreCase("goto services-panel")) {
             SketchletEditor.getInstance().getTabsBrowser().setSelectedIndex(0);
+            SketchletEditor.getInstance().getTabsNavigator().setSelectedIndex(1);
             SketchletEditor.getInstance().getTabsRight().setSelectedIndex(SketchletEditor.getIoservicesTabIndex());
         } else if (command.equalsIgnoreCase("goto timers-panel")) {
             SketchletEditor.getInstance().getTabsBrowser().setSelectedIndex(0);
+            SketchletEditor.getInstance().getTabsNavigator().setSelectedIndex(1);
             SketchletEditor.getInstance().getTabsRight().setSelectedIndex(SketchletEditor.getProgrammingTabIndex());
             SketchletEditor.getInstance().getTabsProgramming().setSelectedIndex(SketchletEditor.getTimersTabIndex());
         } else if (command.equalsIgnoreCase("goto macros-panel")) {
             SketchletEditor.getInstance().getTabsBrowser().setSelectedIndex(0);
+            SketchletEditor.getInstance().getTabsNavigator().setSelectedIndex(1);
             SketchletEditor.getInstance().getTabsRight().setSelectedIndex(SketchletEditor.getProgrammingTabIndex());
             SketchletEditor.getInstance().getTabsProgramming().setSelectedIndex(SketchletEditor.getMacrosTabIndex());
         } else if (command.equalsIgnoreCase("goto screen-poking-panel")) {
             SketchletEditor.getInstance().getTabsBrowser().setSelectedIndex(0);
+            SketchletEditor.getInstance().getTabsNavigator().setSelectedIndex(1);
             SketchletEditor.getInstance().getTabsRight().setSelectedIndex(SketchletEditor.getProgrammingTabIndex());
             SketchletEditor.getInstance().getTabsProgramming().setSelectedIndex(SketchletEditor.getScreenpokingTabIndex());
         } else if (command.equalsIgnoreCase("goto scripts-panel")) {
             SketchletEditor.getInstance().getTabsBrowser().setSelectedIndex(0);
+            SketchletEditor.getInstance().getTabsNavigator().setSelectedIndex(1);
             SketchletEditor.getInstance().getTabsRight().setSelectedIndex(SketchletEditor.getProgrammingTabIndex());
             SketchletEditor.getInstance().getTabsProgramming().setSelectedIndex(SketchletEditor.getScriptsTabIndex());
         } else if (command.equalsIgnoreCase("page://")) {

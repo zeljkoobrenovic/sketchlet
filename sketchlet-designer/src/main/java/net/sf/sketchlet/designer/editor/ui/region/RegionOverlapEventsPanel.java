@@ -34,14 +34,14 @@ public class RegionOverlapEventsPanel extends AbstractEventsPanel {
 
             @Override
             public List<RegionOverlapEventMacro> getEventMacroList() {
-                return region.regionOverlapEventMacros;
+                return region.getRegionOverlapEventMacros();
             }
 
             @Override
             public String getEventDescription(RegionOverlapEventMacro eventMacro) {
                 String regionName = eventMacro.getRegionId();
                 if (!regionName.equalsIgnoreCase("Any Region")) {
-                    ActiveRegion overlapRegion = region.parent.getRegionById(regionName);
+                    ActiveRegion overlapRegion = region.getParent().getRegionById(regionName);
                     if (overlapRegion != null) {
                         regionName = "region " + overlapRegion.getName();
                     }
@@ -70,8 +70,8 @@ public class RegionOverlapEventsPanel extends AbstractEventsPanel {
         final JComboBox regions = new JComboBox();
         regions.addItem("Any Region");
         regionIds.add("Any Region");
-        for (int i = region.parent.getRegions().size() - 1; i >= 0; i--) {
-            ActiveRegion r = region.parent.getRegions().get(i);
+        for (int i = region.getParent().getRegions().size() - 1; i >= 0; i--) {
+            ActiveRegion r = region.getParent().getRegions().get(i);
             if (r != region) {
                 regions.addItem(r.getName());
                 regionIds.add(r.getId());
@@ -109,8 +109,8 @@ public class RegionOverlapEventsPanel extends AbstractEventsPanel {
         final JComboBox regions = new JComboBox();
         regions.addItem("Any Region");
         regionIds.add("Any Region");
-        for (int i = region.parent.getRegions().size() - 1; i >= 0; i--) {
-            ActiveRegion r = region.parent.getRegions().get(i);
+        for (int i = region.getParent().getRegions().size() - 1; i >= 0; i--) {
+            ActiveRegion r = region.getParent().getRegions().get(i);
             if (r != region) {
                 regions.addItem(r.getName());
                 regionIds.add(r.getId());
@@ -124,7 +124,7 @@ public class RegionOverlapEventsPanel extends AbstractEventsPanel {
                 regionOverlapEventMacro = new RegionOverlapEventMacro(labels[events.getSelectedIndex()]);
                 regionOverlapEventMacro.parameters().put(RegionOverlapEventMacro.PARAMETER_REGION_ID, regionIds.get(regions.getSelectedIndex()));
 
-                region.regionOverlapEventMacros.add(regionOverlapEventMacro);
+                region.getRegionOverlapEventMacros().add(regionOverlapEventMacro);
 
                 regionOverlapEventMacro.getMacro().addLine(action, param1, param2);
                 refreshMacroPanel();

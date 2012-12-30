@@ -45,7 +45,7 @@ import net.sf.sketchlet.designer.tools.zip.ZipVersion;
 import net.sf.sketchlet.help.HelpUtils;
 import net.sf.sketchlet.loaders.pluginloader.PluginData;
 import net.sf.sketchlet.loaders.pluginloader.PluginLoader;
-import net.sf.sketchlet.framework.model.Pages;
+import net.sf.sketchlet.framework.model.Project;
 import net.sf.sketchlet.framework.model.programming.macros.Macros;
 import net.sf.sketchlet.framework.model.programming.screenscripts.ScreenScripts;
 import net.sf.sketchlet.framework.model.programming.timers.Timers;
@@ -1204,7 +1204,7 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
             SketchletEditor.getInstance().enableControls();
             SketchletEditor.getInstance().repaint();
             if (SketchletEditor.getInstance().getCurrentPage() != null) {
-                int index = SketchletEditor.getInstance().getPages().getPages().indexOf(SketchletEditor.getInstance().getCurrentPage());
+                int index = SketchletEditor.getInstance().getProject().getPages().indexOf(SketchletEditor.getInstance().getCurrentPage());
                 SketchletEditor.getInstance().getPageListPanel().table.getSelectionModel().setSelectionInterval(index, index);
             }
 
@@ -1330,7 +1330,7 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
             ImageCache.clear();
             System.gc();
         } else if (cmd.equals("exportsketches")) {
-            SketchletEditor.getInstance().saveSketchAsImage();
+            SketchletEditor.getInstance().savePageAsImage();
         } else if (cmd.equals("printsketches")) {
             SketchletEditor.getInstance().printPage();
         } else if (cmd.equals("sketch-parameters")) {
@@ -2471,10 +2471,10 @@ public class SketchletDesignerMainPanel extends JPanel implements ActionListener
             XMLHelper.load("system_variables.xml", "system_variables", SystemVariablesDialog.getData());
             SystemVariablesDialog.startThread();
 
-            if (SketchletEditor.getPages() != null) {
-                SketchletEditor.getPages().dispose();
+            if (SketchletEditor.getProject() != null) {
+                SketchletEditor.getProject().dispose();
             }
-            SketchletEditor.setPages(new Pages());
+            SketchletEditor.setProject(new Project());
             SketchletDesignerMainPanel.getDesktopPanel().refresh();
             SketchletDesignerMainPanel.getDesktopPanelAuto().refresh();
         }

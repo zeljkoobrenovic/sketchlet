@@ -201,8 +201,8 @@ public class PageDetailsPanel extends JPanel {
             }
         });
         variableUpdateEventsPanel = new VariableUpdateEventsPanel(SketchletEditor.getInstance().getCurrentPage());
-        keyboardEventsPanel = new KeyboardEventsPanel(SketchletEditor.getInstance().getPage().getKeyboardProcessor());
-        mouseEventsPanel = new MouseEventsPanel(SketchletEditor.getInstance().getPage().getMouseProcessor());
+        keyboardEventsPanel = new KeyboardEventsPanel(SketchletEditor.getInstance().getPage().getKeyboardEventsProcessor());
+        mouseEventsPanel = new MouseEventsPanel(SketchletEditor.getInstance().getPage().getMouseEventsProcessor());
         tabs1.setTabPlacement(JTabbedPane.LEFT);
         tabs1.addTab("", Workspace.createImageIcon("resources/entry2.gif"), pOnEntry, Language.translate("On Page Entry"));
         tabs1.addTab("", Workspace.createImageIcon("resources/exit2.gif"), pOnExit, Language.translate("On Page Exit"));

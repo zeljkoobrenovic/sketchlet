@@ -4,6 +4,7 @@ import net.sf.sketchlet.common.dnd.GenericTableTransferHandler;
 import net.sf.sketchlet.common.translation.Language;
 import net.sf.sketchlet.designer.Workspace;
 import net.sf.sketchlet.designer.editor.SketchletEditor;
+import net.sf.sketchlet.framework.model.Project;
 import net.sf.sketchlet.framework.model.log.ActivityLog;
 import net.sf.sketchlet.designer.editor.ui.localvars.PageVariablesPanel;
 import net.sf.sketchlet.designer.editor.ui.pagetransition.StateDiagram;
@@ -11,7 +12,6 @@ import net.sf.sketchlet.designer.editor.ui.profiles.Profiles;
 import net.sf.sketchlet.designer.editor.ui.wizard.WizActiveRegionEvent;
 import net.sf.sketchlet.help.HelpUtils;
 import net.sf.sketchlet.framework.model.Page;
-import net.sf.sketchlet.framework.model.Pages;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -279,7 +279,7 @@ public class PageListPanel extends JPanel {
         states.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                StateDiagram.showDiagram(SketchletEditor.getInstance().getPages());
+                StateDiagram.showDiagram(SketchletEditor.getInstance().getProject());
             }
         });
 
@@ -328,7 +328,7 @@ public class PageListPanel extends JPanel {
 
                         public void run() {
                             try {
-                                while (Pages.getMessageFrame() != null) {
+                                while (Project.getMessageFrame() != null) {
                                     Thread.sleep(1);
                                 }
                                 for (double t = 0.1; t < 1.0; t += 0.1) {
@@ -456,11 +456,11 @@ public class PageListPanel extends JPanel {
             }
 
             public int getRowCount() {
-                return SketchletEditor.getPages() == null ? 0 : SketchletEditor.getPages().getPages().size();
+                return SketchletEditor.getProject() == null ? 0 : SketchletEditor.getProject().getPages().size();
             }
 
             public Object getValueAt(int row, int col) {
-                Page s = SketchletEditor.getPages().getPages().elementAt(row);
+                Page s = SketchletEditor.getProject().getPages().elementAt(row);
                 switch (col) {
                     case 0:
                         return icon;
@@ -471,7 +471,7 @@ public class PageListPanel extends JPanel {
             }
 
             public void setValueAt(Object value, int row, int col) {
-                Page s = SketchletEditor.getPages().getPages().elementAt(row);
+                Page s = SketchletEditor.getProject().getPages().elementAt(row);
                 switch (col) {
                     case 1:
                         String oldName = s.getTitle();
@@ -480,7 +480,7 @@ public class PageListPanel extends JPanel {
                         //FreeHand.editorPanel.sketchToolbar.title.setText(newName);
                         SketchletEditor.editorFrame.setTitle(newName);
                         SketchletEditor.getInstance().getPageListPanel().setPageTitle(SketchletEditor.getInstance().getCurrentPage().getTitle());
-                        SketchletEditor.getPages().replaceReferencesSketches(oldName, newName);
+                        SketchletEditor.getProject().replaceReferencesSketches(oldName, newName);
 
                         s.save(false);
                         break;
@@ -511,7 +511,7 @@ public class PageListPanel extends JPanel {
                         String oldName = SketchletEditor.getInstance().getCurrentPage().getTitle();
                         SketchletEditor.getInstance().getCurrentPage().setTitle(newName);
                         SketchletEditor.editorFrame.setTitle(newName);
-                        SketchletEditor.getPages().replaceReferencesSketches(oldName, newName);
+                        SketchletEditor.getProject().replaceReferencesSketches(oldName, newName);
 
                         SketchletEditor.getInstance().getCurrentPage().save(false);
                         repaint();
@@ -542,10 +542,10 @@ public class PageListPanel extends JPanel {
                         return;
                     }
 
-                    int i = SketchletEditor.getPages().getPages().indexOf(s);
+                    int i = SketchletEditor.getProject().getPages().indexOf(s);
                     s.delete();
 
-                    SketchletEditor.getPages().getPages().remove(s);
+                    SketchletEditor.getProject().getPages().remove(s);
                 }
             }
         });

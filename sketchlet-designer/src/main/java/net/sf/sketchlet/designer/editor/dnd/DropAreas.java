@@ -30,6 +30,10 @@ public class DropAreas {
         this.offsetY = offsetY;
     }
 
+    public void dispose() {
+        dropAreaList.clear();
+    }
+
     public DropArea getDropArea(int x, int y) {
         int _x = getPadding() + offsetX;
         int _y = getPadding() + offsetY;

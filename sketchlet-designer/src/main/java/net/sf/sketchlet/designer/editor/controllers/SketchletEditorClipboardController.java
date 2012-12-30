@@ -59,20 +59,20 @@ public class SketchletEditorClipboardController {
                 for (ActiveRegion a : editor.copiedActions) {
                     lastAction = a;
                     ActiveRegion a2 = new ActiveRegion(a, true);
-                    a2.parent = editor.getCurrentPage().getRegions();
-                    if (!a2.regionGrouping.isEmpty()) {
-                        String newGroup = groups.get(a2.regionGrouping);
+                    a2.setParent(editor.getCurrentPage().getRegions());
+                    if (!a2.getRegionGrouping().isEmpty()) {
+                        String newGroup = groups.get(a2.getRegionGrouping());
                         if (newGroup == null) {
                             newGroup = "" + System.currentTimeMillis();
-                            groups.put(a2.regionGrouping, newGroup);
+                            groups.put(a2.getRegionGrouping(), newGroup);
                         }
 
-                        a2.regionGrouping = newGroup;
+                        a2.setRegionGrouping(newGroup);
                     }
-                    a2.x1 += (i + 1) * ox;
-                    a2.y1 += (i + 1) * oy;
-                    a2.x2 += (i + 1) * ox;
-                    a2.y2 += (i + 1) * oy;
+                    a2.setX1Value(a2.getX1Value() + (i + 1) * ox);
+                    a2.setY1Value(a2.getY1Value() + (i + 1) * oy);
+                    a2.setX2Value(a2.getX2Value() + (i + 1) * ox);
+                    a2.setY2Value(a2.getY2Value() + (i + 1) * oy);
 
                     editor.getCurrentPage().getRegions().getRegions().insertElementAt(a2, 0);
                     editor.getCurrentPage().getRegions().getMouseHelper().setSelectedRegions(new Vector<ActiveRegion>());
@@ -155,7 +155,7 @@ public class SketchletEditorClipboardController {
     public void pasteImageAsRegion(int x, int y) {
         ActiveRegion region = new ActiveRegion(editor.getCurrentPage().getRegions());
 
-        region.setDrawImageChanged(0, true);
+        region.setDrawnImageChanged(0, true);
 
         Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
         Transferable transferable = clip.getContents(null);
@@ -165,13 +165,13 @@ public class SketchletEditorClipboardController {
             try {
                 img = (RenderedImage) transferable.getTransferData(new DataFlavor("image/x-java-image; class=java.awt.Image", "Image"));
 
-                region.setDrawImage(0, Workspace.createCompatibleImage(img.getWidth(), img.getHeight(), region.getDrawImage(0)));
-                region.x1 = x;
-                region.y1 = y;
-                region.x2 = x + img.getWidth();
-                region.y2 = y + img.getHeight();
+                region.setDrawnImage(0, Workspace.createCompatibleImage(img.getWidth(), img.getHeight(), region.getDrawnImage(0)));
+                region.setX1Value(x);
+                region.setY1Value(y);
+                region.setX2Value(x + img.getWidth());
+                region.setY2Value(y + img.getHeight());
 
-                Graphics2D g2a = region.getDrawImage(0).createGraphics();
+                Graphics2D g2a = region.getDrawnImage(0).createGraphics();
                 g2a.drawRenderedImage(img, null);
                 g2a.dispose();
 
@@ -180,7 +180,7 @@ public class SketchletEditorClipboardController {
                 editor.getCurrentPage().getRegions().getRegions().insertElementAt(region, 0);
                 editor.getCurrentPage().getRegions().getMouseHelper().setSelectedRegions(new Vector<ActiveRegion>());
                 editor.getCurrentPage().getRegions().getMouseHelper().addToSelection(region);
-                editor.setEditorMode(SketchletEditorMode.ACTIONS);
+                editor.setEditorMode(SketchletEditorMode.EDITING_REGIONS);
                 ActiveRegionsFrame.reload(region);
                 editor.editorFrame.requestFocus();
             } catch (Throwable ex) {
@@ -195,14 +195,14 @@ public class SketchletEditorClipboardController {
     public void pasteRegion(int x, int y) {
         for (ActiveRegion a : editor.copiedActions) {
             ActiveRegion a2 = new ActiveRegion(a, true);
-            a2.parent = editor.getCurrentPage().getRegions();
-            a2.regionGrouping = "";
-            int w = a2.x2 - a2.x1;
-            int h = a2.y2 - a2.y1;
-            a2.x1 = x;
-            a2.y1 = y;
-            a2.x2 = a2.x1 + w;
-            a2.y2 = a2.y1 + h;
+            a2.setParent(editor.getCurrentPage().getRegions());
+            a2.setRegionGrouping("");
+            int w = a2.getX2Value() - a2.getX1Value();
+            int h = a2.getY2Value() - a2.getY1Value();
+            a2.setX1Value(x);
+            a2.setY1Value(y);
+            a2.setX2Value(a2.getX1Value() + w);
+            a2.setY2Value(a2.getY1Value() + h);
             editor.getCurrentPage().getRegions().getRegions().insertElementAt(a2, 0);
         }
 
@@ -216,7 +216,7 @@ public class SketchletEditorClipboardController {
             return;
         }
 
-        if (editor.getMode() == SketchletEditorMode.ACTIONS) {
+        if (editor.getMode() == SketchletEditorMode.EDITING_REGIONS) {
             copySelectedAction();
         } else {
             if (editor.getTool() != null && editor.getTool() instanceof SelectTool && ((SelectTool) editor.getTool()).getX1() != ((SelectTool) editor.getTool()).getX2()) {
@@ -242,17 +242,17 @@ public class SketchletEditorClipboardController {
     }
 
     public void printRegionImageToClipboard() {
-        if (editor.getMode() == SketchletEditorMode.ACTIONS && editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null) {
+        if (editor.getMode() == SketchletEditorMode.EDITING_REGIONS && editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null) {
             ActiveRegion region = editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
-            int w = region.getWidth();
-            int h = region.getHeight();
+            int w = region.getWidthValue();
+            int h = region.getHeightValue();
             BufferedImage image = SketchletGraphicsContext.getInstance().createCompatibleImage(w, h);
             Graphics2D g2 = image.createGraphics();
             g2.setColor(Color.WHITE);
             g2.fillRect(0, 0, w, h);
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-            g2.translate(-region.x1, -region.y1);
+            g2.translate(-region.getX1Value(), -region.getY1Value());
 
             region.getRenderer().drawActive(g2, editor.getInstance(), false, 1.0f);
 
@@ -264,17 +264,17 @@ public class SketchletEditorClipboardController {
     }
 
     public void copyRegionImageToClipboard() {
-        if (editor.getMode() == SketchletEditorMode.ACTIONS && editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null) {
+        if (editor.getMode() == SketchletEditorMode.EDITING_REGIONS && editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null) {
             ActiveRegion region = editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
-            int w = region.getWidth();
-            int h = region.getHeight();
+            int w = region.getWidthValue();
+            int h = region.getHeightValue();
             BufferedImage image = SketchletGraphicsContext.getInstance().createCompatibleImage(w, h);
             Graphics2D g2 = image.createGraphics();
             g2.setColor(Color.WHITE);
             g2.fillRect(0, 0, w, h);
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-            g2.translate(-region.x1, -region.y1);
+            g2.translate(-region.getX1Value(), -region.getY1Value());
 
             region.getRenderer().drawActive(g2, editor.getInstance(), false, 1.0f);
 
@@ -286,13 +286,13 @@ public class SketchletEditorClipboardController {
     }
 
     public void saveRegionImageToFile() {
-        if (editor.getMode() == SketchletEditorMode.ACTIONS && editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null) {
+        if (editor.getMode() == SketchletEditorMode.EDITING_REGIONS && editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions() != null) {
             File file = SketchletEditor.selectImageFile("");
 
             if (file != null) {
                 ActiveRegion region = editor.getCurrentPage().getRegions().getMouseHelper().getSelectedRegions().lastElement();
-                int w = region.getWidth();
-                int h = region.getHeight();
+                int w = region.getWidthValue();
+                int h = region.getHeightValue();
                 // BufferedImage image = SketchletGraphicsContext.getInstance().createCompatibleImage(w, h);
                 BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
                 Graphics2D g2 = image.createGraphics();
@@ -300,7 +300,7 @@ public class SketchletEditorClipboardController {
                 g2.fillRect(0, 0, w, h);
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-                g2.translate(-region.x1, -region.y1);
+                g2.translate(-region.getX1Value(), -region.getY1Value());
 
                 region.getRenderer().drawActive(g2, editor.getInstance(), false, 1.0f);
 
@@ -337,11 +337,11 @@ public class SketchletEditorClipboardController {
             if (transferable.isDataFlavorSupported(new DataFlavor("image/x-java-image; class=java.awt.Image", "Image"))) {
                 try {
                     img = (RenderedImage) transferable.getTransferData(new DataFlavor("image/x-java-image; class=java.awt.Image", "Image"));
-                    action.setDrawImage(index, Workspace.createCompatibleImage(img.getWidth(), img.getHeight()));
-                    Graphics2D g2 = action.getDrawImage(index).createGraphics();
+                    action.setDrawnImage(index, Workspace.createCompatibleImage(img.getWidth(), img.getHeight()));
+                    Graphics2D g2 = action.getDrawnImage(index).createGraphics();
                     g2.drawRenderedImage(img, null);
 
-                    action.setDrawImageChanged(index, true);
+                    action.setDrawnImageChanged(index, true);
                     action.saveImage();
 
                     g2.dispose();
